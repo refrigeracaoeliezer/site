@@ -1,375 +1,274 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-
-
-
-
-
-
-    
-<head>
-    <script>
-        // Se não houver a chave de login, redireciona para a tela inicial imediatamente
-        if (localStorage.getItem("inforos_logado") !== "true") {
-            window.location.href = "login.html";
-        }
-    </script>
-    <meta charset="UTF-8">
-    <title>InforOS | Painel</title>
-
-
-
-
-
-
-
-
-    
-
-
-
-    
 <head>
     <meta charset="UTF-8">
-    <title>InforOS | Sistema de O.S</title>
+    <title>Login | Refrigeração</title>
+    <link rel="icon" type="image/png" href="https://blogger.googleusercontent.com/img/a/AVvXsEjvyHVCZolj28lEOEFo6M63izh7RcOq9tc7jph7e_Or-jSWVQ5TjRb0hcc-168k9rTwL9XnC9FdUti7imfIyv6QTbWgHDZB7zroM2I3nvUK58Zf6_sARve9qfBkasedBGsBkLahFohBhq2fbLB-hPSlFVrk5haPLt0Uy2jDnTszkHq0Qn3NfzkmK8vhNLI=w104-h117">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <link rel="stylesheet" href="https://teste.inforos.online/assets/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://teste.inforos.online/assets/css/bootstrap-responsive.min.css">
-    <link rel="stylesheet" href="https://teste.inforos.online/assets/css/matrix-style.css">
-    <link rel="stylesheet" href="https://teste.inforos.online/assets/css/matrix-media.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+    
     <style>
-        body { background-color: #2e363f !important; }
-        
-        /* Ajustes de Integração para os novos Cards */
-        .dashboard-card {
-            background: #fff;
-            border-radius: 16px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
-            padding: 24px;
-            margin-bottom: 24px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border: 1px solid rgba(0, 0, 0, 0.05);
-            animation: fadeInUp 0.5s ease-out;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column; 
+            align-items: center;
+            justify-content: center; 
+            background: #0d1117; 
+            position: relative;
+            overflow-x: hidden;
+            overflow-y: auto;
+            padding: 20px 0;
         }
-        .dashboard-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12); }
-        
-        .card-header { display: flex; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 2px solid #f1f5f9; }
-        .card-header i { font-size: 24px; margin-right: 12px; color: #3b82f6; }
-        .card-header h5 { margin: 0; font-size: 18px; font-weight: 700; color: #1e293b; }
 
-        /* Quick Actions Modernizado */
-        .quick-actions-modern { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
-        .quick-action-card {
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-            border-radius: 12px; padding: 20px; text-align: center; border: 1px solid #cbd5e1; transition: all 0.3s;
+        .corner-ball {
+            position: fixed;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 50%;
+            z-index: 1;
+            pointer-events: none;
         }
-        .quick-action-card:hover { transform: translateY(-6px); box-shadow: 0 12px 28px rgba(59, 130, 246, 0.2); background: #eff6ff; }
-        .quick-action-card a { text-decoration: none; color: #334155; display: flex; flex-direction: column; align-items: center; font-weight: 600; }
-        .quick-action-card i { font-size: 32px; margin-bottom: 10px; color: #3b82f6; }
 
-        /* Status Prazos e Prioridades */
-        .status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 16px; }
-        .status-item { border-radius: 12px; padding: 20px 10px; text-align: center; transition: all 0.3s; }
-        .status-item a { color: white; text-decoration: none; display: flex; flex-direction: column; }
-        .status-badge { font-size: 28px; font-weight: 800; }
-        .status-label { font-size: 12px; text-transform: uppercase; font-weight: 600; }
+        .ball-top-right { width: 550px; height: 550px; top: -200px; right: -150px; }
+        .ball-bottom-left { width: 450px; height: 450px; bottom: -150px; left: -150px; }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 4px solid #1e40af; 
+            border-radius: 40px; 
+            padding: 50px 40px;
+            width: 100%;
+            max-width: 410px;
+            position: relative;
+            z-index: 10;
+            box-shadow: 0 0 50px rgba(30, 64, 175, 0.3), 0 20px 40px rgba(0, 0, 0, 0.6); 
+            margin: auto 0;
+            transition: transform 0.3s ease;
+        }
+
+        .shake {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+            border-color: #ff4b4b !important;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        .logo-container { text-align: center; margin-bottom: 30px; }
+        .logo-container img { max-width: 250px; opacity: 0.9; }
+
+        .login-title { text-align: center; color: white; margin-bottom: 35px; }
+        .login-title h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+        .login-title p { color: rgba(255, 255, 255, 0.45); font-size: 14px; margin-top: 5px; }
+
+        .input-group { margin-bottom: 22px; text-align: left; }
+        .input-group label { display: block; color: rgba(255, 255, 255, 0.7); font-size: 11px; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; }
         
-        .bg_lo { background-color: #ef4444; }
-        .bg_ly { background-color: #f59e0b; }
-        .bg_lb { background-color: #3b82f6; }
-        .bg_lg { background-color: #10b981; }
+        .input-wrapper { position: relative; }
+        .input-wrapper input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 15px 15px 15px 45px;
+            color: white;
+            font-size: 14px;
+            transition: 0.3s;
+        }
 
-        /* Situação Grid */
-        .situation-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-top: 10px; }
-        .situation-card { background: #f8fafc; border-radius: 12px; padding: 20px; text-align: center; border: 1px solid #e2e8f0; transition: all 0.3s; }
-        .situation-card:hover { border-color: #3b82f6; transform: translateY(-5px); }
-        .situation-number { font-size: 30px; font-weight: 800; color: #3b82f6; display: block; }
-        .situation-label { font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; }
+        .input-wrapper input:focus {
+            outline: none;
+            border-color: #1e40af; 
+            background: rgba(255, 255, 255, 0.06);
+            box-shadow: 0 0 10px rgba(30, 64, 175, 0.3);
+        }
 
-        /* Financeiro */
-        .financial-summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
-        .financial-card { border-radius: 16px; padding: 24px; border: 1px solid #e2e8f0; text-decoration: none !important; transition: all 0.3s; }
-        .financial-card-value { font-size: 26px; font-weight: 800; display: block; margin-top: 10px; }
-        .receitas .financial-card-value { color: #059669; }
-        .despesas .financial-card-value { color: #dc2626; }
+        .input-wrapper i {
+            position: absolute;
+            left: 16px; top: 50%;
+            transform: translateY(-50%);
+            color: #1e40af; 
+            font-size: 16px;
+        }
 
-        /* Stats Sistema */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; }
-        .stat-card { background: #fff; border-radius: 16px; padding: 20px; display: flex; align-items: center; gap: 15px; border: 1px solid #e2e8f0; }
-        .stat-icon { width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
+        #login-error {
+            display: none;
+            color: #ff4b4b;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 15px;
+            background: rgba(255, 75, 75, 0.1);
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 75, 75, 0.2);
+        }
 
-        /* Sidebar Persistente */
-        #sidebar ul li a { transition: all 0.2s ease; border-left: 4px solid transparent; }
-        #sidebar ul li a:hover { padding-left: 30px !important; background: #27a9e3 !important; color: #fff !important; }
-        #sidebar ul li.active a { border-left: 4px solid #27a9e3; background: #2e363f; }
-        #sidebar li.submenu ul { display: none; background: #252b32 !important; list-style: none; margin: 0; padding: 0; }
-        #sidebar li.submenu.open > a { background: #2e363f !important; }
-        #sidebar li.submenu ul li a { padding: 10px 15px 10px 45px !important; color: #88929b !important; background: transparent !important; }
-        .label-submenu { background-color: #ff5b57 !important; padding: 2px 5px; border-radius: 4px; float: right; margin-right: 15px; color: white; font-size: 10px; }
+        .btn-login {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #1e40af 0%, #27a9e3 100%);
+            border: none;
+            border-radius: 15px;
+            color: white;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center; justify-content: center; gap: 10px;
+            margin-top: 15px;
+            box-shadow: 0 4px 15px rgba(30, 64, 175, 0.3);
+        }
 
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .btn-login:hover { 
+            transform: translateY(-1px);
+            box-shadow: 0 0 20px rgba(39, 169, 227, 0.6), 0 6px 20px rgba(39, 169, 227, 0.4);
+            filter: brightness(1.2); 
+        }
+
+        .btn-login:disabled { opacity: 0.6; cursor: not-allowed; filter: none; }
+
+        .footer-info {
+            width: 100%;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.25);
+            font-size: 11px;
+            z-index: 10;
+            padding-bottom: 30px;
+            margin-top: 20px;
+        }
+
+        .badge-teste {
+            display: inline-block;
+            padding: 6px 18px;
+            background: rgba(30, 64, 175, 0.1);
+            border: 1px solid #1e40af;
+            border-radius: 30px;
+            color: #27a9e3; 
+            font-weight: 700;
+            margin-bottom: 12px;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 0 10px rgba(30, 64, 175, 0.3);
+        }
     </style>
-
-    <script src="https://teste.inforos.online/assets/js/jquery.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
 </head>
 <body>
 
-<div id="header">
-    <h1><a href="#">InforOS</a></h1>
-</div>
+    <div class="corner-ball ball-top-right"></div>
+    <div class="corner-ball ball-bottom-left"></div>
 
-<div id="user-nav" class="navbar navbar-inverse">
-    <ul class="nav">
-        <li class="active"><a href="#"><i class="fa-solid fa-house"></i> <span class="text">Início</span></a></li>
-        <li><a href="login.html" id="linkSair"><i class="fa-solid fa-power-off"></i> <span class="text">Sair</span></a></li>
-    </ul>
-</div>
+    <div class="login-card" id="cardPrincipal">
+        <div class="logo-container">
+            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgdGGsULMI69OabXBfFU3b8mTYfIWlJoqpwgc_q1UvSITQPj_VQYaW_1cLECh4rF7j5RfhJLsPgUXdvNv-ya494kAfeyZRbdTCn-VFesltpIkZp8Xid-MZwLKBLyC89MTSXf76nrCrBHncl86cYzjm1XuG34hvNrNVkZS8Gkq3FJEZHEb99HL26I52RUqc/w512-h237/TOPO%20POSTO%20RIO%20BRANCO.png" alt="InforOS">
+        </div>
 
-<div id="search">
-    <form action="#">
-        <input type="text" placeholder="Pesquisar no sistema..."/>
-        <button type="submit" class="tip-bottom" title="Pesquisar"><i class="fa-solid fa-magnifying-glass"></i></button>
-    </form>
-</div>
+        <div class="login-title">
+            <h1>Acessar Gestor</h1>
+            <p>Insira os seus dados de acesso</p>
+        </div>
 
-<div id="sidebar">
-    <ul>
-        <li class="active"><a href="index.html"><i class="fa-solid fa-house"></i> <span>Painel</span></a></li>
-        <li><a href="clientes.hmtl"><i class="fa-solid fa-user-group"></i> <span>Clientes / Fornecedores</span></a></li>
-        <li><a href="equipamentos.html"><i class="fa-solid fa-server"></i> <span>Equipamentos</span></a></li>
-        <li><a href="servicos.html"><i class="fa-solid fa-briefcase"></i> <span>Serviços</span></a></li>
-        <li><a href="compras.html"><i class="fa-solid fa-cart-shopping"></i> <span>Compras</span></a></li>
-        
-        <li class="submenu">
-            <a href="#"><i class="fa-solid fa-basket-shopping"></i> <span>Produtos</span> <span class="label-submenu"><i class="fa-solid fa-chevron-down"></i></span></a>
-            <ul>
-                <li><a href="#">Cadastrados</a></li>
-                <li><a href="#">Movimentação</a></li>
-                <li><a href="#">Consumo Interno</a></li>
-                <li><a href="#">Grupos</a></li>
-            </ul>
-        </li>
+        <form id="formLogin">
+            <div class="input-group">
+                <label for="email">E-mail</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-envelope"></i>
+                    <input type="email" id="email" placeholder="login@gmail.com" autocomplete="username" required>
+                </div>
+            </div>
 
-        <li class="submenu">
-            <a href="#"><i class="fa-solid fa-tags"></i> <span>Ordens de Serviço</span> <span class="label-submenu"><i class="fa-solid fa-chevron-down"></i></span></a>
-            <ul>
-                <li><a href="novoOrcamento.html">Novo Orçamento</a></li> 
-                <li><a href="os.html">Todas as O.S</a></li>
-            </ul>
-        </li>
+            <div class="input-group">
+                <label for="senha">Senha</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" id="senha" placeholder="••••••••" autocomplete="current-password" required>
+                </div>
+            </div>
 
-        <li class="submenu">
-            <a href="#"><i class="fa-solid fa-money-bill-1-wave"></i> <span>Financeiro</span> <span class="label-submenu"><i class="fa-solid fa-chevron-down"></i></span></a>
-            <ul>
-                <li><a href="#">Faturas</a></li>
-                <li><a href="#">DRE</a></li>
-                <li><a href="#">Contas</a></li>
-            </ul>
-        </li>
+            <div id="login-error"><i class="fa-solid fa-triangle-exclamation"></i> Login incorreto</div>
 
-        <li class="submenu">
-            <a href="#"><i class="fa-solid fa-gears"></i> <span>Configurações</span> <span class="label-submenu"><i class="fa-solid fa-chevron-down"></i></span></a>
-            <ul>
-                <li><a href="#" data-toggle="modal" data-target="#modalEmitenteBasico">Emitente</a></li>
-                <li><a href="#">Filiais</a></li>
-            </ul>
-        </li>
-    </ul>
-</div>
-
-<div id="content">
-    <div id="content-header">
-        <div id="breadcrumb"> <a href="#" class="tip-bottom"><i class="fa-solid fa-house"></i> Painel</a> <a href="#" class="current">Resumo Geral</a></div>
+            <button type="submit" id="btnSubmit" class="btn-login">
+                <i class="fa-solid fa-right-to-bracket"></i> Autenticar
+            </button>
+        </form>
     </div>
 
-    <div class="container-fluid">
-        
-        <div class="row-fluid">
-            <div class="span12">
-                <div class="dashboard-card">
-                    <div class="card-header"><i class="fa-solid fa-bolt"></i><h5>Ações Rápidas</h5></div>
-                    <div class="quick-actions-modern">
-                        <div class="quick-action-card"><a href="#"><i class="fa-solid fa-tags"></i><span>Ordens de Serviço</span></a></div>
-                        <div class="quick-action-card"><a href="#"><i class="fa-solid fa-cart-shopping"></i><span>Vendas</span></a></div>
-                        <div class="quick-action-card"><a href="#"><i class="fa-solid fa-basket-shopping"></i><span>Produtos</span></a></div>
-                        <div class="quick-action-card"><a href="#"><i class="fa-solid fa-money-bill"></i><span>Financeiro</span></a></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row-fluid">
-            <div class="span7">
-                <div class="dashboard-card">
-                    <div class="card-header"><i class="fa-solid fa-triangle-exclamation"></i><h5>Prazo de Entrega</h5></div>
-                    <div class="status-grid">
-                        <div class="status-item bg_lo"><a href="#"><span class="status-badge">645</span><span class="status-label">Vencidas</span></a></div>
-                        <div class="status-item bg_ly"><a href="#"><span class="status-badge">7</span><span class="status-label">Hoje</span></a></div>
-                        <div class="status-item bg_lb"><a href="#"><span class="status-badge">11</span><span class="status-label">Amanhã</span></a></div>
-                        <div class="status-item bg_lg"><a href="#"><span class="status-badge">426</span><span class="status-label">No Prazo</span></a></div>
-                    </div>
-                </div>
-            </div>
-            <div class="span5">
-                <div class="dashboard-card">
-                    <div class="card-header"><i class="fa-solid fa-list-check"></i><h5>Prioridade</h5></div>
-                    <div class="status-grid">
-                        <div class="status-item bg_lo"><a href="#"><span class="status-badge">134</span><span class="status-label">Alta</span></a></div>
-                        <div class="status-item bg_ly"><a href="#"><span class="status-badge">63</span><span class="status-label">Média</span></a></div>
-                        <div class="status-item bg_lg"><a href="#"><span class="status-badge">894</span><span class="status-label">Baixa</span></a></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row-fluid">
-            <div class="span12">
-                <div class="dashboard-card">
-                    <div class="card-header"><i class="fa-solid fa-chart-line"></i><h5>Situação das Ordens</h5></div>
-                    <div class="situation-grid">
-                        <div class="situation-card"><a href="#"><span class="situation-number">53</span><span class="situation-label">Enviar Cliente</span></a></div>
-                        <div class="situation-card"><a href="#"><span class="situation-number">37</span><span class="situation-label">Aguard. Resposta</span></a></div>
-                        <div class="situation-card"><a href="#"><span class="situation-number">23</span><span class="situation-label">Comprar Peça</span></a></div>
-                        <div class="situation-card"><a href="#"><span class="situation-number">31</span><span class="situation-label">Aguard. Peça</span></a></div>
-                        <div class="situation-card"><a href="#"><span class="situation-number">15</span><span class="situation-label">Testes Finais</span></a></div>
-                        <div class="situation-card"><a href="#"><span class="situation-number">123</span><span class="situation-label">Entregar</span></a></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row-fluid">
-            <div class="span12">
-                <div class="dashboard-card">
-                    <div class="card-header"><i class="fa-solid fa-chart-simple"></i><h5>Estatísticas de OS</h5></div>
-                    <div id="chart-os" style="width: 100%; height: 350px;"></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row-fluid">
-            <div class="span12">
-                <div class="dashboard-card">
-                    <div class="card-header"><i class="fa-solid fa-wallet"></i><h5>Resumo Financeiro</h5></div>
-                    <div class="financial-summary-grid">
-                        <a href="#" class="financial-card receitas">
-                            <span class="financial-card-label">Receitas Recebidas</span>
-                            <span class="financial-card-value">R$ 3.803,66</span>
-                        </a>
-                        <a href="#" class="financial-card despesas">
-                            <span class="financial-card-label">Despesas Pagas</span>
-                            <span class="financial-card-value">R$ 371,50</span>
-                        </a>
-                        <a href="#" class="financial-card receitas" style="border-left: 4px solid #3b82f6;">
-                            <span class="financial-card-label">A Receber</span>
-                            <span class="financial-card-value" style="color: #3b82f6;">R$ 4.318,01</span>
-                        </a>
-                        <a href="#" class="financial-card despesas" style="border-left: 4px solid #f59e0b;">
-                            <span class="financial-card-label">A Pagar</span>
-                            <span class="financial-card-value" style="color: #f59e0b;">R$ 3.012,16</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row-fluid">
-            <div class="span12">
-                <div class="dashboard-card">
-                    <div class="card-header"><i class="fa-solid fa-chart-column"></i><h5>Comparativo Mensal</h5></div>
-                    <div id="chart-financeiro-barras" style="width: 100%; height: 350px;"></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row-fluid">
-            <div class="span12">
-                <div class="dashboard-card">
-                    <div class="card-header"><i class="fa-solid fa-square-poll-vertical"></i><h5>Estatísticas do Sistema</h5></div>
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-icon bg_lb"><i class="fa-solid fa-user-group"></i></div>
-                            <div><div style="font-size: 24px; font-weight: 800;">77</div><div style="font-size: 12px; color: #666;">Clientes/Mês</div></div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon" style="background: #8b5cf6;"><i class="fa-solid fa-tags"></i></div>
-                            <div><div style="font-size: 24px; font-weight: 800;">86</div><div style="font-size: 12px; color: #666;">OS/Mês</div></div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon bg_lg"><i class="fa-solid fa-check"></i></div>
-                            <div><div style="font-size: 24px; font-weight: 800;">5</div><div style="font-size: 12px; color: #666;">OS/Dia</div></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
+    <div class="footer-info">
+        <div class="badge-teste">Refrigeração Eliezer</div>
+        <p>&copy; <span id="anoAtual"></span> - Sistema de Gestão</p>
     </div>
-</div>
 
-<div id="footer" class="span12"> 2026 © InforOS - Fidelidade Total </div>
+   <script>
+    // SCRIPT PARA O ANO ATUAL AUTOMÁTICO
+    document.getElementById("anoAtual").textContent = new Date().getFullYear();
 
-<script src="https://teste.inforos.online/assets/js/bootstrap.min.js"></script>
+    window.addEventListener("pageshow", function (event) {
+        const btn = $('#btnSubmit');
+        if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+            btn.prop('disabled', false).html('<i class="fa-solid fa-right-to-bracket"></i> Autenticar');
+        }
+    });
 
-<script>
-    $(document).ready(function(){
-        // 1. Lógica do Menu Lateral (Sanfona)
-        $('.submenu > a').off('click').on('click', function(e){
-            e.preventDefault();
-            var $li = $(this).parent('li');
-            var $submenu = $li.find('ul');
-            
-            if($li.hasClass('open')) {
-                $submenu.slideUp(300, function(){
-                    $li.removeClass('open');
-                });
-            } else {
-                $li.addClass('open');
-                $submenu.stop(true, true).slideDown(300);
+    $('#formLogin').on('submit', function(e) {
+        e.preventDefault();
+        
+        const btn = $('#btnSubmit');
+        const errorMsg = $('#login-error');
+        const card = $('#cardPrincipal');
+        
+        errorMsg.hide();
+        card.removeClass('shake');
+        
+        btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i> Validando...');
+        
+        const email = $('#email').val();
+        const senha = $('#senha').val();
+
+        const urlScript = "https://script.google.com/macros/s/AKfycby_iCS7XSNM6eg4by-F9WVxwC25S1TTgExmX7EM_-peBVWDpvIIZk-oSsNd6e3xXUx4/exec";
+
+        $.ajax({
+            url: urlScript,
+            method: "GET",
+            dataType: "text",
+            data: { email: email, senha: senha },
+            success: function(resposta) {
+                if (resposta.trim() === "success") {
+                    // ==========================================
+                    // TRAVA DE SEGURANÇA: CRIA A SESSÃO NO NAVEGADOR
+                    localStorage.setItem("inforos_logado", "true");
+                    // ==========================================
+                    
+                    window.location.href = "sistemas.html"; 
+                } else {
+                    errorMsg.fadeIn();
+                    card.addClass('shake');
+                    setTimeout(() => card.removeClass('shake'), 500);
+                    btn.prop('disabled', false).html('<i class="fa-solid fa-right-to-bracket"></i> Autenticar');
+                }
+            },
+            error: function() {
+                alert("Erro técnico: Verifique a conexão.");
+                btn.prop('disabled', false).html('<i class="fa-solid fa-right-to-bracket"></i> Autenticar');
             }
         });
+    });
 
-        // 2. FUNÇÃO DE SAIR (LOGOUT) - LIMPA A TRAVA DE SEGURANÇA
-        $('#linkSair').on('click', function() {
-            localStorage.removeItem("inforos_logado"); 
-        });
-
-        // 3. Inicialização de Gráfico de OS (ECharts)
-        var chartOs = echarts.init(document.getElementById('chart-os'));
-        chartOs.setOption({
-            tooltip: { trigger: 'axis' },
-            xAxis: { type: 'category', data: ['Entrada', 'Orçamento', 'Aberto', 'Andamento', 'Finalizado'] },
-            yAxis: { type: 'value' },
-            series: [{
-                data: [209, 609, 196, 65, 123],
-                type: 'bar',
-                itemStyle: { color: '#3b82f6', borderRadius: [5, 5, 0, 0] }
-            }]
-        });
-
-        // 4. Inicialização de Gráfico Financeiro
-        var chartFin = echarts.init(document.getElementById('chart-financeiro-barras'));
-        chartFin.setOption({
-            legend: { data: ['Receitas', 'Despesas'], bottom: 0 },
-            tooltip: { trigger: 'axis' },
-            xAxis: { type: 'category', data: ['Realizado', 'Pendente', 'Total'] },
-            yAxis: { type: 'value' },
-            series: [
-                { name: 'Receitas', type: 'bar', data: [3803, 4318, 8121], itemStyle: { color: '#10b981' } },
-                { name: 'Despesas', type: 'bar', data: [371, 3012, 3383], itemStyle: { color: '#ef4444' } }
-            ]
-        });
-
-        window.addEventListener('resize', function() {
-            chartOs.resize();
-            chartFin.resize();
-        });
+    $('input').on('input', function() {
+        $('#login-error').fadeOut();
     });
 </script>
-
 </body>
 </html>
