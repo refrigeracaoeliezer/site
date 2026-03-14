@@ -2,11 +2,11 @@
 <html lang="pt-br">
 <head>
     <script>
-        // Trava de segurança: Se não estiver logado, volta para a index
-        if (localStorage.getItem("inforos_logado") !== "true") {
-            window.location.href = "login.html"; 
-        }
-    </script>
+    // Trava de segurança: Se não estiver logado, redireciona para o site externo
+    if (localStorage.getItem("inforos_logado") !== "true") {
+        window.location.href = "https://refrigeracaoeliezer.github.io/site/"; 
+    }
+</script>
     <meta charset="UTF-8">
     <title>Painel de Controle | InforOS</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -171,11 +171,12 @@
     </div>
 
     <script>
-        function logout() {
-            localStorage.removeItem("inforos_logado");
-            window.location.href = "login.html";
-        }
-    </script>
+    function logout() {
+        localStorage.removeItem("inforos_logado");
+        // Redireciona para o site externo após o logout
+        window.location.href = "https://refrigeracaoeliezer.github.io/site/";
+    }
+</script>
 
 </body>
 </html>
