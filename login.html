@@ -181,12 +181,13 @@
             <p>Insira os seus dados de acesso</p>
         </div>
 
-        <form id="formLogin">
+        <form id="formLogin" novalidate>
             <div class="input-group">
                 <label for="login">Nome ou E-mail</label>
                 <div class="input-wrapper">
                     <i class="fa-solid fa-envelope"></i>
-                    <input type="text" id="login" placeholder="Digite seu nome ou e-mail" autocomplete="username" required>
+                    <input type="text" id="login" placeholder="Digite seu nome ou e-mail" autocomplete="off" required>
+
                 </div>
             </div>
 
