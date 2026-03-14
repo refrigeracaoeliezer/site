@@ -237,38 +237,31 @@
         const email = $('#email').val();
         const senha = $('#senha').val();
 
-        const urlScript = "https://script.google.com/macros/s/AKfycbwVDhQaccxxigAy8tFKWo3Gi28mjSIO2iUZIeiPNldbreqVO5STS1Bakt4d4GzMlWeDwA/exec";
+        const urlScript = "https://script.google.com/macros/s/AKfycbxQ0gvU-dGdNB2hd0uY30ycM_YaqrIxKJFw4IkhKTEAzUFNZY4vgDf53uCCIhSK0nwvag/exec";
 
-        $.ajax({
-            url: urlScript,
-            method: "GET",
-            dataType: "text",
-            data: { email: email, senha: senha },
-            success: function(resposta) {
-                if (resposta.trim() === "success") {
-                    // ==========================================
-                    // TRAVA DE SEGURANÇA: CRIA A SESSÃO NO NAVEGADOR
-                    localStorage.setItem("inforos_logado", "true");
-                    // ==========================================
-                    
-                    window.location.href = "sistemas.html"; 
-                } else {
-                    errorMsg.fadeIn();
-                    card.addClass('shake');
-                    setTimeout(() => card.removeClass('shake'), 500);
-                    btn.prop('disabled', false).html('<i class="fa-solid fa-right-to-bracket"></i> Autenticar');
-                }
-            },
-            error: function() {
-                alert("Erro técnico: Verifique a conexão.");
-                btn.prop('disabled', false).html('<i class="fa-solid fa-right-to-bracket"></i> Autenticar');
-            }
-        });
-    });
-
-    $('input').on('input', function() {
-        $('#login-error').fadeOut();
-    });
+       $.ajax({
+    url: urlScript,
+    method: "GET",
+    dataType: "jsonp", // MUDOU AQUI
+    data: { email: email, senha: senha },
+    success: function(resposta) {
+        // O Google retorna o texto dentro da variável 'resposta'
+        if (resposta === "success") {
+            localStorage.setItem("inforos_logado", "true");
+            window.location.href = "sistemas.html"; 
+        } else {
+            errorMsg.fadeIn();
+            card.addClass('shake');
+            setTimeout(() => card.removeClass('shake'), 500);
+            btn.prop('disabled', false).html('<i class="fa-solid fa-right-to-bracket"></i> Autenticar');
+        }
+    },
+    error: function(xhr, status, error) {
+        console.error("Erro detalhado:", status, error);
+        alert("Erro técnico: Verifique a configuração do Script ou permissões.");
+        btn.prop('disabled', false).html('<i class="fa-solid fa-right-to-bracket"></i> Autenticar');
+    }
+});
 </script>
 </body>
 </html>
