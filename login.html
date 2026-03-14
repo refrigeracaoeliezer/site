@@ -238,16 +238,19 @@
         const senha = $('#senha').val();
 
         const urlScript = "https://script.google.com/macros/s/AKfycbzKIyciaWZbMG7rv8XqXbZ2UsEMwczdmqjs0ZEZr3ydzcXhmpN-3PalC7oxswZbybWl/exec";
-
-        $.ajax({
+$.ajax({
     url: urlScript,
     method: "GET",
-    dataType: "jsonp", // MUDANÇA 1: De 'text' para 'jsonp'
+    dataType: "jsonp", // AJUSTE 1: Mudei de "text" para "jsonp"
     data: { email: email, senha: senha },
     success: function(resposta) {
-        // MUDANÇA 2: Com JSONP não precisa de .trim(), a resposta vem limpa
-        if (resposta === "success") {
+        // AJUSTE 2: Removi o .trim() pois o jsonp já entrega o texto limpo
+        if (resposta === "success") { 
+            // ==========================================
+            // TRAVA DE SEGURANÇA: CRIA A SESSÃO NO NAVEGADOR
             localStorage.setItem("inforos_logado", "true");
+            // ==========================================
+            
             window.location.href = "sistemas.html"; 
         } else {
             errorMsg.fadeIn();
