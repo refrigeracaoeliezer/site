@@ -242,7 +242,7 @@ const urlScript = "https://script.google.com/macros/s/AKfycbykQdyWtNOlqoi2f2CnFe
 
 $.ajax({
     url: urlScript,
-    method: "GET",
+   type: "GET",
     dataType: "text",
     data: { login: login, senha: senha },
     success: function(resposta) {
