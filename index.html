@@ -238,37 +238,57 @@
         const senha = $('#senha').val();
 
         const urlScript = "https://script.google.com/macros/s/AKfycbySlIXi5qq9RUL_vvl9nTPlIQdLQC__acn4Lver0LAXnZXhuwgiAJhOUfuGszLHwg38/exec";
+<script>
+        // 1. Script para o ano automático
+        document.getElementById("anoAtual").textContent = new Date().getFullYear();
 
-        $.ajax({
-            url: urlScript,
-            method: "GET",
-            dataType: "text",
-            data: { email: email, senha: senha },
-            success: function(resposta) {
-                if (resposta.trim() === "success") {
-                    // ==========================================
-                    // TRAVA DE SEGURANÇA: CRIA A SESSÃO NO NAVEGADOR
-                    localStorage.setItem("inforos_logado", "true");
-                    // ==========================================
-                    
-                    window.location.href = "sistemas.html"; 
-                } else {
-                    errorMsg.fadeIn();
-                    card.addClass('shake');
-                    setTimeout(() => card.removeClass('shake'), 500);
+        // 2. Lógica de submissão do formulário
+        $('#formLogin').on('submit', function(e) {
+            e.preventDefault();
+            
+            const btn = $('#btnSubmit');
+            const errorMsg = $('#login-error');
+            const card = $('#cardPrincipal');
+            
+            errorMsg.hide();
+            card.removeClass('shake');
+            btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i> Validando...');
+            
+            const email = $('#email').val();
+            const senha = $('#senha').val();
+
+            // Sua URL do Google Apps Script
+            const urlScript = "https://script.google.com/macros/s/AKfycbySlIXi5qq9RUL_vvl9nTPlIQdLQC__acn4Lver0LAXnZXhuwgiAJhOUfuGszLHwg38/exec";
+
+            $.ajax({
+                url: urlScript,
+                method: "GET",
+                dataType: "text",
+                data: { email: email, senha: senha },
+                success: function(resposta) {
+                    if (resposta.trim() === "success") {
+                        // AQUI CRIA A "CHAVE" DE ACESSO
+                        localStorage.setItem("inforos_logado", "true");
+                        // REDIRECIONA PARA A PÁGINA DE SISTEMAS
+                        window.location.href = "sistemas.html"; 
+                    } else {
+                        errorMsg.fadeIn();
+                        card.addClass('shake');
+                        setTimeout(() => card.removeClass('shake'), 500);
+                        btn.prop('disabled', false).html('<i class="fa-solid fa-right-to-bracket"></i> Autenticar');
+                    }
+                },
+                error: function() {
+                    alert("Erro técnico: Verifique a conexão.");
                     btn.prop('disabled', false).html('<i class="fa-solid fa-right-to-bracket"></i> Autenticar');
                 }
-            },
-            error: function() {
-                alert("Erro técnico: Verifique a conexão.");
-                btn.prop('disabled', false).html('<i class="fa-solid fa-right-to-bracket"></i> Autenticar');
-            }
+            });
         });
-    });
 
-    $('input').on('input', function() {
-        $('#login-error').fadeOut();
-    });
-</script>
+        // Limpar erro ao digitar
+        $('input').on('input', function() {
+            $('#login-error').fadeOut();
+        });
+    </script>
 </body>
 </html>
