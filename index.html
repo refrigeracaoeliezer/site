@@ -242,9 +242,17 @@
         // 1. Script para o ano automático
         document.getElementById("anoAtual").textContent = new Date().getFullYear();
 
-        // 2. Lógica de submissão do formulário
+        // 2. Prevenir botões travados ao voltar no navegador
+        window.addEventListener("pageshow", function (event) {
+            const btn = $('#btnSubmit');
+            if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                btn.prop('disabled', false).html('<i class="fa-solid fa-right-to-bracket"></i> Autenticar');
+            }
+        });
+
+        // 3. Lógica de submissão do formulário
         $('#formLogin').on('submit', function(e) {
-            e.preventDefault();
+            e.preventDefault(); // Impede o recarregamento da página e o "?" no link
             
             const btn = $('#btnSubmit');
             const errorMsg = $('#login-error');
@@ -257,7 +265,7 @@
             const email = $('#email').val();
             const senha = $('#senha').val();
 
-            // Sua URL do Google Apps Script
+            // URL do seu Google Apps Script
             const urlScript = "https://script.google.com/macros/s/AKfycbySlIXi5qq9RUL_vvl9nTPlIQdLQC__acn4Lver0LAXnZXhuwgiAJhOUfuGszLHwg38/exec";
 
             $.ajax({
@@ -267,9 +275,9 @@
                 data: { email: email, senha: senha },
                 success: function(resposta) {
                     if (resposta.trim() === "success") {
-                        // AQUI CRIA A "CHAVE" DE ACESSO
+                        // CRIA A "CHAVE" DE ACESSO
                         localStorage.setItem("inforos_logado", "true");
-                        // REDIRECIONA PARA A PÁGINA DE SISTEMAS
+                        // REDIRECIONA PARA A PÁGINA DE SISTEMAS (Verifique se o nome é sistemas.html)
                         window.location.href = "sistemas.html"; 
                     } else {
                         errorMsg.fadeIn();
