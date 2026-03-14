@@ -172,7 +172,7 @@
 
     <script>
     function logout() {
-        localStorage.removeItem("inforos_logado");
+       localStorage.setItem("inforos_logado", "true");
         // Redireciona para o site externo após o logout
         window.location.href = "https://refrigeracaoeliezer.github.io/site/";
     }
