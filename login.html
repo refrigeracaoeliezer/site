@@ -237,33 +237,38 @@
         const email = $('#email').val();
         const senha = $('#senha').val();
 
-        const urlScript = "https://script.google.com/macros/s/AKfycbwKDTy8V-gpe8gbhWFC3aL1S6wzw76pZTy1tVByO58ooqe8ee7ddcDu1UeYKYCM8DtQ/exec";
-$.ajax({
-    url: urlScript,
-    method: "GET",
-    dataType: "jsonp", // AJUSTE 1: Mudei de "text" para "jsonp"
-    data: { email: email, senha: senha },
-    success: function(resposta) {
-        // AJUSTE 2: Removi o .trim() pois o jsonp já entrega o texto limpo
-        if (resposta === "success") { 
-            // ==========================================
-            // TRAVA DE SEGURANÇA: CRIA A SESSÃO NO NAVEGADOR
-            localStorage.setItem("inforos_logado", "true");
-            // ==========================================
-            
-            window.location.href = "sistemas.html"; 
-        } else {
-            errorMsg.fadeIn();
-            card.addClass('shake');
-            setTimeout(() => card.removeClass('shake'), 500);
-            btn.prop('disabled', false).html('<i class="fa-solid fa-right-to-bracket"></i> Autenticar');
-        }
-    },
-    error: function() {
-        alert("Erro técnico: Verifique a conexão ou a URL do script.");
-        btn.prop('disabled', false).html('<i class="fa-solid fa-right-to-bracket"></i> Autenticar');
-    }
-});
+        const urlScript = "https://script.google.com/macros/s/AKfycbyLJ_LNqMI0Hhdw9GVK6IMsynENsNzmadDK2EH0nojgqWM8k6PCi0nCyxBTxtYVHi3F/exec";
+
+        $.ajax({
+            url: urlScript,
+            method: "GET",
+            dataType: "text",
+            data: { email: email, senha: senha },
+            success: function(resposta) {
+                if (resposta.trim() === "success") {
+                    // ==========================================
+                    // TRAVA DE SEGURANÇA: CRIA A SESSÃO NO NAVEGADOR
+                    localStorage.setItem("inforos_logado", "true");
+                    // ==========================================
+                    
+                    window.location.href = "index.html"; 
+                } else {
+                    errorMsg.fadeIn();
+                    card.addClass('shake');
+                    setTimeout(() => card.removeClass('shake'), 500);
+                    btn.prop('disabled', false).html('<i class="fa-solid fa-right-to-bracket"></i> Autenticar');
+                }
+            },
+            error: function() {
+                alert("Erro técnico: Verifique a conexão.");
+                btn.prop('disabled', false).html('<i class="fa-solid fa-right-to-bracket"></i> Autenticar');
+            }
+        });
+    });
+
+    $('input').on('input', function() {
+        $('#login-error').fadeOut();
+    });
 </script>
 </body>
 </html>
