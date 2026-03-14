@@ -240,35 +240,27 @@
         const urlScript = "https://script.google.com/macros/s/AKfycbzKIyciaWZbMG7rv8XqXbZ2UsEMwczdmqjs0ZEZr3ydzcXhmpN-3PalC7oxswZbybWl/exec";
 
         $.ajax({
-            url: urlScript,
-            method: "GET",
-            dataType: "text",
-            data: { email: email, senha: senha },
-            success: function(resposta) {
-                if (resposta.trim() === "success") {
-                    // ==========================================
-                    // TRAVA DE SEGURANÇA: CRIA A SESSÃO NO NAVEGADOR
-                    localStorage.setItem("inforos_logado", "true");
-                    // ==========================================
-                    
-                    window.location.href = "sistemas.html"; 
-                } else {
-                    errorMsg.fadeIn();
-                    card.addClass('shake');
-                    setTimeout(() => card.removeClass('shake'), 500);
-                    btn.prop('disabled', false).html('<i class="fa-solid fa-right-to-bracket"></i> Autenticar');
-                }
-            },
-            error: function() {
-                alert("Erro técnico: Verifique a conexão.");
-                btn.prop('disabled', false).html('<i class="fa-solid fa-right-to-bracket"></i> Autenticar');
-            }
-        });
-    });
-
-    $('input').on('input', function() {
-        $('#login-error').fadeOut();
-    });
+    url: urlScript,
+    method: "GET",
+    dataType: "jsonp", // MUDANÇA 1: De 'text' para 'jsonp'
+    data: { email: email, senha: senha },
+    success: function(resposta) {
+        // MUDANÇA 2: Com JSONP não precisa de .trim(), a resposta vem limpa
+        if (resposta === "success") {
+            localStorage.setItem("inforos_logado", "true");
+            window.location.href = "sistemas.html"; 
+        } else {
+            errorMsg.fadeIn();
+            card.addClass('shake');
+            setTimeout(() => card.removeClass('shake'), 500);
+            btn.prop('disabled', false).html('<i class="fa-solid fa-right-to-bracket"></i> Autenticar');
+        }
+    },
+    error: function() {
+        alert("Erro técnico: Verifique a conexão ou a URL do script.");
+        btn.prop('disabled', false).html('<i class="fa-solid fa-right-to-bracket"></i> Autenticar');
+    }
+});
 </script>
 </body>
 </html>
