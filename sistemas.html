@@ -2,11 +2,13 @@
 <html lang="pt-br">
 <head>
     <script>
-        // Trava de segurança: verifica login antes de carregar o resto
+        // BLOQUEIO: Se não houver a chave no navegador, volta para o login
         if (localStorage.getItem("inforos_logado") !== "true") {
             window.location.href = "login.html";
         }
     </script>
+
+    
     <meta charset="UTF-8">
     <title>Painel de Controle | InforOS</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
