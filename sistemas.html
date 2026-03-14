@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <script>
+        // Trava de segurança: verifica login antes de carregar o resto
+        if (localStorage.getItem("inforos_logado") !== "true") {
+            window.location.href = "login.html";
+        }
+    </script>
+    <meta charset="UTF-8">
+    <title>Painel de Controle | InforOS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0d1117;
+            position: relative;
+            overflow: hidden;
+            padding: 20px;
+        }
+
+        .corner-ball {
+            position: fixed;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 50%;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .ball-top-right { width: 550px; height: 550px; top: -200px; right: -150px; }
+        .ball-bottom-left { width: 450px; height: 450px; bottom: -150px; left: -150px; }
+
+        .selection-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 4px solid #1e40af;
+            border-radius: 40px;
+            padding: 60px 40px;
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            z-index: 10;
+            box-shadow: 0 0 50px rgba(30, 64, 175, 0.2), 0 20px 40px rgba(0, 0, 0, 0.6);
+            text-align: center;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header-section { margin-bottom: 40px; }
+        .header-section h1 { color: white; font-size: 28px; font-weight: 700; margin-bottom: 12px; }
+        .header-section p { color: rgba(255, 255, 255, 0.5); font-size: 15px; line-height: 1.5; }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(30, 64, 175, 0.5), transparent);
+            margin: 30px 0;
+        }
+
+        .system-btn {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            text-align: left;
+            text-decoration: none;
+            color: white;
+        }
+
+        .system-btn:hover {
+            background: rgba(30, 64, 175, 0.15);
+            border-color: #1e40af;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #1e40af 0%, #27a9e3 100%);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-right: 20px;
+        }
+
+        .btn-content strong { display: block; font-size: 17px; margin-bottom: 4px; }
+        .btn-content span { font-size: 13px; color: rgba(255, 255, 255, 0.4); }
+
+        @media (max-width: 480px) {
+            .selection-card { padding: 40px 20px; }
+            .header-section h1 { font-size: 22px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="corner-ball ball-top-right"></div>
+    <div class="corner-ball ball-bottom-left"></div>
+
+    <div class="selection-card">
+        <div class="header-section">
+            <h1>Selecione o Sistema</h1>
+            <p>Escolha o ambiente que deseja acessar para continuar suas atividades.</p>
+        </div>
+
+        <div class="divider"></div>
+
+ <a href="gestao.html" class="system-btn">
+            <div class="btn-icon"><i class="fa-solid fa-briefcase"></i></div>
+            <div class="btn-content">
+                <strong>Gestão da Empresa</strong>
+                <span>Administrativo, clientes e ordens de serviço.</span>
+            </div>
+        </a>
+
+     
+        <a href="acervo_tecnico.html" class="system-btn">
+            <div class="btn-icon"><i class="fa-solid fa-book-bookmark"></i></div>
+            <div class="btn-content">
+                <strong>Acervo Técnico</strong>
+                <span>Documentações, manuais e materiais técnicos.</span>
+            </div>
+        </a>
+
+       
+        <p style="color: rgba(255,255,255,0.2); font-size: 11px; margin-top: 20px; text-transform: uppercase;">
+            Acesso Restrito e Criptografado
+        </p>
+    </div>
+
+</body>
+</html>
