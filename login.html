@@ -247,7 +247,9 @@ $.ajax({
     data: { login: login, senha: senha },
     success: function(resposta) {
 
-        if (resposta.trim() === "success") {
+    console.log("Resposta do servidor:", resposta);
+
+    if (resposta.trim() === "success") {
 
             localStorage.setItem("inforos_logado", "true");
 
