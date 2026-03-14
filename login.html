@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Login | Refrigeração</title>
+    <link rel="icon" type="image/png" href="https://blogger.googleusercontent.com/img/a/AVvXsEjvyHVCZolj28lEOEFo6M63izh7RcOq9tc7jph7e_Or-jSWVQ5TjRb0hcc-168k9rTwL9XnC9FdUti7imfIyv6QTbWgHDZB7zroM2I3nvUK58Zf6_sARve9qfBkasedBGsBkLahFohBhq2fbLB-hPSlFVrk5haPLt0Uy2jDnTszkHq0Qn3NfzkmK8vhNLI=w104-h117">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column; 
+            align-items: center;
+            justify-content: center; 
+            background: #0d1117; 
+            position: relative;
+            overflow-x: hidden;
+            overflow-y: auto;
+            padding: 20px 0;
+        }
+
+        .corner-ball {
+            position: fixed;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 50%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .ball-top-right { width: 550px; height: 550px; top: -200px; right: -150px; }
+        .ball-bottom-left { width: 450px; height: 450px; bottom: -150px; left: -150px; }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 4px solid #1e40af; 
+            border-radius: 40px; 
+            padding: 50px 40px;
+            width: 100%;
+            max-width: 410px;
+            position: relative;
+            z-index: 10;
+            box-shadow: 0 0 50px rgba(30, 64, 175, 0.3), 0 20px 40px rgba(0, 0, 0, 0.6); 
+            margin: auto 0;
+            transition: transform 0.3s ease;
+        }
+
+        .shake {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+            border-color: #ff4b4b !important;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        .logo-container { text-align: center; margin-bottom: 30px; }
+        .logo-container img { max-width: 250px; opacity: 0.9; }
+
+        .login-title { text-align: center; color: white; margin-bottom: 35px; }
+        .login-title h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+        .login-title p { color: rgba(255, 255, 255, 0.45); font-size: 14px; margin-top: 5px; }
+
+        .input-group { margin-bottom: 22px; text-align: left; }
+        .input-group label { display: block; color: rgba(255, 255, 255, 0.7); font-size: 11px; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; }
+        
+        .input-wrapper { position: relative; }
+        .input-wrapper input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 15px 15px 15px 45px;
+            color: white;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        .input-wrapper input:focus {
+            outline: none;
+            border-color: #1e40af; 
+            background: rgba(255, 255, 255, 0.06);
+            box-shadow: 0 0 10px rgba(30, 64, 175, 0.3);
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 16px; top: 50%;
+            transform: translateY(-50%);
+            color: #1e40af; 
+            font-size: 16px;
+        }
+
+        #login-error {
+            display: none;
+            color: #ff4b4b;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 15px;
+            background: rgba(255, 75, 75, 0.1);
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 75, 75, 0.2);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #1e40af 0%, #27a9e3 100%);
+            border: none;
+            border-radius: 15px;
+            color: white;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center; justify-content: center; gap: 10px;
+            margin-top: 15px;
+            box-shadow: 0 4px 15px rgba(30, 64, 175, 0.3);
+        }
+
+        .btn-login:hover { 
+            transform: translateY(-1px);
+            box-shadow: 0 0 20px rgba(39, 169, 227, 0.6), 0 6px 20px rgba(39, 169, 227, 0.4);
+            filter: brightness(1.2); 
+        }
+
+        .btn-login:disabled { opacity: 0.6; cursor: not-allowed; filter: none; }
+
+        .footer-info {
+            width: 100%;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.25);
+            font-size: 11px;
+            z-index: 10;
+            padding-bottom: 30px;
+            margin-top: 20px;
+        }
+
+        .badge-teste {
+            display: inline-block;
+            padding: 6px 18px;
+            background: rgba(30, 64, 175, 0.1);
+            border: 1px solid #1e40af;
+            border-radius: 30px;
+            color: #27a9e3; 
+            font-weight: 700;
+            margin-bottom: 12px;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 0 10px rgba(30, 64, 175, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="corner-ball ball-top-right"></div>
+    <div class="corner-ball ball-bottom-left"></div>
+
+    <div class="login-card" id="cardPrincipal">
+        <div class="logo-container">
+            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgdGGsULMI69OabXBfFU3b8mTYfIWlJoqpwgc_q1UvSITQPj_VQYaW_1cLECh4rF7j5RfhJLsPgUXdvNv-ya494kAfeyZRbdTCn-VFesltpIkZp8Xid-MZwLKBLyC89MTSXf76nrCrBHncl86cYzjm1XuG34hvNrNVkZS8Gkq3FJEZHEb99HL26I52RUqc/w512-h237/TOPO%20POSTO%20RIO%20BRANCO.png" alt="InforOS">
+        </div>
+
+        <div class="login-title">
+            <h1>Acessar Gestor</h1>
+            <p>Insira os seus dados de acesso</p>
+        </div>
+
+        <form id="formLogin">
+            <div class="input-group">
+                <label for="email">E-mail</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-envelope"></i>
+                    <input type="email" id="email" placeholder="login@gmail.com" autocomplete="username" required>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="senha">Senha</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" id="senha" placeholder="••••••••" autocomplete="current-password" required>
+                </div>
+            </div>
+
+            <div id="login-error"><i class="fa-solid fa-triangle-exclamation"></i> Login incorreto</div>
+
+            <button type="submit" id="btnSubmit" class="btn-login">
+                <i class="fa-solid fa-right-to-bracket"></i> Autenticar
+            </button>
+        </form>
+    </div>
+
+    <div class="footer-info">
+        <div class="badge-teste">Refrigeração Eliezer</div>
+        <p>&copy; <span id="anoAtual"></span> - Sistema de Gestão</p>
+    </div>
+
+   <script>
+    // SCRIPT PARA O ANO ATUAL AUTOMÁTICO
+    document.getElementById("anoAtual").textContent = new Date().getFullYear();
+
+    window.addEventListener("pageshow", function (event) {
+        const btn = $('#btnSubmit');
+        if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+            btn.prop('disabled', false).html('<i class="fa-solid fa-right-to-bracket"></i> Autenticar');
+        }
+    });
+
+    $('#formLogin').on('submit', function(e) {
+        e.preventDefault();
+        
+        const btn = $('#btnSubmit');
+        const errorMsg = $('#login-error');
+        const card = $('#cardPrincipal');
+        
+        errorMsg.hide();
+        card.removeClass('shake');
+        
+        btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i> Validando...');
+        
+        const email = $('#email').val();
+        const senha = $('#senha').val();
+
+        const urlScript = "https://script.google.com/macros/s/AKfycby_iCS7XSNM6eg4by-F9WVxwC25S1TTgExmX7EM_-peBVWDpvIIZk-oSsNd6e3xXUx4/exec";
+
+        $.ajax({
+            url: urlScript,
+            method: "GET",
+            dataType: "text",
+            data: { email: email, senha: senha },
+            success: function(resposta) {
+                if (resposta.trim() === "success") {
+                    // ==========================================
+                    // TRAVA DE SEGURANÇA: CRIA A SESSÃO NO NAVEGADOR
+                    localStorage.setItem("inforos_logado", "true");
+                    // ==========================================
+                    
+                    window.location.href = "sistemas.html"; 
+                } else {
+                    errorMsg.fadeIn();
+                    card.addClass('shake');
+                    setTimeout(() => card.removeClass('shake'), 500);
+                    btn.prop('disabled', false).html('<i class="fa-solid fa-right-to-bracket"></i> Autenticar');
+                }
+            },
+            error: function() {
+                alert("Erro técnico: Verifique a conexão.");
+                btn.prop('disabled', false).html('<i class="fa-solid fa-right-to-bracket"></i> Autenticar');
+            }
+        });
+    });
+
+    $('input').on('input', function() {
+        $('#login-error').fadeOut();
+    });
+</script>
+</body>
+</html>
