@@ -239,64 +239,50 @@
 
         const urlScript = "https://script.google.com/macros/s/AKfycbySlIXi5qq9RUL_vvl9nTPlIQdLQC__acn4Lver0LAXnZXhuwgiAJhOUfuGszLHwg38/exec";
 <script>
-        // 1. Script para o ano automático
-        document.getElementById("anoAtual").textContent = new Date().getFullYear();
+    // 1. Script para o ano automático
+    document.getElementById("anoAtual").textContent = new Date().getFullYear();
 
-        // 2. Prevenir botões travados ao voltar no navegador
-        window.addEventListener("pageshow", function (event) {
-            const btn = $('#btnSubmit');
-            if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+    // 2. Lógica de submissão do formulário
+    $('#formLogin').on('submit', function(e) {
+        e.preventDefault(); // Agora vai funcionar porque o script não está quebrado
+        
+        const btn = $('#btnSubmit');
+        const errorMsg = $('#login-error');
+        const card = $('#cardPrincipal');
+        
+        errorMsg.hide();
+        card.removeClass('shake');
+        btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i> Validando...');
+        
+        const email = $('#email').val();
+        const senha = $('#senha').val();
+
+        const urlScript = "https://script.google.com/macros/s/AKfycbySlIXi5qq9RUL_vvl9nTPlIQdLQC__acn4Lver0LAXnZXhuwgiAJhOUfuGszLHwg38/exec";
+
+        $.ajax({
+            url: urlScript,
+            method: "GET",
+            dataType: "text",
+            data: { email: email, senha: senha },
+            success: function(resposta) {
+                if (resposta.trim() === "success") {
+                    localStorage.setItem("inforos_logado", "true");
+                    window.location.href = "sistemas.html"; 
+                } else {
+                    errorMsg.fadeIn();
+                    card.addClass('shake');
+                    setTimeout(() => card.removeClass('shake'), 500);
+                    btn.prop('disabled', false).html('<i class="fa-solid fa-right-to-bracket"></i> Autenticar');
+                }
+            },
+            error: function() {
+                alert("Erro técnico: Verifique a conexão.");
                 btn.prop('disabled', false).html('<i class="fa-solid fa-right-to-bracket"></i> Autenticar');
             }
         });
 
-        // 3. Lógica de submissão do formulário
-        $('#formLogin').on('submit', function(e) {
-            e.preventDefault(); // Impede o recarregamento da página e o "?" no link
-            
-            const btn = $('#btnSubmit');
-            const errorMsg = $('#login-error');
-            const card = $('#cardPrincipal');
-            
-            errorMsg.hide();
-            card.removeClass('shake');
-            btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i> Validando...');
-            
-            const email = $('#email').val();
-            const senha = $('#senha').val();
-
-            // URL do seu Google Apps Script
-            const urlScript = "https://script.google.com/macros/s/AKfycbySlIXi5qq9RUL_vvl9nTPlIQdLQC__acn4Lver0LAXnZXhuwgiAJhOUfuGszLHwg38/exec";
-
-            $.ajax({
-                url: urlScript,
-                method: "GET",
-                dataType: "text",
-                data: { email: email, senha: senha },
-                success: function(resposta) {
-                    if (resposta.trim() === "success") {
-                        // CRIA A "CHAVE" DE ACESSO
-                        localStorage.setItem("inforos_logado", "true");
-                        // REDIRECIONA PARA A PÁGINA DE SISTEMAS (Verifique se o nome é sistemas.html)
-                        window.location.href = "sistemas.html"; 
-                    } else {
-                        errorMsg.fadeIn();
-                        card.addClass('shake');
-                        setTimeout(() => card.removeClass('shake'), 500);
-                        btn.prop('disabled', false).html('<i class="fa-solid fa-right-to-bracket"></i> Autenticar');
-                    }
-                },
-                error: function() {
-                    alert("Erro técnico: Verifique a conexão.");
-                    btn.prop('disabled', false).html('<i class="fa-solid fa-right-to-bracket"></i> Autenticar');
-                }
-            });
-        });
-
-        // Limpar erro ao digitar
-        $('input').on('input', function() {
-            $('#login-error').fadeOut();
-        });
-    </script>
+        return false; // Trava adicional para evitar o "?" no link
+    });
+</script>
 </body>
 </html>
