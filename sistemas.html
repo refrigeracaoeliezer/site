@@ -171,8 +171,23 @@
         </p>
     </div>
 
+<script>
+        // 1. Verificação de Segurança (Impede acesso direto sem login)
+        if (localStorage.getItem("inforos_logado") !== "true") {
+            window.location.href = "https://refrigeracaoeliezer.github.io/site/"; 
+        }
 
-    
+        // 2. Função de Logout
+        function logout() {
+            // Remove a "chave" de acesso do navegador
+            localStorage.removeItem("inforos_logado");
+            
+            // Redireciona para a URL exata que você solicitou
+            window.location.href = "https://refrigeracaoeliezer.github.io/site/";
+        }
+    </script>
+</body>
+</html>
 
 </body>
 </html>
