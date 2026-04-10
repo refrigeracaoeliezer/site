@@ -252,7 +252,6 @@
 
         window.onload = verificarSeExisteDono;
 
-        // Função para minimizar/maximizar segurança
         function toggleSecurity() {
             const fields = document.getElementById('security-fields');
             const btn = document.getElementById('btn-toggle-sec');
@@ -270,6 +269,25 @@
             el.innerText = msg;
             el.className = 'status-msg ' + (type === 'error' ? 'status-error' : type === 'loading' ? 'status-loading' : 'status-success');
             el.style.display = 'block';
+        }
+
+        // FUNÇÃO PARA BUSCAR DADOS E PREENCHER O SITE
+        async function carregarDadosPlanilha() {
+            try {
+                const resp = await fetch(`${URL_DADOS}?action=get_data`);
+                const data = await resp.json();
+                
+                if(data.emp_nome) document.getElementById('emp_nome').value = data.emp_nome;
+                if(data.emp_doc) document.getElementById('emp_doc').value = data.emp_doc;
+                if(data.logo) document.getElementById('logoPreview').innerHTML = `<img src="${data.logo}">`;
+
+                // Preenche as listas (Datalists)
+                const listaCli = document.getElementById('lista_clientes');
+                listaCli.innerHTML = data.clientes.map(c => `<option value="${c[0]}">`).join('');
+                
+                const listaSrv = document.getElementById('lista_servicos');
+                listaSrv.innerHTML = data.servicos.map(s => `<option value="${s[0]}">`).join('');
+            } catch (e) { console.log("Erro ao carregar dados existentes."); }
         }
 
         async function verificarSeExisteDono() {
@@ -299,6 +317,7 @@
                 if(result.trim() === "logado") {
                     document.getElementById('overlay-login').classList.add('hidden');
                     document.getElementById('main-content').classList.remove('hidden');
+                    carregarDadosPlanilha(); // PUXA OS DADOS APÓS LOGIN
                 } else {
                     showStatus('login-status', 'E-mail ou senha incorretos.', 'error');
                     document.getElementById('btn-entrar').disabled = false;
@@ -314,20 +333,14 @@
             const pass = document.getElementById('new_u_pass').value;
             const perg = document.getElementById('new_u_pergunta').value;
             const resp = document.getElementById('new_u_resposta').value;
-
             if(!email || !pass || !resp) return showStatus('update-status', 'Preencha os campos obrigatórios.', 'error');
-            showStatus('update-status', 'Atualizando credenciais...', 'loading');
-
+            showStatus('update-status', 'Atualizando...', 'loading');
             try {
                 const url = `${URL_LOGIN}?action=atualizar_acesso&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}&pergunta=${encodeURIComponent(perg)}&resposta=${encodeURIComponent(resp)}`;
                 const response = await fetch(url);
                 const res = await response.text();
                 if(res.trim() === "sucesso") {
                     showStatus('update-status', 'Dados atualizados com sucesso!', 'success');
-                    document.getElementById('new_u_mail').value = "";
-                    document.getElementById('new_u_pass').value = "";
-                    document.getElementById('new_u_pergunta').value = "";
-                    document.getElementById('new_u_resposta').value = "";
                 } else { showStatus('update-status', 'Erro ao atualizar.', 'error'); }
             } catch (e) { showStatus('update-status', 'Erro de conexão.', 'error'); }
         }
@@ -335,7 +348,6 @@
         async function buscarPergunta() {
             const email = document.getElementById('rec_u_mail').value;
             if(!email) return;
-            document.getElementById('display-pergunta').innerText = "Buscando pergunta...";
             try {
                 const resp = await fetch(`${URL_LOGIN}?action=get_pergunta&email=${encodeURIComponent(email)}`);
                 document.getElementById('display-pergunta').innerText = await resp.text();
@@ -345,7 +357,7 @@
         async function recuperarSenha() {
             const resposta = document.getElementById('rec_u_resposta').value;
             if(!resposta) return showStatus('rec-status', 'Digite a resposta.', 'error');
-            showStatus('rec-status', 'Consultando banco de dados...', 'loading');
+            showStatus('rec-status', 'Consultando...', 'loading');
             try {
                 const resp = await fetch(`${URL_LOGIN}?action=recuperar&resposta=${encodeURIComponent(resposta)}`);
                 const result = await resp.text();
@@ -371,16 +383,15 @@
             const pass = document.getElementById('reg_u_pass').value;
             const perg = document.getElementById('reg_u_pergunta').value;
             const resp = document.getElementById('reg_u_resposta').value;
-            showStatus('reg-status', 'Verificando disponibilidade...', 'loading');
-
+            showStatus('reg-status', 'Verificando...', 'loading');
             try {
                 const url = `${URL_LOGIN}?action=registrar&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}&pergunta=${encodeURIComponent(perg)}&resposta=${encodeURIComponent(resp)}`;
                 const response = await fetch(url);
                 const res = await response.text();
                 if(res.trim() === "sucesso") {
-                    showStatus('reg-status', 'Sucesso! Redirecionando...', 'success');
+                    showStatus('reg-status', 'Sucesso!', 'success');
                     setTimeout(() => alternarTela('login'), 1500);
-                } else { showStatus('reg-status', 'Conta administrativa já cadastrada!', 'error'); }
+                } else { showStatus('reg-status', 'Conta já cadastrada!', 'error'); }
             } catch (e) { showStatus('reg-status', 'Erro de rede.', 'error'); }
         }
 
@@ -409,8 +420,7 @@
             
             if (secao === 'logo') {
                 const previewImg = document.getElementById('logoPreview').querySelector('img');
-                if(!previewImg) return alert("Selecione uma imagem primeiro!");
-                const base64Image = previewImg.src; 
+                const base64Image = previewImg ? previewImg.src : ""; 
                 params += `&imagem=${encodeURIComponent(base64Image)}`;
             } 
             else if (secao === 'empresa') {
@@ -436,12 +446,11 @@
             button.disabled = true;
 
             try {
-                // Usamos POST para garantir que dados grandes (como a imagem Base64) cheguem ao servidor
                 const response = await fetch(URL_DADOS + params, { method: 'POST' });
                 const resText = await response.text();
                 if (resText.trim() === "sucesso") {
                     alert("Dados salvos com sucesso!");
-                } else { alert("Erro: " + resText); }
+                } else { alert("Erro ao salvar."); }
             } catch (error) {
                 alert("Erro de conexão.");
             } finally {
