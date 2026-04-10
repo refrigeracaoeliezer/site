@@ -173,6 +173,17 @@
         <h1>Configurações</h1>
 
         <div class="config-section">
+            <div class="section-title"><i class="fa-solid fa-user-shield"></i> Segurança do Painel</div>
+            <p style="font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 5px;">Altere seus dados de acesso administrativo aqui.</p>
+            <input type="text" id="new_u_mail" placeholder="Novo E-mail" autocomplete="off">
+            <input type="password" id="new_u_pass" placeholder="Nova Senha" autocomplete="off">
+            <input type="text" id="new_u_pergunta" placeholder="Nova Pergunta Secreta" autocomplete="off">
+            <input type="text" id="new_u_resposta" placeholder="Nova Resposta Secreta" autocomplete="off">
+            <div id="update-status" class="status-msg"></div>
+            <button class="btn-save" onclick="atualizarAcesso()"><i class="fa-solid fa-sync"></i> Atualizar Acesso</button>
+        </div>
+        
+        <div class="config-section">
             <div class="section-title"><i class="fa-solid fa-image"></i> Logo da Empresa</div>
             <div class="logo-preview" id="logoPreview"><i class="fa-solid fa-camera" style="font-size: 30px; color: rgba(255,255,255,0.1);"></i></div>
             <input type="file" id="logoInput" accept="image/*" onchange="previewImage(this)">
@@ -220,7 +231,7 @@
             <button class="btn-save" onclick="saveData('obs')"><i class="fa-solid fa-floppy-disk"></i> Salvar Observações</button>
         </div>
         
-        <p style="text-align: center; color: grey; font-size: 10px; margin-bottom: 40px;">SISTEMA V2.8.1</p>
+        <p style="text-align: center; color: grey; font-size: 10px; margin-bottom: 40px;">SISTEMA V2.8.2</p>
     </div>
 
     <script>
@@ -270,6 +281,31 @@
                 showStatus('login-status', 'Erro de conexão.', 'error'); 
                 document.getElementById('btn-entrar').disabled = false;
             }
+        }
+
+        async function atualizarAcesso() {
+            const email = document.getElementById('new_u_mail').value;
+            const pass = document.getElementById('new_u_pass').value;
+            const perg = document.getElementById('new_u_pergunta').value;
+            const resp = document.getElementById('new_u_resposta').value;
+
+            if(!email || !pass || !resp) return showStatus('update-status', 'Preencha os campos obrigatórios.', 'error');
+            showStatus('update-status', 'Atualizando credenciais...', 'loading');
+
+            try {
+                const url = `${URL_LOGIN}?action=atualizar_acesso&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}&pergunta=${encodeURIComponent(perg)}&resposta=${encodeURIComponent(resp)}`;
+                const response = await fetch(url);
+                const res = await response.text();
+                if(res.trim() === "sucesso") {
+                    showStatus('update-status', 'Dados atualizados com sucesso!', 'success');
+                    document.getElementById('new_u_mail').value = "";
+                    document.getElementById('new_u_pass').value = "";
+                    document.getElementById('new_u_pergunta').value = "";
+                    document.getElementById('new_u_resposta').value = "";
+                } else {
+                    showStatus('update-status', 'Erro ao atualizar dados.', 'error');
+                }
+            } catch (e) { showStatus('update-status', 'Erro de conexão.', 'error'); }
         }
 
         async function buscarPergunta() {
