@@ -29,6 +29,7 @@
             overflow-x: hidden;
         }
 
+        /* Camada de Login - SEMPRE ATIVA AO INICIAR */
         #overlay-login {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -150,7 +151,7 @@
     <div id="overlay-login">
         <div class="login-card" id="card-login">
             <i class="fa-solid fa-lock" style="font-size: 40px; color: #1e40af; margin-bottom: 20px;"></i>
-            <h2 style="margin-bottom: 20px;">Acesso às Configurações</h2>
+            <h2 style="margin-bottom: 20px;">Acesso Restrito</h2>
             <input type="email" id="user_email" placeholder="E-mail" style="margin-bottom: 10px;">
             <input type="password" id="user_pass" placeholder="Senha" style="margin-bottom: 15px;">
             <button class="btn-save" onclick="realizarLogin()">Entrar</button>
@@ -165,12 +166,12 @@
         <div class="login-card hidden" id="card-registrar">
             <h2>Novo Registro</h2>
             <div style="margin-top:15px">
-                <input type="email" id="reg_email" placeholder="Seu e-mail" style="margin-bottom: 10px;">
+                <input type="email" id="reg_email" placeholder="E-mail" style="margin-bottom: 10px;">
                 <input type="password" id="reg_pass" placeholder="Senha" style="margin-bottom: 10px;">
                 <input type="text" id="reg_pergunta" placeholder="Pergunta de Segurança" style="margin-bottom: 10px;">
                 <input type="text" id="reg_resposta" placeholder="Resposta" style="margin-bottom: 15px;">
-                <button class="btn-save" onclick="registrarUsuario()">Cadastrar Conta Mestre</button>
-                <p style="margin-top:15px" class="link-auth" onclick="alternarTela('login')">Voltar ao Login</p>
+                <button class="btn-save" onclick="registrarUsuario()">Cadastrar Mestre</button>
+                <p style="margin-top:15px" class="link-auth" onclick="alternarTela('login')">Voltar</p>
             </div>
         </div>
 
@@ -179,7 +180,7 @@
             <input type="email" id="rec_email" placeholder="E-mail" style="margin-bottom: 10px;">
             <input type="text" id="rec_resposta" placeholder="Resposta de Segurança" style="margin-bottom: 15px;">
             <button class="btn-save" onclick="recuperarSenha()">Verificar</button>
-            <p style="margin-top:15px" class="link-auth" onclick="alternarTela('login')">Voltar ao Login</p>
+            <p style="margin-top:15px" class="link-auth" onclick="alternarTela('login')">Voltar</p>
         </div>
     </div>
 
@@ -192,7 +193,7 @@
             <div class="section-title"><i class="fa-solid fa-image"></i> Logo da Empresa</div>
             <div class="logo-preview" id="logoPreview"><i class="fa-solid fa-camera opacity-20" style="font-size: 30px;"></i></div>
             <input type="file" id="logoInput" accept="image/*" onchange="previewImage(this)">
-            <button class="btn-save" onclick="saveData('logo')"><i class="fa-solid fa-floppy-disk"></i> Salvar Logo</button>
+            <button class="btn-save" onclick="saveData('logo')">Salvar Logo</button>
         </div>
 
         <div class="config-section">
@@ -200,40 +201,14 @@
             <div class="grid-inputs">
                 <div class="input-group">
                     <label>Nome Fantasia</label>
-                    <input type="text" id="emp_nome" placeholder="Buscar ou digitar...">
+                    <input type="text" id="emp_nome" placeholder="Nome...">
                 </div>
                 <div class="input-group">
                     <label>CNPJ / CPF</label>
                     <input type="text" id="emp_doc">
                 </div>
             </div>
-            <button class="btn-save" onclick="saveData('empresa')"><i class="fa-solid fa-floppy-disk"></i> Salvar Empresa</button>
-        </div>
-
-        <div class="config-section">
-            <div class="section-title"><i class="fa-solid fa-gears"></i> Detalhes do Serviço</div>
-            <div class="grid-inputs">
-                <div class="input-group">
-                    <label>Descrição</label>
-                    <input type="text" id="srv_nome" placeholder="Ex: Higienização...">
-                </div>
-                <div class="input-group">
-                    <label>Valor (R$)</label>
-                    <input type="number" id="srv_valor" placeholder="0.00">
-                </div>
-            </div>
-            <button class="btn-save" onclick="saveData('servico')"><i class="fa-solid fa-floppy-disk"></i> Salvar Serviço</button>
-        </div>
-
-        <div class="config-section">
-            <div class="section-title"><i class="fa-solid fa-user"></i> Dados do Cliente</div>
-            <div class="grid-inputs">
-                <div class="input-group"><label>Nome</label><input type="text" id="cli_nome"></div>
-                <div class="input-group"><label>CPF/CNPJ</label><input type="text" id="cli_doc"></div>
-                <div class="input-group"><label>WhatsApp</label><input type="tel" id="cli_tel"></div>
-                <div class="input-group"><label>Endereço</label><input type="text" id="cli_end"></div>
-            </div>
-            <button class="btn-save" onclick="saveData('cliente')"><i class="fa-solid fa-floppy-disk"></i> Salvar Cliente</button>
+            <button class="btn-save" onclick="saveData('empresa')">Salvar Empresa</button>
         </div>
 
         <div class="config-section">
@@ -245,16 +220,17 @@
                 </div>
                 <textarea id="txt_obs" rows="5" placeholder="Edite o texto aqui..."></textarea>
             </div>
-            <button class="btn-save" onclick="saveData('obs')"><i class="fa-solid fa-floppy-disk"></i> Salvar Observações</button>
+            <button class="btn-save" onclick="saveData('obs')">Salvar Observações</button>
         </div>
     </div>
 
     <script>
-        // --- LINKS DAS PLANILHAS ---
-        const URL_LOGIN = "https://script.google.com/macros/s/AKfycbzdFQP4jqtrDaRsaPJkQzdM-OpG011bPLLzDvv-1K3nWQQl2T1kGeee94kpDR_vpmZFtw/exec";  // LOGIN DA CONFIGURAÇÃO
-        const URL_DADOS = "SUA_OUTRA_URL_DE_DADOS_AQUI"; // SERVIÇOS/CLIENTE/OBSERVAÇÕES
+        const URL_LOGIN = "https://script.google.com/macros/s/AKfycbzdFQP4jqtrDaRsaPJkQzdM-OpG011bPLLzDvv-1K3nWQQl2T1kGeee94kpDR_vpmZFtw/exec";
 
-        window.onload = verificarSeExisteDono;
+        // Sempre ao carregar, verifica o dono e garante que o login apareça
+        window.onload = function() {
+            verificarSeExisteDono();
+        };
 
         async function verificarSeExisteDono() {
             try {
@@ -263,7 +239,7 @@
                 if (existe === "tem_dono") {
                     document.getElementById('link-registrar-container').classList.add('hidden');
                 }
-            } catch (e) { console.log("Erro ao checar dono"); }
+            } catch (e) { console.log("Erro de conexão"); }
         }
 
         function alternarTela(tela) {
@@ -278,16 +254,16 @@
         async function realizarLogin() {
             const email = document.getElementById('user_email').value;
             const pass = document.getElementById('user_pass').value;
-            if(!email || !pass) return alert("Preencha tudo!");
+            if(!email || !pass) return alert("Preencha os campos!");
 
             const resp = await fetch(`${URL_LOGIN}?action=login&email=${email}&senha=${pass}`);
             const result = await resp.text();
             
             if(result === "logado") {
+                // Esconde a camada de login apenas após validar com o servidor
                 document.getElementById('overlay-login').classList.add('hidden');
-                sessionStorage.setItem("config_auth", "true");
             } else {
-                alert("Acesso Negado!");
+                alert("E-mail ou Senha incorretos!");
             }
         }
 
@@ -297,17 +273,15 @@
             const perg = document.getElementById('reg_pergunta').value;
             const resp_sec = document.getElementById('reg_resposta').value;
 
-            if(!email || !pass || !resp_sec) return alert("Preencha todos os campos!");
-
             const resp = await fetch(`${URL_LOGIN}?action=registrar&email=${email}&senha=${pass}&pergunta=${perg}&resposta=${resp_sec}`);
             const result = await resp.text();
 
             if(result === "sucesso") {
-                alert("Conta Mestre criada!");
+                alert("Conta Mestre criada! Faça login.");
                 alternarTela('login');
                 verificarSeExisteDono();
             } else {
-                alert("Erro: Já existe uma conta registrada.");
+                alert("Erro ou registro bloqueado.");
             }
         }
 
@@ -316,17 +290,6 @@
             const resposta = document.getElementById('rec_resposta').value;
             const resp = await fetch(`${URL_LOGIN}?action=recuperar&email=${email}&resposta=${resposta}`);
             alert(await resp.text());
-        }
-
-        if(sessionStorage.getItem("config_auth") === "true") {
-            document.getElementById('overlay-login').classList.add('hidden');
-        }
-
-        function checkObsSelection() {
-            // Lógica de preenchimento local por enquanto
-            const val = document.getElementById('obs_busca').value;
-            const txt = document.getElementById('txt_obs');
-            if(val === "Garantia") txt.value = "Garantia de 90 dias...";
         }
 
         function previewImage(input) {
@@ -339,8 +302,11 @@
         }
 
         function saveData(secao) {
-            // Esta função usará a URL_DADOS futuramente
-            alert("Salvando " + secao + " no banco de dados...");
+            alert("Salvando " + secao + "...");
+        }
+
+        function checkObsSelection() {
+            // Lógica para modelos de texto
         }
     </script>
 </body>
