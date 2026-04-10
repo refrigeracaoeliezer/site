@@ -246,12 +246,13 @@
         <p style="text-align: center; color: grey; font-size: 10px; margin-bottom: 40px;">SISTEMA V2.8.2</p>
     </div>
 
-   <script>
+  <script>
     const URL_LOGIN = "https://script.google.com/macros/s/AKfycbyVHWD028yH3qTXi63aL4Jq17MwNuXnfy8IwwA2SVOs26bsQRxmffePggxM3AriKhI2IQ/exec";
-    const URL_DADOS = "https://script.google.com/macros/s/AKfycbzUmMFnZ04fuQGP2CJQp5PwuEW0DuKn2oCZDDXhkXD8farc-_v_i2qXtpsspQzoW1xoTA/exec";
+    const URL_DADOS = "https://script.google.com/macros/s/AKfycbwa-39ERcRHvuyNl1yk3IQbJL4vW1HD0_WkgpeUYuolXyTMFSvbw5VSmu8z3rBbKTwzgQ/exec";
 
     window.onload = verificarSeExisteDono;
 
+    // 1. Função para minimizar/maximizar segurança
     function toggleSecurity() {
         const fields = document.getElementById('security-fields');
         const btn = document.getElementById('btn-toggle-sec');
@@ -271,80 +272,77 @@
         el.style.display = 'block';
     }
 
-    // FUNÇÃO PARA BUSCAR DADOS E PREENCHER CADA CAMPO DO SITE
+    // 2. FUNÇÃO PARA BUSCAR DADOS E PREENCHER CADA CAMPO DO SITE
     async function carregarDadosPlanilha() {
         try {
             const resp = await fetch(`${URL_DADOS}?action=get_data`);
             const data = await resp.json();
             
-            // Preenche Identidade da Empresa e Logo
-            if(data.emp_nome) document.getElementById('emp_nome').value = data.emp_nome;
-            if(data.emp_doc) document.getElementById('emp_doc').value = data.emp_doc;
-            if(data.logo && data.logo.startsWith('data:image')) {
+            // Preenche os campos de Identidade
+            document.getElementById('emp_nome').value = data.emp_nome || "";
+            document.getElementById('emp_doc').value = data.emp_doc || "";
+            
+            // Puxa a Logo salva
+            if(data.logo && data.logo.length > 100) {
                 document.getElementById('logoPreview').innerHTML = `<img src="${data.logo}" style="width:100%; height:100%; object-fit:contain;">`;
             }
 
-            // Preenche as sugestões (Datalists)
-            const listaCli = document.getElementById('lista_clientes');
-            listaCli.innerHTML = data.clientes.map(c => `<option value="${c[0]}">`).join('');
-            
-            const listaSrv = document.getElementById('lista_servicos');
-            listaSrv.innerHTML = data.servicos.map(s => `<option value="${s[0]}">`).join('');
-            
-        } catch (e) { console.log("Erro ao sincronizar dados."); }
+            // Atualiza as listas de sugestões (Datalists)
+            document.getElementById('lista_clientes').innerHTML = data.clientes.map(c => `<option value="${c[0]}">`).join('');
+            document.getElementById('lista_servicos').innerHTML = data.servicos.map(s => `<option value="${s[0]}">`).join('');
+        } catch (e) { console.log("Aguardando preenchimento inicial da planilha..."); }
     }
 
-    // SALVAR DADOS (Otimizado para evitar Erro de Conexão e permitir campos em branco)
+    // 3. SALVAR DADOS (Otimizado para evitar Erro de Conexão e permitir campos em branco)
     async function saveData(secao, btn) {
         const button = btn || event.target;
         const btnOriginalText = button.innerHTML;
         
-        // Usamos FormData para suportar textos gigantes (Logo) e envio limpo
-        let formData = new URLSearchParams();
-        formData.append('action', `save_${secao}`);
+        // Coleta de dados
+        let dataObj = { action: `save_${secao}` };
         
         if (secao === 'logo') {
-            const previewImg = document.getElementById('logoPreview').querySelector('img');
-            formData.append('imagem', previewImg ? previewImg.src : ""); 
-        } 
-        else if (secao === 'empresa') {
-            formData.append('nome', document.getElementById('emp_nome').value);
-            formData.append('doc', document.getElementById('emp_doc').value);
-        } 
-        else if (secao === 'servico') {
-            formData.append('nome', document.getElementById('srv_nome').value);
-            formData.append('valor', document.getElementById('srv_valor').value);
-        }
-        else if (secao === 'cliente') {
-            formData.append('nome', document.getElementById('cli_nome').value);
-            formData.append('doc', document.getElementById('cli_doc').value);
-            formData.append('tel', document.getElementById('cli_tel').value);
-            formData.append('end', document.getElementById('cli_end').value);
-        }
-        else if (secao === 'obs') {
-            formData.append('modelo', document.getElementById('obs_busca').value);
-            formData.append('texto', document.getElementById('txt_obs').value);
+            const img = document.getElementById('logoPreview').querySelector('img');
+            dataObj.imagem = img ? img.src : "";
+        } else if (secao === 'empresa') {
+            dataObj.nome = document.getElementById('emp_nome').value;
+            dataObj.doc = document.getElementById('emp_doc').value;
+        } else if (secao === 'servico') {
+            dataObj.nome = document.getElementById('srv_nome').value;
+            dataObj.valor = document.getElementById('srv_valor').value;
+        } else if (secao === 'cliente') {
+            dataObj.nome = document.getElementById('cli_nome').value;
+            dataObj.doc = document.getElementById('cli_doc').value;
+            dataObj.tel = document.getElementById('cli_tel').value;
+            dataObj.end = document.getElementById('cli_end').value;
+        } else if (secao === 'obs') {
+            dataObj.modelo = document.getElementById('obs_busca').value;
+            dataObj.texto = document.getElementById('txt_obs').value;
         }
 
-        button.innerText = "Enviando...";
+        button.innerText = "Salvando...";
         button.disabled = true;
 
         try {
-            // Envia via POST enviando os dados no corpo (body), resolvendo o erro de conexão
-            const response = await fetch(URL_DADOS, { 
-                method: 'POST', 
-                body: formData 
-            });
-            const resText = await response.text();
+            // Envio via POST Body (URLSearchParams) para evitar o limite de caracteres da URL
+            const bodyParams = new URLSearchParams();
+            for (const key in dataObj) { bodyParams.append(key, dataObj[key]); }
             
-            if (resText.trim() === "sucesso") {
+            const response = await fetch(URL_DADOS, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: bodyParams
+            });
+            
+            const resText = await response.text();
+            if (resText.includes("sucesso")) {
                 alert("Dados salvos com sucesso!");
-                carregarDadosPlanilha(); // Atualiza para mostrar os dados novos puxados
-            } else { 
-                alert("Salvo com sucesso!"); 
+                carregarDadosPlanilha(); // Atualiza a tela
+            } else {
+                alert("Dados sincronizados com a planilha!"); 
             }
         } catch (error) {
-            alert("Erro de comunicação com a planilha.");
+            alert("Erro ao salvar. Verifique se a planilha de dados está publicada corretamente.");
         } finally {
             button.innerHTML = btnOriginalText;
             button.disabled = false;
