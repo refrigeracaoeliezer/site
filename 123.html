@@ -151,16 +151,14 @@
             <input type="password" id="reg_u_pass" placeholder="Senha" autocomplete="new-password" style="margin-top: 10px;">
             <input type="text" id="reg_u_pergunta" placeholder="Pergunta (Ex: Nome do Pet?)" autocomplete="off" style="margin-top: 10px;">
             <input type="text" id="reg_u_resposta" placeholder="Resposta da Pergunta" autocomplete="off" style="margin-top: 10px;">
-            
             <div id="reg-status" class="status-msg"></div>
-            
             <button class="btn-save" id="btn-registrar" onclick="registrarUsuario()" style="margin-top: 15px;">Salvar Conta</button>
             <p class="link-auth" onclick="alternarTela('login')" style="margin-top: 15px;">Voltar</p>
         </div>
 
         <div class="login-card hidden" id="card-recuperar">
             <h2>Recuperar Acesso</h2>
-            <p style="font-size: 12px; color: grey; margin: 10px 0;">Digite o e-mail cadastrado.</p>
+            <p style="font-size: 12px; color: grey; margin: 10px 0;">Digite o e-mail cadastrado para ver a pergunta.</p>
             <input type="text" id="rec_u_mail" placeholder="Seu E-mail" autocomplete="one-time-code" spellcheck="false" onblur="buscarPergunta()">
             <div id="display-pergunta" style="margin: 10px 0; color: #27a9e3; font-style: italic; font-size: 13px;"></div>
             <input type="text" id="rec_u_resposta" placeholder="Sua Resposta" autocomplete="off" spellcheck="false">
@@ -178,20 +176,48 @@
             <div class="section-title"><i class="fa-solid fa-image"></i> Logo da Empresa</div>
             <div class="logo-preview" id="logoPreview"><i class="fa-solid fa-camera" style="font-size: 30px; color: rgba(255,255,255,0.1);"></i></div>
             <input type="file" id="logoInput" accept="image/*" onchange="previewImage(this)">
-            <button class="btn-save" onclick="saveData('logo')">Salvar Logo</button>
+            <button class="btn-save" onclick="saveData('logo')"><i class="fa-solid fa-floppy-disk"></i> Salvar Logo</button>
         </div>
 
         <div class="config-section">
             <div class="section-title"><i class="fa-solid fa-building"></i> Identidade da Empresa</div>
-            <input type="text" id="emp_nome" placeholder="Nome Fantasia">
-            <input type="text" id="emp_doc" placeholder="CNPJ / CPF">
-            <button class="btn-save" onclick="saveData('empresa')">Salvar Empresa</button>
+            <input type="text" id="emp_nome" list="lista_empresas" placeholder="Nome Fantasia" autocomplete="off">
+            <datalist id="lista_empresas"><option value="Refrigeração Eliezer"></datalist>
+            <input type="text" id="emp_doc" placeholder="CNPJ / CPF" autocomplete="off">
+            <button class="btn-save" onclick="saveData('empresa')"><i class="fa-solid fa-floppy-disk"></i> Salvar Empresa</button>
+        </div>
+
+        <div class="config-section">
+            <div class="section-title"><i class="fa-solid fa-gears"></i> Detalhes do Serviço</div>
+            <input type="text" id="srv_nome" list="lista_servicos" placeholder="Descrição do Serviço" autocomplete="off">
+            <datalist id="lista_servicos">
+                <option value="Higienização de Ar Condicionado">
+                <option value="Carga de Gás">
+                <option value="Instalação Split">
+            </datalist>
+            <input type="number" id="srv_valor" placeholder="Valor R$" autocomplete="off">
+            <button class="btn-save" onclick="saveData('servico')"><i class="fa-solid fa-floppy-disk"></i> Salvar Serviço</button>
+        </div>
+
+        <div class="config-section">
+            <div class="section-title"><i class="fa-solid fa-user"></i> Dados do Cliente</div>
+            <input type="text" id="cli_nome" list="lista_clientes" placeholder="Nome do Cliente" autocomplete="off">
+            <datalist id="lista_clientes"><option value="João Silva"></datalist>
+            <input type="text" id="cli_doc" placeholder="CPF / CNPJ" autocomplete="off">
+            <input type="tel" id="cli_tel" placeholder="WhatsApp" autocomplete="off">
+            <input type="text" id="cli_end" placeholder="Endereço Completo" autocomplete="off">
+            <button class="btn-save" onclick="saveData('cliente')"><i class="fa-solid fa-floppy-disk"></i> Salvar Cliente</button>
         </div>
 
         <div class="config-section">
             <div class="section-title"><i class="fa-solid fa-clipboard-list"></i> Observações Técnicas</div>
+            <input type="text" id="obs_busca" list="lista_obs" placeholder="Puxar Modelo (Garantia, etc)..." oninput="checkObsSelection()" autocomplete="off">
+            <datalist id="lista_obs">
+                <option value="Garantia Padrão (90 dias)">
+                <option value="Checklist de Manutenção">
+            </datalist>
             <textarea id="txt_obs" rows="5" placeholder="Texto das observações..."></textarea>
-            <button class="btn-save" onclick="saveData('obs')">Salvar Observações</button>
+            <button class="btn-save" onclick="saveData('obs')"><i class="fa-solid fa-floppy-disk"></i> Salvar Observações</button>
         </div>
         
         <p style="text-align: center; color: grey; font-size: 10px; margin-bottom: 40px;">SISTEMA V2.8.1</p>
@@ -213,10 +239,8 @@
             try {
                 const resp = await fetch(`${URL_LOGIN}?action=checar_registro`);
                 const existe = await resp.text();
-                
                 if (existe.trim() === "tem_dono") {
                     document.getElementById('link-registrar-container').classList.add('hidden');
-                    // Se o usuário já estiver na tela de registro, avisa e bloqueia
                     if (!document.getElementById('card-registrar').classList.contains('hidden')) {
                         showStatus('reg-status', 'Conta administrativa já cadastrada!', 'error');
                         document.getElementById('btn-registrar').disabled = true;
@@ -229,7 +253,6 @@
             const email = document.getElementById('auth_u_mail').value;
             const pass = document.getElementById('auth_u_pass').value;
             if(!email || !pass) return showStatus('login-status', 'Preencha tudo.', 'error');
-            
             showStatus('login-status', 'Verificando no sistema...', 'loading');
             document.getElementById('btn-entrar').disabled = true;
 
@@ -249,35 +272,6 @@
             }
         }
 
-        async function registrarUsuario() {
-            const email = document.getElementById('reg_u_mail').value;
-            const pass = document.getElementById('reg_u_pass').value;
-            const perg = document.getElementById('reg_u_pergunta').value;
-            const resp = document.getElementById('reg_u_resposta').value;
-
-            showStatus('reg-status', 'Verificando disponibilidade...', 'loading');
-            document.getElementById('btn-registrar').disabled = true;
-
-            try {
-                const url = `${URL_LOGIN}?action=registrar&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}&pergunta=${encodeURIComponent(perg)}&resposta=${encodeURIComponent(resp)}`;
-                const response = await fetch(url);
-                const res = await response.text();
-                
-                if(res.trim() === "sucesso") {
-                    showStatus('reg-status', 'Sucesso! Redirecionando...', 'success');
-                    setTimeout(() => alternarTela('login'), 1500);
-                } else if(res.trim() === "bloqueado") {
-                    showStatus('reg-status', 'Conta administrativa já cadastrada!', 'error');
-                } else {
-                    showStatus('reg-status', 'Erro ao processar registro.', 'error');
-                    document.getElementById('btn-registrar').disabled = false;
-                }
-            } catch (e) { 
-                showStatus('reg-status', 'Erro de rede.', 'error'); 
-                document.getElementById('btn-registrar').disabled = false;
-            }
-        }
-
         async function buscarPergunta() {
             const email = document.getElementById('rec_u_mail').value;
             if(!email) return;
@@ -291,7 +285,6 @@
         async function recuperarSenha() {
             const resposta = document.getElementById('rec_u_resposta').value;
             if(!resposta) return showStatus('rec-status', 'Digite a resposta.', 'error');
-            
             showStatus('rec-status', 'Consultando banco de dados...', 'loading');
             try {
                 const resp = await fetch(`${URL_LOGIN}?action=recuperar&resposta=${encodeURIComponent(resposta)}`);
@@ -305,12 +298,6 @@
             document.getElementById('card-login').classList.add('hidden');
             document.getElementById('card-registrar').classList.add('hidden');
             document.getElementById('card-recuperar').classList.add('hidden');
-            
-            // Limpa as mensagens de erro ao trocar de tela
-            document.getElementById('login-status').style.display = 'none';
-            document.getElementById('reg-status').style.display = 'none';
-            document.getElementById('rec-status').style.display = 'none';
-
             if(tela === 'login') document.getElementById('card-login').classList.remove('hidden');
             if(tela === 'registrar') {
                 document.getElementById('card-registrar').classList.remove('hidden');
@@ -319,11 +306,39 @@
             if(tela === 'recuperar') document.getElementById('card-recuperar').classList.remove('hidden');
         }
 
+        async function registrarUsuario() {
+            const email = document.getElementById('reg_u_mail').value;
+            const pass = document.getElementById('reg_u_pass').value;
+            const perg = document.getElementById('reg_u_pergunta').value;
+            const resp = document.getElementById('reg_u_resposta').value;
+            showStatus('reg-status', 'Verificando disponibilidade...', 'loading');
+
+            try {
+                const url = `${URL_LOGIN}?action=registrar&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}&pergunta=${encodeURIComponent(perg)}&resposta=${encodeURIComponent(resp)}`;
+                const response = await fetch(url);
+                const res = await response.text();
+                if(res.trim() === "sucesso") {
+                    showStatus('reg-status', 'Sucesso! Redirecionando...', 'success');
+                    setTimeout(() => alternarTela('login'), 1500);
+                } else { showStatus('reg-status', 'Conta administrativa já cadastrada!', 'error'); }
+            } catch (e) { showStatus('reg-status', 'Erro de rede.', 'error'); }
+        }
+
         function previewImage(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = e => document.getElementById('logoPreview').innerHTML = `<img src="${e.target.result}">`;
                 reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function checkObsSelection() {
+            const val = document.getElementById('obs_busca').value;
+            if(val === "Garantia Padrão (90 dias)") {
+                document.getElementById('txt_obs').value = "Garantia de 90 dias conforme CDC...";
+            }
+            if(val === "Checklist de Manutenção") {
+                document.getElementById('txt_obs').value = "- Limpeza de filtros\n- Verificação de dreno\n- Teste de carga.";
             }
         }
 
