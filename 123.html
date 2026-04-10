@@ -156,7 +156,9 @@
             <input type="password" id="user_pass" placeholder="Senha" style="margin-bottom: 15px;">
             <button class="btn-save" onclick="realizarLogin()">Entrar</button>
             <p style="margin-top: 20px;">
-                <span class="link-auth" onclick="alternarTela('registrar')">Criar Conta</span> | 
+                <span id="link-registrar-container">
+                    <span class="link-auth" onclick="alternarTela('registrar')">Criar Conta</span> | 
+                </span>
                 <span class="link-auth" onclick="alternarTela('recuperar')" style="color:#ff4b4b">Recuperar Senha</span>
             </p>
         </div>
@@ -166,16 +168,16 @@
             <div style="margin-top:15px">
                 <input type="email" id="reg_email" placeholder="Seu melhor e-mail" style="margin-bottom: 10px;">
                 <input type="password" id="reg_pass" placeholder="Defina uma senha" style="margin-bottom: 10px;">
-                <input type="text" id="reg_pergunta" placeholder="Pergunta de Segurança (Ex: Nome do Pet?)" style="margin-bottom: 10px;">
+                <input type="text" id="reg_pergunta" placeholder="Pergunta de Segurança" style="margin-bottom: 10px;">
                 <input type="text" id="reg_resposta" placeholder="Sua Resposta" style="margin-bottom: 15px;">
-                <button class="btn-save" onclick="registrarUsuario()">Cadastrar</button>
+                <button class="btn-save" onclick="registrarUsuario()">Cadastrar Conta Mestre</button>
                 <p style="margin-top:15px" class="link-auth" onclick="alternarTela('login')">Voltar ao Login</p>
             </div>
         </div>
 
         <div class="login-card hidden" id="card-recuperar">
             <h2>Recuperar Senha</h2>
-            <p style="font-size: 12px; color: rgba(255,255,255,0.5); margin: 10px 0;">Informe seu e-mail e a resposta de segurança cadastrada.</p>
+            <p style="font-size: 12px; color: rgba(255,255,255,0.5); margin: 10px 0;">Informe seu e-mail e a resposta de segurança.</p>
             <input type="email" id="rec_email" placeholder="E-mail cadastrado" style="margin-bottom: 10px;">
             <input type="text" id="rec_resposta" placeholder="Sua Resposta de Segurança" style="margin-bottom: 15px;">
             <button class="btn-save" onclick="recuperarSenha()">Verificar</button>
@@ -263,7 +265,19 @@
     <script>
         const SCRIPT_URL = "SUA_URL_DO_APPS_SCRIPT_AQUI";
 
-        // --- SISTEMA DE AUTH ---
+        // Chama a verificação assim que carregar a página
+        window.onload = verificarSeExisteDono;
+
+        async function verificarSeExisteDono() {
+            try {
+                const resp = await fetch(`${SCRIPT_URL}?action=checar_registro`);
+                const existe = await resp.text();
+                if (existe === "tem_dono") {
+                    document.getElementById('link-registrar-container').classList.add('hidden');
+                }
+            } catch (e) { console.log("Erro ao checar dono"); }
+        }
+
         function alternarTela(tela) {
             document.getElementById('card-login').classList.add('hidden');
             document.getElementById('card-registrar').classList.add('hidden');
@@ -282,7 +296,7 @@
             const result = await resp.text();
             
             if(result === "logado") {
-                document.getElementById('overlay-login').style.display = 'none';
+                document.getElementById('overlay-login').classList.add('hidden');
                 sessionStorage.setItem("config_auth", "true");
             } else {
                 alert("Acesso Negado!");
@@ -295,9 +309,18 @@
             const perg = document.getElementById('reg_pergunta').value;
             const resp_sec = document.getElementById('reg_resposta').value;
 
-            await fetch(`${SCRIPT_URL}?action=registrar&email=${email}&senha=${pass}&pergunta=${perg}&resposta=${resp_sec}`);
-            alert("Sucesso! Faça login.");
-            alternarTela('login');
+            if(!email || !pass || !resp_sec) return alert("Preencha todos os campos!");
+
+            const resp = await fetch(`${SCRIPT_URL}?action=registrar&email=${email}&senha=${pass}&pergunta=${perg}&resposta=${resp_sec}`);
+            const result = await resp.text();
+
+            if(result === "sucesso") {
+                alert("Conta Mestre criada!");
+                alternarTela('login');
+                verificarSeExisteDono();
+            } else {
+                alert("Erro: Já existe uma conta registrada.");
+            }
         }
 
         async function recuperarSenha() {
@@ -308,10 +331,9 @@
         }
 
         if(sessionStorage.getItem("config_auth") === "true") {
-            document.getElementById('overlay-login').style.display = 'none';
+            document.getElementById('overlay-login').classList.add('hidden');
         }
 
-        // --- SISTEMA DE CONFIGURAÇÕES ---
         function checkObsSelection() {
             const val = document.getElementById('obs_busca').value;
             const txt = document.getElementById('txt_obs');
