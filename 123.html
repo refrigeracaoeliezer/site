@@ -2,7 +2,6 @@
 <html lang="pt-br">
 <head>
     <script>
-        // Verificação inicial de segurança do sistema geral
         if (localStorage.getItem("inforos_logado") !== "true") {
             window.location.href = "https://refrigeracaoeliezer.github.io/site/";
         }
@@ -29,7 +28,6 @@
             overflow-x: hidden;
         }
 
-        /* Camada de Login - SEMPRE ATIVA AO INICIAR */
         #overlay-login {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -58,8 +56,7 @@
 
         .background-glow {
             position: fixed;
-            width: 300px;
-            height: 300px;
+            width: 300px; height: 300px;
             background: rgba(30, 64, 175, 0.15);
             filter: blur(80px);
             border-radius: 50%;
@@ -67,11 +64,7 @@
             top: 10%;
         }
 
-        .container { 
-            width: 100%; 
-            max-width: 600px;
-        }
-
+        .container { width: 100%; max-width: 600px; }
         h1 { font-size: 28px; font-weight: 700; margin-bottom: 30px; text-align: center; }
 
         .config-section {
@@ -81,48 +74,6 @@
             border-radius: 20px;
             padding: 20px;
             margin-bottom: 25px;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .section-title {
-            font-size: 16px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            padding-bottom: 10px;
-        }
-
-        .section-title i { color: #27a9e3; }
-
-        .logo-preview {
-            width: 100px; height: 100px;
-            border-radius: 15px;
-            background: rgba(0,0,0,0.3);
-            display: flex; align-items: center; justify-content: center;
-            margin: 0 auto 10px auto;
-            border: 1px solid rgba(255,255,255,0.1);
-            overflow: hidden;
-        }
-        .logo-preview img { width: 100%; height: 100%; object-fit: contain; }
-
-        .grid-inputs { display: grid; grid-template-columns: 1fr; gap: 15px; }
-
-        .input-group { display: flex; flex-direction: column; gap: 6px; width: 100%; text-align: left; }
-        .input-group label { font-size: 11px; color: rgba(255, 255, 255, 0.5); text-transform: uppercase; font-weight: 700; }
-        
-        input, textarea {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            padding: 12px;
-            color: white;
-            font-size: 14px;
-            width: 100%;
         }
 
         .btn-save {
@@ -139,48 +90,86 @@
             align-items: center;
             gap: 10px;
             margin-top: 10px;
+            transition: 0.3s;
         }
 
-        .btn-save:hover { background: #2563eb; }
+        .btn-save:disabled {
+            background: #334155;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        input, textarea {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 12px;
+            color: white;
+            font-size: 14px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
 
         .link-auth { color: #27a9e3; text-decoration: none; font-size: 13px; cursor: pointer; }
+        
+        /* Mensagem de Verificação */
+        .status-msg {
+            font-size: 13px;
+            margin-top: 10px;
+            color: #27a9e3;
+            display: none;
+        }
     </style>
 </head>
 <body>
 
     <div id="overlay-login">
         <div class="login-card" id="card-login">
-            <i class="fa-solid fa-lock" style="font-size: 40px; color: #1e40af; margin-bottom: 20px;"></i>
+            <i class="fa-solid fa-shield-halved" style="font-size: 40px; color: #1e40af; margin-bottom: 20px;"></i>
             <h2 style="margin-bottom: 20px;">Acesso Restrito</h2>
-            <input type="email" id="user_email" placeholder="E-mail" style="margin-bottom: 10px;">
-            <input type="password" id="user_pass" placeholder="Senha" style="margin-bottom: 15px;">
-            <button class="btn-save" onclick="realizarLogin()">Entrar</button>
+            
+            <input type="email" id="user_email" placeholder="E-mail">
+            <input type="password" id="user_pass" placeholder="Senha">
+            
+            <div id="login-status" class="status-msg"><i class="fa-solid fa-circle-notch fa-spin"></i> Verificando credenciais...</div>
+            
+            <button class="btn-save" id="btn-entrar" onclick="realizarLogin()">Entrar no Sistema</button>
+            
             <p style="margin-top: 20px;">
                 <span id="link-registrar-container">
-                    <span class="link-auth" onclick="alternarTela('registrar')">Criar Conta</span> | 
+                    <span class="link-auth" onclick="alternarTela('registrar')">Primeiro Acesso</span> | 
                 </span>
-                <span class="link-auth" onclick="alternarTela('recuperar')" style="color:#ff4b4b">Recuperar Senha</span>
+                <span class="link-auth" onclick="alternarTela('recuperar')" style="color:#ff4b4b">Esqueci meus dados</span>
             </p>
         </div>
 
         <div class="login-card hidden" id="card-registrar">
-            <h2>Novo Registro</h2>
+            <h2>Criar Conta Mestre</h2>
             <div style="margin-top:15px">
-                <input type="email" id="reg_email" placeholder="E-mail" style="margin-bottom: 10px;">
-                <input type="password" id="reg_pass" placeholder="Senha" style="margin-bottom: 10px;">
-                <input type="text" id="reg_pergunta" placeholder="Pergunta de Segurança" style="margin-bottom: 10px;">
-                <input type="text" id="reg_resposta" placeholder="Resposta" style="margin-bottom: 15px;">
-                <button class="btn-save" onclick="registrarUsuario()">Cadastrar Mestre</button>
+                <input type="email" id="reg_email" placeholder="Defina seu E-mail">
+                <input type="password" id="reg_pass" placeholder="Defina sua Senha">
+                <input type="text" id="reg_pergunta" placeholder="Pergunta (Ex: Nome da sua mãe?)">
+                <input type="text" id="reg_resposta" placeholder="Sua Resposta">
+                <button class="btn-save" id="btn-registrar" onclick="registrarUsuario()">Finalizar Cadastro</button>
                 <p style="margin-top:15px" class="link-auth" onclick="alternarTela('login')">Voltar</p>
             </div>
         </div>
 
         <div class="login-card hidden" id="card-recuperar">
-            <h2>Recuperar Senha</h2>
-            <input type="email" id="rec_email" placeholder="E-mail" style="margin-bottom: 10px;">
-            <input type="text" id="rec_resposta" placeholder="Resposta de Segurança" style="margin-bottom: 15px;">
-            <button class="btn-save" onclick="recuperarSenha()">Verificar</button>
-            <p style="margin-top:15px" class="link-auth" onclick="alternarTela('login')">Voltar</p>
+            <h2>Recuperar Acesso</h2>
+            <p style="font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 15px;">
+                Não lembra o e-mail? Digite sua <b>Resposta de Segurança</b> abaixo para revelá-lo.
+            </p>
+            
+            <input type="text" id="rec_resposta" placeholder="Sua Resposta de Segurança">
+            
+            <div id="rec-status" class="status-msg"><i class="fa-solid fa-circle-notch fa-spin"></i> Consultando banco de dados...</div>
+            
+            <button class="btn-save" id="btn-recuperar" onclick="recuperarSenha()">Recuperar Dados</button>
+            
+            <div id="dica-email" style="margin-top:15px; font-size:14px; color:#27a9e3; font-weight:bold;"></div>
+            
+            <p style="margin-top:15px" class="link-auth" onclick="alternarTela('login')">Voltar para o Login</p>
         </div>
     </div>
 
@@ -188,49 +177,30 @@
 
     <div class="container">
         <h1>Configurações</h1>
-
         <div class="config-section">
-            <div class="section-title"><i class="fa-solid fa-image"></i> Logo da Empresa</div>
-            <div class="logo-preview" id="logoPreview"><i class="fa-solid fa-camera opacity-20" style="font-size: 30px;"></i></div>
-            <input type="file" id="logoInput" accept="image/*" onchange="previewImage(this)">
-            <button class="btn-save" onclick="saveData('logo')">Salvar Logo</button>
-        </div>
-
-        <div class="config-section">
-            <div class="section-title"><i class="fa-solid fa-building"></i> Identidade da Empresa</div>
-            <div class="grid-inputs">
-                <div class="input-group">
-                    <label>Nome Fantasia</label>
-                    <input type="text" id="emp_nome" placeholder="Nome...">
-                </div>
-                <div class="input-group">
-                    <label>CNPJ / CPF</label>
-                    <input type="text" id="emp_doc">
-                </div>
-            </div>
-            <button class="btn-save" onclick="saveData('empresa')">Salvar Empresa</button>
-        </div>
-
-        <div class="config-section">
-            <div class="section-title"><i class="fa-solid fa-clipboard-list"></i> Observações Técnicas</div>
-            <div class="grid-inputs">
-                <div class="input-group">
-                    <label>Puxar Modelo</label>
-                    <input type="text" id="obs_busca" placeholder="Ex: Garantia..." oninput="checkObsSelection()">
-                </div>
-                <textarea id="txt_obs" rows="5" placeholder="Edite o texto aqui..."></textarea>
-            </div>
-            <button class="btn-save" onclick="saveData('obs')">Salvar Observações</button>
+            <p style="text-align: center; color: rgba(255,255,255,0.5);">Seja bem-vindo ao painel de controle.</p>
         </div>
     </div>
 
     <script>
         const URL_LOGIN = "https://script.google.com/macros/s/AKfycbzdFQP4jqtrDaRsaPJkQzdM-OpG011bPLLzDvv-1K3nWQQl2T1kGeee94kpDR_vpmZFtw/exec";
 
-        // Sempre ao carregar, verifica o dono e garante que o login apareça
-        window.onload = function() {
-            verificarSeExisteDono();
-        };
+        window.onload = verificarSeExisteDono;
+
+        function setStatus(id, show, text = "") {
+            const el = document.getElementById(id);
+            const btn = id === 'login-status' ? document.getElementById('btn-entrar') : document.getElementById('btn-recuperar');
+            
+            if (show) {
+                el.style.display = 'block';
+                btn.disabled = true;
+                if(text) btn.innerText = text;
+            } else {
+                el.style.display = 'none';
+                btn.disabled = false;
+                btn.innerText = id === 'login-status' ? "Entrar no Sistema" : "Recuperar Dados";
+            }
+        }
 
         async function verificarSeExisteDono() {
             try {
@@ -242,6 +212,55 @@
             } catch (e) { console.log("Erro de conexão"); }
         }
 
+        async function realizarLogin() {
+            const email = document.getElementById('user_email').value;
+            const pass = document.getElementById('user_pass').value;
+            if(!email || !pass) return alert("Preencha e-mail e senha!");
+
+            setStatus('login-status', true, "Verificando...");
+
+            try {
+                const resp = await fetch(`${URL_LOGIN}?action=login&email=${email}&senha=${pass}`);
+                const result = await resp.text();
+                
+                if(result === "logado") {
+                    document.getElementById('overlay-login').classList.add('hidden');
+                } else {
+                    alert("E-mail ou Senha incorretos!");
+                    setStatus('login-status', false);
+                }
+            } catch (e) {
+                alert("Erro ao conectar ao servidor.");
+                setStatus('login-status', false);
+            }
+        }
+
+        async function recuperarSenha() {
+            const resposta = document.getElementById('rec_resposta').value;
+            if(!resposta) return alert("Digite a resposta cadastrada!");
+
+            setStatus('rec-status', true, "Buscando...");
+            document.getElementById('dica-email').innerText = "";
+
+            try {
+                // Aqui o script do Google deve estar preparado para buscar pela resposta
+                const resp = await fetch(`${URL_LOGIN}?action=recuperar&resposta=${resposta}`);
+                const result = await resp.text();
+                
+                // Se o resultado contiver a senha, mostramos também uma dica do email
+                if (result.includes("Sua senha é")) {
+                    document.getElementById('dica-email').innerHTML = `<i class="fa-solid fa-key"></i> ${result}`;
+                    alert("Dados localizados!");
+                } else {
+                    alert("Resposta de segurança incorreta!");
+                }
+            } catch (e) {
+                alert("Erro na recuperação.");
+            } finally {
+                setStatus('rec-status', false);
+            }
+        }
+
         function alternarTela(tela) {
             document.getElementById('card-login').classList.add('hidden');
             document.getElementById('card-registrar').classList.add('hidden');
@@ -251,62 +270,24 @@
             if(tela === 'recuperar') document.getElementById('card-recuperar').classList.remove('hidden');
         }
 
-        async function realizarLogin() {
-            const email = document.getElementById('user_email').value;
-            const pass = document.getElementById('user_pass').value;
-            if(!email || !pass) return alert("Preencha os campos!");
-
-            const resp = await fetch(`${URL_LOGIN}?action=login&email=${email}&senha=${pass}`);
-            const result = await resp.text();
-            
-            if(result === "logado") {
-                // Esconde a camada de login apenas após validar com o servidor
-                document.getElementById('overlay-login').classList.add('hidden');
-            } else {
-                alert("E-mail ou Senha incorretos!");
-            }
-        }
-
         async function registrarUsuario() {
             const email = document.getElementById('reg_email').value;
             const pass = document.getElementById('reg_pass').value;
             const perg = document.getElementById('reg_pergunta').value;
             const resp_sec = document.getElementById('reg_resposta').value;
 
+            if(!email || !pass || !resp_sec) return alert("Preencha tudo!");
+
             const resp = await fetch(`${URL_LOGIN}?action=registrar&email=${email}&senha=${pass}&pergunta=${perg}&resposta=${resp_sec}`);
             const result = await resp.text();
 
             if(result === "sucesso") {
-                alert("Conta Mestre criada! Faça login.");
+                alert("Conta Mestre criada!");
                 alternarTela('login');
                 verificarSeExisteDono();
             } else {
-                alert("Erro ou registro bloqueado.");
+                alert("Erro: Registro bloqueado.");
             }
-        }
-
-        async function recuperarSenha() {
-            const email = document.getElementById('rec_email').value;
-            const resposta = document.getElementById('rec_resposta').value;
-            const resp = await fetch(`${URL_LOGIN}?action=recuperar&email=${email}&resposta=${resposta}`);
-            alert(await resp.text());
-        }
-
-        function previewImage(input) {
-            const preview = document.getElementById('logoPreview');
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = e => preview.innerHTML = `<img src="${e.target.result}">`;
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        function saveData(secao) {
-            alert("Salvando " + secao + "...");
-        }
-
-        function checkObsSelection() {
-            // Lógica para modelos de texto
         }
     </script>
 </body>
