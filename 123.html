@@ -8,103 +8,127 @@
     </script>
 
     <meta charset="UTF-8">
-    <title>Configurações Inteligentes | Refrigeração</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurações | Refrigeração</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
             font-family: 'Inter', sans-serif;
             min-height: 100vh;
             background: #0d1117;
             color: white;
-            padding: 40px 20px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            overflow-x: hidden; /* Evita rolagem lateral */
         }
 
         .background-glow {
             position: fixed;
-            width: 500px;
-            height: 500px;
-            background: rgba(30, 64, 175, 0.1);
-            filter: blur(100px);
+            width: 300px;
+            height: 300px;
+            background: rgba(30, 64, 175, 0.15);
+            filter: blur(80px);
             border-radius: 50%;
             z-index: -1;
-            top: 20%;
+            top: 10%;
         }
 
-        .container { width: 100%; max-width: 850px; }
+        .container { 
+            width: 100%; 
+            max-width: 600px; /* Reduzi para ficar mais compacto */
+        }
 
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
+        h1 { 
+            font-size: 28px; 
+            font-weight: 700; 
+            margin-bottom: 30px; 
+            text-align: center;
+            color: white;
         }
 
         .config-section {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
-            padding: 30px;
-            margin-bottom: 25px;
-            transition: 0.3s;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            width: 100%;
         }
 
         .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            padding-bottom: 15px;
+            margin-bottom: 15px;
+            gap: 10px;
         }
 
         .section-title {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
         .section-title i { color: #27a9e3; }
 
-        .grid-inputs {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
+        /* Estilo da Logo em Cima */
+        .logo-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
         }
 
-        .input-group { display: flex; flex-direction: column; gap: 8px; }
-        .input-group label { font-size: 11px; color: rgba(30, 144, 255, 0.8); text-transform: uppercase; font-weight: 700; }
+        .logo-preview {
+            width: 120px;
+            height: 120px;
+            border-radius: 15px;
+            background: rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow: hidden;
+        }
+        
+        .logo-preview img { width: 100%; height: 100%; object-fit: contain; }
+
+        .grid-inputs {
+            display: grid;
+            grid-template-columns: 1fr; /* Coluna única para mobile por padrão */
+            gap: 15px;
+        }
+
+        .input-group { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+        .input-group label { font-size: 11px; color: rgba(255, 255, 255, 0.5); text-transform: uppercase; font-weight: 700; }
         
         input, textarea {
             background: rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
+            border-radius: 10px;
             padding: 12px;
             color: white;
             font-size: 14px;
+            width: 100%; /* Garante que não vaze */
             transition: 0.3s;
         }
 
-        /* Destaque para o campo de busca/edição */
-        .search-field {
-            border-color: rgba(39, 169, 227, 0.4);
-            background: rgba(30, 64, 175, 0.1);
-        }
-
-        input:focus { border-color: #27a9e3; outline: none; background: rgba(0,0,0,0.5); }
+        input:focus { border-color: #27a9e3; outline: none; }
 
         .btn-save {
             border: none;
-            padding: 10px 25px;
+            padding: 12px 20px;
             border-radius: 10px;
             font-weight: 600;
             background: #1e40af;
@@ -113,24 +137,17 @@
             transition: 0.3s;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
+            width: auto;
         }
 
-        .btn-save:hover { background: #2563eb; transform: translateY(-2px); }
-
-        .logo-preview {
-            width: 80px; height: 80px;
-            border-radius: 15px;
-            background: rgba(0,0,0,0.2);
-            display: flex; align-items: center; justify-content: center;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        
-        .logo-preview img { width: 100%; object-fit: contain; }
-
-        @media (max-width: 600px) {
-            .section-header { flex-direction: column; align-items: flex-start; gap: 15px; }
-            .btn-save { width: 100%; justify-content: center; }
+        /* Ajustes para Telas Pequenas */
+        @media (max-width: 480px) {
+            .section-header { flex-direction: column; align-items: flex-start; }
+            .btn-save { width: 100%; margin-top: 10px; }
+            h1 { font-size: 22px; }
+            .config-section { padding: 15px; }
         }
     </style>
 </head>
@@ -139,39 +156,37 @@
     <div class="background-glow"></div>
 
     <div class="container">
-        <div class="page-header">
-            <h1>Configurações Diretas</h1>
-            <a href="javascript:history.back()" style="color:#27a9e3; text-decoration:none; font-size:14px;"><i class="fa-solid fa-chevron-left"></i> Voltar</a>
-        </div>
+        <h1>Configurações</h1>
 
         <div class="config-section">
             <div class="section-header">
                 <div class="section-title"><i class="fa-solid fa-image"></i> Logo da Empresa</div>
-                <button class="btn-save" onclick="saveData('logo')"><i class="fa-solid fa-check"></i> Atualizar Logo</button>
+                <button class="btn-save" onclick="saveData('logo')">Salvar</button>
             </div>
-            <div style="display: flex; gap: 20px; align-items: center;">
-                <div class="logo-preview" id="logoPreview"><i class="fa-solid fa-camera opacity-20"></i></div>
-                <input type="file" id="logoInput" accept="image/*" onchange="previewImage(this)" style="flex:1;">
+            <div class="logo-box">
+                <div class="logo-preview" id="logoPreview">
+                    <i class="fa-solid fa-camera opacity-20" style="font-size: 30px; color: rgba(255,255,255,0.2);"></i>
+                </div>
+                <input type="file" id="logoInput" accept="image/*" onchange="previewImage(this)">
             </div>
         </div>
 
         <div class="config-section">
             <div class="section-header">
                 <div class="section-title"><i class="fa-solid fa-building"></i> Identidade da Empresa</div>
-                <button class="btn-save" onclick="saveData('empresa')"><i class="fa-solid fa-floppy-disk"></i> Salvar Alterações</button>
+                <button class="btn-save" onclick="saveData('empresa')">Salvar</button>
             </div>
             <div class="grid-inputs">
                 <div class="input-group">
-                    <label>Buscar ou Digitar Empresa</label>
-                    <input type="text" id="emp_nome" list="lista_empresas" class="search-field" placeholder="Digite para buscar..." oninput="checkSelection('empresa')">
+                    <label>Nome Fantasia</label>
+                    <input type="text" id="emp_nome" list="lista_empresas" placeholder="Buscar ou digitar...">
                     <datalist id="lista_empresas">
                         <option value="Refrigeração Eliezer">
-                        <option value="Eliezer Service Ar">
                     </datalist>
                 </div>
                 <div class="input-group">
                     <label>CNPJ / CPF</label>
-                    <input type="text" id="emp_doc" placeholder="Documento da empresa">
+                    <input type="text" id="emp_doc">
                 </div>
             </div>
         </div>
@@ -179,25 +194,20 @@
         <div class="config-section">
             <div class="section-header">
                 <div class="section-title"><i class="fa-solid fa-gears"></i> Detalhes do Serviço</div>
-                <button class="btn-save" onclick="saveData('servico')"><i class="fa-solid fa-floppy-disk"></i> Salvar Serviço</button>
+                <button class="btn-save" onclick="saveData('servico')">Salvar</button>
             </div>
             <div class="grid-inputs">
-                <div class="input-group" style="grid-column: span 2;">
-                    <label>Serviço (Busque serviços cadastrados)</label>
-                    <input type="text" id="srv_nome" list="lista_servicos" class="search-field" placeholder="Ex: Higienização Split..." oninput="checkSelection('servico')">
+                <div class="input-group">
+                    <label>Descrição do Serviço</label>
+                    <input type="text" id="srv_nome" list="lista_servicos" placeholder="Buscar serviço...">
                     <datalist id="lista_servicos">
-                        <option value="Instalação Completa">
-                        <option value="Carga de Gás R410a">
-                        <option value="Limpeza Química">
+                        <option value="Higienização de Ar Condicionado">
+                        <option value="Carga de Gás">
                     </datalist>
                 </div>
                 <div class="input-group">
                     <label>Valor (R$)</label>
-                    <input type="number" id="srv_valor">
-                </div>
-                <div class="input-group">
-                    <label>Prazo</label>
-                    <input type="text" id="srv_prazo">
+                    <input type="number" id="srv_valor" placeholder="0.00">
                 </div>
             </div>
         </div>
@@ -205,27 +215,25 @@
         <div class="config-section">
             <div class="section-header">
                 <div class="section-title"><i class="fa-solid fa-user"></i> Dados do Cliente</div>
-                <button class="btn-save" onclick="saveData('cliente')"><i class="fa-solid fa-floppy-disk"></i> Salvar Cliente</button>
+                <button class="btn-save" onclick="saveData('cliente')">Salvar</button>
             </div>
             <div class="grid-inputs">
-                <div class="input-group" style="grid-column: span 2;">
-                    <label>Cliente (Busque por nome)</label>
-                    <input type="text" id="cli_nome" list="lista_clientes" class="search-field" placeholder="Comece a digitar o nome do cliente..." oninput="checkSelection('cliente')">
+                <div class="input-group">
+                    <label>Nome do Cliente</label>
+                    <input type="text" id="cli_nome" list="lista_clientes" placeholder="Buscar cliente...">
                     <datalist id="lista_clientes">
                         <option value="João Silva">
-                        <option value="Maria Oliveira">
-                        <option value="Condomínio Solar">
                     </datalist>
                 </div>
                 <div class="input-group">
-                    <label>CPF / CNPJ Cliente</label>
+                    <label>CPF / CNPJ</label>
                     <input type="text" id="cli_doc">
                 </div>
                 <div class="input-group">
                     <label>WhatsApp</label>
                     <input type="tel" id="cli_tel">
                 </div>
-                <div class="input-group" style="grid-column: span 2;">
+                <div class="input-group">
                     <label>Endereço</label>
                     <input type="text" id="cli_end">
                 </div>
@@ -235,31 +243,17 @@
         <div class="config-section">
             <div class="section-header">
                 <div class="section-title"><i class="fa-solid fa-clipboard-list"></i> Observações Técnicas</div>
-                <button class="btn-save" onclick="saveData('obs')"><i class="fa-solid fa-floppy-disk"></i> Salvar Notas</button>
+                <button class="btn-save" onclick="saveData('obs')">Salvar</button>
             </div>
-            <textarea id="txt_obs" rows="4" style="width:100%;" placeholder="Notas do orçamento..."></textarea>
+            <textarea id="txt_obs" rows="4" placeholder="Detalhes técnicos..."></textarea>
         </div>
 
+        <p style="text-align: center; color: rgba(255,255,255,0.1); font-size: 10px; margin-bottom: 30px;">
+            CONSOLE DE CONFIGURAÇÃO V2.3
+        </p>
     </div>
 
     <script>
-        // Função que simula o preenchimento automático ao selecionar da lista
-        function checkSelection(tipo) {
-            const val = document.getElementById(tipo === 'cliente' ? 'cli_nome' : (tipo === 'servico' ? 'srv_nome' : 'emp_nome')).value;
-            
-            // Simulação: Se o nome digitado for exatamente um da nossa lista, preenchemos o resto
-            // No futuro, isso aqui fará uma busca real no seu banco de dados
-            if(tipo === 'cliente' && val === "João Silva") {
-                document.getElementById('cli_doc').value = "123.456.789-00";
-                document.getElementById('cli_tel').value = "(67) 99999-0000";
-                document.getElementById('cli_end').value = "Rua das Palmeiras, 100 - Centro";
-            }
-            if(tipo === 'servico' && val === "Limpeza Química") {
-                document.getElementById('srv_valor').value = "250.00";
-                document.getElementById('srv_prazo').value = "3 horas";
-            }
-        }
-
         function previewImage(input) {
             const preview = document.getElementById('logoPreview');
             if (input.files && input.files[0]) {
@@ -270,7 +264,7 @@
         }
 
         function saveData(secao) {
-            alert("Dados de " + secao + " atualizados no servidor!");
+            alert("Dados de " + secao + " salvos!");
         }
     </script>
 </body>
