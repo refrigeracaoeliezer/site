@@ -16,76 +16,29 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     
     <style>
-        /* Estilos Base do Site Oficial */
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
-            background: #0d1117;
-            color: white;
-            position: relative;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-        }
+        body { font-family: 'Inter', sans-serif; min-height: 100vh; background: #0d1117; color: white; position: relative; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
 
-        /* Elementos Visuais de Fundo */
-        .corner-ball {
-            position: fixed;
-            background: rgba(30, 64, 175, 0.1);
-            border-radius: 50%;
-            z-index: 0;
-            pointer-events: none;
-            filter: blur(80px);
-        }
+        .corner-ball { position: fixed; background: rgba(30, 64, 175, 0.1); border-radius: 50%; z-index: 0; pointer-events: none; filter: blur(80px); }
         .ball-top-right { width: 400px; height: 400px; top: -100px; right: -100px; }
         .ball-bottom-left { width: 300px; height: 300px; bottom: -100px; left: -100px; }
 
-        /* Card Principal Estilo Vidro */
-        .glass-card {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-top: 4px solid #1e40af;
-            border-radius: 30px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
+        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-top: 4px solid #1e40af; border-radius: 30px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
 
-        /* Inputs Estilizados Dark */
-        .dark-input {
-            background: rgba(255, 255, 255, 0.05) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            color: white !important;
-            transition: all 0.3s ease;
-        }
-        .dark-input:focus {
-            border-color: #3b82f6 !important;
-            background: rgba(255, 255, 255, 0.08) !important;
-            ring: 2px solid rgba(59, 130, 246, 0.5);
-        }
-        .dark-input::placeholder { color: rgba(255, 255, 255, 0.3); }
+        .dark-input { background: rgba(255, 255, 255, 0.05) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; color: white !important; transition: all 0.3s ease; }
+        .dark-input:focus { border-color: #3b82f6 !important; background: rgba(255, 255, 255, 0.08) !important; outline: none; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3); }
 
-        /* Accordion Custom */
         .accordion-content { max-height: 0; opacity: 0; overflow: hidden; transition: all 0.3s ease; }
         .accordion-open .accordion-content { max-height: 1000px; opacity: 1; padding: 1rem; }
         .accordion-open .accordion-icon { transform: rotate(180deg); }
 
-        /* Botões */
-        .btn-primary {
-            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-            transition: transform 0.2s active:scale-95;
-        }
-
-        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3b82f6; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .btn-primary { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); transition: transform 0.2s; }
+        .btn-primary:active { transform: scale(0.95); }
         
         .modal-transition { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         
         input[type="date"]::-webkit-calendar-picker-indicator,
-        input[type="time"]::-webkit-calendar-picker-indicator {
-            filter: invert(1);
-        }
+        input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(1); }
     </style>
 </head>
 <body class="p-4 pb-10">
@@ -107,8 +60,12 @@
                 </div>
             </div>
             <div class="flex gap-2">
-                <button onclick="toggleHistory()" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10"><i class="fa-solid fa-clock-rotate-left"></i></button>
-                <button onclick="logout()" class="w-10 h-10 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center border border-red-500/20"><i class="fa-solid fa-power-off"></i></button>
+                <button onclick="toggleHistory()" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10 hover:bg-white/10 transition-colors">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                </button>
+                <button onclick="toggleSettings()" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10 hover:bg-white/10 transition-colors">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
             </div>
         </header>
 
@@ -134,10 +91,7 @@
                     </div>
                 </div>
 
-                <div class="h-[1px] bg-white/10"></div>
-
-                <div id="services-container" class="space-y-3">
-                    </div>
+                <div id="services-container" class="space-y-3"></div>
 
                 <button onclick="adicionarServico()" class="w-full py-4 border-2 border-dashed border-white/10 rounded-2xl text-white/40 font-bold text-xs hover:border-blue-500/50 hover:text-white transition-all">
                     <i class="fa-solid fa-plus mr-2"></i> ADICIONAR ITEM OU PEÇA
@@ -153,7 +107,7 @@
                     </div>
                 </div>
 
-                <button onclick="calcularTudo()" class="w-full btn-primary text-white py-5 rounded-2xl font-black text-lg shadow-2xl uppercase tracking-wider active:scale-95 transition-transform">
+                <button onclick="calcularTudo()" class="w-full btn-primary text-white py-5 rounded-2xl font-black text-lg shadow-2xl uppercase tracking-wider">
                     Gerar Orçamento Profissional
                 </button>
             </div>
@@ -164,15 +118,14 @@
                         <p class="text-[10px] font-bold text-white/60 uppercase tracking-widest mb-1">Valor Total Sugerido</p>
                         <h3 class="text-5xl font-black text-white" id="displayPrecoFinal">R$ 0,00</h3>
                     </div>
-                    <div class="absolute -bottom-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
-                    <div class="bg-white/5 p-4 rounded-2xl border border-white/10">
+                    <div class="bg-white/5 p-4 rounded-2xl border border-white/10 text-center">
                         <p class="text-[9px] text-white/40 uppercase font-bold mb-1">Mão de Obra</p>
                         <p class="text-lg font-bold text-green-400" id="displayLucroLiquido">R$ 0,00</p>
                     </div>
-                    <div class="bg-white/5 p-4 rounded-2xl border border-white/10">
+                    <div class="bg-white/5 p-4 rounded-2xl border border-white/10 text-center">
                         <p class="text-[9px] text-white/40 uppercase font-bold mb-1">Materiais</p>
                         <p class="text-lg font-bold text-red-400" id="displayDespesas">R$ 0,00</p>
                     </div>
@@ -187,35 +140,52 @@
                     </button>
                 </div>
 
-                <div class="pt-4 space-y-3">
-                     <div class="accordion bg-white/5 border border-white/10 rounded-2xl" id="acc1">
-                        <button onclick="toggleAccordion('acc1')" class="w-full p-4 flex justify-between items-center">
-                            <span class="text-xs font-bold uppercase tracking-widest text-blue-400">Ver Proposta em Texto</span>
-                            <i class="fa-solid fa-chevron-down text-xs accordion-icon transition-transform"></i>
-                        </button>
-                        <div class="accordion-content border-t border-white/5">
-                            <div id="txt_proposta" class="text-[11px] font-mono p-4 text-white/70 whitespace-pre-wrap bg-black/20 rounded-xl mb-3"></div>
-                            <button onclick="copiarTexto('txt_proposta', this)" class="w-full py-3 bg-blue-600 rounded-xl text-xs font-bold">COPIAR TEXTO</button>
-                        </div>
-                     </div>
+                <div id="acc1" class="accordion bg-white/5 border border-white/10 rounded-2xl">
+                    <button onclick="toggleAccordion('acc1')" class="w-full p-4 flex justify-between items-center text-xs font-bold uppercase text-blue-400">
+                        Ver Proposta em Texto <i class="fa-solid fa-chevron-down accordion-icon transition-transform"></i>
+                    </button>
+                    <div class="accordion-content border-t border-white/5">
+                        <div id="txt_proposta" class="text-[11px] font-mono p-4 text-white/70 whitespace-pre-wrap bg-black/20 rounded-xl mb-3"></div>
+                        <button onclick="copiarTexto('txt_proposta', this)" class="w-full py-3 bg-blue-600 rounded-xl text-xs font-bold uppercase">Copiar Texto</button>
+                    </div>
                 </div>
             </div>
         </main>
-
-        <p class="text-center text-[10px] text-white/20 mt-8 uppercase tracking-[3px]">
-            Criptografia de Ponta a Ponta ATIVA
-        </p>
     </div>
 
     <div id="historyModal" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-black/80 backdrop-blur-md" onclick="toggleHistory()"></div>
-        <div id="historyContent" class="absolute inset-y-0 right-0 w-full max-w-sm bg-[#0d1117] border-l border-white/10 shadow-2xl transform translate-x-full modal-transition flex flex-col">
+        <div id="historyContent" class="absolute inset-y-0 right-0 w-full max-w-sm bg-[#0d1117] border-l border-white/10 transform translate-x-full modal-transition flex flex-col">
             <div class="p-6 border-b border-white/10 flex justify-between items-center">
                 <h2 class="font-black uppercase tracking-tighter">Histórico</h2>
                 <button onclick="toggleHistory()" class="text-white/40"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div id="historyList" class="flex-grow overflow-y-auto p-4 space-y-4">
+            <div id="historyList" class="flex-grow overflow-y-auto p-4 space-y-4"></div>
+            <div class="p-4 border-t border-white/10">
+                <button onclick="limparHistorico()" class="w-full py-3 text-red-500 font-bold text-xs uppercase border border-red-500/20 rounded-xl hover:bg-red-500/10">Limpar Tudo</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="settingsModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-md" onclick="toggleSettings()"></div>
+        <div id="settingsContent" class="absolute inset-x-0 bottom-0 sm:inset-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 w-full max-w-md bg-[#0d1117] border border-white/10 rounded-t-3xl sm:rounded-3xl p-6 transform translate-y-full modal-transition">
+            <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
+                <h2 class="font-black uppercase tracking-tighter flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-blue-500"></i> Ajustes
+                </h2>
+                <button onclick="toggleSettings()" class="text-white/40"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-6">
+                <div>
+                    <h3 class="text-[10px] font-bold text-white/40 uppercase mb-3 tracking-widest">Logotipo da Empresa</h3>
+                    <input type="file" id="logoInput" accept="image/*" onchange="handleLogoUpload(this)" class="block w-full text-xs text-white/50 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-600 file:text-white">
+                    <button onclick="removerLogo()" class="text-[10px] text-red-500 font-bold mt-2 uppercase tracking-widest">Remover Logo</button>
                 </div>
+                <button onclick="logout()" class="w-full py-4 bg-red-500/10 text-red-500 border border-red-500/20 rounded-2xl font-bold uppercase text-xs flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-power-off"></i> Encerrar Sessão
+                </button>
+            </div>
         </div>
     </div>
 
@@ -232,7 +202,7 @@
         function adicionarServico() {
             const container = document.getElementById('services-container');
             const div = document.createElement('div');
-            div.className = "flex gap-2 bg-white/5 p-3 rounded-2xl border border-white/10 relative group animate-fade-in";
+            div.className = "flex gap-2 bg-white/5 p-3 rounded-2xl border border-white/10 relative group";
             div.innerHTML = `
                 <input type="text" placeholder="Ex: Higienização" class="flex-grow bg-transparent p-1 text-sm font-bold text-white outline-none service-name">
                 <div class="relative w-28">
@@ -247,46 +217,26 @@
         function calcularTudo() {
             let totalMaoObra = 0;
             let listaItensTxt = "";
-            
             document.querySelectorAll('#services-container > div').forEach(row => {
                 const nome = row.querySelector('.service-name').value || "Serviço";
                 const preco = parseFloat(row.querySelector('.service-price').value.replace(/\./g, '').replace(',', '.')) || 0;
-                if(preco > 0) {
-                    totalMaoObra += preco;
-                    listaItensTxt += `• ${nome}: R$ ${preco.toLocaleString('pt-BR', {minimumFractionDigits: 2})}\n`;
-                }
+                if(preco > 0) { totalMaoObra += preco; listaItensTxt += `• ${nome}: R$ ${preco.toLocaleString('pt-BR', {minimumFractionDigits: 2})}\n`; }
             });
-
             const mat = parseFloat(document.getElementById('custoPecas').value.replace(/\./g, '').replace(',', '.')) || 0;
             const final = totalMaoObra + mat;
-
-            // Atualiza UI
             document.getElementById('displayPrecoFinal').innerText = "R$ " + final.toLocaleString('pt-BR', {minimumFractionDigits: 2});
             document.getElementById('displayLucroLiquido').innerText = "R$ " + totalMaoObra.toLocaleString('pt-BR', {minimumFractionDigits: 2});
             document.getElementById('displayDespesas').innerText = "R$ " + mat.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-
-            // Texto Proposta
             const cliente = document.getElementById('nomeCliente').value || "Cliente";
-            const empresa = document.getElementById('nomePrestador').value || "Refrigeração";
+            const empresa = document.getElementById('nomePrestador').value || "Sua Empresa";
             const garantia = document.getElementById('inputGarantia').value;
-            
-            document.getElementById('txt_proposta').innerText = `*ORÇAMENTO TÉCNICO*\n\nOlá ${cliente}, segue os detalhes:\n\n${listaItensTxt}\n*Material:* R$ ${mat.toLocaleString('pt-BR', {minimumFractionDigits: 2})}\n\n*TOTAL:* R$ ${final.toLocaleString('pt-BR', {minimumFractionDigits: 2})}\n\nGarantia: ${garantia} dias\n\nAtt, ${empresa}`;
-
-            // Salva no histórico
+            document.getElementById('txt_proposta').innerText = `*ORÇAMENTO TÉCNICO*\n\nOlá ${cliente}, segue detalhes:\n\n${listaItensTxt}\n*Material:* R$ ${mat.toLocaleString('pt-BR', {minimumFractionDigits: 2})}\n\n*TOTAL:* R$ ${final.toLocaleString('pt-BR', {minimumFractionDigits: 2})}\n\nGarantia: ${garantia} dias\n\nAtt, ${empresa}`;
             const log = { id: Date.now(), cliente: cliente, valor: final, data: new Date().toLocaleDateString() };
             state.historico.unshift(log);
             localStorage.setItem('refrig_data', JSON.stringify(state));
-
             document.getElementById('input-section').classList.add('hidden');
             document.getElementById('results-section').classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function copiarTexto(id, btn) {
-            const texto = document.getElementById(id).innerText;
-            navigator.clipboard.writeText(texto);
-            btn.innerText = "COPIADO!";
-            setTimeout(() => btn.innerText = "COPIAR TEXTO", 2000);
         }
 
         function toggleHistory() {
@@ -307,25 +257,80 @@
             list.innerHTML = state.historico.length ? "" : "<p class='text-center text-white/20 text-xs py-10'>Sem registros</p>";
             state.historico.forEach(item => {
                 list.innerHTML += `
-                    <div class="p-4 bg-white/5 border border-white/10 rounded-2xl">
-                        <div class="flex justify-between items-start">
-                            <span class="font-bold text-sm">${item.cliente}</span>
-                            <span class="text-blue-500 font-black text-sm">R$ ${item.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
+                    <div class="p-4 bg-white/5 border border-white/10 rounded-2xl flex justify-between items-center group">
+                        <div>
+                            <p class="font-bold text-sm text-white">${item.cliente}</p>
+                            <p class="text-[9px] text-white/30 uppercase font-bold">${item.data}</p>
                         </div>
-                        <span class="text-[9px] text-white/30 uppercase font-bold">${item.data}</span>
+                        <div class="flex items-center gap-3">
+                            <span class="text-blue-500 font-black text-sm">R$ ${item.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
+                            <button onclick="excluirItemHistorico(${item.id})" class="text-white/10 hover:text-red-500 transition-colors"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                        </div>
                     </div>
                 `;
             });
         }
 
+        function excluirItemHistorico(id) {
+            state.historico = state.historico.filter(i => i.id !== id);
+            localStorage.setItem('refrig_data', JSON.stringify(state));
+            renderHistorico();
+        }
+
+        function limparHistorico() {
+            if(confirm("Deseja apagar todo o histórico?")) {
+                state.historico = [];
+                localStorage.setItem('refrig_data', JSON.stringify(state));
+                renderHistorico();
+            }
+        }
+
+        function toggleSettings() {
+            const m = document.getElementById('settingsModal');
+            const c = document.getElementById('settingsContent');
+            if (m.classList.contains('hidden')) {
+                m.classList.remove('hidden');
+                setTimeout(() => c.classList.remove('translate-y-full'), 10);
+            } else {
+                c.classList.add('translate-y-full');
+                setTimeout(() => m.classList.add('hidden'), 300);
+            }
+        }
+
+        function handleLogoUpload(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    state.logoBase64 = e.target.result;
+                    document.getElementById('headerLogoImg').src = e.target.result;
+                    document.getElementById('headerLogoArea').classList.remove('hidden');
+                    localStorage.setItem('refrig_data', JSON.stringify(state));
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function removerLogo() {
+            state.logoBase64 = null;
+            document.getElementById('headerLogoArea').classList.add('hidden');
+            localStorage.setItem('refrig_data', JSON.stringify(state));
+        }
+
         function toggleAccordion(id) { document.getElementById(id).classList.toggle('accordion-open'); }
-        
-        function logout() {
-            localStorage.removeItem("inforos_logado");
-            window.location.href = "https://refrigeracaoeliezer.github.io/site/";
+        function logout() { localStorage.removeItem("inforos_logado"); window.location.href = "https://refrigeracaoeliezer.github.io/site/"; }
+        function copiarTexto(id, btn) {
+            const texto = document.getElementById(id).innerText;
+            navigator.clipboard.writeText(texto);
+            const original = btn.innerText;
+            btn.innerText = "COPIADO!";
+            setTimeout(() => btn.innerText = original, 2000);
         }
 
         window.onload = () => {
+            if(state.logoBase64) {
+                document.getElementById('headerLogoImg').src = state.logoBase64;
+                document.getElementById('headerLogoArea').classList.remove('hidden');
+            }
             document.getElementById('dataServico').valueAsDate = new Date();
             adicionarServico();
         };
