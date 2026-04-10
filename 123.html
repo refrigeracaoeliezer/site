@@ -24,6 +24,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            overflow-x: hidden;
         }
 
         #overlay-login {
@@ -149,16 +150,13 @@
 
         <div class="login-card hidden" id="card-recuperar">
             <h2>Recuperar Acesso</h2>
-            <p style="font-size: 12px; color: grey; margin: 10px 0;">Digite o e-mail para ver sua pergunta.</p>
-            
-            <input type="email" id="rec_email" placeholder="Seu E-mail" autocomplete="off" onblur="buscarPergunta()">
+            <p style="font-size: 12px; color: grey; margin: 10px 0;">Digite o e-mail cadastrado para ver a pergunta.</p>
+            <input type="email" id="rec_email" placeholder="Seu E-mail" autocomplete="off" spellcheck="false" onblur="buscarPergunta()">
             <div id="display-pergunta" style="margin: 10px 0; color: #27a9e3; font-style: italic; font-size: 13px;"></div>
-            
-            <input type="text" id="rec_resposta" placeholder="Sua Resposta" autocomplete="off">
+            <input type="text" id="rec_resposta" placeholder="Sua Resposta" autocomplete="off" spellcheck="false">
             <div id="rec-status" class="status-msg"></div>
-            
             <button class="btn-save" id="btn-recuperar" onclick="recuperarSenha()" style="margin-top: 15px;">Verificar Dados</button>
-            <div id="dica-email" style="margin-top: 15px; color: #44ff44; font-weight: bold; font-size: 13px;"></div>
+            <div id="dica-email" style="margin-top: 15px; color: #44ff44; font-weight: bold; font-size: 13px; line-height: 1.4;"></div>
             <p class="link-auth" onclick="alternarTela('login')" style="margin-top: 15px;">Voltar</p>
         </div>
     </div>
@@ -168,38 +166,50 @@
 
         <div class="config-section">
             <div class="section-title"><i class="fa-solid fa-image"></i> Logo da Empresa</div>
-            <div class="logo-preview" id="logoPreview"><i class="fa-solid fa-camera" style="font-size: 30px; color: rgba(255,255,255,0.1);"></i></div>
+            <div class="logo-preview" id="logoPreview">
+                <i class="fa-solid fa-camera" style="font-size: 30px; color: rgba(255,255,255,0.1);"></i>
+            </div>
             <input type="file" id="logoInput" accept="image/*" onchange="previewImage(this)">
-            <button class="btn-save" onclick="saveData('logo')">Salvar Logo</button>
+            <button class="btn-save" onclick="saveData('logo')"><i class="fa-solid fa-floppy-disk"></i> Salvar Logo</button>
         </div>
 
         <div class="config-section">
             <div class="section-title"><i class="fa-solid fa-building"></i> Identidade da Empresa</div>
-            <input type="text" id="emp_nome" placeholder="Nome Fantasia">
+            <input type="text" id="emp_nome" list="lista_empresas" placeholder="Nome Fantasia">
+            <datalist id="lista_empresas"><option value="Refrigeração Eliezer"></datalist>
             <input type="text" id="emp_doc" placeholder="CNPJ / CPF">
-            <button class="btn-save" onclick="saveData('empresa')">Salvar Empresa</button>
+            <button class="btn-save" onclick="saveData('empresa')"><i class="fa-solid fa-floppy-disk"></i> Salvar Empresa</button>
         </div>
 
         <div class="config-section">
             <div class="section-title"><i class="fa-solid fa-gears"></i> Detalhes do Serviço</div>
-            <input type="text" id="srv_nome" placeholder="Descrição do Serviço">
+            <input type="text" id="srv_nome" list="lista_servicos" placeholder="Descrição do Serviço">
+            <datalist id="lista_servicos">
+                <option value="Higienização de Ar Condicionado">
+                <option value="Carga de Gás">
+            </datalist>
             <input type="number" id="srv_valor" placeholder="Valor R$">
-            <button class="btn-save" onclick="saveData('servico')">Salvar Serviço</button>
+            <button class="btn-save" onclick="saveData('servico')"><i class="fa-solid fa-floppy-disk"></i> Salvar Serviço</button>
         </div>
 
         <div class="config-section">
             <div class="section-title"><i class="fa-solid fa-user"></i> Dados do Cliente</div>
-            <input type="text" id="cli_nome" placeholder="Nome do Cliente">
+            <input type="text" id="cli_nome" list="lista_clientes" placeholder="Nome do Cliente">
+            <datalist id="lista_clientes"><option value="João Silva"></datalist>
             <input type="text" id="cli_doc" placeholder="CPF / CNPJ">
             <input type="tel" id="cli_tel" placeholder="WhatsApp">
             <input type="text" id="cli_end" placeholder="Endereço">
-            <button class="btn-save" onclick="saveData('cliente')">Salvar Cliente</button>
+            <button class="btn-save" onclick="saveData('cliente')"><i class="fa-solid fa-floppy-disk"></i> Salvar Cliente</button>
         </div>
 
         <div class="config-section">
             <div class="section-title"><i class="fa-solid fa-clipboard-list"></i> Observações Técnicas</div>
+            <input type="text" id="obs_busca" list="lista_obs" placeholder="Puxar Modelo..." oninput="checkObsSelection()">
+            <datalist id="lista_obs">
+                <option value="Garantia Padrão (90 dias)">
+            </datalist>
             <textarea id="txt_obs" rows="5" placeholder="Texto das observações..."></textarea>
-            <button class="btn-save" onclick="saveData('obs')">Salvar Observações</button>
+            <button class="btn-save" onclick="saveData('obs')"><i class="fa-solid fa-floppy-disk"></i> Salvar Observações</button>
         </div>
         
         <p style="text-align: center; color: grey; font-size: 10px; margin-bottom: 40px;">SISTEMA V2.7</p>
@@ -221,7 +231,7 @@
             try {
                 const resp = await fetch(`${URL_LOGIN}?action=checar_registro`);
                 const existe = await resp.text();
-                if (existe === "tem_dono") document.getElementById('link-registrar-container').classList.add('hidden');
+                if (existe.trim() === "tem_dono") document.getElementById('link-registrar-container').classList.add('hidden');
             } catch (e) { console.log("Erro de conexão."); }
         }
 
@@ -229,14 +239,13 @@
             const email = document.getElementById('user_email').value;
             const pass = document.getElementById('user_pass').value;
             if(!email || !pass) return showStatus('login-status', 'Preencha tudo.', 'error');
-
             showStatus('login-status', 'Verificando...', 'loading');
             document.getElementById('btn-entrar').disabled = true;
 
             try {
                 const resp = await fetch(`${URL_LOGIN}?action=login&email=${email}&senha=${pass}`);
                 const result = await resp.text();
-                if(result === "logado") {
+                if(result.trim() === "logado") {
                     document.getElementById('overlay-login').classList.add('hidden');
                     document.getElementById('main-content').classList.remove('hidden');
                 } else {
@@ -251,18 +260,17 @@
             if(!email) return;
             document.getElementById('display-pergunta').innerText = "Buscando pergunta...";
             try {
-                const resp = await fetch(`${URL_LOGIN}?action=get_pergunta&email=${email}`);
+                const resp = await fetch(`${URL_LOGIN}?action=get_pergunta&email=${encodeURIComponent(email)}`);
                 document.getElementById('display-pergunta').innerText = await resp.text();
-            } catch (e) { document.getElementById('display-pergunta').innerText = "Erro ao buscar pergunta."; }
+            } catch (e) { document.getElementById('display-pergunta').innerText = "E-mail não encontrado."; }
         }
 
         async function recuperarSenha() {
             const resposta = document.getElementById('rec_resposta').value;
             if(!resposta) return showStatus('rec-status', 'Digite a resposta.', 'error');
-
             showStatus('rec-status', 'Consultando...', 'loading');
             try {
-                const resp = await fetch(`${URL_LOGIN}?action=recuperar&resposta=${resposta}`);
+                const resp = await fetch(`${URL_LOGIN}?action=recuperar&resposta=${encodeURIComponent(resposta)}`);
                 const result = await resp.text();
                 document.getElementById('dica-email').innerText = result;
             } catch (e) { showStatus('rec-status', 'Erro.', 'error'); }
@@ -286,13 +294,15 @@
             showStatus('reg-status', 'Registrando...', 'loading');
 
             const url = `${URL_LOGIN}?action=registrar&email=${email}&senha=${pass}&pergunta=${perg}&resposta=${resp}`;
-            const response = await fetch(url);
-            const res = await response.text();
-            if(res === "sucesso") {
-                alert("Criado!");
-                alternarTela('login');
-                verificarSeExisteDono();
-            } else { showStatus('reg-status', 'Erro ao registrar.', 'error'); }
+            try {
+                const response = await fetch(url);
+                const res = await response.text();
+                if(res.trim() === "sucesso") {
+                    alert("Conta mestre criada!");
+                    alternarTela('login');
+                    verificarSeExisteDono();
+                } else { showStatus('reg-status', 'Erro ou registro bloqueado.', 'error'); }
+            } catch (e) { showStatus('reg-status', 'Erro de rede.', 'error'); }
         }
 
         function previewImage(input) {
@@ -303,7 +313,14 @@
             }
         }
 
-        function saveData(secao) { alert("Salvando " + secao + "..."); }
+        function checkObsSelection() {
+            const val = document.getElementById('obs_busca').value;
+            if(val === "Garantia Padrão (90 dias)") {
+                document.getElementById('txt_obs').value = "Garantia de 90 dias conforme CDC...";
+            }
+        }
+
+        function saveData(secao) { alert("Salvando " + secao + " no banco de dados..."); }
     </script>
 </body>
 </html>
