@@ -26,7 +26,6 @@
             align-items: center;
         }
 
-        /* Camada de Login */
         #overlay-login {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -51,7 +50,6 @@
 
         .hidden { display: none !important; }
 
-        /* Estilo das Seções */
         .container { width: 100%; max-width: 600px; }
         h1 { font-size: 28px; font-weight: 700; margin-bottom: 30px; text-align: center; }
 
@@ -117,7 +115,9 @@
         .logo-preview img { width: 100%; height: 100%; object-fit: contain; }
 
         .link-auth { color: #27a9e3; cursor: pointer; font-size: 13px; }
-        .status-msg { color: #27a9e3; font-size: 13px; margin: 10px 0; display: none; }
+        .status-msg { font-size: 13px; margin: 10px 0; display: none; }
+        .status-error { color: #ff4b4b; }
+        .status-loading { color: #27a9e3; }
     </style>
 </head>
 <body>
@@ -126,9 +126,9 @@
         <div class="login-card" id="card-login">
             <i class="fa-solid fa-lock" style="font-size: 40px; color: #1e40af; margin-bottom: 20px;"></i>
             <h2>Configurações</h2>
-            <input type="email" id="user_email" placeholder="E-mail" style="margin-top: 20px;">
-            <input type="password" id="user_pass" placeholder="Senha" style="margin-top: 10px;">
-            <div id="login-status" class="status-msg">Verificando...</div>
+            <input type="email" id="user_email" placeholder="E-mail" autocomplete="off" style="margin-top: 20px;">
+            <input type="password" id="user_pass" placeholder="Senha" autocomplete="off" style="margin-top: 10px;">
+            <div id="login-status" class="status-msg"></div>
             <button class="btn-save" id="btn-entrar" onclick="realizarLogin()" style="margin-top: 15px;">Entrar</button>
             <p style="margin-top: 20px;">
                 <span id="link-registrar-container"><span class="link-auth" onclick="alternarTela('registrar')">Criar Conta</span> | </span>
@@ -138,37 +138,37 @@
 
         <div class="login-card hidden" id="card-registrar">
             <h2>Novo Registro</h2>
-            <input type="email" id="reg_email" placeholder="E-mail" style="margin-top: 15px;">
-            <input type="password" id="reg_pass" placeholder="Senha" style="margin-top: 10px;">
-            <input type="text" id="reg_pergunta" placeholder="Pergunta de Segurança" style="margin-top: 10px;">
-            <input type="text" id="reg_resposta" placeholder="Resposta da Pergunta" style="margin-top: 10px;">
-            <button class="btn-save" onclick="registrarUsuario()" style="margin-top: 15px;">Salvar Conta</button>
+            <input type="email" id="reg_email" placeholder="E-mail" autocomplete="off" style="margin-top: 15px;">
+            <input type="password" id="reg_pass" placeholder="Senha" autocomplete="off" style="margin-top: 10px;">
+            <input type="text" id="reg_pergunta" placeholder="Pergunta (Ex: Nome do Pet?)" autocomplete="off" style="margin-top: 10px;">
+            <input type="text" id="reg_resposta" placeholder="Resposta da Pergunta" autocomplete="off" style="margin-top: 10px;">
+            <div id="reg-status" class="status-msg"></div>
+            <button class="btn-save" id="btn-registrar" onclick="registrarUsuario()" style="margin-top: 15px;">Salvar Conta</button>
             <p class="link-auth" onclick="alternarTela('login')" style="margin-top: 15px;">Voltar</p>
         </div>
 
         <div class="login-card hidden" id="card-recuperar">
-    <h2>Recuperar Acesso</h2>
-    <p style="font-size: 12px; color: grey; margin: 10px 0;">Digite sua resposta de segurança.</p>
-    
-    <input type="text" id="rec_resposta" 
-           placeholder="Sua Resposta" 
-           autocomplete="off" 
-           spellcheck="false">
-    
-    <div id="rec-status" class="status-msg"></div>
-    <button class="btn-save" id="btn-recuperar" onclick="recuperarSenha()" style="margin-top: 15px;">Verificar</button>
-    <div id="dica-email" style="margin-top: 15px; color: #27a9e3; font-weight: bold; font-size: 13px;"></div>
-    <p class="link-auth" onclick="alternarTela('login')" style="margin-top: 15px;">Voltar</p>
-</div>
+            <h2>Recuperar Acesso</h2>
+            <p style="font-size: 12px; color: grey; margin: 10px 0;">Digite o e-mail para ver sua pergunta.</p>
+            
+            <input type="email" id="rec_email" placeholder="Seu E-mail" autocomplete="off" onblur="buscarPergunta()">
+            <div id="display-pergunta" style="margin: 10px 0; color: #27a9e3; font-style: italic; font-size: 13px;"></div>
+            
+            <input type="text" id="rec_resposta" placeholder="Sua Resposta" autocomplete="off">
+            <div id="rec-status" class="status-msg"></div>
+            
+            <button class="btn-save" id="btn-recuperar" onclick="recuperarSenha()" style="margin-top: 15px;">Verificar Dados</button>
+            <div id="dica-email" style="margin-top: 15px; color: #44ff44; font-weight: bold; font-size: 13px;"></div>
+            <p class="link-auth" onclick="alternarTela('login')" style="margin-top: 15px;">Voltar</p>
+        </div>
+    </div>
 
     <div class="container hidden" id="main-content">
         <h1>Configurações</h1>
 
         <div class="config-section">
             <div class="section-title"><i class="fa-solid fa-image"></i> Logo da Empresa</div>
-            <div class="logo-preview" id="logoPreview">
-                <i class="fa-solid fa-camera" style="font-size: 30px; color: rgba(255,255,255,0.1);"></i>
-            </div>
+            <div class="logo-preview" id="logoPreview"><i class="fa-solid fa-camera" style="font-size: 30px; color: rgba(255,255,255,0.1);"></i></div>
             <input type="file" id="logoInput" accept="image/*" onchange="previewImage(this)">
             <button class="btn-save" onclick="saveData('logo')">Salvar Logo</button>
         </div>
@@ -198,62 +198,74 @@
 
         <div class="config-section">
             <div class="section-title"><i class="fa-solid fa-clipboard-list"></i> Observações Técnicas</div>
-            <input type="text" id="obs_busca" list="lista_obs" placeholder="Buscar Modelo..." oninput="checkObsSelection()">
-            <datalist id="lista_obs">
-                <option value="Garantia Padrão (90 dias)">
-            </datalist>
             <textarea id="txt_obs" rows="5" placeholder="Texto das observações..."></textarea>
             <button class="btn-save" onclick="saveData('obs')">Salvar Observações</button>
         </div>
         
-        <p style="text-align: center; color: grey; font-size: 10px; margin-bottom: 40px;">SISTEMA V2.5</p>
+        <p style="text-align: center; color: grey; font-size: 10px; margin-bottom: 40px;">SISTEMA V2.7</p>
     </div>
 
     <script>
-        const URL_LOGIN = "https://script.google.com/macros/s/AKfycbwU-MwJvYX5jyV9pnunD5W2Xk01ZYqAC_hGL3eiyxIwETRjf_4ZoXBaWmGfCQOtIBWGqA/exec";
+        const URL_LOGIN = "https://script.google.com/macros/s/AKfycbyVHWD028yH3qTXi63aL4Jq17MwNuXnfy8IwwA2SVOs26bsQRxmffePggxM3AriKhI2IQ/exec";
 
         window.onload = verificarSeExisteDono;
+
+        function showStatus(id, msg, type) {
+            const el = document.getElementById(id);
+            el.innerText = msg;
+            el.className = 'status-msg ' + (type === 'error' ? 'status-error' : 'status-loading');
+            el.style.display = 'block';
+        }
 
         async function verificarSeExisteDono() {
             try {
                 const resp = await fetch(`${URL_LOGIN}?action=checar_registro`);
                 const existe = await resp.text();
                 if (existe === "tem_dono") document.getElementById('link-registrar-container').classList.add('hidden');
-            } catch (e) { console.log("Erro ao conectar."); }
+            } catch (e) { console.log("Erro de conexão."); }
         }
 
         async function realizarLogin() {
             const email = document.getElementById('user_email').value;
             const pass = document.getElementById('user_pass').value;
-            if(!email || !pass) return alert("Preencha tudo!");
+            if(!email || !pass) return showStatus('login-status', 'Preencha tudo.', 'error');
 
-            document.getElementById('login-status').style.display = 'block';
+            showStatus('login-status', 'Verificando...', 'loading');
             document.getElementById('btn-entrar').disabled = true;
 
             try {
                 const resp = await fetch(`${URL_LOGIN}?action=login&email=${email}&senha=${pass}`);
                 const result = await resp.text();
                 if(result === "logado") {
-                    document.getElementById('overlay-login').style.display = 'none';
+                    document.getElementById('overlay-login').classList.add('hidden');
                     document.getElementById('main-content').classList.remove('hidden');
                 } else {
-                    alert("Dados incorretos!");
-                    document.getElementById('login-status').style.display = 'none';
+                    showStatus('login-status', 'Dados incorretos.', 'error');
                     document.getElementById('btn-entrar').disabled = false;
                 }
-            } catch (e) { alert("Erro de conexão."); }
+            } catch (e) { showStatus('login-status', 'Erro de servidor.', 'error'); }
+        }
+
+        async function buscarPergunta() {
+            const email = document.getElementById('rec_email').value;
+            if(!email) return;
+            document.getElementById('display-pergunta').innerText = "Buscando pergunta...";
+            try {
+                const resp = await fetch(`${URL_LOGIN}?action=get_pergunta&email=${email}`);
+                document.getElementById('display-pergunta').innerText = await resp.text();
+            } catch (e) { document.getElementById('display-pergunta').innerText = "Erro ao buscar pergunta."; }
         }
 
         async function recuperarSenha() {
             const resposta = document.getElementById('rec_resposta').value;
-            if(!resposta) return alert("Digite a resposta!");
+            if(!resposta) return showStatus('rec-status', 'Digite a resposta.', 'error');
 
-            document.getElementById('rec-status').style.display = 'block';
+            showStatus('rec-status', 'Consultando...', 'loading');
             try {
                 const resp = await fetch(`${URL_LOGIN}?action=recuperar&resposta=${resposta}`);
                 const result = await resp.text();
                 document.getElementById('dica-email').innerText = result;
-            } catch (e) { alert("Erro ao recuperar."); }
+            } catch (e) { showStatus('rec-status', 'Erro.', 'error'); }
             document.getElementById('rec-status').style.display = 'none';
         }
 
@@ -271,15 +283,16 @@
             const pass = document.getElementById('reg_pass').value;
             const perg = document.getElementById('reg_pergunta').value;
             const resp = document.getElementById('reg_resposta').value;
+            showStatus('reg-status', 'Registrando...', 'loading');
 
             const url = `${URL_LOGIN}?action=registrar&email=${email}&senha=${pass}&pergunta=${perg}&resposta=${resp}`;
             const response = await fetch(url);
             const res = await response.text();
             if(res === "sucesso") {
-                alert("Criado! Faça login.");
+                alert("Criado!");
                 alternarTela('login');
                 verificarSeExisteDono();
-            } else { alert("Erro ao registrar."); }
+            } else { showStatus('reg-status', 'Erro ao registrar.', 'error'); }
         }
 
         function previewImage(input) {
@@ -287,13 +300,6 @@
                 const reader = new FileReader();
                 reader.onload = e => document.getElementById('logoPreview').innerHTML = `<img src="${e.target.result}">`;
                 reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        function checkObsSelection() {
-            const val = document.getElementById('obs_busca').value;
-            if(val === "Garantia Padrão (90 dias)") {
-                document.getElementById('txt_obs').value = "Garantia de 90 dias conforme CDC...";
             }
         }
 
