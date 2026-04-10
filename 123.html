@@ -147,15 +147,19 @@
         </div>
 
         <div class="login-card hidden" id="card-recuperar">
-            <h2>Recuperar Acesso</h2>
-            <p style="font-size: 12px; color: grey; margin: 10px 0;">Digite sua resposta de segurança para ver seus dados.</p>
-            <input type="text" id="rec_resposta" placeholder="Sua Resposta">
-            <div id="rec-status" class="status-msg">Buscando...</div>
-            <button class="btn-save" id="btn-recuperar" onclick="recuperarSenha()" style="margin-top: 15px;">Verificar</button>
-            <div id="dica-email" style="margin-top: 15px; color: #27a9e3; font-weight: bold; font-size: 13px;"></div>
-            <p class="link-auth" onclick="alternarTela('login')" style="margin-top: 15px;">Voltar</p>
-        </div>
-    </div>
+    <h2>Recuperar Acesso</h2>
+    <p style="font-size: 12px; color: grey; margin: 10px 0;">Digite sua resposta de segurança.</p>
+    
+    <input type="text" id="rec_resposta" 
+           placeholder="Sua Resposta" 
+           autocomplete="off" 
+           spellcheck="false">
+    
+    <div id="rec-status" class="status-msg"></div>
+    <button class="btn-save" id="btn-recuperar" onclick="recuperarSenha()" style="margin-top: 15px;">Verificar</button>
+    <div id="dica-email" style="margin-top: 15px; color: #27a9e3; font-weight: bold; font-size: 13px;"></div>
+    <p class="link-auth" onclick="alternarTela('login')" style="margin-top: 15px;">Voltar</p>
+</div>
 
     <div class="container hidden" id="main-content">
         <h1>Configurações</h1>
