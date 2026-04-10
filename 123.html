@@ -26,7 +26,6 @@
         .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3b82f6; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        /* Classe para animação de subida do modal */
         .modal-transition { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
     </style>
 </head>
@@ -62,9 +61,9 @@
 
                     <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-3 relative overflow-hidden">
                         <div class="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
-                        <input type="text" id="nomePrestador" placeholder="Seu Nome / Empresa" class="w-full p-3 rounded-xl border border-slate-200 text-sm font-bold focus:outline-none focus:border-blue-500">
-                        <input type="text" id="nomeCliente" placeholder="Nome do Cliente" class="w-full p-3 rounded-xl border border-slate-200 text-sm font-bold focus:outline-none focus:border-blue-500">
-                        <input type="text" id="enderecoCliente" placeholder="Endereço" class="w-full p-3 rounded-xl border border-slate-200 text-sm font-bold focus:outline-none focus:border-blue-500">
+                        <input type="text" id="nomePrestador" placeholder="Seu Nome / Empresa" class="w-full p-3 rounded-xl border border-slate-200 text-sm font-bold focus:outline-none">
+                        <input type="text" id="nomeCliente" placeholder="Nome do Cliente" class="w-full p-3 rounded-xl border border-slate-200 text-sm font-bold focus:outline-none">
+                        <input type="text" id="enderecoCliente" placeholder="Endereço" class="w-full p-3 rounded-xl border border-slate-200 text-sm font-bold focus:outline-none">
                         <div class="grid grid-cols-3 gap-2">
                             <input type="date" id="dataServico" class="p-2 rounded-xl border border-slate-200 text-xs font-bold text-center">
                             <input type="time" id="horaServico" value="09:00" class="p-2 rounded-xl border border-slate-200 text-xs font-bold text-center">
@@ -73,7 +72,7 @@
                     </div>
 
                     <div id="services-container" class="space-y-3"></div>
-                    <button onclick="adicionarServico()" class="w-full py-3 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 font-bold text-xs hover:border-blue-400 hover:text-blue-500 transition-all">+ ADICIONAR ITEM</button>
+                    <button onclick="adicionarServico()" class="w-full py-3 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 font-bold text-xs hover:border-blue-400">+ ADICIONAR ITEM</button>
                     
                     <textarea id="detalhesServico" placeholder="Observações técnicas..." class="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 text-sm h-20 focus:outline-none"></textarea>
 
@@ -88,7 +87,7 @@
                     <button onclick="calcularTudo()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-lg shadow-lg active:scale-95 transition-transform uppercase">CALCULAR AGORA</button>
                 </div>
 
-                <div id="results-section" class="hidden space-y-5">
+                <div id="results-section" class="hidden space-y-5 animate-slide-up">
                     <div class="bg-[#0f172a] p-6 rounded-3xl text-white text-center shadow-xl ring-4 ring-slate-100">
                         <p class="text-[10px] uppercase font-bold text-blue-300 tracking-widest mb-1">Valor Sugerido</p>
                         <p class="text-5xl font-black tracking-tighter" id="displayPrecoFinal">R$ 0,00</p>
@@ -127,34 +126,38 @@
             <div class="space-y-6">
                 <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
                     <h3 class="text-xs font-bold text-slate-500 uppercase mb-3"><i class="fa-solid fa-image text-blue-500 mr-1"></i> Seu Logótipo</h3>
-                    <input type="file" id="logoInput" accept="image/*" onchange="handleLogoUpload(this)" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                    <button onclick="removerLogo()" class="text-[10px] text-red-500 font-bold mt-2 uppercase hover:underline">Remover Logo</button>
+                    <input type="file" id="logoInput" accept="image/*" onchange="handleLogoUpload(this)" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700">
+                    <button onclick="removerLogo()" class="text-[10px] text-red-500 font-bold mt-2 uppercase">Remover Logo</button>
                 </div>
-                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                    <h3 class="text-xs font-bold text-slate-500 uppercase mb-3"><i class="fa-solid fa-percent text-blue-500 mr-1"></i> Pagamento</h3>
-                    <div class="flex items-center justify-between">
-                        <label class="text-xs font-bold text-slate-700">Sinal exigido (%)</label>
-                        <input type="number" id="configSinal" value="30" class="w-20 p-2 rounded-lg border border-slate-200 text-xs text-center font-bold">
-                    </div>
-                </div>
-                <button onclick="salvarConfiguracoes()" class="w-full bg-[#0f172a] text-white font-bold py-4 rounded-2xl hover:bg-black transition-all shadow-lg uppercase">Salvar Alterações</button>
+                <button onclick="salvarConfiguracoes()" class="w-full bg-[#0f172a] text-white font-bold py-4 rounded-2xl shadow-lg uppercase">Salvar Alterações</button>
             </div>
         </div>
     </div>
 
-    <div id="printable-area" class="hidden p-10 bg-white text-slate-800">
-        <h1 id="printPrestador" class="text-2xl font-bold uppercase"></h1>
-        <hr class="my-4 border-2 border-slate-800">
-        <p><strong>Cliente:</strong> <span id="printCliente"></span></p>
-        <p><strong>Data:</strong> <span id="printData"></span></p>
-        <div id="printServicesList" class="my-5 border-y py-4"></div>
-        <h2 class="text-2xl font-black text-right">Total: <span id="printTotal"></span></h2>
+    <div id="historyModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm" onclick="toggleHistory()"></div>
+        <div id="historyContent" class="absolute inset-y-0 right-0 w-full max-w-sm bg-white shadow-2xl transform translate-x-full modal-transition flex flex-col">
+            <div class="bg-[#0f172a] text-white p-6 flex justify-between items-center">
+                <div>
+                    <h2 class="text-lg font-black uppercase flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left"></i> Histórico
+                    </h2>
+                    <p class="text-[10px] text-slate-400">Últimos orçamentos salvos</p>
+                </div>
+                <button onclick="toggleHistory()" class="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="historyList" class="flex-grow overflow-y-auto p-4 space-y-3 bg-slate-50">
+                </div>
+            <div class="p-4 border-t bg-white">
+                <button onclick="limparTudo()" class="w-full py-3 text-red-500 font-bold text-xs border border-red-100 rounded-xl hover:bg-red-50 uppercase">Limpar Tudo</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        let state = JSON.parse(localStorage.getItem('refrig_data')) || { logoBase64: null, sinal: 30 };
+        // ESTADO INICIAL
+        let state = JSON.parse(localStorage.getItem('refrig_data')) || { logoBase64: null, sinal: 30, historico: [] };
 
-        // FORMATAÇÃO MOEDA
         function formatarMoeda(i) {
             let v = i.value.replace(/\D/g, "");
             v = (v / 100).toFixed(2).replace(".", ",");
@@ -162,66 +165,117 @@
             i.value = v;
         }
 
-        // ADICIONAR LINHA DE SERVIÇO
         function adicionarServico() {
             const container = document.getElementById('services-container');
             const div = document.createElement('div');
-            div.className = "flex gap-2 bg-white p-3 border border-slate-200 rounded-xl relative shadow-sm animate-slide-up";
+            div.className = "flex gap-2 bg-white p-3 border border-slate-200 rounded-xl relative shadow-sm";
             div.innerHTML = `
-                <input type="text" placeholder="Descrição do Serviço" class="flex-grow p-1 text-sm font-bold outline-none service-name">
+                <input type="text" placeholder="Serviço" class="flex-grow p-1 text-sm font-bold outline-none service-name">
                 <div class="relative w-28">
                     <span class="absolute left-2 top-1.5 text-xs text-slate-400">R$</span>
                     <input type="text" placeholder="0,00" class="w-full pl-7 p-1 text-sm font-bold border-l service-price" onkeyup="formatarMoeda(this)">
                 </div>
-                <button onclick="this.parentElement.remove()" class="text-slate-300 hover:text-red-500 transition-colors"><i class="fa-solid fa-trash-can"></i></button>
+                <button onclick="this.parentElement.remove()" class="text-red-300 px-2"><i class="fa-solid fa-trash-can"></i></button>
             `;
             container.appendChild(div);
         }
 
-        // CÁLCULO FINAL
         function calcularTudo() {
-            let totalServicos = 0;
-            let listaItensTxt = "";
+            let total = 0;
+            let itens = [];
             document.querySelectorAll('#services-container > div').forEach(row => {
                 const nome = row.querySelector('.service-name').value;
-                const precoStr = row.querySelector('.service-price').value.replace(/\./g, '').replace(',', '.');
-                const preco = parseFloat(precoStr) || 0;
+                const preco = parseFloat(row.querySelector('.service-price').value.replace(/\./g, '').replace(',', '.')) || 0;
                 if(preco > 0) {
-                    totalServicos += preco;
-                    listaItensTxt += `• ${nome}: R$ ${preco.toFixed(2).replace('.', ',')}\n`;
+                    total += preco;
+                    itens.push({ nome, preco });
                 }
             });
 
-            const matStr = document.getElementById('custoPecas').value.replace(/\./g, '').replace(',', '.');
-            const mat = parseFloat(matStr) || 0;
-            const final = totalServicos + mat;
+            const mat = parseFloat(document.getElementById('custoPecas').value.replace(/\./g, '').replace(',', '.')) || 0;
+            const final = total + mat;
             
+            // Salvar no Histórico
+            const novoOrcamento = {
+                id: Date.now(),
+                cliente: document.getElementById('nomeCliente').value || "Cliente Sem Nome",
+                valor: final,
+                data: new Date().toLocaleDateString('pt-BR'),
+                itensCount: itens.length
+            };
+            state.historico.unshift(novoOrcamento);
+            if(state.historico.length > 20) state.historico.pop();
+            localStorage.setItem('refrig_data', JSON.stringify(state));
+
+            // UI
             document.getElementById('displayPrecoFinal').innerText = "R$ " + final.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-            
-            // Gerar Mensagem WhatsApp
-            const cliente = document.getElementById('nomeCliente').value || "Cliente";
-            const prestador = document.getElementById('nomePrestador').value || "Técnico";
-            document.getElementById('txt_proposta').innerText = `*ORÇAMENTO TÉCNICO*\n\nOlá ${cliente}!\n\n*SERVIÇOS:*\n${listaItensTxt}\n*TOTAL:* R$ ${final.toLocaleString('pt-BR', {minimumFractionDigits: 2})}\n\nFico no aguardo,\n${prestador}`;
+            document.getElementById('txt_proposta').innerText = `*ORÇAMENTO*\nTotal: R$ ${final.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
             
             document.getElementById('input-section').classList.add('hidden');
             document.getElementById('results-section').classList.remove('hidden');
             window.scrollTo(0,0);
         }
 
-        // FUNÇÃO TOGGLE CONFIGURAÇÕES (IGUAL AO ORIGINAL)
+        // MODAL SETTINGS
         function toggleSettings() {
-            const modal = document.getElementById('settingsModal');
-            const content = document.getElementById('modalContent');
-            if (modal.classList.contains('hidden')) {
-                modal.classList.remove('hidden');
-                setTimeout(() => content.classList.remove('translate-y-full'), 10);
+            const m = document.getElementById('settingsModal');
+            const c = document.getElementById('modalContent');
+            if (m.classList.contains('hidden')) {
+                m.classList.remove('hidden');
+                setTimeout(() => c.classList.remove('translate-y-full'), 10);
             } else {
-                content.classList.add('translate-y-full');
-                setTimeout(() => modal.classList.add('hidden'), 300);
+                c.classList.add('translate-y-full');
+                setTimeout(() => m.classList.add('hidden'), 300);
             }
         }
 
-        // LOGO UPLOAD
+        // MODAL HISTÓRICO (Lógica da Imagem 4)
+        function toggleHistory() {
+            const m = document.getElementById('historyModal');
+            const c = document.getElementById('historyContent');
+            if (m.classList.contains('hidden')) {
+                renderHistorico();
+                m.classList.remove('hidden');
+                setTimeout(() => c.classList.remove('translate-x-full'), 10);
+            } else {
+                c.classList.add('translate-x-full');
+                setTimeout(() => m.classList.add('hidden'), 300);
+            }
+        }
+
+        function renderHistorico() {
+            const list = document.getElementById('historyList');
+            list.innerHTML = "";
+            if(state.historico.length === 0) {
+                list.innerHTML = `<div class="text-center text-slate-400 py-10 text-xs">Nenhum orçamento recente.</div>`;
+                return;
+            }
+            state.historico.forEach(item => {
+                const div = document.createElement('div');
+                div.className = "bg-white p-3 rounded-xl border border-slate-200 shadow-sm hover:border-blue-300 transition-colors cursor-pointer";
+                div.innerHTML = `
+                    <div class="flex justify-between items-start mb-1">
+                        <span class="font-bold text-sm text-slate-800">${item.cliente}</span>
+                        <span class="text-xs font-black text-blue-600">R$ ${item.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
+                    </div>
+                    <div class="text-[10px] text-slate-400 flex justify-between uppercase font-bold">
+                        <span>${item.data}</span>
+                        <span>${item.itensCount} itens</span>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function limparTudo() {
+            if(confirm("Deseja apagar todo o histórico?")) {
+                state.historico = [];
+                localStorage.setItem('refrig_data', JSON.stringify(state));
+                renderHistorico();
+            }
+        }
+
+        // LOGO
         function handleLogoUpload(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
@@ -237,16 +291,15 @@
         function removerLogo() {
             state.logoBase64 = null;
             document.getElementById('headerLogoArea').classList.add('hidden');
+            localStorage.setItem('refrig_data', JSON.stringify(state));
         }
 
         function salvarConfiguracoes() {
-            state.sinal = document.getElementById('configSinal').value;
             localStorage.setItem('refrig_data', JSON.stringify(state));
             toggleSettings();
         }
 
         function toggleAccordion(id) { document.getElementById(id).classList.toggle('accordion-open'); }
-        function toggleHistory() { alert("Histórico será implementado na próxima etapa!"); }
 
         window.onload = () => {
             if(state.logoBase64) {
