@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Refrigerista Blindado Clone</title>
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; -webkit-font-smoothing: antialiased; user-select: none; }
+        input, textarea, .select-all { user-select: text; }
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+        .pt-safe { padding-top: max(1.25rem, env(safe-area-inset-top)); }
+        .accordion-content { max-height: 0; opacity: 0; overflow: hidden; transition: all 0.3s ease; }
+        .accordion-open .accordion-content { max-height: 1000px; opacity: 1; padding: 1rem; }
+        .accordion-open .accordion-icon { transform: rotate(180deg); }
+        @media print { .no-print { display: none !important; } #printable-area { display: block !important; } }
+        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3b82f6; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="text-slate-800 pb-safe">
+    <div class="app-wrapper min-h-screen flex flex-col items-center p-0 sm:p-4 no-print">
+        <div class="w-full max-w-md bg-white shadow-2xl relative flex flex-col min-h-screen sm:min-h-0 sm:rounded-3xl overflow-hidden">
+            
+            <header class="bg-[#0f172a] text-white p-5 pt-safe pb-10 relative overflow-hidden flex justify-between items-center">
+                <div class="z-10 flex items-center gap-3">
+                    <div id="headerLogoArea" class="hidden w-10 h-10 bg-white rounded-lg flex items-center justify-center overflow-hidden">
+                        <img id="headerLogoImg" src="" class="object-contain w-full h-full">
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 opacity-80 text-[10px] font-bold uppercase tracking-widest">
+                            <i class="fa-solid fa-snowflake text-blue-400"></i> Refrigeração
+                        </div>
+                        <h1 class="text-lg font-black tracking-wide">REFRIGERISTA <span class="text-blue-500">BLINDADO</span></h1>
+                    </div>
+                </div>
+                <div class="flex gap-2 z-10">
+                    <button onclick="toggleHistory()" class="bg-white/10 w-9 h-9 rounded-xl flex items-center justify-center"><i class="fa-solid fa-clock-rotate-left"></i></button>
+                    <button onclick="toggleSettings()" class="bg-white/10 w-9 h-9 rounded-xl flex items-center justify-center"><i class="fa-solid fa-gear"></i></button>
+                </div>
+            </header>
+
+            <main class="relative -mt-6 bg-white rounded-t-3xl flex-grow p-5 space-y-5 overflow-y-auto">
+                <div id="input-section" class="space-y-5">
+                    <a href="#" class="block w-full bg-blue-600 text-white text-center py-3 rounded-xl font-bold text-xs">OFERTAS DA SEMANA</a>
+
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-3">
+                        <input type="text" id="nomePrestador" placeholder="Seu Nome / Empresa" class="w-full p-3 rounded-xl border border-slate-200 text-sm font-bold">
+                        <input type="text" id="nomeCliente" placeholder="Nome do Cliente" class="w-full p-3 rounded-xl border border-slate-200 text-sm font-bold">
+                        <input type="text" id="enderecoCliente" placeholder="Endereço" class="w-full p-3 rounded-xl border border-slate-200 text-sm font-bold">
+                        <div class="grid grid-cols-3 gap-2">
+                            <input type="date" id="dataServico" class="p-2 rounded-xl border border-slate-200 text-xs font-bold">
+                            <input type="time" id="horaServico" value="09:00" class="p-2 rounded-xl border border-slate-200 text-xs font-bold">
+                            <input type="number" id="inputGarantia" value="90" class="p-2 rounded-xl border border-slate-200 text-xs font-bold text-center">
+                        </div>
+                    </div>
+
+                    <div id="services-container" class="space-y-3"></div>
+                    <button onclick="adicionarServico()" class="w-full py-3 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 font-bold text-xs">+ ADICIONAR ITEM</button>
+                    
+                    <textarea id="detalhesServico" placeholder="Observações técnicas..." class="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 text-sm h-20"></textarea>
+
+                    <div class="space-y-3 border-t pt-4">
+                        <div class="relative">
+                            <span class="absolute left-3 top-3 text-slate-400">R$</span>
+                            <input type="text" id="custoPecas" placeholder="0,00" class="w-full pl-10 p-3 rounded-xl border border-slate-200 font-bold" onkeyup="formatarMoeda(this)">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <input type="number" id="distanciaKm" placeholder="Km Total" class="p-3 rounded-xl border border-slate-200 text-sm font-bold">
+                            <input type="number" id="tempoHoras" placeholder="Horas" class="p-3 rounded-xl border border-slate-200 text-sm font-bold">
+                        </div>
+                    </div>
+
+                    <button onclick="calcularTudo()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-lg shadow-lg">CALCULAR AGORA</button>
+                </div>
+
+                <div id="results-section" class="hidden space-y-5 animate-slide-up">
+                    <div class="bg-[#0f172a] p-6 rounded-3xl text-white text-center">
+                        <p class="text-[10px] uppercase font-bold text-blue-300">Valor Sugerido</p>
+                        <p class="text-5xl font-black" id="displayPrecoFinal">R$ 0,00</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="compartilharPDF()" class="p-4 border rounded-xl font-bold text-xs flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-share-nodes text-red-500"></i> ENVIAR PDF
+                        </button>
+                        <button onclick="location.reload()" class="p-4 border rounded-xl font-bold text-xs">NOVO CÁLCULO</button>
+                    </div>
+                    <div id="acc-msg1" class="message-accordion border rounded-xl overflow-hidden">
+                        <button onclick="toggleAccordion('acc-msg1')" class="w-full p-4 bg-slate-50 flex justify-between font-bold text-xs uppercase">Proposta <i class="fa-solid fa-chevron-down accordion-icon"></i></button>
+                        <div class="accordion-content bg-white text-xs whitespace-pre-wrap font-mono" id="txt_proposta"></div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div id="printable-area" class="hidden p-10 bg-white text-slate-800">
+        <h1 id="printPrestador" class="text-2xl font-bold"></h1>
+        <hr class="my-4">
+        <p><strong>Cliente:</strong> <span id="printCliente"></span></p>
+        <p><strong>Data:</strong> <span id="printData"></span></p>
+        <div id="printServicesList" class="my-5"></div>
+        <h2 class="text-xl font-black text-right">Total: <span id="printTotal"></span></h2>
+    </div>
+
+    <script>
+        let state = JSON.parse(localStorage.getItem('refrig_data')) || { meusServicos: [], historico: [], sinal: 30 };
+
+        function formatarMoeda(i) {
+            let v = i.value.replace(/\D/g, "");
+            v = (v / 100).toFixed(2).replace(".", ",");
+            i.value = v;
+        }
+
+        function adicionarServico() {
+            const container = document.getElementById('services-container');
+            const div = document.createElement('div');
+            div.className = "flex gap-2 bg-white p-2 border rounded-xl relative";
+            div.innerHTML = `
+                <input type="text" placeholder="Serviço" class="flex-grow p-2 text-sm font-bold outline-none service-name">
+                <input type="text" placeholder="R$ 0,00" class="w-24 p-2 text-sm font-bold border-l service-price" onkeyup="formatarMoeda(this)">
+                <button onclick="this.parentElement.remove()" class="text-red-400 px-2"><i class="fa-solid fa-trash"></i></button>
+            `;
+            container.appendChild(div);
+        }
+
+        function calcularTudo() {
+            let total = 0;
+            document.querySelectorAll('.flex.gap-2.bg-white').forEach(row => {
+                const p = parseFloat(row.querySelector('.service-price').value.replace(',','.'));
+                if(p) total += p;
+            });
+            const pecas = parseFloat(document.getElementById('custoPecas').value.replace(',','.')) || 0;
+            const final = total + pecas;
+            
+            document.getElementById('displayPrecoFinal').innerText = "R$ " + final.toFixed(2).replace('.',',');
+            document.getElementById('txt_proposta').innerText = `Olá! Segue orçamento:\nTotal: R$ ${final.toFixed(2)}`;
+            
+            document.getElementById('input-section').classList.add('hidden');
+            document.getElementById('results-section').classList.remove('hidden');
+            
+            // Dados para o PDF
+            document.getElementById('printPrestador').innerText = document.getElementById('nomePrestador').value;
+            document.getElementById('printCliente').innerText = document.getElementById('nomeCliente').value;
+            document.getElementById('printTotal').innerText = "R$ " + final.toFixed(2);
+        }
+
+        function toggleAccordion(id) { document.getElementById(id).classList.toggle('accordion-open'); }
+        
+        // PWA Register
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js');
+        }
+
+        async function compartilharPDF() {
+            const element = document.getElementById('printable-area');
+            element.classList.remove('hidden');
+            const opt = { margin: 1, filename: 'orcamento.pdf', html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } };
+            html2pdf().set(opt).from(element).save().then(() => element.classList.add('hidden'));
+        }
+
+        window.onload = () => { document.getElementById('dataServico').valueAsDate = new Date(); adicionarServico(); };
+    </script>
+</body>
+</html>
