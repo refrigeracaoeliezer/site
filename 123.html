@@ -127,6 +127,14 @@
         .status-error { color: #ff4b4b; font-weight: 600; }
         .status-loading { color: #27a9e3; }
         .status-success { color: #44ff44; }
+
+        /* Estilo para a área expansível de segurança */
+        .security-content { display: none; flex-direction: column; gap: 10px; padding-top: 10px; }
+        .btn-toggle-security { 
+            background: none; border: 1px solid rgba(255,255,255,0.1); 
+            color: #27a9e3; padding: 8px; border-radius: 8px; cursor: pointer; 
+            font-size: 12px; font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -174,20 +182,24 @@
 
         <div class="config-section">
             <div class="section-title"><i class="fa-solid fa-user-shield"></i> Segurança do Painel</div>
-            <p style="font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 5px;">Altere seus dados de acesso administrativo aqui.</p>
-            <input type="text" id="new_u_mail" placeholder="Novo E-mail" autocomplete="off">
-            <input type="password" id="new_u_pass" placeholder="Nova Senha" autocomplete="off">
-            <input type="text" id="new_u_pergunta" placeholder="Nova Pergunta Secreta" autocomplete="off">
-            <input type="text" id="new_u_resposta" placeholder="Nova Resposta Secreta" autocomplete="off">
-            <div id="update-status" class="status-msg"></div>
-            <button class="btn-save" onclick="atualizarAcesso()"><i class="fa-solid fa-sync"></i> Atualizar Acesso</button>
+            <button class="btn-toggle-security" id="btn-toggle-sec" onclick="toggleSecurity()">Expandir Opções de Acesso</button>
+            
+            <div id="security-fields" class="security-content">
+                <p style="font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 5px;">Altere seus dados de acesso administrativo aqui.</p>
+                <input type="text" id="new_u_mail" placeholder="Novo E-mail" autocomplete="off">
+                <input type="password" id="new_u_pass" placeholder="Nova Senha" autocomplete="off">
+                <input type="text" id="new_u_pergunta" placeholder="Nova Pergunta Secreta" autocomplete="off">
+                <input type="text" id="new_u_resposta" placeholder="Nova Resposta Secreta" autocomplete="off">
+                <div id="update-status" class="status-msg"></div>
+                <button class="btn-save" onclick="atualizarAcesso()"><i class="fa-solid fa-sync"></i> Atualizar Acesso</button>
+            </div>
         </div>
         
         <div class="config-section">
             <div class="section-title"><i class="fa-solid fa-image"></i> Logo da Empresa</div>
             <div class="logo-preview" id="logoPreview"><i class="fa-solid fa-camera" style="font-size: 30px; color: rgba(255,255,255,0.1);"></i></div>
             <input type="file" id="logoInput" accept="image/*" onchange="previewImage(this)">
-            <button class="btn-save" onclick="saveData('logo')"><i class="fa-solid fa-floppy-disk"></i> Salvar Logo</button>
+            <button class="btn-save" onclick="saveData('logo', this)"><i class="fa-solid fa-floppy-disk"></i> Salvar Logo</button>
         </div>
 
         <div class="config-section">
@@ -195,7 +207,7 @@
             <input type="text" id="emp_nome" list="lista_empresas" placeholder="Nome Fantasia" autocomplete="off">
             <datalist id="lista_empresas"><option value="Refrigeração Eliezer"></datalist>
             <input type="text" id="emp_doc" placeholder="CNPJ / CPF" autocomplete="off">
-            <button class="btn-save" onclick="saveData('empresa')"><i class="fa-solid fa-floppy-disk"></i> Salvar Empresa</button>
+            <button class="btn-save" onclick="saveData('empresa', this)"><i class="fa-solid fa-floppy-disk"></i> Salvar Empresa</button>
         </div>
 
         <div class="config-section">
@@ -207,7 +219,7 @@
                 <option value="Instalação Split">
             </datalist>
             <input type="number" id="srv_valor" placeholder="Valor R$" autocomplete="off">
-            <button class="btn-save" onclick="saveData('servico')"><i class="fa-solid fa-floppy-disk"></i> Salvar Serviço</button>
+            <button class="btn-save" onclick="saveData('servico', this)"><i class="fa-solid fa-floppy-disk"></i> Salvar Serviço</button>
         </div>
 
         <div class="config-section">
@@ -217,7 +229,7 @@
             <input type="text" id="cli_doc" placeholder="CPF / CNPJ" autocomplete="off">
             <input type="tel" id="cli_tel" placeholder="WhatsApp" autocomplete="off">
             <input type="text" id="cli_end" placeholder="Endereço Completo" autocomplete="off">
-            <button class="btn-save" onclick="saveData('cliente')"><i class="fa-solid fa-floppy-disk"></i> Salvar Cliente</button>
+            <button class="btn-save" onclick="saveData('cliente', this)"><i class="fa-solid fa-floppy-disk"></i> Salvar Cliente</button>
         </div>
 
         <div class="config-section">
@@ -228,214 +240,215 @@
                 <option value="Checklist de Manutenção">
             </datalist>
             <textarea id="txt_obs" rows="5" placeholder="Texto das observações..."></textarea>
-            <button class="btn-save" onclick="saveData('obs')"><i class="fa-solid fa-floppy-disk"></i> Salvar Observações</button>
+            <button class="btn-save" onclick="saveData('obs', this)"><i class="fa-solid fa-floppy-disk"></i> Salvar Observações</button>
         </div>
         
         <p style="text-align: center; color: grey; font-size: 10px; margin-bottom: 40px;">SISTEMA V2.8.2</p>
     </div>
 
-   <script>
+    <script>
+        const URL_LOGIN = "https://script.google.com/macros/s/AKfycbyVHWD028yH3qTXi63aL4Jq17MwNuXnfy8IwwA2SVOs26bsQRxmffePggxM3AriKhI2IQ/exec";
+        const URL_DADOS = "https://script.google.com/macros/s/AKfycbxrTEAQNXxTMdIRvsYku41v1-oC63zvKudL_lfWLQ-Rl6RDcMvnwre48SLC2kmRfrFHig/exec";
 
-       // --- INSIRA ABAIXO O LINK DA SUA SEGUNDA PLANILHA (PLANILHA DE ADMIN) ---
-   const URL_LOGIN = "https://script.google.com/macros/s/AKfycbyVHWD028yH3qTXi63aL4Jq17MwNuXnfy8IwwA2SVOs26bsQRxmffePggxM3AriKhI2IQ/exec";
-    
-    // --- INSIRA ABAIXO O LINK DA SUA SEGUNDA PLANILHA (PLANILHA DE DADOS) ---
-    const URL_DADOS = "https://script.google.com/macros/s/AKfycbxrTEAQNXxTMdIRvsYku41v1-oC63zvKudL_lfWLQ-Rl6RDcMvnwre48SLC2kmRfrFHig/exec";
+        window.onload = verificarSeExisteDono;
 
-    window.onload = verificarSeExisteDono;
-
-    function showStatus(id, msg, type) {
-        const el = document.getElementById(id);
-        el.innerText = msg;
-        el.className = 'status-msg ' + (type === 'error' ? 'status-error' : type === 'loading' ? 'status-loading' : 'status-success');
-        el.style.display = 'block';
-    }
-
-    async function verificarSeExisteDono() {
-        try {
-            const resp = await fetch(`${URL_LOGIN}?action=checar_registro`);
-            const existe = await resp.text();
-            if (existe.trim() === "tem_dono") {
-                document.getElementById('link-registrar-container').classList.add('hidden');
-                if (!document.getElementById('card-registrar').classList.contains('hidden')) {
-                    showStatus('reg-status', 'Conta administrativa já cadastrada!', 'error');
-                    document.getElementById('btn-registrar').disabled = true;
-                }
-            }
-        } catch (e) { console.log("Erro de conexão."); }
-    }
-
-    async function realizarLogin() {
-        const email = document.getElementById('auth_u_mail').value;
-        const pass = document.getElementById('auth_u_pass').value;
-        if(!email || !pass) return showStatus('login-status', 'Preencha tudo.', 'error');
-        showStatus('login-status', 'Verificando no sistema...', 'loading');
-        document.getElementById('btn-entrar').disabled = true;
-
-        try {
-            const resp = await fetch(`${URL_LOGIN}?action=login&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}`);
-            const result = await resp.text();
-            if(result.trim() === "logado") {
-                document.getElementById('overlay-login').classList.add('hidden');
-                document.getElementById('main-content').classList.remove('hidden');
+        // Função para minimizar/maximizar segurança
+        function toggleSecurity() {
+            const fields = document.getElementById('security-fields');
+            const btn = document.getElementById('btn-toggle-sec');
+            if (fields.style.display === 'flex') {
+                fields.style.display = 'none';
+                btn.innerText = 'Expandir Opções de Acesso';
             } else {
-                showStatus('login-status', 'E-mail ou senha incorretos.', 'error');
+                fields.style.display = 'flex';
+                btn.innerText = 'Recolher Opções';
+            }
+        }
+
+        function showStatus(id, msg, type) {
+            const el = document.getElementById(id);
+            el.innerText = msg;
+            el.className = 'status-msg ' + (type === 'error' ? 'status-error' : type === 'loading' ? 'status-loading' : 'status-success');
+            el.style.display = 'block';
+        }
+
+        async function verificarSeExisteDono() {
+            try {
+                const resp = await fetch(`${URL_LOGIN}?action=checar_registro`);
+                const existe = await resp.text();
+                if (existe.trim() === "tem_dono") {
+                    document.getElementById('link-registrar-container').classList.add('hidden');
+                    if (!document.getElementById('card-registrar').classList.contains('hidden')) {
+                        showStatus('reg-status', 'Conta administrativa já cadastrada!', 'error');
+                        document.getElementById('btn-registrar').disabled = true;
+                    }
+                }
+            } catch (e) { console.log("Erro de conexão."); }
+        }
+
+        async function realizarLogin() {
+            const email = document.getElementById('auth_u_mail').value;
+            const pass = document.getElementById('auth_u_pass').value;
+            if(!email || !pass) return showStatus('login-status', 'Preencha tudo.', 'error');
+            showStatus('login-status', 'Verificando no sistema...', 'loading');
+            document.getElementById('btn-entrar').disabled = true;
+
+            try {
+                const resp = await fetch(`${URL_LOGIN}?action=login&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}`);
+                const result = await resp.text();
+                if(result.trim() === "logado") {
+                    document.getElementById('overlay-login').classList.add('hidden');
+                    document.getElementById('main-content').classList.remove('hidden');
+                } else {
+                    showStatus('login-status', 'E-mail ou senha incorretos.', 'error');
+                    document.getElementById('btn-entrar').disabled = false;
+                }
+            } catch (e) { 
+                showStatus('login-status', 'Erro de conexão.', 'error'); 
                 document.getElementById('btn-entrar').disabled = false;
             }
-        } catch (e) { 
-            showStatus('login-status', 'Erro de conexão.', 'error'); 
-            document.getElementById('btn-entrar').disabled = false;
         }
-    }
 
-    async function atualizarAcesso() {
-        const email = document.getElementById('new_u_mail').value;
-        const pass = document.getElementById('new_u_pass').value;
-        const perg = document.getElementById('new_u_pergunta').value;
-        const resp = document.getElementById('new_u_resposta').value;
+        async function atualizarAcesso() {
+            const email = document.getElementById('new_u_mail').value;
+            const pass = document.getElementById('new_u_pass').value;
+            const perg = document.getElementById('new_u_pergunta').value;
+            const resp = document.getElementById('new_u_resposta').value;
 
-        if(!email || !pass || !resp) return showStatus('update-status', 'Preencha os campos obrigatórios.', 'error');
-        showStatus('update-status', 'Atualizando credenciais...', 'loading');
+            if(!email || !pass || !resp) return showStatus('update-status', 'Preencha os campos obrigatórios.', 'error');
+            showStatus('update-status', 'Atualizando credenciais...', 'loading');
 
-        try {
-            const url = `${URL_LOGIN}?action=atualizar_acesso&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}&pergunta=${encodeURIComponent(perg)}&resposta=${encodeURIComponent(resp)}`;
-            const response = await fetch(url);
-            const res = await response.text();
-            
-            if(res.trim() === "sucesso") {
-                showStatus('update-status', 'Dados atualizados com sucesso!', 'success');
-                document.getElementById('new_u_mail').value = "";
-                document.getElementById('new_u_pass').value = "";
-                document.getElementById('new_u_pergunta').value = "";
-                document.getElementById('new_u_resposta').value = "";
-            } else {
-                showStatus('update-status', 'Erro ao atualizar dados.', 'error');
+            try {
+                const url = `${URL_LOGIN}?action=atualizar_acesso&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}&pergunta=${encodeURIComponent(perg)}&resposta=${encodeURIComponent(resp)}`;
+                const response = await fetch(url);
+                const res = await response.text();
+                if(res.trim() === "sucesso") {
+                    showStatus('update-status', 'Dados atualizados com sucesso!', 'success');
+                    document.getElementById('new_u_mail').value = "";
+                    document.getElementById('new_u_pass').value = "";
+                    document.getElementById('new_u_pergunta').value = "";
+                    document.getElementById('new_u_resposta').value = "";
+                } else { showStatus('update-status', 'Erro ao atualizar.', 'error'); }
+            } catch (e) { showStatus('update-status', 'Erro de conexão.', 'error'); }
+        }
+
+        async function buscarPergunta() {
+            const email = document.getElementById('rec_u_mail').value;
+            if(!email) return;
+            document.getElementById('display-pergunta').innerText = "Buscando pergunta...";
+            try {
+                const resp = await fetch(`${URL_LOGIN}?action=get_pergunta&email=${encodeURIComponent(email)}`);
+                document.getElementById('display-pergunta').innerText = await resp.text();
+            } catch (e) { document.getElementById('display-pergunta').innerText = "Erro ao buscar pergunta."; }
+        }
+
+        async function recuperarSenha() {
+            const resposta = document.getElementById('rec_u_resposta').value;
+            if(!resposta) return showStatus('rec-status', 'Digite a resposta.', 'error');
+            showStatus('rec-status', 'Consultando banco de dados...', 'loading');
+            try {
+                const resp = await fetch(`${URL_LOGIN}?action=recuperar&resposta=${encodeURIComponent(resposta)}`);
+                const result = await resp.text();
+                document.getElementById('dica-email').innerText = result;
+                showStatus('rec-status', 'Consulta finalizada.', 'success');
+            } catch (e) { showStatus('rec-status', 'Erro na recuperação.', 'error'); }
+        }
+
+        function alternarTela(tela) {
+            document.getElementById('card-login').classList.add('hidden');
+            document.getElementById('card-registrar').classList.add('hidden');
+            document.getElementById('card-recuperar').classList.add('hidden');
+            if(tela === 'login') document.getElementById('card-login').classList.remove('hidden');
+            if(tela === 'registrar') {
+                document.getElementById('card-registrar').classList.remove('hidden');
+                verificarSeExisteDono();
             }
-        } catch (e) { showStatus('update-status', 'Erro de conexão.', 'error'); }
-    }
-
-    async function buscarPergunta() {
-        const email = document.getElementById('rec_u_mail').value;
-        if(!email) return;
-        document.getElementById('display-pergunta').innerText = "Buscando pergunta...";
-        try {
-            const resp = await fetch(`${URL_LOGIN}?action=get_pergunta&email=${encodeURIComponent(email)}`);
-            document.getElementById('display-pergunta').innerText = await resp.text();
-        } catch (e) { document.getElementById('display-pergunta').innerText = "Erro ao buscar pergunta."; }
-    }
-
-    async function recuperarSenha() {
-        const resposta = document.getElementById('rec_u_resposta').value;
-        if(!resposta) return showStatus('rec-status', 'Digite a resposta.', 'error');
-        showStatus('rec-status', 'Consultando banco de dados...', 'loading');
-        try {
-            const resp = await fetch(`${URL_LOGIN}?action=recuperar&resposta=${encodeURIComponent(resposta)}`);
-            const result = await resp.text();
-            document.getElementById('dica-email').innerText = result;
-            showStatus('rec-status', 'Consulta finalizada.', 'success');
-        } catch (e) { showStatus('rec-status', 'Erro na recuperação.', 'error'); }
-    }
-
-    function alternarTela(tela) {
-        document.getElementById('card-login').classList.add('hidden');
-        document.getElementById('card-registrar').classList.add('hidden');
-        document.getElementById('card-recuperar').classList.add('hidden');
-        if(tela === 'login') document.getElementById('card-login').classList.remove('hidden');
-        if(tela === 'registrar') {
-            document.getElementById('card-registrar').classList.remove('hidden');
-            verificarSeExisteDono();
-        }
-        if(tela === 'recuperar') document.getElementById('card-recuperar').classList.remove('hidden');
-    }
-
-    async function registrarUsuario() {
-        const email = document.getElementById('reg_u_mail').value;
-        const pass = document.getElementById('reg_u_pass').value;
-        const perg = document.getElementById('reg_u_pergunta').value;
-        const resp = document.getElementById('reg_u_resposta').value;
-        showStatus('reg-status', 'Verificando disponibilidade...', 'loading');
-
-        try {
-            const url = `${URL_LOGIN}?action=registrar&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}&pergunta=${encodeURIComponent(perg)}&resposta=${encodeURIComponent(resp)}`;
-            const response = await fetch(url);
-            const res = await response.text();
-            if(res.trim() === "sucesso") {
-                showStatus('reg-status', 'Sucesso! Redirecionando...', 'success');
-                setTimeout(() => alternarTela('login'), 1500);
-            } else { showStatus('reg-status', 'Conta administrativa já cadastrada!', 'error'); }
-        } catch (e) { showStatus('reg-status', 'Erro de rede.', 'error'); }
-    }
-
-    function previewImage(input) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = e => document.getElementById('logoPreview').innerHTML = `<img src="${e.target.result}">`;
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
-
-    function checkObsSelection() {
-        const val = document.getElementById('obs_busca').value;
-        if(val === "Garantia Padrão (90 dias)") {
-            document.getElementById('txt_obs').value = "Garantia de 90 dias conforme CDC...";
-        }
-        if(val === "Checklist de Manutenção") {
-            document.getElementById('txt_obs').value = "- Limpeza de filtros\n- Verificação de dreno\n- Teste de carga.";
-        }
-    }
-
-    // --- NOVA FUNÇÃO SAVEDATA CONECTADA AO SERVIDOR ---
-    async function saveData(secao) {
-        const btn = event.target;
-        const btnOriginalText = btn.innerHTML;
-        let params = `?action=save_${secao}`;
-        
-        // Coleta de dados por seção
-        if (secao === 'logo') {
-            const temFoto = document.getElementById('logoPreview').querySelector('img');
-            if(!temFoto) return alert("Selecione uma imagem primeiro!");
-            params += `&status=imagem_atualizada`;
-        } 
-        else if (secao === 'empresa') {
-            params += `&nome=${encodeURIComponent(document.getElementById('emp_nome').value)}`;
-            params += `&doc=${encodeURIComponent(document.getElementById('emp_doc').value)}`;
-        } 
-        else if (secao === 'servico') {
-            params += `&nome=${encodeURIComponent(document.getElementById('srv_nome').value)}`;
-            params += `&valor=${encodeURIComponent(document.getElementById('srv_valor').value)}`;
-        }
-        else if (secao === 'cliente') {
-            params += `&nome=${encodeURIComponent(document.getElementById('cli_nome').value)}`;
-            params += `&doc=${encodeURIComponent(document.getElementById('cli_doc').value)}`;
-            params += `&tel=${encodeURIComponent(document.getElementById('cli_tel').value)}`;
-            params += `&end=${encodeURIComponent(document.getElementById('cli_end').value)}`;
-        }
-        else if (secao === 'obs') {
-            params += `&modelo=${encodeURIComponent(document.getElementById('obs_busca').value)}`;
-            params += `&texto=${encodeURIComponent(document.getElementById('txt_obs').value)}`;
+            if(tela === 'recuperar') document.getElementById('card-recuperar').classList.remove('hidden');
         }
 
-        // Feedback visual
-        btn.innerText = "Enviando...";
-        btn.disabled = true;
+        async function registrarUsuario() {
+            const email = document.getElementById('reg_u_mail').value;
+            const pass = document.getElementById('reg_u_pass').value;
+            const perg = document.getElementById('reg_u_pergunta').value;
+            const resp = document.getElementById('reg_u_resposta').value;
+            showStatus('reg-status', 'Verificando disponibilidade...', 'loading');
 
-        try {
-            const response = await fetch(URL_DADOS + params);
-            const resText = await response.text();
-            
-            if (resText.trim() === "sucesso") {
-                alert("Dados de " + secao + " salvos com sucesso na planilha!");
-            } else {
-                alert("Erro ao salvar: " + resText);
+            try {
+                const url = `${URL_LOGIN}?action=registrar&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}&pergunta=${encodeURIComponent(perg)}&resposta=${encodeURIComponent(resp)}`;
+                const response = await fetch(url);
+                const res = await response.text();
+                if(res.trim() === "sucesso") {
+                    showStatus('reg-status', 'Sucesso! Redirecionando...', 'success');
+                    setTimeout(() => alternarTela('login'), 1500);
+                } else { showStatus('reg-status', 'Conta administrativa já cadastrada!', 'error'); }
+            } catch (e) { showStatus('reg-status', 'Erro de rede.', 'error'); }
+        }
+
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = e => document.getElementById('logoPreview').innerHTML = `<img src="${e.target.result}">`;
+                reader.readAsDataURL(input.files[0]);
             }
-        } catch (error) {
-            alert("Erro de conexão com o servidor de dados.");
-            console.error(error);
-        } finally {
-            btn.innerHTML = btnOriginalText;
-            btn.disabled = false;
         }
-    }
-</script>
+
+        function checkObsSelection() {
+            const val = document.getElementById('obs_busca').value;
+            if(val === "Garantia Padrão (90 dias)") {
+                document.getElementById('txt_obs').value = "Garantia de 90 dias conforme CDC...";
+            }
+            if(val === "Checklist de Manutenção") {
+                document.getElementById('txt_obs').value = "- Limpeza de filtros\n- Verificação de dreno\n- Teste de carga.";
+            }
+        }
+
+        async function saveData(secao, btn) {
+            const button = btn || event.target;
+            const btnOriginalText = button.innerHTML;
+            let params = `?action=save_${secao}`;
+            
+            if (secao === 'logo') {
+                const previewImg = document.getElementById('logoPreview').querySelector('img');
+                if(!previewImg) return alert("Selecione uma imagem primeiro!");
+                const base64Image = previewImg.src; 
+                params += `&imagem=${encodeURIComponent(base64Image)}`;
+            } 
+            else if (secao === 'empresa') {
+                params += `&nome=${encodeURIComponent(document.getElementById('emp_nome').value)}`;
+                params += `&doc=${encodeURIComponent(document.getElementById('emp_doc').value)}`;
+            } 
+            else if (secao === 'servico') {
+                params += `&nome=${encodeURIComponent(document.getElementById('srv_nome').value)}`;
+                params += `&valor=${encodeURIComponent(document.getElementById('srv_valor').value)}`;
+            }
+            else if (secao === 'cliente') {
+                params += `&nome=${encodeURIComponent(document.getElementById('cli_nome').value)}`;
+                params += `&doc=${encodeURIComponent(document.getElementById('cli_doc').value)}`;
+                params += `&tel=${encodeURIComponent(document.getElementById('cli_tel').value)}`;
+                params += `&end=${encodeURIComponent(document.getElementById('cli_end').value)}`;
+            }
+            else if (secao === 'obs') {
+                params += `&modelo=${encodeURIComponent(document.getElementById('obs_busca').value)}`;
+                params += `&texto=${encodeURIComponent(document.getElementById('txt_obs').value)}`;
+            }
+
+            button.innerText = "Enviando...";
+            button.disabled = true;
+
+            try {
+                // Usamos POST para garantir que dados grandes (como a imagem Base64) cheguem ao servidor
+                const response = await fetch(URL_DADOS + params, { method: 'POST' });
+                const resText = await response.text();
+                if (resText.trim() === "sucesso") {
+                    alert("Dados salvos com sucesso!");
+                } else { alert("Erro: " + resText); }
+            } catch (error) {
+                alert("Erro de conexão.");
+            } finally {
+                button.innerHTML = btnOriginalText;
+                button.disabled = false;
+            }
+        }
+    </script>
 </body>
 </html>
