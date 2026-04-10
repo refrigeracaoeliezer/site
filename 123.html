@@ -234,151 +234,208 @@
         <p style="text-align: center; color: grey; font-size: 10px; margin-bottom: 40px;">SISTEMA V2.8.2</p>
     </div>
 
-    <script>
-        const URL_LOGIN = "https://script.google.com/macros/s/AKfycbyVHWD028yH3qTXi63aL4Jq17MwNuXnfy8IwwA2SVOs26bsQRxmffePggxM3AriKhI2IQ/exec";
+   <script>
 
-        window.onload = verificarSeExisteDono;
+       // --- INSIRA ABAIXO O LINK DA SUA SEGUNDA PLANILHA (PLANILHA DE ADMIN) ---
+   const URL_LOGIN = "https://script.google.com/macros/s/AKfycbyVHWD028yH3qTXi63aL4Jq17MwNuXnfy8IwwA2SVOs26bsQRxmffePggxM3AriKhI2IQ/exec";
+    
+    // --- INSIRA ABAIXO O LINK DA SUA SEGUNDA PLANILHA (PLANILHA DE DADOS) ---
+    const URL_DADOS = "https://script.google.com/macros/s/AKfycbxrTEAQNXxTMdIRvsYku41v1-oC63zvKudL_lfWLQ-Rl6RDcMvnwre48SLC2kmRfrFHig/exec";
 
-        function showStatus(id, msg, type) {
-            const el = document.getElementById(id);
-            el.innerText = msg;
-            el.className = 'status-msg ' + (type === 'error' ? 'status-error' : type === 'loading' ? 'status-loading' : 'status-success');
-            el.style.display = 'block';
-        }
+    window.onload = verificarSeExisteDono;
 
-        async function verificarSeExisteDono() {
-            try {
-                const resp = await fetch(`${URL_LOGIN}?action=checar_registro`);
-                const existe = await resp.text();
-                if (existe.trim() === "tem_dono") {
-                    document.getElementById('link-registrar-container').classList.add('hidden');
-                    if (!document.getElementById('card-registrar').classList.contains('hidden')) {
-                        showStatus('reg-status', 'Conta administrativa já cadastrada!', 'error');
-                        document.getElementById('btn-registrar').disabled = true;
-                    }
+    function showStatus(id, msg, type) {
+        const el = document.getElementById(id);
+        el.innerText = msg;
+        el.className = 'status-msg ' + (type === 'error' ? 'status-error' : type === 'loading' ? 'status-loading' : 'status-success');
+        el.style.display = 'block';
+    }
+
+    async function verificarSeExisteDono() {
+        try {
+            const resp = await fetch(`${URL_LOGIN}?action=checar_registro`);
+            const existe = await resp.text();
+            if (existe.trim() === "tem_dono") {
+                document.getElementById('link-registrar-container').classList.add('hidden');
+                if (!document.getElementById('card-registrar').classList.contains('hidden')) {
+                    showStatus('reg-status', 'Conta administrativa já cadastrada!', 'error');
+                    document.getElementById('btn-registrar').disabled = true;
                 }
-            } catch (e) { console.log("Erro de conexão."); }
-        }
+            }
+        } catch (e) { console.log("Erro de conexão."); }
+    }
 
-        async function realizarLogin() {
-            const email = document.getElementById('auth_u_mail').value;
-            const pass = document.getElementById('auth_u_pass').value;
-            if(!email || !pass) return showStatus('login-status', 'Preencha tudo.', 'error');
-            showStatus('login-status', 'Verificando no sistema...', 'loading');
-            document.getElementById('btn-entrar').disabled = true;
+    async function realizarLogin() {
+        const email = document.getElementById('auth_u_mail').value;
+        const pass = document.getElementById('auth_u_pass').value;
+        if(!email || !pass) return showStatus('login-status', 'Preencha tudo.', 'error');
+        showStatus('login-status', 'Verificando no sistema...', 'loading');
+        document.getElementById('btn-entrar').disabled = true;
 
-            try {
-                const resp = await fetch(`${URL_LOGIN}?action=login&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}`);
-                const result = await resp.text();
-                if(result.trim() === "logado") {
-                    document.getElementById('overlay-login').classList.add('hidden');
-                    document.getElementById('main-content').classList.remove('hidden');
-                } else {
-                    showStatus('login-status', 'E-mail ou senha incorretos.', 'error');
-                    document.getElementById('btn-entrar').disabled = false;
-                }
-            } catch (e) { 
-                showStatus('login-status', 'Erro de conexão.', 'error'); 
+        try {
+            const resp = await fetch(`${URL_LOGIN}?action=login&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}`);
+            const result = await resp.text();
+            if(result.trim() === "logado") {
+                document.getElementById('overlay-login').classList.add('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
+            } else {
+                showStatus('login-status', 'E-mail ou senha incorretos.', 'error');
                 document.getElementById('btn-entrar').disabled = false;
             }
+        } catch (e) { 
+            showStatus('login-status', 'Erro de conexão.', 'error'); 
+            document.getElementById('btn-entrar').disabled = false;
         }
+    }
 
-        async function atualizarAcesso() {
-            const email = document.getElementById('new_u_mail').value;
-            const pass = document.getElementById('new_u_pass').value;
-            const perg = document.getElementById('new_u_pergunta').value;
-            const resp = document.getElementById('new_u_resposta').value;
+    async function atualizarAcesso() {
+        const email = document.getElementById('new_u_mail').value;
+        const pass = document.getElementById('new_u_pass').value;
+        const perg = document.getElementById('new_u_pergunta').value;
+        const resp = document.getElementById('new_u_resposta').value;
 
-            if(!email || !pass || !resp) return showStatus('update-status', 'Preencha os campos obrigatórios.', 'error');
-            showStatus('update-status', 'Atualizando credenciais...', 'loading');
+        if(!email || !pass || !resp) return showStatus('update-status', 'Preencha os campos obrigatórios.', 'error');
+        showStatus('update-status', 'Atualizando credenciais...', 'loading');
 
-            try {
-                const url = `${URL_LOGIN}?action=atualizar_acesso&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}&pergunta=${encodeURIComponent(perg)}&resposta=${encodeURIComponent(resp)}`;
-                const response = await fetch(url);
-                const res = await response.text();
-                if(res.trim() === "sucesso") {
-                    showStatus('update-status', 'Dados atualizados com sucesso!', 'success');
-                    document.getElementById('new_u_mail').value = "";
-                    document.getElementById('new_u_pass').value = "";
-                    document.getElementById('new_u_pergunta').value = "";
-                    document.getElementById('new_u_resposta').value = "";
-                } else {
-                    showStatus('update-status', 'Erro ao atualizar dados.', 'error');
-                }
-            } catch (e) { showStatus('update-status', 'Erro de conexão.', 'error'); }
-        }
-
-        async function buscarPergunta() {
-            const email = document.getElementById('rec_u_mail').value;
-            if(!email) return;
-            document.getElementById('display-pergunta').innerText = "Buscando pergunta...";
-            try {
-                const resp = await fetch(`${URL_LOGIN}?action=get_pergunta&email=${encodeURIComponent(email)}`);
-                document.getElementById('display-pergunta').innerText = await resp.text();
-            } catch (e) { document.getElementById('display-pergunta').innerText = "Erro ao buscar pergunta."; }
-        }
-
-        async function recuperarSenha() {
-            const resposta = document.getElementById('rec_u_resposta').value;
-            if(!resposta) return showStatus('rec-status', 'Digite a resposta.', 'error');
-            showStatus('rec-status', 'Consultando banco de dados...', 'loading');
-            try {
-                const resp = await fetch(`${URL_LOGIN}?action=recuperar&resposta=${encodeURIComponent(resposta)}`);
-                const result = await resp.text();
-                document.getElementById('dica-email').innerText = result;
-                showStatus('rec-status', 'Consulta finalizada.', 'success');
-            } catch (e) { showStatus('rec-status', 'Erro na recuperação.', 'error'); }
-        }
-
-        function alternarTela(tela) {
-            document.getElementById('card-login').classList.add('hidden');
-            document.getElementById('card-registrar').classList.add('hidden');
-            document.getElementById('card-recuperar').classList.add('hidden');
-            if(tela === 'login') document.getElementById('card-login').classList.remove('hidden');
-            if(tela === 'registrar') {
-                document.getElementById('card-registrar').classList.remove('hidden');
-                verificarSeExisteDono();
+        try {
+            const url = `${URL_LOGIN}?action=atualizar_acesso&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}&pergunta=${encodeURIComponent(perg)}&resposta=${encodeURIComponent(resp)}`;
+            const response = await fetch(url);
+            const res = await response.text();
+            
+            if(res.trim() === "sucesso") {
+                showStatus('update-status', 'Dados atualizados com sucesso!', 'success');
+                document.getElementById('new_u_mail').value = "";
+                document.getElementById('new_u_pass').value = "";
+                document.getElementById('new_u_pergunta').value = "";
+                document.getElementById('new_u_resposta').value = "";
+            } else {
+                showStatus('update-status', 'Erro ao atualizar dados.', 'error');
             }
-            if(tela === 'recuperar') document.getElementById('card-recuperar').classList.remove('hidden');
+        } catch (e) { showStatus('update-status', 'Erro de conexão.', 'error'); }
+    }
+
+    async function buscarPergunta() {
+        const email = document.getElementById('rec_u_mail').value;
+        if(!email) return;
+        document.getElementById('display-pergunta').innerText = "Buscando pergunta...";
+        try {
+            const resp = await fetch(`${URL_LOGIN}?action=get_pergunta&email=${encodeURIComponent(email)}`);
+            document.getElementById('display-pergunta').innerText = await resp.text();
+        } catch (e) { document.getElementById('display-pergunta').innerText = "Erro ao buscar pergunta."; }
+    }
+
+    async function recuperarSenha() {
+        const resposta = document.getElementById('rec_u_resposta').value;
+        if(!resposta) return showStatus('rec-status', 'Digite a resposta.', 'error');
+        showStatus('rec-status', 'Consultando banco de dados...', 'loading');
+        try {
+            const resp = await fetch(`${URL_LOGIN}?action=recuperar&resposta=${encodeURIComponent(resposta)}`);
+            const result = await resp.text();
+            document.getElementById('dica-email').innerText = result;
+            showStatus('rec-status', 'Consulta finalizada.', 'success');
+        } catch (e) { showStatus('rec-status', 'Erro na recuperação.', 'error'); }
+    }
+
+    function alternarTela(tela) {
+        document.getElementById('card-login').classList.add('hidden');
+        document.getElementById('card-registrar').classList.add('hidden');
+        document.getElementById('card-recuperar').classList.add('hidden');
+        if(tela === 'login') document.getElementById('card-login').classList.remove('hidden');
+        if(tela === 'registrar') {
+            document.getElementById('card-registrar').classList.remove('hidden');
+            verificarSeExisteDono();
+        }
+        if(tela === 'recuperar') document.getElementById('card-recuperar').classList.remove('hidden');
+    }
+
+    async function registrarUsuario() {
+        const email = document.getElementById('reg_u_mail').value;
+        const pass = document.getElementById('reg_u_pass').value;
+        const perg = document.getElementById('reg_u_pergunta').value;
+        const resp = document.getElementById('reg_u_resposta').value;
+        showStatus('reg-status', 'Verificando disponibilidade...', 'loading');
+
+        try {
+            const url = `${URL_LOGIN}?action=registrar&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}&pergunta=${encodeURIComponent(perg)}&resposta=${encodeURIComponent(resp)}`;
+            const response = await fetch(url);
+            const res = await response.text();
+            if(res.trim() === "sucesso") {
+                showStatus('reg-status', 'Sucesso! Redirecionando...', 'success');
+                setTimeout(() => alternarTela('login'), 1500);
+            } else { showStatus('reg-status', 'Conta administrativa já cadastrada!', 'error'); }
+        } catch (e) { showStatus('reg-status', 'Erro de rede.', 'error'); }
+    }
+
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = e => document.getElementById('logoPreview').innerHTML = `<img src="${e.target.result}">`;
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function checkObsSelection() {
+        const val = document.getElementById('obs_busca').value;
+        if(val === "Garantia Padrão (90 dias)") {
+            document.getElementById('txt_obs').value = "Garantia de 90 dias conforme CDC...";
+        }
+        if(val === "Checklist de Manutenção") {
+            document.getElementById('txt_obs').value = "- Limpeza de filtros\n- Verificação de dreno\n- Teste de carga.";
+        }
+    }
+
+    // --- NOVA FUNÇÃO SAVEDATA CONECTADA AO SERVIDOR ---
+    async function saveData(secao) {
+        const btn = event.target;
+        const btnOriginalText = btn.innerHTML;
+        let params = `?action=save_${secao}`;
+        
+        // Coleta de dados por seção
+        if (secao === 'logo') {
+            const temFoto = document.getElementById('logoPreview').querySelector('img');
+            if(!temFoto) return alert("Selecione uma imagem primeiro!");
+            params += `&status=imagem_atualizada`;
+        } 
+        else if (secao === 'empresa') {
+            params += `&nome=${encodeURIComponent(document.getElementById('emp_nome').value)}`;
+            params += `&doc=${encodeURIComponent(document.getElementById('emp_doc').value)}`;
+        } 
+        else if (secao === 'servico') {
+            params += `&nome=${encodeURIComponent(document.getElementById('srv_nome').value)}`;
+            params += `&valor=${encodeURIComponent(document.getElementById('srv_valor').value)}`;
+        }
+        else if (secao === 'cliente') {
+            params += `&nome=${encodeURIComponent(document.getElementById('cli_nome').value)}`;
+            params += `&doc=${encodeURIComponent(document.getElementById('cli_doc').value)}`;
+            params += `&tel=${encodeURIComponent(document.getElementById('cli_tel').value)}`;
+            params += `&end=${encodeURIComponent(document.getElementById('cli_end').value)}`;
+        }
+        else if (secao === 'obs') {
+            params += `&modelo=${encodeURIComponent(document.getElementById('obs_busca').value)}`;
+            params += `&texto=${encodeURIComponent(document.getElementById('txt_obs').value)}`;
         }
 
-        async function registrarUsuario() {
-            const email = document.getElementById('reg_u_mail').value;
-            const pass = document.getElementById('reg_u_pass').value;
-            const perg = document.getElementById('reg_u_pergunta').value;
-            const resp = document.getElementById('reg_u_resposta').value;
-            showStatus('reg-status', 'Verificando disponibilidade...', 'loading');
+        // Feedback visual
+        btn.innerText = "Enviando...";
+        btn.disabled = true;
 
-            try {
-                const url = `${URL_LOGIN}?action=registrar&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}&pergunta=${encodeURIComponent(perg)}&resposta=${encodeURIComponent(resp)}`;
-                const response = await fetch(url);
-                const res = await response.text();
-                if(res.trim() === "sucesso") {
-                    showStatus('reg-status', 'Sucesso! Redirecionando...', 'success');
-                    setTimeout(() => alternarTela('login'), 1500);
-                } else { showStatus('reg-status', 'Conta administrativa já cadastrada!', 'error'); }
-            } catch (e) { showStatus('reg-status', 'Erro de rede.', 'error'); }
-        }
-
-        function previewImage(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = e => document.getElementById('logoPreview').innerHTML = `<img src="${e.target.result}">`;
-                reader.readAsDataURL(input.files[0]);
+        try {
+            const response = await fetch(URL_DADOS + params);
+            const resText = await response.text();
+            
+            if (resText.trim() === "sucesso") {
+                alert("Dados de " + secao + " salvos com sucesso na planilha!");
+            } else {
+                alert("Erro ao salvar: " + resText);
             }
+        } catch (error) {
+            alert("Erro de conexão com o servidor de dados.");
+            console.error(error);
+        } finally {
+            btn.innerHTML = btnOriginalText;
+            btn.disabled = false;
         }
-
-        function checkObsSelection() {
-            const val = document.getElementById('obs_busca').value;
-            if(val === "Garantia Padrão (90 dias)") {
-                document.getElementById('txt_obs').value = "Garantia de 90 dias conforme CDC...";
-            }
-            if(val === "Checklist de Manutenção") {
-                document.getElementById('txt_obs').value = "- Limpeza de filtros\n- Verificação de dreno\n- Teste de carga.";
-            }
-        }
-
-        function saveData(secao) { alert("Salvando " + secao + "..."); }
-    </script>
+    }
+</script>
 </body>
 </html>
