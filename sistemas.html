@@ -1,18 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-
-
-
-
-        <script>
+    <script>
         if (localStorage.getItem("inforos_logado") !== "true") {
             window.location.href = "https://refrigeracaoeliezer.github.io/site/";
         }
-        </script>
+    </script>
 
-
-    
     <meta charset="UTF-8">
     <title>Sistemas | Refrigeração</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,19 +14,20 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
-        /* Mantendo seus estilos originais */
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
             font-family: 'Inter', sans-serif;
             min-height: 100vh;
             display: flex;
-            align-items: center;
-            justify-content: center;
+            align-items: center; /* Centraliza verticalmente */
+            justify-content: center; /* Centraliza horizontalmente */
             background: #0d1117;
             position: relative;
-            overflow: hidden;
+            overflow-x: hidden;
             padding: 20px;
         }
+
         .corner-ball {
             position: fixed;
             background: rgba(255, 255, 255, 0.02);
@@ -49,7 +44,7 @@
             -webkit-backdrop-filter: blur(20px);
             border: 4px solid #1e40af;
             border-radius: 40px;
-            padding: 60px 40px;
+            padding: 40px; /* Reduzi de 60px para 40px para ganhar espaço */
             width: 100%;
             max-width: 500px;
             position: relative;
@@ -64,14 +59,14 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .header-section { margin-bottom: 40px; }
-        .header-section h1 { color: white; font-size: 28px; font-weight: 700; margin-bottom: 12px; }
-        .header-section p { color: rgba(255, 255, 255, 0.5); font-size: 15px; line-height: 1.5; }
+        .header-section { margin-bottom: 25px; }
+        .header-section h1 { color: white; font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+        .header-section p { color: rgba(255, 255, 255, 0.5); font-size: 14px; line-height: 1.4; }
 
         .divider {
             height: 1px;
             background: linear-gradient(90deg, transparent, rgba(30, 64, 175, 0.5), transparent);
-            margin: 30px 0;
+            margin: 20px 0;
         }
 
         .system-btn {
@@ -79,8 +74,8 @@
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 20px;
-            padding: 25px;
-            margin-bottom: 20px;
+            padding: 20px; /* Reduzi de 25px para 20px */
+            margin-bottom: 15px;
             cursor: pointer;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             display: flex;
@@ -92,27 +87,26 @@
 
         .system-btn:hover {
             background: rgba(30, 64, 175, 0.15);
-            border-color: #1e40af;
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            border-color: #27a9e3;
+            transform: translateY(-3px);
         }
 
         .btn-icon {
-            width: 60px;
-            height: 60px;
+            width: 50px; /* Reduzi levemente o ícone */
+            height: 50px;
             background: linear-gradient(135deg, #1e40af 0%, #27a9e3 100%);
-            border-radius: 15px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
-            margin-right: 20px;
+            font-size: 20px;
+            margin-right: 15px;
+            flex-shrink: 0; /* Impede o ícone de amassar no mobile */
         }
 
-        .btn-content strong { display: block; font-size: 17px; margin-bottom: 4px; }
-        .btn-content span { font-size: 13px; color: rgba(255, 255, 255, 0.4); }
+        .btn-content strong { display: block; font-size: 16px; margin-bottom: 2px; }
+        .btn-content span { font-size: 12px; color: rgba(255, 255, 255, 0.4); }
 
-        /* Estilo do botão Sair */
         .btn-logout {
             background: none;
             border: 1px solid rgba(255, 75, 75, 0.3);
@@ -121,20 +115,25 @@
             border-radius: 12px;
             cursor: pointer;
             font-weight: 600;
-            font-size: 12px;
-            margin-top: 20px;
+            font-size: 11px;
+            margin-top: 15px;
             transition: 0.3s;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-        .btn-logout:hover {
-            background: rgba(255, 75, 75, 0.1);
-            border-color: #ff4b4b;
-        }
 
+        /* Ajustes específicos para Celular */
         @media (max-width: 480px) {
-            .selection-card { padding: 40px 20px; }
-            .header-section h1 { font-size: 22px; }
+            body { padding: 10px; }
+            .selection-card { 
+                padding: 30px 20px; 
+                border-radius: 30px; 
+                border-width: 2px;
+            }
+            .header-section h1 { font-size: 20px; }
+            .system-btn { padding: 15px; }
+            .btn-icon { width: 40px; height: 40px; font-size: 18px; }
+            .btn-content strong { font-size: 15px; }
         }
     </style>
 </head>
@@ -159,16 +158,16 @@
             </div>
         </a>
 
-    <a href="https://ajudaparatecnico.blogspot.com/" target="_blank" class="system-btn">
-    <div class="btn-icon"><i class="fa-solid fa-book-bookmark"></i></div>
-    <div class="btn-content">
-        <strong>Acervo Técnico</strong>
-        <span>Manuais e materiais técnicos.</span>
-    </div>
-</a>
+        <a href="https://ajudaparatecnico.blogspot.com/" target="_blank" class="system-btn">
+            <div class="btn-icon"><i class="fa-solid fa-book-bookmark"></i></div>
+            <div class="btn-content">
+                <strong>Acervo Técnico</strong>
+                <span>Manuais e materiais técnicos.</span>
+            </div>
+        </a>
 
         <a href="configuracoes.html" class="system-btn">
-            <div class="btn-icon icon-config"><i class="fa-solid fa-gear"></i></div>
+            <div class="btn-icon"><i class="fa-solid fa-gear"></i></div>
             <div class="btn-content">
                 <strong>Configurações</strong>
                 <span>Ajustes do sistema e perfil.</span>
@@ -179,28 +178,20 @@
             <i class="fa-solid fa-power-off"></i> Encerrar Sessão
         </button>
 
-        <p style="color: rgba(255,255,255,0.2); font-size: 11px; margin-top: 20px; text-transform: uppercase;">
+        <p style="color: rgba(255,255,255,0.2); font-size: 10px; margin-top: 15px; text-transform: uppercase;">
             Acesso Restrito e Criptografado
         </p>
     </div>
 
-<script>
-        // 1. Verificação de Segurança (Impede acesso direto sem login)
+    <script>
         if (localStorage.getItem("inforos_logado") !== "true") {
             window.location.href = "https://refrigeracaoeliezer.github.io/site/"; 
         }
 
-        // 2. Função de Logout
         function logout() {
-            // Remove a "chave" de acesso do navegador
             localStorage.removeItem("inforos_logado");
-            
-            // Redireciona para a URL exata que você solicitou
             window.location.href = "https://refrigeracaoeliezer.github.io/site/";
         }
     </script>
-</body>
-</html>
-
 </body>
 </html>
