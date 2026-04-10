@@ -25,7 +25,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            overflow-x: hidden; /* Evita rolagem lateral */
+            overflow-x: hidden;
         }
 
         .background-glow {
@@ -41,7 +41,7 @@
 
         .container { 
             width: 100%; 
-            max-width: 600px; /* Reduzi para ficar mais compacto */
+            max-width: 600px;
         }
 
         h1 { 
@@ -49,7 +49,6 @@
             font-weight: 700; 
             margin-bottom: 30px; 
             text-align: center;
-            color: white;
         }
 
         .config-section {
@@ -59,16 +58,11 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 20px;
             padding: 20px;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             width: 100%;
-        }
-
-        .section-header {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            gap: 10px;
+            flex-direction: column;
+            gap: 15px;
         }
 
         .section-title {
@@ -77,17 +71,17 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 10px;
         }
 
         .section-title i { color: #27a9e3; }
 
-        /* Estilo da Logo em Cima */
         .logo-box {
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 15px;
-            width: 100%;
         }
 
         .logo-preview {
@@ -106,7 +100,7 @@
 
         .grid-inputs {
             display: grid;
-            grid-template-columns: 1fr; /* Coluna única para mobile por padrão */
+            grid-template-columns: 1fr;
             gap: 15px;
         }
 
@@ -120,17 +114,17 @@
             padding: 12px;
             color: white;
             font-size: 14px;
-            width: 100%; /* Garante que não vaze */
+            width: 100%;
             transition: 0.3s;
         }
 
-        input:focus { border-color: #27a9e3; outline: none; }
+        input:focus, textarea:focus { border-color: #27a9e3; outline: none; background: rgba(0, 0, 0, 0.5); }
 
         .btn-save {
             border: none;
-            padding: 12px 20px;
-            border-radius: 10px;
-            font-weight: 600;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 700;
             background: #1e40af;
             color: white;
             cursor: pointer;
@@ -138,16 +132,17 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            width: auto;
+            gap: 10px;
+            width: 100%;
+            margin-top: 5px;
         }
 
-        /* Ajustes para Telas Pequenas */
+        .btn-save:hover { background: #2563eb; transform: translateY(-2px); }
+        .btn-save i { font-size: 14px; }
+
         @media (max-width: 480px) {
-            .section-header { flex-direction: column; align-items: flex-start; }
-            .btn-save { width: 100%; margin-top: 10px; }
-            h1 { font-size: 22px; }
-            .config-section { padding: 15px; }
+            h1 { font-size: 24px; }
+            .config-section { padding: 18px; }
         }
     </style>
 </head>
@@ -159,27 +154,22 @@
         <h1>Configurações</h1>
 
         <div class="config-section">
-            <div class="section-header">
-                <div class="section-title"><i class="fa-solid fa-image"></i> Logo da Empresa</div>
-                <button class="btn-save" onclick="saveData('logo')">Salvar</button>
-            </div>
+            <div class="section-title"><i class="fa-solid fa-image"></i> Logo da Empresa</div>
             <div class="logo-box">
                 <div class="logo-preview" id="logoPreview">
-                    <i class="fa-solid fa-camera opacity-20" style="font-size: 30px; color: rgba(255,255,255,0.2);"></i>
+                    <i class="fa-solid fa-camera" style="font-size: 30px; color: rgba(255,255,255,0.1);"></i>
                 </div>
                 <input type="file" id="logoInput" accept="image/*" onchange="previewImage(this)">
             </div>
+            <button class="btn-save" onclick="saveData('logo')"><i class="fa-solid fa-floppy-disk"></i> Salvar Logo</button>
         </div>
 
         <div class="config-section">
-            <div class="section-header">
-                <div class="section-title"><i class="fa-solid fa-building"></i> Identidade da Empresa</div>
-                <button class="btn-save" onclick="saveData('empresa')">Salvar</button>
-            </div>
+            <div class="section-title"><i class="fa-solid fa-building"></i> Identidade da Empresa</div>
             <div class="grid-inputs">
                 <div class="input-group">
                     <label>Nome Fantasia</label>
-                    <input type="text" id="emp_nome" list="lista_empresas" placeholder="Buscar ou digitar...">
+                    <input type="text" id="emp_nome" list="lista_empresas" placeholder="Buscar ou digitar empresa...">
                     <datalist id="lista_empresas">
                         <option value="Refrigeração Eliezer">
                     </datalist>
@@ -189,13 +179,11 @@
                     <input type="text" id="emp_doc">
                 </div>
             </div>
+            <button class="btn-save" onclick="saveData('empresa')"><i class="fa-solid fa-floppy-disk"></i> Salvar Empresa</button>
         </div>
 
         <div class="config-section">
-            <div class="section-header">
-                <div class="section-title"><i class="fa-solid fa-gears"></i> Detalhes do Serviço</div>
-                <button class="btn-save" onclick="saveData('servico')">Salvar</button>
-            </div>
+            <div class="section-title"><i class="fa-solid fa-gears"></i> Detalhes do Serviço</div>
             <div class="grid-inputs">
                 <div class="input-group">
                     <label>Descrição do Serviço</label>
@@ -210,13 +198,11 @@
                     <input type="number" id="srv_valor" placeholder="0.00">
                 </div>
             </div>
+            <button class="btn-save" onclick="saveData('servico')"><i class="fa-solid fa-floppy-disk"></i> Salvar Serviço</button>
         </div>
 
         <div class="config-section">
-            <div class="section-header">
-                <div class="section-title"><i class="fa-solid fa-user"></i> Dados do Cliente</div>
-                <button class="btn-save" onclick="saveData('cliente')">Salvar</button>
-            </div>
+            <div class="section-title"><i class="fa-solid fa-user"></i> Dados do Cliente</div>
             <div class="grid-inputs">
                 <div class="input-group">
                     <label>Nome do Cliente</label>
@@ -238,22 +224,51 @@
                     <input type="text" id="cli_end">
                 </div>
             </div>
+            <button class="btn-save" onclick="saveData('cliente')"><i class="fa-solid fa-floppy-disk"></i> Salvar Cliente</button>
         </div>
 
         <div class="config-section">
-            <div class="section-header">
-                <div class="section-title"><i class="fa-solid fa-clipboard-list"></i> Observações Técnicas</div>
-                <button class="btn-save" onclick="saveData('obs')">Salvar</button>
+            <div class="section-title"><i class="fa-solid fa-clipboard-list"></i> Observações Técnicas</div>
+            <div class="grid-inputs">
+                <div class="input-group">
+                    <label>Puxar Modelo de Texto</label>
+                    <input type="text" id="obs_busca" list="lista_obs" placeholder="Ex: Garantia, Checklist..." oninput="checkObsSelection()">
+                    <datalist id="lista_obs">
+                        <option value="Garantia Padrão (90 dias)">
+                        <option value="Checklist de Manutenção">
+                        <option value="Termos de Instalação">
+                    </datalist>
+                </div>
+                <div class="input-group">
+                    <label>Conteúdo para Orçamento</label>
+                    <textarea id="txt_obs" rows="6" placeholder="O texto aparecerá aqui para ser editado..."></textarea>
+                </div>
             </div>
-            <textarea id="txt_obs" rows="4" placeholder="Detalhes técnicos..."></textarea>
+            <button class="btn-save" onclick="saveData('obs')"><i class="fa-solid fa-floppy-disk"></i> Salvar Observações</button>
         </div>
 
         <p style="text-align: center; color: rgba(255,255,255,0.1); font-size: 10px; margin-bottom: 30px;">
-            CONSOLE DE CONFIGURAÇÃO V2.3
+            CONSOLE DE CONFIGURAÇÃO V2.4
         </p>
     </div>
 
     <script>
+        // Função para preencher observações automaticamente
+        function checkObsSelection() {
+            const busca = document.getElementById('obs_busca').value;
+            const campoTexto = document.getElementById('txt_obs');
+
+            // Simulação de busca de dados (Puxar do servidor)
+            if (busca === "Garantia Padrão (90 dias)") {
+                campoTexto.value = "Garantia de 90 dias conforme CDC, válida apenas para mão de obra de execução. Não cobrimos danos por oscilação de energia ou mau uso.";
+            } else if (busca === "Checklist de Manutenção") {
+                campoTexto.value = "- Limpeza de filtros e serpentinas\n- Verificação de dreno\n- Teste de consumo (A)\n- Verificação de fluido refrigerante.";
+            } else if (busca === "Termos de Instalação") {
+                campoTexto.value = "Instalação realizada com vácuo e teste de estanqueidade. Equipamento entregue em pleno funcionamento.";
+            }
+        }
+
+        // Pré-visualização da Imagem
         function previewImage(input) {
             const preview = document.getElementById('logoPreview');
             if (input.files && input.files[0]) {
@@ -263,8 +278,9 @@
             }
         }
 
+        // Salvar dados
         function saveData(secao) {
-            alert("Dados de " + secao + " salvos!");
+            alert("Dados de " + secao + " salvos com sucesso!");
         }
     </script>
 </body>
