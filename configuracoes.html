@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <script>
+        if (localStorage.getItem("inforos_logado") !== "true") {
+            window.location.href = "https://refrigeracaoeliezer.github.io/site/";
+        }
+    </script>
+
+    <meta charset="UTF-8">
+    <title>Configurações Avançadas | Refrigeração</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            background: #0d1117;
+            color: white;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .background-glow {
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: rgba(30, 64, 175, 0.1);
+            filter: blur(100px);
+            border-radius: 50%;
+            z-index: -1;
+            top: 20%;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 850px;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            width: 100%;
+        }
+
+        .page-header h1 { font-size: 26px; font-weight: 700; }
+        .btn-back {
+            text-decoration: none;
+            color: #27a9e3;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .config-section {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 30px;
+            margin-bottom: 25px;
+            transition: 0.3s;
+        }
+
+        .config-section:hover {
+            border-color: rgba(30, 64, 175, 0.5);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #fff;
+        }
+
+        .section-title i { color: #27a9e3; }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .grid-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 10px;
+        }
+
+        .input-group { display: flex; flex-direction: column; gap: 8px; }
+        .input-group label { font-size: 11px; color: rgba(255, 255, 255, 0.4); text-transform: uppercase; font-weight: 700; }
+        
+        input, textarea {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px;
+            color: white;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        input:focus { border-color: #27a9e3; outline: none; background: rgba(0,0,0,0.5); }
+
+        /* Estilo dos Botões */
+        .btn-action {
+            border: none;
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+        }
+
+        .btn-save { background: #1e40af; }
+        .btn-save:hover { background: #2563eb; transform: translateY(-2px); }
+
+        .btn-fetch { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); }
+        .btn-fetch:hover { background: rgba(255, 255, 255, 0.2); color: #27a9e3; }
+
+        @media (max-width: 600px) {
+            .section-header { flex-direction: column; align-items: flex-start; }
+            .action-buttons { width: 100%; }
+            .btn-action { flex: 1; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="background-glow"></div>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>Painel de Controle</h1>
+            <a href="javascript:history.back()" class="btn-back"><i class="fa-solid fa-chevron-left"></i> Voltar</a>
+        </div>
+
+        <div class="config-section">
+            <div class="section-header">
+                <div class="section-title"><i class="fa-solid fa-building"></i> Identidade da Empresa</div>
+                <div class="action-buttons">
+                    <button class="btn-action btn-fetch" onclick="fetchData('empresa')"><i class="fa-solid fa-cloud-download"></i> Puxar</button>
+                    <button class="btn-action btn-save" onclick="saveData('empresa')"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+                </div>
+            </div>
+            <div class="grid-inputs">
+                <div class="input-group">
+                    <label>Nome Fantasia</label>
+                    <input type="text" id="emp_nome" placeholder="Nome da sua empresa">
+                </div>
+                <div class="input-group">
+                    <label>CNPJ / CPF Empresa</label>
+                    <input type="text" id="emp_doc" placeholder="00.000.000/0001-00">
+                </div>
+            </div>
+        </div>
+
+        <div class="config-section">
+            <div class="section-header">
+                <div class="section-title"><i class="fa-solid fa-gears"></i> Detalhes do Serviço</div>
+                <div class="action-buttons">
+                    <button class="btn-action btn-fetch" onclick="fetchData('servico')"><i class="fa-solid fa-cloud-download"></i> Puxar</button>
+                    <button class="btn-action btn-save" onclick="saveData('servico')"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+                </div>
+            </div>
+            <div class="grid-inputs">
+                <div class="input-group" style="grid-column: span 2;">
+                    <label>Descrição do Serviço</label>
+                    <input type="text" id="srv_nome" placeholder="O que será feito?">
+                </div>
+                <div class="input-group">
+                    <label>Valor Total (R$)</label>
+                    <input type="number" id="srv_valor" placeholder="0.00">
+                </div>
+                <div class="input-group">
+                    <label>Prazo</label>
+                    <input type="text" id="srv_prazo" placeholder="Ex: Imediato">
+                </div>
+            </div>
+        </div>
+
+        <div class="config-section">
+            <div class="section-header">
+                <div class="section-title"><i class="fa-solid fa-user"></i> Dados do Cliente</div>
+                <div class="action-buttons">
+                    <button class="btn-action btn-fetch" onclick="fetchData('cliente')"><i class="fa-solid fa-cloud-download"></i> Puxar</button>
+                    <button class="btn-action btn-save" onclick="saveData('cliente')"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+                </div>
+            </div>
+            <div class="grid-inputs">
+                <div class="input-group">
+                    <label>Nome do Cliente</label>
+                    <input type="text" id="cli_nome" placeholder="Nome Completo">
+                </div>
+                <div class="input-group">
+                    <label>CPF / CNPJ Cliente</label>
+                    <input type="text" id="cli_doc" placeholder="000.000.000-00">
+                </div>
+                <div class="input-group">
+                    <label>WhatsApp</label>
+                    <input type="tel" id="cli_tel" placeholder="(00) 00000-0000">
+                </div>
+                <div class="input-group">
+                    <label>Endereço</label>
+                    <input type="text" id="cli_end" placeholder="Cidade - UF">
+                </div>
+            </div>
+        </div>
+
+        <div class="config-section">
+            <div class="section-header">
+                <div class="section-title"><i class="fa-solid fa-clipboard-list"></i> Observações Técnicas</div>
+                <div class="action-buttons">
+                    <button class="btn-action btn-fetch" onclick="fetchData('obs')"><i class="fa-solid fa-cloud-download"></i> Puxar</button>
+                    <button class="btn-action btn-save" onclick="saveData('obs')"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Garantia e Detalhes Adicionais</label>
+                <textarea id="txt_obs" rows="4" placeholder="Notas que aparecerão no orçamento..."></textarea>
+            </div>
+        </div>
+
+        <p style="text-align: center; color: rgba(255,255,255,0.1); font-size: 11px; margin-bottom: 40px;">
+            Acesso Criptografado - Console v2.1
+        </p>
+    </div>
+
+    <script>
+        // Função para simular a busca no servidor
+        function fetchData(secao) {
+            console.log("Buscando dados da seção: " + secao);
+            
+            // Exemplo de como você preencheria os dados vindos do servidor
+            if(secao === 'empresa') {
+                document.getElementById('emp_nome').value = "Refrigeração Eliezer";
+                document.getElementById('emp_doc').value = "12.345.678/0001-90";
+            }
+            
+            alert("Dados de " + secao + " carregados do servidor!");
+        }
+
+        // Função para simular o salvamento
+        function saveData(secao) {
+            console.log("Salvando dados da seção: " + secao);
+            alert("Alterações em " + secao + " foram enviadas ao servidor!");
+        }
+    </script>
+</body>
+</html>
