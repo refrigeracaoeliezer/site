@@ -2,6 +2,7 @@
 <html lang="pt-br">
 <head>
     <script>
+        // Verificação inicial de segurança do sistema geral
         if (localStorage.getItem("inforos_logado") !== "true") {
             window.location.href = "https://refrigeracaoeliezer.github.io/site/";
         }
@@ -28,6 +29,33 @@
             overflow-x: hidden;
         }
 
+        /* Camada de Login */
+        #overlay-login {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #0d1117;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 30px;
+            border-radius: 24px;
+            border: 1px solid rgba(30, 64, 175, 0.3);
+            width: 100%;
+            max-width: 380px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .hidden { display: none !important; }
+
         .background-glow {
             position: fixed;
             width: 300px;
@@ -44,17 +72,11 @@
             max-width: 600px;
         }
 
-        h1 { 
-            font-size: 28px; 
-            font-weight: 700; 
-            margin-bottom: 30px; 
-            text-align: center;
-        }
+        h1 { font-size: 28px; font-weight: 700; margin-bottom: 30px; text-align: center; }
 
         .config-section {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 20px;
             padding: 20px;
@@ -77,34 +99,20 @@
 
         .section-title i { color: #27a9e3; }
 
-        .logo-box {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-        }
-
         .logo-preview {
-            width: 120px;
-            height: 120px;
+            width: 100px; height: 100px;
             border-radius: 15px;
             background: rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 10px auto;
             border: 1px solid rgba(255,255,255,0.1);
             overflow: hidden;
         }
-        
         .logo-preview img { width: 100%; height: 100%; object-fit: contain; }
 
-        .grid-inputs {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 15px;
-        }
+        .grid-inputs { display: grid; grid-template-columns: 1fr; gap: 15px; }
 
-        .input-group { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+        .input-group { display: flex; flex-direction: column; gap: 6px; width: 100%; text-align: left; }
         .input-group label { font-size: 11px; color: rgba(255, 255, 255, 0.5); text-transform: uppercase; font-weight: 700; }
         
         input, textarea {
@@ -115,10 +123,7 @@
             color: white;
             font-size: 14px;
             width: 100%;
-            transition: 0.3s;
         }
-
-        input:focus, textarea:focus { border-color: #27a9e3; outline: none; background: rgba(0, 0, 0, 0.5); }
 
         .btn-save {
             border: none;
@@ -128,25 +133,55 @@
             background: #1e40af;
             color: white;
             cursor: pointer;
-            transition: 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
             width: 100%;
-            margin-top: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
         }
 
-        .btn-save:hover { background: #2563eb; transform: translateY(-2px); }
-        .btn-save i { font-size: 14px; }
+        .btn-save:hover { background: #2563eb; }
 
-        @media (max-width: 480px) {
-            h1 { font-size: 24px; }
-            .config-section { padding: 18px; }
-        }
+        .link-auth { color: #27a9e3; text-decoration: none; font-size: 13px; cursor: pointer; }
     </style>
 </head>
 <body>
+
+    <div id="overlay-login">
+        <div class="login-card" id="card-login">
+            <i class="fa-solid fa-lock" style="font-size: 40px; color: #1e40af; margin-bottom: 20px;"></i>
+            <h2 style="margin-bottom: 20px;">Acesso às Configurações</h2>
+            <input type="email" id="user_email" placeholder="E-mail" style="margin-bottom: 10px;">
+            <input type="password" id="user_pass" placeholder="Senha" style="margin-bottom: 15px;">
+            <button class="btn-save" onclick="realizarLogin()">Entrar</button>
+            <p style="margin-top: 20px;">
+                <span class="link-auth" onclick="alternarTela('registrar')">Criar Conta</span> | 
+                <span class="link-auth" onclick="alternarTela('recuperar')" style="color:#ff4b4b">Recuperar Senha</span>
+            </p>
+        </div>
+
+        <div class="login-card hidden" id="card-registrar">
+            <h2>Novo Registro</h2>
+            <div style="margin-top:15px">
+                <input type="email" id="reg_email" placeholder="Seu melhor e-mail" style="margin-bottom: 10px;">
+                <input type="password" id="reg_pass" placeholder="Defina uma senha" style="margin-bottom: 10px;">
+                <input type="text" id="reg_pergunta" placeholder="Pergunta de Segurança (Ex: Nome do Pet?)" style="margin-bottom: 10px;">
+                <input type="text" id="reg_resposta" placeholder="Sua Resposta" style="margin-bottom: 15px;">
+                <button class="btn-save" onclick="registrarUsuario()">Cadastrar</button>
+                <p style="margin-top:15px" class="link-auth" onclick="alternarTela('login')">Voltar ao Login</p>
+            </div>
+        </div>
+
+        <div class="login-card hidden" id="card-recuperar">
+            <h2>Recuperar Senha</h2>
+            <p style="font-size: 12px; color: rgba(255,255,255,0.5); margin: 10px 0;">Informe seu e-mail e a resposta de segurança cadastrada.</p>
+            <input type="email" id="rec_email" placeholder="E-mail cadastrado" style="margin-bottom: 10px;">
+            <input type="text" id="rec_resposta" placeholder="Sua Resposta de Segurança" style="margin-bottom: 15px;">
+            <button class="btn-save" onclick="recuperarSenha()">Verificar</button>
+            <p style="margin-top:15px" class="link-auth" onclick="alternarTela('login')">Voltar ao Login</p>
+        </div>
+    </div>
 
     <div class="background-glow"></div>
 
@@ -155,12 +190,10 @@
 
         <div class="config-section">
             <div class="section-title"><i class="fa-solid fa-image"></i> Logo da Empresa</div>
-            <div class="logo-box">
-                <div class="logo-preview" id="logoPreview">
-                    <i class="fa-solid fa-camera" style="font-size: 30px; color: rgba(255,255,255,0.1);"></i>
-                </div>
-                <input type="file" id="logoInput" accept="image/*" onchange="previewImage(this)">
+            <div class="logo-preview" id="logoPreview">
+                <i class="fa-solid fa-camera" style="font-size: 30px; color: rgba(255,255,255,0.1);"></i>
             </div>
+            <input type="file" id="logoInput" accept="image/*" onchange="previewImage(this)">
             <button class="btn-save" onclick="saveData('logo')"><i class="fa-solid fa-floppy-disk"></i> Salvar Logo</button>
         </div>
 
@@ -169,10 +202,8 @@
             <div class="grid-inputs">
                 <div class="input-group">
                     <label>Nome Fantasia</label>
-                    <input type="text" id="emp_nome" list="lista_empresas" placeholder="Buscar ou digitar empresa...">
-                    <datalist id="lista_empresas">
-                        <option value="Refrigeração Eliezer">
-                    </datalist>
+                    <input type="text" id="emp_nome" list="lista_empresas" placeholder="Buscar ou digitar...">
+                    <datalist id="lista_empresas"><option value="Refrigeração Eliezer"></datalist>
                 </div>
                 <div class="input-group">
                     <label>CNPJ / CPF</label>
@@ -186,8 +217,8 @@
             <div class="section-title"><i class="fa-solid fa-gears"></i> Detalhes do Serviço</div>
             <div class="grid-inputs">
                 <div class="input-group">
-                    <label>Descrição do Serviço</label>
-                    <input type="text" id="srv_nome" list="lista_servicos" placeholder="Buscar serviço...">
+                    <label>Descrição</label>
+                    <input type="text" id="srv_nome" list="lista_servicos" placeholder="Ex: Higienização...">
                     <datalist id="lista_servicos">
                         <option value="Higienização de Ar Condicionado">
                         <option value="Carga de Gás">
@@ -204,25 +235,10 @@
         <div class="config-section">
             <div class="section-title"><i class="fa-solid fa-user"></i> Dados do Cliente</div>
             <div class="grid-inputs">
-                <div class="input-group">
-                    <label>Nome do Cliente</label>
-                    <input type="text" id="cli_nome" list="lista_clientes" placeholder="Buscar cliente...">
-                    <datalist id="lista_clientes">
-                        <option value="João Silva">
-                    </datalist>
-                </div>
-                <div class="input-group">
-                    <label>CPF / CNPJ</label>
-                    <input type="text" id="cli_doc">
-                </div>
-                <div class="input-group">
-                    <label>WhatsApp</label>
-                    <input type="tel" id="cli_tel">
-                </div>
-                <div class="input-group">
-                    <label>Endereço</label>
-                    <input type="text" id="cli_end">
-                </div>
+                <div class="input-group"><label>Nome</label><input type="text" id="cli_nome" list="lista_clientes"></div>
+                <div class="input-group"><label>CPF/CNPJ</label><input type="text" id="cli_doc"></div>
+                <div class="input-group"><label>WhatsApp</label><input type="tel" id="cli_tel"></div>
+                <div class="input-group"><label>Endereço</label><input type="text" id="cli_end"></div>
             </div>
             <button class="btn-save" onclick="saveData('cliente')"><i class="fa-solid fa-floppy-disk"></i> Salvar Cliente</button>
         </div>
@@ -231,44 +247,78 @@
             <div class="section-title"><i class="fa-solid fa-clipboard-list"></i> Observações Técnicas</div>
             <div class="grid-inputs">
                 <div class="input-group">
-                    <label>Puxar Modelo de Texto</label>
-                    <input type="text" id="obs_busca" list="lista_obs" placeholder="Ex: Garantia, Checklist..." oninput="checkObsSelection()">
+                    <label>Puxar Modelo</label>
+                    <input type="text" id="obs_busca" list="lista_obs" placeholder="Garantia, Checklist..." oninput="checkObsSelection()">
                     <datalist id="lista_obs">
                         <option value="Garantia Padrão (90 dias)">
                         <option value="Checklist de Manutenção">
-                        <option value="Termos de Instalação">
                     </datalist>
                 </div>
-                <div class="input-group">
-                    <label>Conteúdo para Orçamento</label>
-                    <textarea id="txt_obs" rows="6" placeholder="O texto aparecerá aqui para ser editado..."></textarea>
-                </div>
+                <textarea id="txt_obs" rows="5" placeholder="Edite o texto aqui..."></textarea>
             </div>
             <button class="btn-save" onclick="saveData('obs')"><i class="fa-solid fa-floppy-disk"></i> Salvar Observações</button>
         </div>
-
-        <p style="text-align: center; color: rgba(255,255,255,0.1); font-size: 10px; margin-bottom: 30px;">
-            CONSOLE DE CONFIGURAÇÃO V2.4
-        </p>
     </div>
 
     <script>
-        // Função para preencher observações automaticamente
-        function checkObsSelection() {
-            const busca = document.getElementById('obs_busca').value;
-            const campoTexto = document.getElementById('txt_obs');
+        const SCRIPT_URL = "SUA_URL_DO_APPS_SCRIPT_AQUI";
 
-            // Simulação de busca de dados (Puxar do servidor)
-            if (busca === "Garantia Padrão (90 dias)") {
-                campoTexto.value = "Garantia de 90 dias conforme CDC, válida apenas para mão de obra de execução. Não cobrimos danos por oscilação de energia ou mau uso.";
-            } else if (busca === "Checklist de Manutenção") {
-                campoTexto.value = "- Limpeza de filtros e serpentinas\n- Verificação de dreno\n- Teste de consumo (A)\n- Verificação de fluido refrigerante.";
-            } else if (busca === "Termos de Instalação") {
-                campoTexto.value = "Instalação realizada com vácuo e teste de estanqueidade. Equipamento entregue em pleno funcionamento.";
+        // --- SISTEMA DE AUTH ---
+        function alternarTela(tela) {
+            document.getElementById('card-login').classList.add('hidden');
+            document.getElementById('card-registrar').classList.add('hidden');
+            document.getElementById('card-recuperar').classList.add('hidden');
+            if(tela === 'login') document.getElementById('card-login').classList.remove('hidden');
+            if(tela === 'registrar') document.getElementById('card-registrar').classList.remove('hidden');
+            if(tela === 'recuperar') document.getElementById('card-recuperar').classList.remove('hidden');
+        }
+
+        async function realizarLogin() {
+            const email = document.getElementById('user_email').value;
+            const pass = document.getElementById('user_pass').value;
+            if(!email || !pass) return alert("Preencha tudo!");
+
+            const resp = await fetch(`${SCRIPT_URL}?action=login&email=${email}&senha=${pass}`);
+            const result = await resp.text();
+            
+            if(result === "logado") {
+                document.getElementById('overlay-login').style.display = 'none';
+                sessionStorage.setItem("config_auth", "true");
+            } else {
+                alert("Acesso Negado!");
             }
         }
 
-        // Pré-visualização da Imagem
+        async function registrarUsuario() {
+            const email = document.getElementById('reg_email').value;
+            const pass = document.getElementById('reg_pass').value;
+            const perg = document.getElementById('reg_pergunta').value;
+            const resp_sec = document.getElementById('reg_resposta').value;
+
+            await fetch(`${SCRIPT_URL}?action=registrar&email=${email}&senha=${pass}&pergunta=${perg}&resposta=${resp_sec}`);
+            alert("Sucesso! Faça login.");
+            alternarTela('login');
+        }
+
+        async function recuperarSenha() {
+            const email = document.getElementById('rec_email').value;
+            const resposta = document.getElementById('rec_resposta').value;
+            const resp = await fetch(`${SCRIPT_URL}?action=recuperar&email=${email}&resposta=${resposta}`);
+            alert(await resp.text());
+        }
+
+        if(sessionStorage.getItem("config_auth") === "true") {
+            document.getElementById('overlay-login').style.display = 'none';
+        }
+
+        // --- SISTEMA DE CONFIGURAÇÕES ---
+        function checkObsSelection() {
+            const val = document.getElementById('obs_busca').value;
+            const txt = document.getElementById('txt_obs');
+            if(val === "Garantia Padrão (90 dias)") txt.value = "Garantia de 90 dias conforme CDC...";
+            if(val === "Checklist de Manutenção") txt.value = "- Filtros limpos\n- Dreno livre...";
+        }
+
         function previewImage(input) {
             const preview = document.getElementById('logoPreview');
             if (input.files && input.files[0]) {
@@ -278,9 +328,8 @@
             }
         }
 
-        // Salvar dados
         function saveData(secao) {
-            alert("Dados de " + secao + " salvos com sucesso!");
+            alert("Salvando " + secao + " no banco de dados...");
         }
     </script>
 </body>
