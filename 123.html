@@ -15,7 +15,6 @@
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
         body {
             font-family: 'Inter', sans-serif;
             min-height: 100vh;
@@ -25,9 +24,9 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            overflow-x: hidden;
         }
 
+        /* Camada de Login */
         #overlay-login {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -42,28 +41,17 @@
         .login-card {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
             padding: 30px;
             border-radius: 24px;
             border: 1px solid rgba(30, 64, 175, 0.3);
             width: 100%;
             max-width: 380px;
             text-align: center;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
         }
 
         .hidden { display: none !important; }
 
-        .background-glow {
-            position: fixed;
-            width: 300px; height: 300px;
-            background: rgba(30, 64, 175, 0.15);
-            filter: blur(80px);
-            border-radius: 50%;
-            z-index: -1;
-            top: 10%;
-        }
-
+        /* Estilo das Seções */
         .container { width: 100%; max-width: 600px; }
         h1 { font-size: 28px; font-weight: 700; margin-bottom: 30px; text-align: center; }
 
@@ -74,6 +62,31 @@
             border-radius: 20px;
             padding: 20px;
             margin-bottom: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 10px;
+        }
+
+        .section-title i { color: #27a9e3; }
+
+        input, textarea {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 12px;
+            color: white;
+            font-size: 14px;
+            width: 100%;
         }
 
         .btn-save {
@@ -89,97 +102,107 @@
             justify-content: center;
             align-items: center;
             gap: 10px;
-            margin-top: 10px;
-            transition: 0.3s;
         }
 
-        .btn-save:disabled {
-            background: #334155;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
+        .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        input, textarea {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            padding: 12px;
-            color: white;
-            font-size: 14px;
-            width: 100%;
-            margin-bottom: 10px;
+        .logo-preview {
+            width: 120px; height: 120px; margin: 0 auto;
+            border-radius: 15px;
+            background: rgba(0,0,0,0.3);
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow: hidden;
         }
+        .logo-preview img { width: 100%; height: 100%; object-fit: contain; }
 
-        .link-auth { color: #27a9e3; text-decoration: none; font-size: 13px; cursor: pointer; }
-        
-        /* Mensagem de Verificação */
-        .status-msg {
-            font-size: 13px;
-            margin-top: 10px;
-            color: #27a9e3;
-            display: none;
-        }
+        .link-auth { color: #27a9e3; cursor: pointer; font-size: 13px; }
+        .status-msg { color: #27a9e3; font-size: 13px; margin: 10px 0; display: none; }
     </style>
 </head>
 <body>
 
     <div id="overlay-login">
         <div class="login-card" id="card-login">
-            <i class="fa-solid fa-shield-halved" style="font-size: 40px; color: #1e40af; margin-bottom: 20px;"></i>
-            <h2 style="margin-bottom: 20px;">Acesso Restrito</h2>
-            
-            <input type="email" id="user_email" placeholder="E-mail">
-            <input type="password" id="user_pass" placeholder="Senha">
-            
-            <div id="login-status" class="status-msg"><i class="fa-solid fa-circle-notch fa-spin"></i> Verificando credenciais...</div>
-            
-            <button class="btn-save" id="btn-entrar" onclick="realizarLogin()">Entrar no Sistema</button>
-            
+            <i class="fa-solid fa-lock" style="font-size: 40px; color: #1e40af; margin-bottom: 20px;"></i>
+            <h2>Configurações</h2>
+            <input type="email" id="user_email" placeholder="E-mail" style="margin-top: 20px;">
+            <input type="password" id="user_pass" placeholder="Senha" style="margin-top: 10px;">
+            <div id="login-status" class="status-msg">Verificando...</div>
+            <button class="btn-save" id="btn-entrar" onclick="realizarLogin()" style="margin-top: 15px;">Entrar</button>
             <p style="margin-top: 20px;">
-                <span id="link-registrar-container">
-                    <span class="link-auth" onclick="alternarTela('registrar')">Primeiro Acesso</span> | 
-                </span>
+                <span id="link-registrar-container"><span class="link-auth" onclick="alternarTela('registrar')">Criar Conta</span> | </span>
                 <span class="link-auth" onclick="alternarTela('recuperar')" style="color:#ff4b4b">Esqueci meus dados</span>
             </p>
         </div>
 
         <div class="login-card hidden" id="card-registrar">
-            <h2>Criar Conta Mestre</h2>
-            <div style="margin-top:15px">
-                <input type="email" id="reg_email" placeholder="Defina seu E-mail">
-                <input type="password" id="reg_pass" placeholder="Defina sua Senha">
-                <input type="text" id="reg_pergunta" placeholder="Pergunta (Ex: Nome da sua mãe?)">
-                <input type="text" id="reg_resposta" placeholder="Sua Resposta">
-                <button class="btn-save" id="btn-registrar" onclick="registrarUsuario()">Finalizar Cadastro</button>
-                <p style="margin-top:15px" class="link-auth" onclick="alternarTela('login')">Voltar</p>
-            </div>
+            <h2>Novo Registro</h2>
+            <input type="email" id="reg_email" placeholder="E-mail" style="margin-top: 15px;">
+            <input type="password" id="reg_pass" placeholder="Senha" style="margin-top: 10px;">
+            <input type="text" id="reg_pergunta" placeholder="Pergunta de Segurança" style="margin-top: 10px;">
+            <input type="text" id="reg_resposta" placeholder="Resposta da Pergunta" style="margin-top: 10px;">
+            <button class="btn-save" onclick="registrarUsuario()" style="margin-top: 15px;">Salvar Conta</button>
+            <p class="link-auth" onclick="alternarTela('login')" style="margin-top: 15px;">Voltar</p>
         </div>
 
         <div class="login-card hidden" id="card-recuperar">
             <h2>Recuperar Acesso</h2>
-            <p style="font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 15px;">
-                Não lembra o e-mail? Digite sua <b>Resposta de Segurança</b> abaixo para revelá-lo.
-            </p>
-            
-            <input type="text" id="rec_resposta" placeholder="Sua Resposta de Segurança">
-            
-            <div id="rec-status" class="status-msg"><i class="fa-solid fa-circle-notch fa-spin"></i> Consultando banco de dados...</div>
-            
-            <button class="btn-save" id="btn-recuperar" onclick="recuperarSenha()">Recuperar Dados</button>
-            
-            <div id="dica-email" style="margin-top:15px; font-size:14px; color:#27a9e3; font-weight:bold;"></div>
-            
-            <p style="margin-top:15px" class="link-auth" onclick="alternarTela('login')">Voltar para o Login</p>
+            <p style="font-size: 12px; color: grey; margin: 10px 0;">Digite sua resposta de segurança para ver seus dados.</p>
+            <input type="text" id="rec_resposta" placeholder="Sua Resposta">
+            <div id="rec-status" class="status-msg">Buscando...</div>
+            <button class="btn-save" id="btn-recuperar" onclick="recuperarSenha()" style="margin-top: 15px;">Verificar</button>
+            <div id="dica-email" style="margin-top: 15px; color: #27a9e3; font-weight: bold; font-size: 13px;"></div>
+            <p class="link-auth" onclick="alternarTela('login')" style="margin-top: 15px;">Voltar</p>
         </div>
     </div>
 
-    <div class="background-glow"></div>
-
-    <div class="container">
+    <div class="container hidden" id="main-content">
         <h1>Configurações</h1>
+
         <div class="config-section">
-            <p style="text-align: center; color: rgba(255,255,255,0.5);">Seja bem-vindo ao painel de controle.</p>
+            <div class="section-title"><i class="fa-solid fa-image"></i> Logo da Empresa</div>
+            <div class="logo-preview" id="logoPreview">
+                <i class="fa-solid fa-camera" style="font-size: 30px; color: rgba(255,255,255,0.1);"></i>
+            </div>
+            <input type="file" id="logoInput" accept="image/*" onchange="previewImage(this)">
+            <button class="btn-save" onclick="saveData('logo')">Salvar Logo</button>
         </div>
+
+        <div class="config-section">
+            <div class="section-title"><i class="fa-solid fa-building"></i> Identidade da Empresa</div>
+            <input type="text" id="emp_nome" placeholder="Nome Fantasia">
+            <input type="text" id="emp_doc" placeholder="CNPJ / CPF">
+            <button class="btn-save" onclick="saveData('empresa')">Salvar Empresa</button>
+        </div>
+
+        <div class="config-section">
+            <div class="section-title"><i class="fa-solid fa-gears"></i> Detalhes do Serviço</div>
+            <input type="text" id="srv_nome" placeholder="Descrição do Serviço">
+            <input type="number" id="srv_valor" placeholder="Valor R$">
+            <button class="btn-save" onclick="saveData('servico')">Salvar Serviço</button>
+        </div>
+
+        <div class="config-section">
+            <div class="section-title"><i class="fa-solid fa-user"></i> Dados do Cliente</div>
+            <input type="text" id="cli_nome" placeholder="Nome do Cliente">
+            <input type="text" id="cli_doc" placeholder="CPF / CNPJ">
+            <input type="tel" id="cli_tel" placeholder="WhatsApp">
+            <input type="text" id="cli_end" placeholder="Endereço">
+            <button class="btn-save" onclick="saveData('cliente')">Salvar Cliente</button>
+        </div>
+
+        <div class="config-section">
+            <div class="section-title"><i class="fa-solid fa-clipboard-list"></i> Observações Técnicas</div>
+            <input type="text" id="obs_busca" list="lista_obs" placeholder="Buscar Modelo..." oninput="checkObsSelection()">
+            <datalist id="lista_obs">
+                <option value="Garantia Padrão (90 dias)">
+            </datalist>
+            <textarea id="txt_obs" rows="5" placeholder="Texto das observações..."></textarea>
+            <button class="btn-save" onclick="saveData('obs')">Salvar Observações</button>
+        </div>
+        
+        <p style="text-align: center; color: grey; font-size: 10px; margin-bottom: 40px;">SISTEMA V2.5</p>
     </div>
 
     <script>
@@ -187,78 +210,47 @@
 
         window.onload = verificarSeExisteDono;
 
-        function setStatus(id, show, text = "") {
-            const el = document.getElementById(id);
-            const btn = id === 'login-status' ? document.getElementById('btn-entrar') : document.getElementById('btn-recuperar');
-            
-            if (show) {
-                el.style.display = 'block';
-                btn.disabled = true;
-                if(text) btn.innerText = text;
-            } else {
-                el.style.display = 'none';
-                btn.disabled = false;
-                btn.innerText = id === 'login-status' ? "Entrar no Sistema" : "Recuperar Dados";
-            }
-        }
-
         async function verificarSeExisteDono() {
             try {
                 const resp = await fetch(`${URL_LOGIN}?action=checar_registro`);
                 const existe = await resp.text();
-                if (existe === "tem_dono") {
-                    document.getElementById('link-registrar-container').classList.add('hidden');
-                }
-            } catch (e) { console.log("Erro de conexão"); }
+                if (existe === "tem_dono") document.getElementById('link-registrar-container').classList.add('hidden');
+            } catch (e) { console.log("Erro ao conectar."); }
         }
 
         async function realizarLogin() {
             const email = document.getElementById('user_email').value;
             const pass = document.getElementById('user_pass').value;
-            if(!email || !pass) return alert("Preencha e-mail e senha!");
+            if(!email || !pass) return alert("Preencha tudo!");
 
-            setStatus('login-status', true, "Verificando...");
+            document.getElementById('login-status').style.display = 'block';
+            document.getElementById('btn-entrar').disabled = true;
 
             try {
                 const resp = await fetch(`${URL_LOGIN}?action=login&email=${email}&senha=${pass}`);
                 const result = await resp.text();
-                
                 if(result === "logado") {
-                    document.getElementById('overlay-login').classList.add('hidden');
+                    document.getElementById('overlay-login').style.display = 'none';
+                    document.getElementById('main-content').classList.remove('hidden');
                 } else {
-                    alert("E-mail ou Senha incorretos!");
-                    setStatus('login-status', false);
+                    alert("Dados incorretos!");
+                    document.getElementById('login-status').style.display = 'none';
+                    document.getElementById('btn-entrar').disabled = false;
                 }
-            } catch (e) {
-                alert("Erro ao conectar ao servidor.");
-                setStatus('login-status', false);
-            }
+            } catch (e) { alert("Erro de conexão."); }
         }
 
         async function recuperarSenha() {
             const resposta = document.getElementById('rec_resposta').value;
-            if(!resposta) return alert("Digite a resposta cadastrada!");
+            if(!resposta) return alert("Digite a resposta!");
 
-            setStatus('rec-status', true, "Buscando...");
-            document.getElementById('dica-email').innerText = "";
-
+            document.getElementById('rec-status').style.display = 'block';
             try {
-                // Aqui o script do Google deve estar preparado para buscar pela resposta
                 const resp = await fetch(`${URL_LOGIN}?action=recuperar&resposta=${resposta}`);
                 const result = await resp.text();
-                
-                // Se o resultado contiver a senha, mostramos também uma dica do email
-                if (result.includes("Sua senha é")) {
-                    document.getElementById('dica-email').innerHTML = `<i class="fa-solid fa-key"></i> ${result}`;
-                    alert("Dados localizados!");
-                } else {
-                    alert("Resposta de segurança incorreta!");
-                }
-            } catch (e) {
-                alert("Erro na recuperação.");
-            } finally {
-                setStatus('rec-status', false);
-            }
+                document.getElementById('dica-email').innerText = result;
+            } catch (e) { alert("Erro ao recuperar."); }
+            document.getElementById('rec-status').style.display = 'none';
         }
 
         function alternarTela(tela) {
@@ -274,21 +266,34 @@
             const email = document.getElementById('reg_email').value;
             const pass = document.getElementById('reg_pass').value;
             const perg = document.getElementById('reg_pergunta').value;
-            const resp_sec = document.getElementById('reg_resposta').value;
+            const resp = document.getElementById('reg_resposta').value;
 
-            if(!email || !pass || !resp_sec) return alert("Preencha tudo!");
-
-            const resp = await fetch(`${URL_LOGIN}?action=registrar&email=${email}&senha=${pass}&pergunta=${perg}&resposta=${resp_sec}`);
-            const result = await resp.text();
-
-            if(result === "sucesso") {
-                alert("Conta Mestre criada!");
+            const url = `${URL_LOGIN}?action=registrar&email=${email}&senha=${pass}&pergunta=${perg}&resposta=${resp}`;
+            const response = await fetch(url);
+            const res = await response.text();
+            if(res === "sucesso") {
+                alert("Criado! Faça login.");
                 alternarTela('login');
                 verificarSeExisteDono();
-            } else {
-                alert("Erro: Registro bloqueado.");
+            } else { alert("Erro ao registrar."); }
+        }
+
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = e => document.getElementById('logoPreview').innerHTML = `<img src="${e.target.result}">`;
+                reader.readAsDataURL(input.files[0]);
             }
         }
+
+        function checkObsSelection() {
+            const val = document.getElementById('obs_busca').value;
+            if(val === "Garantia Padrão (90 dias)") {
+                document.getElementById('txt_obs').value = "Garantia de 90 dias conforme CDC...";
+            }
+        }
+
+        function saveData(secao) { alert("Salvando " + secao + "..."); }
     </script>
 </body>
 </html>
