@@ -252,7 +252,6 @@
 
     window.onload = verificarSeExisteDono;
 
-    // 1. Função para minimizar/maximizar segurança
     function toggleSecurity() {
         const fields = document.getElementById('security-fields');
         const btn = document.getElementById('btn-toggle-sec');
@@ -272,80 +271,70 @@
         el.style.display = 'block';
     }
 
-    // 2. FUNÇÃO PARA BUSCAR DADOS E PREENCHER CADA CAMPO DO SITE
     async function carregarDadosPlanilha() {
         try {
             const resp = await fetch(`${URL_DADOS}?action=get_data`);
             const data = await resp.json();
             
-            // Preenche os campos de Identidade
             document.getElementById('emp_nome').value = data.emp_nome || "";
             document.getElementById('emp_doc').value = data.emp_doc || "";
             
-            // Puxa a Logo salva
             if(data.logo && data.logo.length > 100) {
                 document.getElementById('logoPreview').innerHTML = `<img src="${data.logo}" style="width:100%; height:100%; object-fit:contain;">`;
             }
 
-            // Atualiza as listas de sugestões (Datalists)
             document.getElementById('lista_clientes').innerHTML = data.clientes.map(c => `<option value="${c[0]}">`).join('');
             document.getElementById('lista_servicos').innerHTML = data.servicos.map(s => `<option value="${s[0]}">`).join('');
         } catch (e) { console.log("Aguardando preenchimento inicial da planilha..."); }
     }
 
-    // 3. SALVAR DADOS (Corrigido para evitar erro visual de CORS)
-  async function saveData(secao, btn) {
-    const button = btn || event.target;
-    const btnOriginalText = button.innerHTML;
-    
-    let dataObj = { action: `save_${secao}` };
-    
-    if (secao === 'logo') {
-        const img = document.getElementById('logoPreview').querySelector('img');
-        dataObj.imagem = img ? img.src : "";
-    } else if (secao === 'empresa') {
-        dataObj.nome = document.getElementById('emp_nome').value;
-        dataObj.doc = document.getElementById('emp_doc').value;
-    } else if (secao === 'servico') {
-        dataObj.nome = document.getElementById('srv_nome').value;
-        dataObj.valor = document.getElementById('srv_valor').value;
-    } else if (secao === 'cliente') {
-        dataObj.nome = document.getElementById('cli_nome').value;
-        dataObj.doc = document.getElementById('cli_doc').value;
-        dataObj.tel = document.getElementById('cli_tel').value;
-        dataObj.end = document.getElementById('cli_end').value;
-    } else if (secao === 'obs') {
-        dataObj.modelo = document.getElementById('obs_busca').value;
-        dataObj.texto = document.getElementById('txt_obs').value;
+    async function saveData(secao, btn) {
+        const button = btn || event.target;
+        const btnOriginalText = button.innerHTML;
+        
+        let dataObj = { action: `save_${secao}` };
+        
+        if (secao === 'logo') {
+            const img = document.getElementById('logoPreview').querySelector('img');
+            dataObj.imagem = img ? img.src : "";
+        } else if (secao === 'empresa') {
+            dataObj.nome = document.getElementById('emp_nome').value;
+            dataObj.doc = document.getElementById('emp_doc').value;
+        } else if (secao === 'servico') {
+            dataObj.nome = document.getElementById('srv_nome').value;
+            dataObj.valor = document.getElementById('srv_valor').value;
+        } else if (secao === 'cliente') {
+            dataObj.nome = document.getElementById('cli_nome').value;
+            dataObj.doc = document.getElementById('cli_doc').value;
+            dataObj.tel = document.getElementById('cli_tel').value;
+            dataObj.end = document.getElementById('cli_end').value;
+        } else if (secao === 'obs') {
+            dataObj.modelo = document.getElementById('obs_busca').value;
+            dataObj.texto = document.getElementById('txt_obs').value;
+        }
+
+        button.innerText = "Salvando...";
+        button.disabled = true;
+
+        const bodyParams = new URLSearchParams();
+        for (const key in dataObj) { bodyParams.append(key, dataObj[key]); }
+
+        fetch(URL_DADOS, {
+            method: 'POST',
+            mode: 'no-cors', 
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: bodyParams
+        }).then(() => {
+            alert("Dados salvos com sucesso!");
+            setTimeout(carregarDadosPlanilha, 1000);
+        }).catch((error) => {
+            console.error("Erro real de rede:", error);
+            alert("Erro ao salvar. Verifique sua conexão.");
+        }).finally(() => {
+            button.innerHTML = btnOriginalText;
+            button.disabled = false;
+        });
     }
-
-    button.innerText = "Salvando...";
-    button.disabled = true;
-
-    // Criamos o corpo da requisição
-    const bodyParams = new URLSearchParams();
-    for (const key in dataObj) { bodyParams.append(key, dataObj[key]); }
-
-    // EXUÇÃO DA REQUISIÇÃO
-    fetch(URL_DADOS, {
-        method: 'POST',
-        mode: 'no-cors', 
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: bodyParams
-    }).then(() => {
-        // Se entrou no .then, o navegador despachou a requisição.
-        // Como é 'no-cors', não verificamos o conteúdo, apenas confirmamos o envio.
-        alert("Dados salvos com sucesso!");
-        setTimeout(carregarDadosPlanilha, 1000);
-    }).catch((error) => {
-        // Só entrará aqui se a internet estiver realmente caída
-        console.error("Erro real de rede:", error);
-        alert("Erro ao salvar. Verifique sua conexão.");
-    }).finally(() => {
-        button.innerHTML = btnOriginalText;
-        button.disabled = false;
-    });
-}
 
     async function verificarSeExisteDono() {
         try {
@@ -385,7 +374,6 @@
         }
     }
 
-   
     async function atualizarAcesso() {
         const email = document.getElementById('new_u_mail').value;
         const pass = document.getElementById('new_u_pass').value;
@@ -403,13 +391,6 @@
         } catch (e) { showStatus('update-status', 'Erro de conexão.', 'error'); }
     }
 
-
-
-
-
-
-
-    
     async function buscarPergunta() {
         const email = document.getElementById('rec_u_mail').value;
         if(!email) return;
@@ -477,6 +458,6 @@
             document.getElementById('txt_obs').value = "- Limpeza de filtros\n- Verificação de dreno\n- Teste de carga.";
         }
     }
-</script>>
+</script>
 </body>
 </html>
