@@ -248,7 +248,7 @@
 
 <script>
     const URL_LOGIN = "https://script.google.com/macros/s/AKfycbyVHWD028yH3qTXi63aL4Jq17MwNuXnfy8IwwA2SVOs26bsQRxmffePggxM3AriKhI2IQ/exec";
-    const URL_LOGO = "https://script.google.com/macros/s/AKfycbwDIbxgSOAZSx7p-ox-OY_pG6qkoHS94VGVn7uRwhbDTeo8Ew9iJ6DppkHZqplnmrUN/exec";
+    const URL_LOGO = "https://script.google.com/macros/s/AKfycbyc_p5fQfbBRWmPTl0nwrqk_JUL4t3xz3K6QdmMcYLCl6MmtygBfxMf-zrDjlOjaCOx/exec";
 
     window.onload = verificarSeExisteDono;
 
@@ -271,56 +271,29 @@
 
         if (!imgElement) return alert("Selecione uma imagem primeiro!");
 
-        button.innerText = "Processando...";
+        button.innerText = "Enviando ao Drive...";
         button.disabled = true;
 
-        // --- LÓGICA DE REDIMENSIONAMENTO PARA EVITAR "FAILED TO FETCH" ---
-        const imgParaProcessar = new Image();
-        imgParaProcessar.src = imgElement.src;
-        
-        imgParaProcessar.onload = function() {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            
-            // Limitamos a largura para 400px para o Base64 ficar leve e o fetch aceitar
-            const MAX_WIDTH = 400;
-            let width = imgParaProcessar.width;
-            let height = imgParaProcessar.height;
+        // Usamos URLSearchParams para evitar erros de CORS e limites de JSON
+        const bodyParams = new URLSearchParams();
+        bodyParams.append("action", "save_logo");
+        bodyParams.append("imagem", imgElement.src);
 
-            if (width > MAX_WIDTH) {
-                height *= MAX_WIDTH / width;
-                width = MAX_WIDTH;
-            }
-
-            canvas.width = width;
-            canvas.height = height;
-            ctx.drawImage(imgParaProcessar, 0, 0, width, height);
-
-            // Exportamos como PNG para manter a transparência no Drive
-            const base64Otimizado = canvas.toDataURL('image/png');
-
-            button.innerText = "Enviando ao Drive...";
-
-            const payload = {
-                action: "save_logo",
-                imagem: base64Otimizado 
-            };
-
-            fetch(URL_LOGO, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(payload) 
-            }).then(() => {
-                alert("Imagem salva no Google Drive com sucesso!");
-                setTimeout(carregarDadosPlanilha, 2500);
-            }).catch((error) => {
-                console.error("Erro técnico:", error);
-                alert("Erro ao enviar para o Drive. Tente uma imagem menos complexa.");
-            }).finally(() => {
-                button.innerHTML = btnOriginalText;
-                button.disabled = false;
-            });
-        };
+        fetch(URL_LOGO, {
+            method: 'POST',
+            mode: 'no-cors', // Fundamental para o Google não bloquear a requisição
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: bodyParams.toString()
+        }).then(() => {
+            alert("Solicitação enviada! Aguarde 3 segundos para atualizar.");
+            setTimeout(carregarDadosPlanilha, 3000);
+        }).catch((error) => {
+            console.error("Erro:", error);
+            alert("Erro ao conectar com o servidor.");
+        }).finally(() => {
+            button.innerHTML = btnOriginalText;
+            button.disabled = false;
+        });
     }
 
     function previewImage(input) {
@@ -333,6 +306,7 @@
         }
     }
 
+    // --- Outras funções permanecem iguais ---
     function showStatus(id, msg, type) {
         const el = document.getElementById(id);
         el.innerText = msg;
