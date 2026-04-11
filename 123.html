@@ -248,11 +248,9 @@
 
 <script>
     const URL_LOGIN = "https://script.google.com/macros/s/AKfycbyVHWD028yH3qTXi63aL4Jq17MwNuXnfy8IwwA2SVOs26bsQRxmffePggxM3AriKhI2IQ/exec";
-    const URL_LOGO = "https://script.google.com/macros/s/AKfycbxC2jHdeVLCj9klf5jc-1TpSYSdDm4UwIMoUIxh6RjqU8l6bWIwqrgy5PQq19hnuqDA/exec";
+    const URL_LOGO = "https://script.google.com/macros/s/AKfycbw95kl_6a0SRbwpWGQLm1gtoMTKMyxigMvVT7hs2YmH7GZosFK40xhAG2xN3K3dpFI9/exec";
 
     window.onload = verificarSeExisteDono;
-
-    // --- SESSÃO 1: LOGO (CARREGAR E SALVAR) ---
 
     async function carregarDadosPlanilha() {
         try {
@@ -261,9 +259,7 @@
             if(data.logo && data.logo.length > 100) {
                 document.getElementById('logoPreview').innerHTML = `<img src="${data.logo}" style="width:100%; height:100%; object-fit:contain;">`;
             }
-        } catch (e) { 
-            console.log("Aguardando preenchimento da logo..."); 
-        }
+        } catch (e) { console.log("Aguardando logo..."); }
     }
 
     async function saveData(secao, btn) {
@@ -275,49 +271,68 @@
 
         if (!imgElement) return alert("Selecione uma imagem primeiro!");
 
-        button.innerText = "Salvando...";
+        button.innerText = "Compactando...";
         button.disabled = true;
 
-        // Mudança crucial: Enviando como JSON para suportar arquivos PNG pesados
-        const payload = {
-            action: "save_logo",
-            imagem: imgElement.src
+        // --- LÓGICA DE COMPRESSÃO PARA PNG ---
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const maxW = 400; // Redimensiona para no máximo 400px de largura (ideal para logos)
+
+        const imgParaCanvas = new Image();
+        imgParaCanvas.src = imgElement.src;
+        
+        imgParaCanvas.onload = function() {
+            let width = imgParaCanvas.width;
+            let height = imgParaCanvas.height;
+
+            if (width > maxW) {
+                height *= maxW / width;
+                width = maxW;
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(imgParaCanvas, 0, 0, width, height);
+
+            // Exporta como PNG mantendo a transparência, mas com tamanho reduzido
+            const base64Otimizado = canvas.toDataURL('image/png');
+
+            button.innerText = "Enviando...";
+
+            const payload = {
+                action: "save_logo",
+                imagem: base64Otimizado
+            };
+
+            fetch(URL_LOGO, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify(payload) 
+            }).then(() => {
+                alert("Logo PNG salva com sucesso!");
+                carregarDadosPlanilha();
+            }).catch((error) => {
+                console.error("Erro:", error);
+                alert("Erro ao enviar PNG muito grande.");
+            }).finally(() => {
+                button.innerHTML = btnOriginalText;
+                button.disabled = false;
+            });
         };
-
-        fetch(URL_LOGO, {
-            method: 'POST',
-            mode: 'no-cors', // Mantido no-cors para evitar bloqueios de navegador
-            body: JSON.stringify(payload) 
-        }).then(() => {
-            alert("Logo enviada com sucesso!");
-            carregarDadosPlanilha();
-        }).catch((error) => {
-            console.error("Erro no envio:", error);
-        }).finally(() => {
-            button.innerHTML = btnOriginalText;
-            button.disabled = false;
-        });
     }
-
-    // --- FUNÇÕES AUXILIARES ---
 
     function previewImage(input) {
         if (input.files && input.files[0]) {
-            const file = input.files[0];
             const reader = new FileReader();
-            reader.onload = function(e) {
-                // Preserva o formato original (PNG/JPG) e a transparência
+            reader.onload = e => {
                 document.getElementById('logoPreview').innerHTML = `<img src="${e.target.result}" style="width:100%; height:100%; object-fit:contain;">`;
             };
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(input.files[0]);
         }
     }
 
-    function toggleSecurity() {
-        const fields = document.getElementById('security-fields');
-        fields.style.display = (fields.style.display === 'flex') ? 'none' : 'flex';
-    }
-
+    // --- MANTENHA AS OUTRAS FUNÇÕES (realizarLogin, etc) IGUAIS ---
     function showStatus(id, msg, type) {
         const el = document.getElementById(id);
         el.innerText = msg;
@@ -325,14 +340,11 @@
         el.style.display = 'block';
     }
 
-    // --- LOGIN ---
-
     async function realizarLogin() {
         const email = document.getElementById('auth_u_mail').value;
         const pass = document.getElementById('auth_u_pass').value;
         if(!email || !pass) return showStatus('login-status', 'Preencha tudo.', 'error');
         showStatus('login-status', 'Verificando...', 'loading');
-        
         try {
             const resp = await fetch(`${URL_LOGIN}?action=login&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}`);
             const result = await resp.text();
@@ -340,9 +352,7 @@
                 document.getElementById('overlay-login').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
                 carregarDadosPlanilha(); 
-            } else {
-                showStatus('login-status', 'Dados incorretos.', 'error');
-            }
+            } else { showStatus('login-status', 'Dados incorretos.', 'error'); }
         } catch (e) { showStatus('login-status', 'Erro de rede.', 'error'); }
     }
 
@@ -350,9 +360,7 @@
         try {
             const resp = await fetch(`${URL_LOGIN}?action=checar_registro`);
             const existe = await resp.text();
-            if (existe.trim() === "tem_dono") {
-                document.getElementById('link-registrar-container').classList.add('hidden');
-            }
+            if (existe.trim() === "tem_dono") document.getElementById('link-registrar-container').classList.add('hidden');
         } catch (e) { }
     }
 
