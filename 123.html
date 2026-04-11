@@ -246,9 +246,9 @@
         <p style="text-align: center; color: grey; font-size: 10px; margin-bottom: 40px;">SISTEMA V2.8.2</p>
     </div>
 
-  <script>
+<script>
     const URL_LOGIN = "https://script.google.com/macros/s/AKfycbyVHWD028yH3qTXi63aL4Jq17MwNuXnfy8IwwA2SVOs26bsQRxmffePggxM3AriKhI2IQ/exec";
-    const URL_DADOS = "https://script.google.com/macros/s/AKfycby4woLHRBFb6yFqZzYjVtE47DaNS6WVilCRumLK9HVdLjDphX3cQh19ydZBMgjZE41wVg/exec";
+    const URL_DADOS = "https://script.google.com/macros/s/AKfycbwNoPA6z1kkSC7YeDURmDGoUzjTQdFbieksRXUMacdwtrXV3VNu3dT3ob_GtvnJJXZ39g/exec";
 
     window.onload = verificarSeExisteDono;
 
@@ -293,14 +293,14 @@
         } catch (e) { console.log("Aguardando preenchimento inicial da planilha..."); }
     }
 
-    // 3. SALVAR DADOS (Otimizado para evitar Erro de Conexão e permitir campos em branco)
+    // 3. SALVAR DADOS (Corrigido para evitar erro visual de CORS)
     async function saveData(secao, btn) {
         const button = btn || event.target;
         const btnOriginalText = button.innerHTML;
         
-        // Coleta de dados
         let dataObj = { action: `save_${secao}` };
         
+        // Coleta de dados conforme a seção
         if (secao === 'logo') {
             const img = document.getElementById('logoPreview').querySelector('img');
             dataObj.imagem = img ? img.src : "";
@@ -324,25 +324,27 @@
         button.disabled = true;
 
         try {
-            // Envio via POST Body (URLSearchParams) para evitar o limite de caracteres da URL
             const bodyParams = new URLSearchParams();
             for (const key in dataObj) { bodyParams.append(key, dataObj[key]); }
             
-            const response = await fetch(URL_DADOS, {
+            // Usamos mode: 'no-cors' para garantir que a requisição seja disparada sem erro de redirecionamento
+            await fetch(URL_DADOS, {
                 method: 'POST',
+                mode: 'no-cors', 
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: bodyParams
             });
+
+            // No modo 'no-cors', não conseguimos ler o corpo (resText), 
+            // mas se o fetch não falhou, os dados foram enviados.
+            alert("Dados enviados com sucesso!");
             
-            const resText = await response.text();
-            if (resText.includes("sucesso")) {
-                alert("Dados salvos com sucesso!");
-                carregarDadosPlanilha(); // Atualiza a tela
-            } else {
-                alert("Dados sincronizados com a planilha!"); 
-            }
+            // Pequeno delay antes de recarregar para dar tempo do Google processar
+            setTimeout(carregarDadosPlanilha, 1000);
+
         } catch (error) {
-            alert("Erro ao salvar. Verifique se a planilha de dados está publicada corretamente.");
+            console.error(error);
+            alert("Erro ao salvar. Verifique sua conexão.");
         } finally {
             button.innerHTML = btnOriginalText;
             button.disabled = false;
@@ -471,6 +473,6 @@
             document.getElementById('txt_obs').value = "- Limpeza de filtros\n- Verificação de dreno\n- Teste de carga.";
         }
     }
-</script>
+</script>>
 </body>
 </html>
