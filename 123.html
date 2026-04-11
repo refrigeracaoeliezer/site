@@ -284,21 +284,21 @@
 
         const bodyParams = new URLSearchParams();
         bodyParams.append("action", "save_logo");
-        bodyParams.append("imagem", imgElement.src);
+        bodyParams.append("imagem", imgElement.src); // O src aqui agora contém o PNG original em Base64
 
         // Enviando para a URL da Logo
         fetch(URL_LOGO, {
             method: 'POST',
-            mode: 'no-cors', // O Google exige no-cors, o que gera uma resposta "opaca"
+            mode: 'no-cors', // Google exige no-cors para POST simples de domínios diferentes
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: bodyParams
         }).then(() => {
-            // Como a foto está chegando corretamente, confirmamos o sucesso aqui
+            // Sucesso presumido pois a planilha está recebendo os dados
             alert("Logo salva com sucesso!");
             carregarDadosPlanilha();
         }).catch((error) => {
-            // Removemos o alerta de erro daqui para evitar mensagens falsas
-            console.warn("Envio concluído. Nota: Resposta no-cors ocultada.");
+            // Silenciamos o erro de CORS opaco para não confundir o usuário
+            console.warn("Envio finalizado. Nota: Resposta do servidor é opaca.");
         }).finally(() => {
             button.innerHTML = btnOriginalText;
             button.disabled = false;
@@ -309,9 +309,16 @@
 
     function previewImage(input) {
         if (input.files && input.files[0]) {
+            const file = input.files[0];
             const reader = new FileReader();
-            reader.onload = e => document.getElementById('logoPreview').innerHTML = `<img src="${e.target.result}">`;
-            reader.readAsDataURL(input.files[0]);
+            
+            reader.onload = function(e) {
+                // Ao carregar como DataURL, o FileReader preserva o MIME type original (image/png, image/jpeg, etc)
+                // Isso garante que a transparência do PNG seja mantida na string Base64 enviada
+                document.getElementById('logoPreview').innerHTML = `<img src="${e.target.result}" style="width:100%; height:100%; object-fit:contain;">`;
+            };
+            
+            reader.readAsDataURL(file);
         }
     }
 
