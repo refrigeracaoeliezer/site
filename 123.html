@@ -248,7 +248,7 @@
 
 <script>
     const URL_LOGIN = "https://script.google.com/macros/s/AKfycbyVHWD028yH3qTXi63aL4Jq17MwNuXnfy8IwwA2SVOs26bsQRxmffePggxM3AriKhI2IQ/exec";
-    const URL_LOGO = "https://script.google.com/macros/s/AKfycbzjsJ1f5nu5DnVJEKbg8zwWjxCkGyaIvIEyoWHfeDNom9OXdDWAo69LjInNEKQLfuSs/exec";
+    const URL_LOGO = "https://script.google.com/macros/s/AKfycbyHE14cpQ620DXH2iaB9exPZ2-69hcJMicY88EPulkKpAN1M76iLCBKQza21pwBTZk/exec";
 
     window.onload = verificarSeExisteDono;
 
@@ -271,26 +271,26 @@
 
         if (!imgElement) return alert("Selecione uma imagem primeiro!");
 
-        button.innerText = "Salvando...";
+        button.innerText = "Enviando ao Drive...";
         button.disabled = true;
 
-        // Criamos o corpo do envio como formulário tradicional
-        const bodyParams = new URLSearchParams();
-        bodyParams.append("action", "save_logo");
-        bodyParams.append("imagem", imgElement.src); // Envia o Base64 puro
+        // Enviamos como JSON para que o Google Drive receba o arquivo completo sem cortes
+        const payload = {
+            action: "save_logo",
+            imagem: imgElement.src // Base64 original (PNG ou JPG)
+        };
 
         fetch(URL_LOGO, {
             method: 'POST',
             mode: 'no-cors',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: bodyParams.toString() 
+            body: JSON.stringify(payload) 
         }).then(() => {
-            // Como no-cors não permite ler a resposta, assumimos sucesso se não cair no catch crítico
-            alert("Logo enviada!");
-            carregarDadosPlanilha();
+            alert("Imagem salva no Google Drive com sucesso!");
+            // Pequeno delay para o Google atualizar o link antes de recarregar
+            setTimeout(carregarDadosPlanilha, 2000);
         }).catch((error) => {
             console.error("Erro técnico:", error);
-            alert("Aviso: Ocorreu um problema no envio. Verifique a planilha.");
+            alert("Erro ao enviar para o Drive.");
         }).finally(() => {
             button.innerHTML = btnOriginalText;
             button.disabled = false;
@@ -307,7 +307,6 @@
         }
     }
 
-    // --- Mantenha as outras funções (Login, etc) como estão ---
     function showStatus(id, msg, type) {
         const el = document.getElementById(id);
         el.innerText = msg;
