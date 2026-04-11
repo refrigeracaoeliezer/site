@@ -248,7 +248,7 @@
 
 <script>
     const URL_LOGIN = "https://script.google.com/macros/s/AKfycbyVHWD028yH3qTXi63aL4Jq17MwNuXnfy8IwwA2SVOs26bsQRxmffePggxM3AriKhI2IQ/exec";
-    const URL_LOGO = "https://script.google.com/macros/s/AKfycbxIqU24YnVx8mG2aYLxO1cgnWMSCNu5j0ME_k9ww52kEhEmyaDWdP7UBuvnivAAUQIC/exec";
+    const URL_LOGO = "https://script.google.com/macros/s/AKfycbwDIbxgSOAZSx7p-ox-OY_pG6qkoHS94VGVn7uRwhbDTeo8Ew9iJ6DppkHZqplnmrUN/exec";
 
     window.onload = verificarSeExisteDono;
 
@@ -271,30 +271,56 @@
 
         if (!imgElement) return alert("Selecione uma imagem primeiro!");
 
-        button.innerText = "Enviando ao Drive...";
+        button.innerText = "Processando...";
         button.disabled = true;
 
-        // Enviamos como JSON para que o Google Drive receba o arquivo completo sem cortes
-        const payload = {
-            action: "save_logo",
-            imagem: imgElement.src // Base64 original (PNG ou JPG)
-        };
+        // --- LÓGICA DE REDIMENSIONAMENTO PARA EVITAR "FAILED TO FETCH" ---
+        const imgParaProcessar = new Image();
+        imgParaProcessar.src = imgElement.src;
+        
+        imgParaProcessar.onload = function() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Limitamos a largura para 400px para o Base64 ficar leve e o fetch aceitar
+            const MAX_WIDTH = 400;
+            let width = imgParaProcessar.width;
+            let height = imgParaProcessar.height;
 
-        fetch(URL_LOGO, {
-            method: 'POST',
-            mode: 'no-cors',
-            body: JSON.stringify(payload) 
-        }).then(() => {
-            alert("Imagem salva no Google Drive com sucesso!");
-            // Pequeno delay para o Google atualizar o link antes de recarregar
-            setTimeout(carregarDadosPlanilha, 2000);
-        }).catch((error) => {
-            console.error("Erro técnico:", error);
-            alert("Erro ao enviar para o Drive.");
-        }).finally(() => {
-            button.innerHTML = btnOriginalText;
-            button.disabled = false;
-        });
+            if (width > MAX_WIDTH) {
+                height *= MAX_WIDTH / width;
+                width = MAX_WIDTH;
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(imgParaProcessar, 0, 0, width, height);
+
+            // Exportamos como PNG para manter a transparência no Drive
+            const base64Otimizado = canvas.toDataURL('image/png');
+
+            button.innerText = "Enviando ao Drive...";
+
+            const payload = {
+                action: "save_logo",
+                imagem: base64Otimizado 
+            };
+
+            fetch(URL_LOGO, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify(payload) 
+            }).then(() => {
+                alert("Imagem salva no Google Drive com sucesso!");
+                setTimeout(carregarDadosPlanilha, 2500);
+            }).catch((error) => {
+                console.error("Erro técnico:", error);
+                alert("Erro ao enviar para o Drive. Tente uma imagem menos complexa.");
+            }).finally(() => {
+                button.innerHTML = btnOriginalText;
+                button.disabled = false;
+            });
+        };
     }
 
     function previewImage(input) {
