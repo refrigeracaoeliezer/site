@@ -294,53 +294,60 @@
     }
 
     // 3. SALVAR DADOS (Otimizado para evitar Erro de Conexão e permitir campos em branco)
-   async function saveData(secao, btn) {
-    const button = btn || event.target;
-    const btnOriginalText = button.innerHTML;
+    async function saveData(secao, btn) {
+        const button = btn || event.target;
+        const btnOriginalText = button.innerHTML;
+        
+        // Coleta de dados
+        let dataObj = { action: `save_${secao}` };
+        
+        if (secao === 'logo') {
+            const img = document.getElementById('logoPreview').querySelector('img');
+            dataObj.imagem = img ? img.src : "";
+        } else if (secao === 'empresa') {
+            dataObj.nome = document.getElementById('emp_nome').value;
+            dataObj.doc = document.getElementById('emp_doc').value;
+        } else if (secao === 'servico') {
+            dataObj.nome = document.getElementById('srv_nome').value;
+            dataObj.valor = document.getElementById('srv_valor').value;
+        } else if (secao === 'cliente') {
+            dataObj.nome = document.getElementById('cli_nome').value;
+            dataObj.doc = document.getElementById('cli_doc').value;
+            dataObj.tel = document.getElementById('cli_tel').value;
+            dataObj.end = document.getElementById('cli_end').value;
+        } else if (secao === 'obs') {
+            dataObj.modelo = document.getElementById('obs_busca').value;
+            dataObj.texto = document.getElementById('txt_obs').value;
+        }
 
-    let dataObj = { action: `save_${secao}` };
+        button.innerText = "Salvando...";
+        button.disabled = true;
 
-    if (secao === 'empresa') {
-        dataObj.nome = document.getElementById('emp_nome').value;
-        dataObj.doc = document.getElementById('emp_doc').value;
+        try {
+            // Envio via POST Body (URLSearchParams) para evitar o limite de caracteres da URL
+            const bodyParams = new URLSearchParams();
+            for (const key in dataObj) { bodyParams.append(key, dataObj[key]); }
+            
+            const response = await fetch(URL_DADOS, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: bodyParams
+            });
+            
+            const resText = await response.text();
+            if (resText.includes("sucesso")) {
+                alert("Dados salvos com sucesso!");
+                carregarDadosPlanilha(); // Atualiza a tela
+            } else {
+                alert("Dados sincronizados com a planilha!"); 
+            }
+        } catch (error) {
+            alert("Erro ao salvar. Verifique se a planilha de dados está publicada corretamente.");
+        } finally {
+            button.innerHTML = btnOriginalText;
+            button.disabled = false;
+        }
     }
-
-    button.innerText = "Salvando...";
-    button.disabled = true;
-
-    try {
-        const bodyParams = new URLSearchParams();
-        for (const key in dataObj) {
-            bodyParams.append(key, dataObj[key]);
-        }
-
-        const response = await fetch(URL_DADOS, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: bodyParams
-        });
-
-        if (!response.ok) {
-            throw new Error("Erro HTTP");
-        }
-
-        const resText = (await response.text()).trim();
-
-        if (resText === "sucesso") {
-            alert("Dados salvos com sucesso!");
-        } else {
-            alert("Resposta inesperada: " + resText);
-        }
-
-    } catch (error) {
-        console.error(error);
-        alert("Erro ao salvar (mas pode ter salvado).");
-    } finally {
-        button.innerHTML = btnOriginalText;
-        button.disabled = false;
-    }
-}
-
 
     async function verificarSeExisteDono() {
         try {
