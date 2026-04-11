@@ -248,7 +248,7 @@
 
 <script>
     const URL_LOGIN = "https://script.google.com/macros/s/AKfycbyVHWD028yH3qTXi63aL4Jq17MwNuXnfy8IwwA2SVOs26bsQRxmffePggxM3AriKhI2IQ/exec";
-    const URL_LOGO = "https://script.google.com/macros/s/AKfycbw95kl_6a0SRbwpWGQLm1gtoMTKMyxigMvVT7hs2YmH7GZosFK40xhAG2xN3K3dpFI9/exec";
+    const URL_LOGO = "https://script.google.com/macros/s/AKfycbzjsJ1f5nu5DnVJEKbg8zwWjxCkGyaIvIEyoWHfeDNom9OXdDWAo69LjInNEKQLfuSs/exec";
 
     window.onload = verificarSeExisteDono;
 
@@ -271,55 +271,30 @@
 
         if (!imgElement) return alert("Selecione uma imagem primeiro!");
 
-        button.innerText = "Compactando...";
+        button.innerText = "Salvando...";
         button.disabled = true;
 
-        // --- LÓGICA DE COMPRESSÃO PARA PNG ---
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        const maxW = 400; // Redimensiona para no máximo 400px de largura (ideal para logos)
+        // Criamos o corpo do envio como formulário tradicional
+        const bodyParams = new URLSearchParams();
+        bodyParams.append("action", "save_logo");
+        bodyParams.append("imagem", imgElement.src); // Envia o Base64 puro
 
-        const imgParaCanvas = new Image();
-        imgParaCanvas.src = imgElement.src;
-        
-        imgParaCanvas.onload = function() {
-            let width = imgParaCanvas.width;
-            let height = imgParaCanvas.height;
-
-            if (width > maxW) {
-                height *= maxW / width;
-                width = maxW;
-            }
-
-            canvas.width = width;
-            canvas.height = height;
-            ctx.drawImage(imgParaCanvas, 0, 0, width, height);
-
-            // Exporta como PNG mantendo a transparência, mas com tamanho reduzido
-            const base64Otimizado = canvas.toDataURL('image/png');
-
-            button.innerText = "Enviando...";
-
-            const payload = {
-                action: "save_logo",
-                imagem: base64Otimizado
-            };
-
-            fetch(URL_LOGO, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(payload) 
-            }).then(() => {
-                alert("Logo PNG salva com sucesso!");
-                carregarDadosPlanilha();
-            }).catch((error) => {
-                console.error("Erro:", error);
-                alert("Erro ao enviar PNG muito grande.");
-            }).finally(() => {
-                button.innerHTML = btnOriginalText;
-                button.disabled = false;
-            });
-        };
+        fetch(URL_LOGO, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: bodyParams.toString() 
+        }).then(() => {
+            // Como no-cors não permite ler a resposta, assumimos sucesso se não cair no catch crítico
+            alert("Logo enviada!");
+            carregarDadosPlanilha();
+        }).catch((error) => {
+            console.error("Erro técnico:", error);
+            alert("Aviso: Ocorreu um problema no envio. Verifique a planilha.");
+        }).finally(() => {
+            button.innerHTML = btnOriginalText;
+            button.disabled = false;
+        });
     }
 
     function previewImage(input) {
@@ -332,7 +307,7 @@
         }
     }
 
-    // --- MANTENHA AS OUTRAS FUNÇÕES (realizarLogin, etc) IGUAIS ---
+    // --- Mantenha as outras funções (Login, etc) como estão ---
     function showStatus(id, msg, type) {
         const el = document.getElementById(id);
         el.innerText = msg;
@@ -371,6 +346,11 @@
         if(tela === 'login') document.getElementById('card-login').classList.remove('hidden');
         if(tela === 'registrar') document.getElementById('card-registrar').classList.remove('hidden');
         if(tela === 'recuperar') document.getElementById('card-recuperar').classList.remove('hidden');
+    }
+
+    function toggleSecurity() {
+        const fields = document.getElementById('security-fields');
+        fields.style.display = (fields.style.display === 'flex') ? 'none' : 'flex';
     }
 </script>
 </body>
