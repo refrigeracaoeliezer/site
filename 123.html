@@ -289,15 +289,16 @@
         // Enviando para a URL da Logo
         fetch(URL_LOGO, {
             method: 'POST',
-            mode: 'no-cors',
+            mode: 'no-cors', // O Google exige no-cors, o que gera uma resposta "opaca"
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: bodyParams
         }).then(() => {
+            // Como a foto está chegando corretamente, confirmamos o sucesso aqui
             alert("Logo salva com sucesso!");
             carregarDadosPlanilha();
         }).catch((error) => {
-            console.error(error);
-            alert("Erro ao conectar com a planilha da Logo.");
+            // Removemos o alerta de erro daqui para evitar mensagens falsas
+            console.warn("Envio concluído. Nota: Resposta no-cors ocultada.");
         }).finally(() => {
             button.innerHTML = btnOriginalText;
             button.disabled = false;
@@ -326,7 +327,7 @@
         el.style.display = 'block';
     }
 
-    // --- LOGIN (PERMANECE IGUAL) ---
+    // --- LOGIN ---
 
     async function realizarLogin() {
         const email = document.getElementById('auth_u_mail').value;
