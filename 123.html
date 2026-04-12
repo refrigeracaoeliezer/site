@@ -117,12 +117,14 @@
     </div>
 
 <script>
+    // === INÍCIO DAS DEFINIÇÕES DE ENDEREÇOS (APIs) ===
     const URL_LOGIN = "https://script.google.com/macros/s/AKfycbyVHWD028yH3qTXi63aL4Jq17MwNuXnfy8IwwA2SVOs26bsQRxmffePggxM3AriKhI2IQ/exec";
     const URL_DATABASE = "https://script.google.com/macros/s/AKfycbzbGjCHaXHnhAC5gIGmKa7gIb2QNpE3yIhomgU9DhwaNO1DHKUq7b4shMuZRvD5IG99oQ/exec"; 
+    // === FIM DAS DEFINIÇÕES DE ENDEREÇOS ===
 
     let cacheDados = []; 
 
-    // INÍCIO: Carregar dados em segundo plano assim que a página abrir
+    // === INÍCIO DO CARREGAMENTO DE DADOS (BACKGROUND) ===
     buscarDadosPlanilha();
 
     async function buscarDadosPlanilha() {
@@ -143,7 +145,9 @@
             configurarBuscaAutomatica();
         } catch (e) { console.error("Erro ao carregar dados em background:", e); }
     }
+    // === FIM DO CARREGAMENTO DE DADOS ===
 
+    // === INÍCIO DA LÓGICA DE BUSCA AUTOMÁTICA E PREENCHIMENTO ===
     function configurarBuscaAutomatica() {
         const setupBusca = (idInput, idsDependentes, camposPlanilha) => {
             const el = document.getElementById(idInput);
@@ -194,7 +198,9 @@
             }
         });
     }
+    // === FIM DA LÓGICA DE BUSCA AUTOMÁTICA ===
 
+    // === INÍCIO DA FUNÇÃO DE SALVAMENTO (POST) ===
     function saveData(secao, btn) {
         btn.disabled = true;
         const toast = document.getElementById('toast-minimal');
@@ -231,7 +237,9 @@
             }, 2000);
         }, 800);
     }
+    // === FIM DA FUNÇÃO DE SALVAMENTO ===
 
+    // === INÍCIO DA FUNÇÃO DE LOGIN ===
     async function realizarLogin() {
         const email = document.getElementById('auth_u_mail').value;
         const pass = document.getElementById('auth_u_pass').value;
@@ -244,6 +252,7 @@
             } else { alert("Dados Inválidos"); }
         } catch (e) { alert("Erro de Conexão"); }
     }
+    // === FIM DA FUNÇÃO DE LOGIN ===
 </script>
 </body>
 </html>
