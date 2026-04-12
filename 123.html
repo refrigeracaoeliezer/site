@@ -235,14 +235,17 @@
     </div>
 
 <script>
+    // --- INÍCIO: CONFIGURAÇÕES DE URL E CACHE ---
     const URL_LOGIN = "https://script.google.com/macros/s/AKfycbyVHWD028yH3qTXi63aL4Jq17MwNuXnfy8IwwA2SVOs26bsQRxmffePggxM3AriKhI2IQ/exec";
     const URL_DATABASE = "https://script.google.com/macros/s/AKfycbzbGjCHaXHnhAC5gIGmKa7gIb2QNpE3yIhomgU9DhwaNO1DHKUq7b4shMuZRvD5IG99oQ/exec"; 
 
     let cacheDados = []; 
+    // --- FIM: CONFIGURAÇÕES DE URL E CACHE ---
 
     // INÍCIO: Carregar dados em segundo plano assim que a página abrir
     buscarDadosPlanilha();
 
+    // --- INÍCIO: FUNÇÃO BUSCAR DADOS DA PLANILHA ---
     async function buscarDadosPlanilha() {
         try {
             const resp = await fetch(URL_DATABASE);
@@ -261,7 +264,9 @@
             configurarBuscaAutomatica();
         } catch (e) { console.error("Erro ao carregar dados em background:", e); }
     }
+    // --- FIM: FUNÇÃO BUSCAR DADOS DA PLANILHA ---
 
+    // --- INÍCIO: FUNÇÃO CONFIGURAR BUSCA AUTOMÁTICA ---
     function configurarBuscaAutomatica() {
         const setupBusca = (idInput, idsDependentes, camposPlanilha) => {
             const el = document.getElementById(idInput);
@@ -296,23 +301,20 @@
         campoBuscaObs.addEventListener('input', function() {
             const valor = this.value;
             const encontrado = cacheDados.find(x => x.txt_obs === valor);
-            
             if (encontrado) {
                 areaTextoObs.value = encontrado.txt_obs;
                 areaTextoObs.dataset.original = encontrado.txt_obs; 
-                
-                setTimeout(() => { 
-                    this.value = ""; 
-                    this.blur();
-                    areaTextoObs.focus();
-                }, 10);
+                this.value = "";
+                areaTextoObs.focus();
             } else if (valor === "") {
                 areaTextoObs.value = "";
                 delete areaTextoObs.dataset.original;
             }
         });
     }
+    // --- FIM: FUNÇÃO CONFIGURAR BUSCA AUTOMÁTICA ---
 
+    // --- INÍCIO: FUNÇÃO SALVAR DADOS (SAVE DATA) ---
     function saveData(secao, btn) {
         btn.disabled = true;
         const toast = document.getElementById('toast-minimal');
@@ -349,22 +351,25 @@
             }, 2000);
         }, 800);
     }
+    // --- FIM: FUNÇÃO SALVAR DADOS (SAVE DATA) ---
 
+    // --- INÍCIO: FUNÇÃO REALIZAR LOGIN ---
     async function realizarLogin() {
         const email = document.getElementById('auth_u_mail').value;
         const pass = document.getElementById('auth_u_pass').value;
         try {
             const resp = await fetch(`${URL_LOGIN}?action=login&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}`);
-            if((await resp.text()).trim() === "logado") {
+            const textoResposta = await resp.text();
+            
+            if(textoResposta.trim() === "logado") {
                 document.getElementById('overlay-login').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
                 localStorage.setItem("inforos_logado", "true");
             } else { alert("Dados Inválidos"); }
         } catch (e) { alert("Erro de Conexão"); }
     }
+    // --- FIM: FUNÇÃO REALIZAR LOGIN ---
 </script>
-</body>
-</html>
 
 </body>
 </html>
