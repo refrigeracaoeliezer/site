@@ -6,7 +6,6 @@
             window.location.href = "https://refrigeracaoeliezer.github.io/site/";
         }
     </script>
-
     <meta charset="UTF-8">
     <title>Configurações | Refrigeração</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -15,44 +14,10 @@
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
-            background: #0d1117;
-            color: white;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            overflow-x: hidden;
-        }
-
-        #overlay-login {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #0d1117;
-            z-index: 9999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .login-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            padding: 30px;
-            border-radius: 24px;
-            border: 1px solid rgba(30, 64, 175, 0.3);
-            width: 100%;
-            max-width: 380px;
-            text-align: center;
-        }
-
+        body { font-family: 'Inter', sans-serif; min-height: 100vh; background: #0d1117; color: white; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .hidden { display: none !important; }
-
         .container { width: 100%; max-width: 600px; }
-        h1 { font-size: 28px; font-weight: 700; margin-bottom: 30px; text-align: center; }
+        h1 { font-size: 28px; font-weight: 700; margin-bottom: 30px; text-align: center; color: #fff; }
 
         .config-section {
             background: rgba(255, 255, 255, 0.03);
@@ -62,195 +27,121 @@
             padding: 20px;
             margin-bottom: 25px;
             display: flex;
-            flex-direction: column;
-            gap: 15px;
+            flex-direction: column; gap: 15px;
         }
 
-        .section-title {
-            font-size: 16px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            padding-bottom: 10px;
+        .section-title { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 10px; color: #27a9e3; }
+        input, textarea { background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 12px; color: white; font-size: 14px; width: 100%; outline: none; }
+        input:focus { border-color: #27a9e3; }
+
+        .btn-save { border: none; padding: 14px; border-radius: 12px; font-weight: 700; background: #1e40af; color: white; cursor: pointer; width: 100%; display: flex; justify-content: center; align-items: center; gap: 10px; transition: 0.3s; }
+        .btn-save:hover { background: #2563eb; }
+        .btn-save:disabled { background: #2d3748; color: #718096; cursor: not-allowed; }
+
+        /* POPUP PROFISSIONAL */
+        #popup-sucesso {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+            display: none; align-items: center; justify-content: center; z-index: 10000;
         }
-
-        .section-title i { color: #27a9e3; }
-
-        input, textarea {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            padding: 12px;
-            color: white;
-            font-size: 14px;
-            width: 100%;
+        .popup-card {
+            background: #161b22; border: 1px solid #27a9e3; padding: 40px;
+            border-radius: 30px; text-align: center; width: 90%; max-width: 350px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8); animation: popScale 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
+        @keyframes popScale { from { opacity:0; transform: scale(0.7); } to { opacity:1; transform: scale(1); } }
+        
+        .progress-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 20px; overflow: hidden; }
+        .progress-fill { width: 0%; height: 100%; background: #44ff44; transition: width 2.5s linear; }
 
-        .btn-save {
-            border: none;
-            padding: 14px;
-            border-radius: 12px;
-            font-weight: 700;
-            background: #1e40af;
-            color: white;
-            cursor: pointer;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            transition: 0.3s;
-        }
-
-        .btn-save:disabled { 
-            background: #2d3748; 
-            color: #718096; 
-            cursor: not-allowed; 
-            opacity: 0.8;
-        }
-
-        /* ESTILO DA MENSAGEM DE SUCESSO NO MEIO DA TELA */
-        #success-toast {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(30, 64, 175, 0.95);
-            color: white;
-            padding: 20px 40px;
-            border-radius: 20px;
-            border: 1px solid #27a9e3;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            z-index: 10000;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-            backdrop-filter: blur(10px);
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translate(-50%, -40%); }
-            to { opacity: 1; transform: translate(-50%, -50%); }
-        }
-
-        .status-msg { font-size: 13px; margin: 10px 0; display: none; }
-        .status-error { color: #ff4b4b; font-weight: 600; }
-        .status-loading { color: #27a9e3; }
-        .status-success { color: #44ff44; }
+        #overlay-login { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0d1117; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .login-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); padding: 30px; border-radius: 24px; border: 1px solid rgba(30, 64, 175, 0.3); width: 100%; max-width: 380px; text-align: center; }
     </style>
 </head>
 <body>
 
-    <div id="success-toast">
-        <i class="fa-solid fa-circle-check" style="font-size: 40px; color: #44ff44;"></i>
-        <span style="font-weight: 700; font-size: 18px;">Dados salvos com sucesso!</span>
+    <div id="popup-sucesso">
+        <div class="popup-card">
+            <i class="fa-solid fa-circle-check" style="font-size: 60px; color: #44ff44; margin-bottom: 20px;"></i>
+            <h2 style="margin-bottom: 10px;">Sucesso!</h2>
+            <p style="color: rgba(255,255,255,0.7);">Os dados foram sincronizados com a nuvem.</p>
+            <div class="progress-bar"><div class="progress-fill" id="fill"></div></div>
+        </div>
     </div>
 
     <div id="overlay-login">
         <div class="login-card" id="card-login">
             <i class="fa-solid fa-lock" style="font-size: 40px; color: #1e40af; margin-bottom: 20px;"></i>
-            <h2>Configurações</h2>
-            <input type="text" id="auth_u_mail" placeholder="E-mail" autocomplete="new-password" spellcheck="false" style="margin-top: 20px;">
-            <input type="password" id="auth_u_pass" placeholder="Senha" autocomplete="new-password" style="margin-top: 10px;">
-            <div id="login-status" class="status-msg"></div>
-            <button class="btn-save" id="btn-entrar" onclick="realizarLogin()" style="margin-top: 15px;">Entrar</button>
-            <p style="margin-top: 20px;">
-                <span id="link-registrar-container"><span class="link-auth" onclick="alternarTela('registrar')">Criar Conta</span> | </span>
-                <span class="link-auth" onclick="alternarTela('recuperar')" style="color:#ff4b4b">Esqueci meus dados</span>
-            </p>
+            <h2>Acesso Restrito</h2>
+            <input type="text" id="auth_u_mail" placeholder="E-mail" style="margin-top: 20px;">
+            <input type="password" id="auth_u_pass" placeholder="Senha" style="margin-top: 10px;">
+            <button class="btn-save" onclick="realizarLogin()" style="margin-top: 15px;">Entrar</button>
         </div>
-        </div>
+    </div>
 
     <div class="container hidden" id="main-content">
-        <h1>Configurações</h1>
+        <h1>Painel de Controle</h1>
 
         <div class="config-section">
             <div class="section-title"><i class="fa-solid fa-building"></i> Identidade da Empresa</div>
-            <input type="text" id="emp_nome" list="lista_empresas" placeholder="Nome Fantasia" autocomplete="off">
+            <input type="text" id="emp_nome" list="lista_empresas" placeholder="Nome Fantasia">
             <datalist id="lista_empresas"></datalist>
-            <input type="text" id="emp_doc" placeholder="CNPJ / CPF" autocomplete="off">
-            <button class="btn-save" onclick="saveData('empresa', this)"><i class="fa-solid fa-floppy-disk"></i> Salvar Empresa</button>
+            <input type="text" id="emp_doc" placeholder="CNPJ / CPF">
+            <button class="btn-save" onclick="saveData('empresa', this)"><i class="fa-solid fa-sync"></i> Atualizar Identidade</button>
         </div>
 
         <div class="config-section">
             <div class="section-title"><i class="fa-solid fa-gears"></i> Detalhes do Serviço</div>
-            <input type="text" id="srv_nome" list="lista_servicos" placeholder="Descrição do Serviço" autocomplete="off">
-            <datalist id="lista_servicos">
-                <option value="Higienização de Ar Condicionado">
-                <option value="Carga de Gás">
-                <option value="Instalação Split">
-            </datalist>
-            <input type="number" id="srv_valor" placeholder="Valor R$" autocomplete="off">
-            <button class="btn-save" onclick="saveData('servico', this)"><i class="fa-solid fa-floppy-disk"></i> Salvar Serviço</button>
+            <input type="text" id="srv_nome" list="lista_servicos" placeholder="Descrição do Serviço">
+            <datalist id="lista_servicos"><option value="Higienização de Ar Condicionado"><option value="Carga de Gás"><option value="Instalação Split"></datalist>
+            <input type="number" id="srv_valor" placeholder="Valor R$">
+            <button class="btn-save" onclick="saveData('servico', this)"><i class="fa-solid fa-plus"></i> Adicionar Serviço</button>
         </div>
 
         <div class="config-section">
             <div class="section-title"><i class="fa-solid fa-user"></i> Dados do Cliente</div>
-            <input type="text" id="cli_nome" list="lista_clientes" placeholder="Nome do Cliente" autocomplete="off">
+            <input type="text" id="cli_nome" list="lista_clientes" placeholder="Nome do Cliente">
             <datalist id="lista_clientes"></datalist>
-            <input type="text" id="cli_doc" placeholder="CPF / CNPJ" autocomplete="off">
-            <input type="tel" id="cli_tel" placeholder="WhatsApp" autocomplete="off">
-            <input type="text" id="cli_end" placeholder="Endereço Completo" autocomplete="off">
-            <button class="btn-save" onclick="saveData('cliente', this)"><i class="fa-solid fa-floppy-disk"></i> Salvar Cliente</button>
+            <input type="text" id="cli_doc" placeholder="CPF / CNPJ">
+            <input type="tel" id="cli_tel" placeholder="WhatsApp">
+            <input type="text" id="cli_end" placeholder="Endereço Completo">
+            <button class="btn-save" onclick="saveData('cliente', this)"><i class="fa-solid fa-user-plus"></i> Registrar Cliente</button>
         </div>
 
         <div class="config-section">
             <div class="section-title"><i class="fa-solid fa-clipboard-list"></i> Observações Técnicas</div>
-            <textarea id="txt_obs" rows="5" placeholder="Texto das observações..."></textarea>
-            <button class="btn-save" onclick="saveData('obs', this)"><i class="fa-solid fa-floppy-disk"></i> Salvar Observações</button>
+            <textarea id="txt_obs" rows="4" placeholder="Escreva as observações técnicas..."></textarea>
+            <button class="btn-save" onclick="saveData('obs', this)"><i class="fa-solid fa-save"></i> Salvar Observações</button>
         </div>
         
-        <p style="text-align: center; color: grey; font-size: 10px; margin-bottom: 40px;">SISTEMA V2.8.2</p>
+        <p style="text-align: center; color: grey; font-size: 10px; margin-bottom: 40px;">SISTEMA V3.0 PROFESSIONAL</p>
     </div>
 
 <script>
     const URL_LOGIN = "https://script.google.com/macros/s/AKfycbyVHWD028yH3qTXi63aL4Jq17MwNuXnfy8IwwA2SVOs26bsQRxmffePggxM3AriKhI2IQ/exec";
-    const URL_DATABASE = "https://script.google.com/macros/s/AKfycbwGZgHmP-4T9loPPewsrM0mFNxtqyMKbn3pH_GZi9NLZNcpsAhRH7ewKdg5gzZT4KdT6g/exec"; 
+    const URL_DATABASE = "https://script.google.com/macros/s/AKfycbxlADw3qDTlcsWSeoJBsepcnsfTeyiDmBzAhXFihxJovUoh97Un7_24ItrqGB7Gv6Hi2Q/exec"; 
 
     let cacheDados = []; 
-
-    window.onload = () => { verificarSeExisteDono(); };
 
     async function buscarDadosPlanilha() {
         try {
             const resp = await fetch(URL_DATABASE);
             cacheDados = await resp.json();
-            configurarAutoPreenchimento();
-        } catch (e) { console.log("Erro silencioso na busca."); }
-    }
-
-    function configurarAutoPreenchimento() {
-        const listEmp = document.getElementById('lista_empresas');
-        const listCli = document.getElementById('lista_clientes');
-        const empresas = [...new Set(cacheDados.map(d => d.emp_nome))].filter(Boolean);
-        const clientes = [...new Set(cacheDados.map(d => d.cli_nome))].filter(Boolean);
-        listEmp.innerHTML = empresas.map(n => `<option value="${n}">`).join('');
-        listCli.innerHTML = clientes.map(n => `<option value="${n}">`).join('');
-        
-        document.getElementById('emp_nome').addEventListener('input', () => {
-            const dados = cacheDados.find(d => d.emp_nome === document.getElementById('emp_nome').value);
-            if (dados) document.getElementById('emp_doc').value = dados.emp_doc;
-        });
-        document.getElementById('cli_nome').addEventListener('input', () => {
-            const dados = cacheDados.find(d => d.cli_nome === document.getElementById('cli_nome').value);
-            if (dados) {
-                document.getElementById('cli_doc').value = dados.cli_doc;
-                document.getElementById('cli_tel').value = dados.cli_tel;
-                document.getElementById('cli_end').value = dados.cli_end;
-            }
-        });
+            const listEmp = document.getElementById('lista_empresas');
+            const listCli = document.getElementById('lista_clientes');
+            listEmp.innerHTML = [...new Set(cacheDados.map(d => d.emp_nome))].filter(Boolean).map(n => `<option value="${n}">`).join('');
+            listCli.innerHTML = [...new Set(cacheDados.map(d => d.cli_nome))].filter(Boolean).map(n => `<option value="${n}">`).join('');
+            
+            // Auto-preenchimento
+            document.getElementById('emp_nome').oninput = () => {
+                const d = cacheDados.find(x => x.emp_nome === document.getElementById('emp_nome').value);
+                if(d) document.getElementById('emp_doc').value = d.emp_doc;
+            };
+        } catch (e) {}
     }
 
     function saveData(secao, btn) {
-        const originalText = btn.innerHTML;
-        const toast = document.getElementById('success-toast');
         btn.disabled = true;
-        btn.innerText = "Sincronizando...";
-
         const payload = {
             emp_nome: document.getElementById('emp_nome').value,
             emp_doc: document.getElementById('emp_doc').value,
@@ -263,73 +154,49 @@
             txt_obs: document.getElementById('txt_obs').value
         };
 
-        fetch(URL_DATABASE, {
-            method: 'POST',
-            mode: 'no-cors',
-            body: JSON.stringify(payload)
-        });
+        fetch(URL_DATABASE, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
 
         setTimeout(() => {
-            // MOSTRAR AVISO NO MEIO DA TELA
-            toast.style.display = 'flex';
+            // Mostrar Popup e Barra
+            document.getElementById('popup-sucesso').style.display = 'flex';
+            document.getElementById('fill').style.width = '100%';
             
-            // LIMPAR CAMPOS
+            // Limpar
             document.querySelectorAll('input, textarea').forEach(el => {
                 if(!['auth_u_mail', 'auth_u_pass'].includes(el.id)) el.value = '';
             });
 
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-            buscarDadosPlanilha(); 
-
-            // ESCONDER O AVISO DEPOIS DE 3 SEGUNDOS
             setTimeout(() => {
-                toast.style.display = 'none';
-            }, 3000);
-
-        }, 1200);
-    }
-
-    // FUNÇÕES DE LOGIN (Mantidas)
-    function showStatus(id, msg, type) {
-        const el = document.getElementById(id);
-        el.innerText = msg;
-        el.className = 'status-msg ' + (type === 'error' ? 'status-error' : type === 'loading' ? 'status-loading' : 'status-success');
-        el.style.display = 'block';
+                document.getElementById('popup-sucesso').style.display = 'none';
+                document.getElementById('fill').style.width = '0%';
+                btn.disabled = false;
+                buscarDadosPlanilha();
+            }, 2500);
+        }, 800);
     }
 
     async function realizarLogin() {
         const email = document.getElementById('auth_u_mail').value;
         const pass = document.getElementById('auth_u_pass').value;
-        if(!email || !pass) return showStatus('login-status', 'Preencha tudo.', 'error');
-        showStatus('login-status', 'Verificando...', 'loading');
         try {
             const resp = await fetch(`${URL_LOGIN}?action=login&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}`);
-            const result = await resp.text();
-            if(result.trim() === "logado") {
+            if((await resp.text()).trim() === "logado") {
                 document.getElementById('overlay-login').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
-                buscarDadosPlanilha(); 
-            } else { showStatus('login-status', 'Dados incorretos.', 'error'); }
-        } catch (e) { showStatus('login-status', 'Erro de rede.', 'error'); }
+                buscarDadosPlanilha();
+            } else { alert("Dados Inválidos"); }
+        } catch (e) { alert("Erro de Conexão"); }
     }
 
-    async function verificarSeExisteDono() {
-        try {
-            const resp = await fetch(`${URL_LOGIN}?action=checar_registro`);
-            const existe = await resp.text();
-            if (existe.trim() === "tem_dono") document.getElementById('link-registrar-container').classList.add('hidden');
-        } catch (e) { }
-    }
-
-    function alternarTela(tela) {
-        document.getElementById('card-login').classList.add('hidden');
-        if(tela === 'login') document.getElementById('card-login').classList.remove('hidden');
+    function verificarSeExisteDono() {
+        fetch(`${URL_LOGIN}?action=checar_registro`).then(r => r.text()).then(t => {
+            if(t.trim() === "tem_dono") {} 
+        });
     }
 
     function toggleSecurity() {
-        const fields = document.getElementById('security-fields');
-        fields.style.display = (fields.style.display === 'flex') ? 'none' : 'flex';
+        const s = document.getElementById('security-fields').style;
+        s.display = s.display === 'flex' ? 'none' : 'flex';
     }
 </script>
 </body>
