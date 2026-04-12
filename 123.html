@@ -33,6 +33,9 @@
         .section-title { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 10px; color: #27a9e3; }
         input, textarea { background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 12px; color: white; font-size: 14px; width: 100%; outline: none; }
         input:focus { border-color: #27a9e3; }
+        
+        /* Estilo visual para campo de leitura */
+        input[readonly] { cursor: pointer; background: rgba(39, 169, 227, 0.05); border-color: rgba(39, 169, 227, 0.2); }
 
         .btn-save { border: none; padding: 14px; border-radius: 12px; font-weight: 700; background: #1e40af; color: white; cursor: pointer; width: 100%; display: flex; justify-content: center; align-items: center; gap: 10px; transition: 0.3s; }
         .btn-save:hover { background: #2563eb; }
@@ -79,7 +82,7 @@
 
         <div class="config-section">
             <div class="section-title"><i class="fa-solid fa-building"></i> Identidade da Empresa</div>
-            <input type="text" id="emp_nome" list="lista_empresas" placeholder="Nome Fantasia">
+            <input type="text" id="emp_nome" list="lista_empresas" placeholder="Selecione a Empresa">
             <datalist id="lista_empresas"></datalist>
             <input type="text" id="emp_doc" placeholder="CNPJ / CPF">
             <button class="btn-save" onclick="saveData('empresa', this)"><i class="fa-solid fa-sync"></i> Salvar Alterações</button>
@@ -87,7 +90,7 @@
 
         <div class="config-section">
             <div class="section-title"><i class="fa-solid fa-gears"></i> Detalhes do Serviço</div>
-            <input type="text" id="srv_nome" list="lista_servicos" placeholder="Descrição do Serviço">
+            <input type="text" id="srv_nome" list="lista_servicos" placeholder="Selecione o Serviço">
             <datalist id="lista_servicos"></datalist>
             <input type="number" id="srv_valor" placeholder="Valor R$">
             <button class="btn-save" onclick="saveData('servico', this)"><i class="fa-solid fa-plus"></i> Salvar Serviço</button>
@@ -95,7 +98,7 @@
 
         <div class="config-section">
             <div class="section-title"><i class="fa-solid fa-user"></i> Dados do Cliente</div>
-            <input type="text" id="cli_nome" list="lista_clientes" placeholder="Nome do Cliente">
+            <input type="text" id="cli_nome" list="lista_clientes" placeholder="Selecione o Cliente">
             <datalist id="lista_clientes"></datalist>
             <input type="text" id="cli_doc" placeholder="CPF / CNPJ">
             <input type="tel" id="cli_tel" placeholder="WhatsApp">
@@ -105,9 +108,9 @@
 
         <div class="config-section">
             <div class="section-title"><i class="fa-solid fa-clipboard-list"></i> Observações Técnicas</div>
-            <input type="text" id="obs_busca" list="lista_obs" placeholder="Buscar observação existente...">
+            <input type="text" id="obs_busca" list="lista_obs" placeholder="Clique para selecionar uma observação..." readonly>
             <datalist id="lista_obs"></datalist>
-            <textarea id="txt_obs" rows="4" placeholder="Escreva as observações técnicas..."></textarea>
+            <textarea id="txt_obs" rows="5" placeholder="O texto selecionado aparecerá aqui para edição..."></textarea>
             <button class="btn-save" onclick="saveData('obs', this)"><i class="fa-solid fa-save"></i> Salvar Observações</button>
         </div>
         
@@ -130,7 +133,6 @@
             const listSrv = document.getElementById('lista_servicos');
             const listObs = document.getElementById('lista_obs');
 
-            // Preencher Datalists com valores únicos
             listEmp.innerHTML = [...new Set(cacheDados.map(d => d.emp_nome))].filter(Boolean).map(n => `<option value="${n}">`).join('');
             listCli.innerHTML = [...new Set(cacheDados.map(d => d.cli_nome))].filter(Boolean).map(n => `<option value="${n}">`).join('');
             listSrv.innerHTML = [...new Set(cacheDados.map(d => d.srv_nome))].filter(Boolean).map(n => `<option value="${n}">`).join('');
@@ -141,19 +143,16 @@
     }
 
     function configurarBuscaAutomatica() {
-        // Busca Empresa -> Traz o Documento correspondente
         document.getElementById('emp_nome').addEventListener('input', function() {
             const encontrado = cacheDados.find(x => x.emp_nome === this.value && x.emp_doc);
             if(encontrado) document.getElementById('emp_doc').value = encontrado.emp_doc;
         });
 
-        // Busca Serviço -> Traz o Valor correspondente
         document.getElementById('srv_nome').addEventListener('input', function() {
             const encontrado = cacheDados.find(x => x.srv_nome === this.value && x.srv_valor !== "");
             if(encontrado) document.getElementById('srv_valor').value = encontrado.srv_valor;
         });
 
-        // Busca Cliente -> Traz todos os dados do cliente
         document.getElementById('cli_nome').addEventListener('input', function() {
             const encontrado = cacheDados.find(x => x.cli_nome === this.value && x.cli_doc);
             if(encontrado) {
@@ -163,10 +162,19 @@
             }
         });
 
-        // Busca Observação -> Traz para o textarea
+        // AJUSTE OBSERVACAO: Ao selecionar no input readonly, joga o texto pro textarea
         document.getElementById('obs_busca').addEventListener('input', function() {
             const encontrado = cacheDados.find(x => x.txt_obs === this.value);
-            if(encontrado) document.getElementById('txt_obs').value = encontrado.txt_obs;
+            if(encontrado) {
+                document.getElementById('txt_obs').value = encontrado.txt_obs;
+                // Limpa o seletor para permitir nova seleção se desejar
+                this.value = ""; 
+            }
+        });
+        
+        // Permite abrir o datalist ao clicar no campo readonly
+        document.getElementById('obs_busca').addEventListener('click', function() {
+            this.value = ""; // Limpa temporariamente para forçar a abertura da lista
         });
     }
 
@@ -174,8 +182,6 @@
         btn.disabled = true;
         const toast = document.getElementById('toast-minimal');
         
-        // Criamos o pacote de dados. Note que se o campo estiver vazio, 
-        // o Apps Script que instalamos por último vai ignorar e não apagar a linha 3.
         const payload = {
             emp_nome: document.getElementById('emp_nome').value,
             emp_doc: document.getElementById('emp_doc').value,
@@ -192,12 +198,9 @@
 
         setTimeout(() => {
             toast.style.display = 'block';
-            
-            // Limpa os campos após salvar
             document.querySelectorAll('input, textarea').forEach(el => {
                 if(!['auth_u_mail', 'auth_u_pass'].includes(el.id)) el.value = '';
             });
-
             setTimeout(() => {
                 toast.style.display = 'none';
                 btn.disabled = false;
