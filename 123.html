@@ -122,6 +122,9 @@
 
     let cacheDados = []; 
 
+    // INÍCIO: Carregar dados em segundo plano assim que a página abrir
+    buscarDadosPlanilha();
+
     async function buscarDadosPlanilha() {
         try {
             const resp = await fetch(URL_DATABASE);
@@ -138,7 +141,7 @@
             listObs.innerHTML = [...new Set(cacheDados.map(d => d.txt_obs))].filter(Boolean).map(n => `<option value="${n}">`).join('');
             
             configurarBuscaAutomatica();
-        } catch (e) { console.error("Erro ao carregar dados:", e); }
+        } catch (e) { console.error("Erro ao carregar dados em background:", e); }
     }
 
     function configurarBuscaAutomatica() {
@@ -154,14 +157,10 @@
                 if (encontrado) {
                     idsDependentes.forEach((id, i) => {
                         let valorFinal = encontrado[camposPlanilha[i+1]] || "";
-                        
-                        // FORMATADOR PARA O SITE: Se for o campo de valor, coloca R$ na frente
                         if (id === "srv_valor" && valorFinal !== "") {
-                            // Limpa qualquer R$ antigo e formata
                             let num = valorFinal.toString().replace("R$", "").trim();
                             valorFinal = "R$ " + num;
                         }
-                        
                         document.getElementById(id).value = valorFinal;
                     });
                 }
@@ -181,7 +180,8 @@
             if (encontrado) {
                 areaTextoObs.value = encontrado.txt_obs;
                 areaTextoObs.dataset.original = encontrado.txt_obs; 
-                setTimeout(() => { this.value = ""; }, 500);
+                this.value = "";
+                areaTextoObs.focus();
             } else if (valor === "") {
                 areaTextoObs.value = "";
                 delete areaTextoObs.dataset.original;
@@ -195,8 +195,6 @@
         const areaTextoObs = document.getElementById('txt_obs');
         const campoValor = document.getElementById('srv_valor');
         
-        // --- LIMPEZA PARA A PLANILHA ---
-        // Remove "R$", espaços e troca vírgula por ponto para a planilha entender como número puro
         let valorParaPlanilha = campoValor.value.replace("R$", "").replace(/\s/g, "").replace(",", ".").trim();
 
         const payload = {
@@ -220,7 +218,6 @@
                 if(!['auth_u_mail', 'auth_u_pass'].includes(el.id)) el.value = '';
             });
             delete areaTextoObs.dataset.original;
-
             setTimeout(() => {
                 toast.style.display = 'none';
                 btn.disabled = false;
@@ -235,9 +232,10 @@
         try {
             const resp = await fetch(`${URL_LOGIN}?action=login&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}`);
             if((await resp.text()).trim() === "logado") {
+                // Ao logar, a lista já foi carregada ou está terminando, liberamos a visão
                 document.getElementById('overlay-login').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
-                buscarDadosPlanilha();
+                localStorage.setItem("inforos_logado", "true");
             } else { alert("Dados Inválidos"); }
         } catch (e) { alert("Erro de Conexão"); }
     }
