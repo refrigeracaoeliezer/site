@@ -171,17 +171,23 @@
         setupBusca('srv_nome', ['srv_valor'], ['srv_nome', 'srv_valor']);
         setupBusca('cli_nome', ['cli_doc', 'cli_tel', 'cli_end'], ['cli_nome', 'cli_doc', 'cli_tel', 'cli_end']);
 
+        // --- LÓGICA DE OBSERVAÇÃO AJUSTADA E TESTADA ---
         const campoBuscaObs = document.getElementById('obs_busca');
         const areaTextoObs = document.getElementById('txt_obs');
 
         campoBuscaObs.addEventListener('input', function() {
             const valor = this.value;
             const encontrado = cacheDados.find(x => x.txt_obs === valor);
+            
             if (encontrado) {
                 areaTextoObs.value = encontrado.txt_obs;
                 areaTextoObs.dataset.original = encontrado.txt_obs; 
-                this.value = "";
-                areaTextoObs.focus();
+                
+                setTimeout(() => { 
+                    this.value = ""; 
+                    this.blur();
+                    areaTextoObs.focus();
+                }, 10);
             } else if (valor === "") {
                 areaTextoObs.value = "";
                 delete areaTextoObs.dataset.original;
@@ -232,7 +238,6 @@
         try {
             const resp = await fetch(`${URL_LOGIN}?action=login&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}`);
             if((await resp.text()).trim() === "logado") {
-                // Ao logar, a lista já foi carregada ou está terminando, liberamos a visão
                 document.getElementById('overlay-login').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
                 localStorage.setItem("inforos_logado", "true");
