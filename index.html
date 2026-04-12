@@ -88,6 +88,29 @@
         .status-msg { font-size: 12px; padding: 10px; border-radius: 10px; margin-bottom: 15px; display: none; }
         .error-msg { background: rgba(255, 75, 75, 0.1); color: #ff4b4b; border: 1px solid rgba(255, 75, 75, 0.2); }
         .result-box { margin-top: 15px; padding: 15px; background: rgba(39, 169, 227, 0.1); border: 1px dashed #27a9e3; color: #44ff44; font-weight: bold; border-radius: 12px; display: none; }
+
+        /* --- ESTILOS DO RODAPÉ --- */
+        .footer-info {
+            width: 100%;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.25);
+            font-size: 10px;
+            z-index: 10;
+            margin-top: 25px;
+        }
+        .badge-teste {
+            display: inline-block;
+            padding: 5px 15px;
+            background: rgba(30, 64, 175, 0.1);
+            border: 1px solid #1e40af;
+            border-radius: 30px;
+            color: #27a9e3; 
+            font-weight: 700;
+            margin-bottom: 10px;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
     </style>
 </head>
 <body>
@@ -143,8 +166,16 @@
         <span class="link-auth" onclick="alternar('login')" style="margin-top:20px; display:block;">Voltar ao Login</span>
     </div>
 
+    <div class="footer-info">
+        <div class="badge-teste">Refrigeração Eliezer</div>
+        <p>&copy; <span id="anoAtual"></span> - Sistema de Gestão</p>
+    </div>
+
 <script>
     const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbx73W0G4cEHBoHCPOgkvkcMgArROxg9jYevJ5OiWexeXfP0RpGQURWjk52WSTeG3Jk3/exec";
+
+    // Reestabelece o ano atual automaticamente
+    document.getElementById("anoAtual").textContent = new Date().getFullYear();
 
     function aplicarShake(idCard) {
         const card = $(`#${idCard}`);
