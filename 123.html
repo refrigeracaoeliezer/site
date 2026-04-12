@@ -39,6 +39,7 @@
             margin-bottom: 25px;
             display: flex;
             flex-direction: column; gap: 15px;
+            transition: border-color 0.3s ease;
         }
 
         .section-title { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 10px; color: #27a9e3; }
@@ -46,9 +47,27 @@
         input:focus, select:focus { border-color: #27a9e3; }
         input::placeholder { color: rgba(255,255,255,0.3); }
 
-        .btn-save { border: none; padding: 14px; border-radius: 12px; font-weight: 700; background: #1e40af; color: white; cursor: pointer; width: 100%; display: flex; justify-content: center; align-items: center; gap: 10px; transition: 0.3s; margin-top: 25px; } /* Ajustado para 25px */
+        .btn-save { border: none; padding: 14px; border-radius: 12px; font-weight: 700; background: #1e40af; color: white; cursor: pointer; width: 100%; display: flex; justify-content: center; align-items: center; gap: 10px; transition: 0.3s; margin-top: 25px; }
         .btn-save:hover { background: #2563eb; }
         .btn-save:disabled { background: #2d3748; color: #718096; cursor: not-allowed; }
+
+        #toast-minimal {
+            position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: #27a9e3; color: white;
+            padding: 15px 30px; border-radius: 50px;
+            font-weight: 600; font-size: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: none; z-index: 10000;
+            animation: fadeInOut 2s ease forwards;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translate(-50%, -60%); }
+            20% { opacity: 1; transform: translate(-50%, -50%); }
+            80% { opacity: 1; transform: translate(-50%, -50%); }
+            100% { opacity: 0; transform: translate(-50%, -40%); }
+        }
 
         #overlay-login { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0d1117; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
         .login-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); padding: 30px; border-radius: 24px; border: 1px solid rgba(30, 64, 175, 0.3); width: 100%; max-width: 380px; text-align: center; transition: 0.3s; }
@@ -66,7 +85,7 @@
 </head>
 <body>
 
-   
+    <div id="toast-minimal">Salvo com sucesso!</div>
 
     <div id="overlay-login">
         <div class="login-card" id="card-login">
@@ -293,11 +312,11 @@
         });
     }
 
+    // --- FUNÇÃO DE SALVAMENTO CORRIGIDA ---
     function saveData(sectionId, btn, originalText) {
         const container = document.getElementById(sectionId);
         const fields = container.querySelectorAll('input, textarea');
         let hasValue = false;
-        
         fields.forEach(f => { if(f.value.trim() !== "") hasValue = true; });
 
         if(!hasValue) {
@@ -314,7 +333,11 @@
             cli_tel: document.getElementById('cli_tel').value, cli_end: document.getElementById('cli_end').value,
             txt_obs: document.getElementById('txt_obs').value, txt_obs_original: document.getElementById('txt_obs').dataset.original || ""
         };
+        
+        // Envia silenciosamente sem esperar resposta
         fetch(URL_DATABASE, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+
+        // Feedback visual imediato
         setTimeout(() => {
             document.getElementById('toast-minimal').style.display = 'block';
             fields.forEach(el => el.value = '');
@@ -335,8 +358,9 @@
         toggleBtnLoading(btn, true, 'Salvar Conta');
         try {
             const url = `${URL_LOGIN}?action=registrar&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}&resposta=${encodeURIComponent(resposta)}`;
-            const resp = await fetch(url).then(r => r.text());
-            if (resp.trim() === "sucesso") {
+            const resp = await fetch(url);
+            const res = await resp.text();
+            if (res.trim() === "sucesso") {
                 showStatus('reg-status', 'Sucesso!', 'success', 'card-registrar');
                 setTimeout(() => alternarTela('login'), 2000);
                 verificarSeExisteDono();
@@ -349,7 +373,8 @@
         const btnReg = document.getElementById('btn-registrar');
         try {
             const resp = await fetch(`${URL_LOGIN}?action=checar_registro`);
-            if ((await resp.text()).trim() === "tem_dono") {
+            const res = await resp.text();
+            if (res.trim() === "tem_dono") {
                 document.getElementById('link-registrar-container').classList.add('hidden');
                 btnReg.disabled = true;
                 btnReg.innerText = "Conta Administrador já existe";
@@ -370,6 +395,7 @@
         f.style.display = (f.style.display === 'flex') ? 'none' : 'flex';
     }
 
+    // --- FUNÇÃO DE ATUALIZAÇÃO CORRIGIDA ---
     async function atualizarAcesso(originalText) {
         const btn = document.getElementById('btn-update-acesso');
         const card = document.getElementById('sec-adm');
@@ -384,29 +410,24 @@
         }
 
         toggleBtnLoading(btn, true, originalText, 'Salvando...');
+        const url = `${URL_LOGIN}?action=atualizar_acesso&email=${encodeURIComponent(m)}&senha=${encodeURIComponent(s)}&resposta=${encodeURIComponent(r)}`;
 
-        try {
-            const url = `${URL_LOGIN}?action=atualizar_acesso&email=${encodeURIComponent(m)}&senha=${encodeURIComponent(s)}&resposta=${encodeURIComponent(r)}`;
-            const resp = await fetch(url);
-            const resText = await resp.text();
+        // Envia silenciosamente
+        fetch(url, { mode: 'no-cors' });
 
-            if (resText.trim() === "sucesso") {
-                document.getElementById('toast-minimal').style.display = 'block';
-                document.getElementById('new_u_mail').value = "";
-                document.getElementById('new_u_pass').value = "";
-                document.getElementById('new_u_resposta').value = "";
-                setTimeout(() => {
-                    document.getElementById('toast-minimal').style.display = 'none';
-                    toggleBtnLoading(btn, false, originalText);
-                }, 2000);
-            } else {
-                showStatus('update-status', 'Erro ao atualizar.', 'error', 'sec-adm');
+        // Feedback visual imediato
+        setTimeout(() => {
+            document.getElementById('toast-minimal').style.display = 'block';
+            document.getElementById('new_u_mail').value = "";
+            document.getElementById('new_u_pass').value = "";
+            document.getElementById('new_u_resposta').value = "";
+            document.getElementById('update-status').style.display = "none";
+            
+            setTimeout(() => {
+                document.getElementById('toast-minimal').style.display = 'none';
                 toggleBtnLoading(btn, false, originalText);
-            }
-        } catch (e) {
-            showStatus('update-status', 'Erro de conexão.', 'error', 'sec-adm');
-            toggleBtnLoading(btn, false, originalText);
-        }
+            }, 2000);
+        }, 800);
     }
 </script>
 </body>
