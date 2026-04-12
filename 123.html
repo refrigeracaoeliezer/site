@@ -249,14 +249,12 @@
 <script>
     // Seus links oficiais
     const URL_LOGIN = "https://script.google.com/macros/s/AKfycbyVHWD028yH3qTXi63aL4Jq17MwNuXnfy8IwwA2SVOs26bsQRxmffePggxM3AriKhI2IQ/exec";
-    // IMPORTANTE: Verifique se esta URL abaixo é a da "Nova Implantação" feita DENTRO da planilha
-    const URL_LOGO = "https://script.google.com/macros/s/AKfycbz6-8iSTUhKVj1YlCQVoHg97-QV0oJj4m-CihDUPJYC-sOdArg60SJpfHoa4K22Rv0Q/exec";
+    const URL_LOGO = "https://script.google.com/macros/s/AKfycbz2y-0uZJTWuNs08cv_L_6J1ANgsbHflIvB5Jb9U7z1IIgqNwiLOUNiBJBfGwwMdx-g/exec";
 
     window.onload = verificarSeExisteDono;
 
     async function carregarDadosPlanilha() {
         try {
-            // Adicionamos um timestamp para evitar cache do navegador
             const resp = await fetch(`${URL_LOGO}?action=get_data&t=${new Date().getTime()}`);
             const data = await resp.json();
             if(data.logo && data.logo.length > 100) {
@@ -274,7 +272,7 @@
 
         if (!imgElement) return alert("Selecione uma imagem primeiro!");
 
-        button.innerText = "Enviando ao Drive...";
+        button.innerText = "Subindo para o Drive...";
         button.disabled = true;
 
         // Extrai o Base64 removendo o cabeçalho (data:image/png;base64,...)
@@ -282,10 +280,11 @@
         const fileName = "logo_" + new Date().getTime() + ".png";
 
         try {
-            // Ajuste no Fetch: Removendo headers manuais para o Google gerenciar o redirecionamento
-            const response = await fetch(URL_LOGO, {
+            // Enviando o comando apenas para o upload no Drive
+            await fetch(URL_LOGO, {
                 method: 'POST',
-                mode: 'cors', // Garantindo modo CORS
+                mode: 'no-cors', // Fundamental para ignorar bloqueios de segurança do navegador no POST
+                cache: 'no-cache',
                 body: JSON.stringify({
                     action: "save_logo",
                     file: base64Data,
@@ -293,18 +292,16 @@
                 })
             });
 
-            // O Google Apps Script retorna um redirecionamento, o fetch segue automaticamente
-            const result = await response.json();
+            // Como usamos 'no-cors', não conseguimos ler o JSON de resposta (result.success)
+            // Mas se o fetch não caiu no 'catch', o comando foi enviado ao Google.
+            alert("Solicitação enviada! Verifique sua pasta no Drive em alguns segundos.");
+            
+            // Tenta atualizar o preview após 3 segundos
+            setTimeout(carregarDadosPlanilha, 3500);
 
-            if (result.success) {
-                alert("Sucesso! Imagem salva no Drive e link gerado.");
-                setTimeout(carregarDadosPlanilha, 2000);
-            } else {
-                alert("Erro no servidor: " + result.message);
-            }
         } catch (error) {
-            console.error("Erro detalhado:", error);
-            alert("Falha na conexão: Verifique se o Script foi publicado como 'Qualquer pessoa' e se a URL_LOGO está correta.");
+            console.error("Erro no envio:", error);
+            alert("Erro ao conectar com o servidor.");
         } finally {
             button.innerHTML = btnOriginalText;
             button.disabled = false;
@@ -321,7 +318,7 @@
         }
     }
 
-    // --- Funções de Login e Interface permanecem as mesmas ---
+    // --- Funções de Login e Interface ---
     function showStatus(id, msg, type) {
         const el = document.getElementById(id);
         el.innerText = msg;
