@@ -19,6 +19,18 @@
         .container { width: 100%; max-width: 600px; }
         h1 { font-size: 28px; font-weight: 700; margin-bottom: 30px; text-align: center; color: #fff; }
 
+        /* EFEITO DE TREMOR (SHAKE) PARA ERROS */
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+        .shake { 
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; 
+            border-color: #ff4b4b !important; 
+        }
+
         .config-section {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(15px);
@@ -31,14 +43,15 @@
         }
 
         .section-title { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 10px; color: #27a9e3; }
-        input, textarea { background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 12px; color: white; font-size: 14px; width: 100%; outline: none; }
+        input, textarea { background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 12px; color: white; font-size: 14px; width: 100%; outline: none; transition: 0.3s; }
         input:focus { border-color: #27a9e3; }
-        
         input::placeholder { color: rgba(255,255,255,0.3); }
 
         .btn-save { border: none; padding: 14px; border-radius: 12px; font-weight: 700; background: #1e40af; color: white; cursor: pointer; width: 100%; display: flex; justify-content: center; align-items: center; gap: 10px; transition: 0.3s; }
         .btn-save:hover { background: #2563eb; }
         .btn-save:disabled { background: #2d3748; color: #718096; cursor: not-allowed; }
+
+        #btn-entrar { margin-top: 25px; } /* Ajuste de distância do login */
 
         #toast-minimal {
             position: fixed; top: 50%; left: 50%;
@@ -59,7 +72,16 @@
         }
 
         #overlay-login { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0d1117; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .login-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); padding: 30px; border-radius: 24px; border: 1px solid rgba(30, 64, 175, 0.3); width: 100%; max-width: 380px; text-align: center; }
+        .login-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); padding: 30px; border-radius: 24px; border: 1px solid rgba(30, 64, 175, 0.3); width: 100%; max-width: 380px; text-align: center; transition: 0.3s; }
+        
+        .link-auth { color: #27a9e3; cursor: pointer; font-size: 13px; }
+        .status-msg { font-size: 13px; margin: 10px 0; display: none; padding: 8px; border-radius: 8px; }
+        .status-error { color: #ff4b4b; background: rgba(255, 75, 75, 0.1); border: 1px solid rgba(255, 75, 75, 0.2); }
+        .status-loading { color: #27a9e3; }
+        .status-success { color: #44ff44; background: rgba(68, 255, 68, 0.1); border: 1px solid rgba(68, 255, 68, 0.2); }
+        
+        .security-content { display: none; flex-direction: column; gap: 10px; padding-top: 10px; }
+        .btn-toggle-security { background: none; border: 1px solid rgba(255,255,255,0.1); color: #27a9e3; padding: 8px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -72,19 +94,59 @@
             <h2>Acesso Restrito</h2>
             <input type="text" id="auth_u_mail" placeholder="E-mail" style="margin-top: 20px;">
             <input type="password" id="auth_u_pass" placeholder="Senha" style="margin-top: 10px;">
-            <button class="btn-save" onclick="realizarLogin()" style="margin-top: 15px;">Entrar</button>
+            <div id="login-status" class="status-msg"></div>
+            <button class="btn-save" id="btn-entrar" onclick="realizarLogin()">Entrar</button>
+            <p style="margin-top: 20px;">
+                <span id="link-registrar-container"><span class="link-auth" onclick="alternarTela('registrar')">Criar Conta</span> | </span>
+                <span class="link-auth" onclick="alternarTela('recuperar')" style="color:#ff4b4b">Esqueci meus dados</span>
+            </p>
+        </div>
+
+        <div class="login-card hidden" id="card-registrar">
+            <h2>Novo Registro</h2>
+            <input type="text" id="reg_u_mail" placeholder="E-mail" style="margin-top: 15px;">
+            <input type="password" id="reg_u_pass" placeholder="Senha" style="margin-top: 10px;">
+            <input type="text" id="reg_u_pergunta" placeholder="Pergunta Secreta" style="margin-top: 10px;">
+            <input type="text" id="reg_u_resposta" placeholder="Resposta da Pergunta" style="margin-top: 10px;">
+            <div id="reg-status" class="status-msg"></div>
+            <button class="btn-save" id="btn-registrar" onclick="registrarUsuario()" style="margin-top: 25px;">Salvar Conta</button>
+            <p class="link-auth" onclick="alternarTela('login')" style="margin-top: 25px;">Voltar</p>
+        </div>
+
+        <div class="login-card hidden" id="card-recuperar">
+            <h2>Recuperar Acesso</h2>
+            <input type="text" id="rec_u_mail" placeholder="Seu E-mail" onblur="buscarPergunta()" style="margin-top: 15px;">
+            <div id="display-pergunta" style="margin: 10px 0; color: #27a9e3; font-style: italic; font-size: 13px;"></div>
+            <input type="text" id="rec_u_resposta" placeholder="Sua Resposta" style="margin-top: 5px;">
+            <div id="rec-status" class="status-msg"></div>
+            <button class="btn-save" id="btn-recuperar" onclick="recuperarSenha()">Verificar Dados</button>
+            <div id="dica-email" style="margin-top: 15px; color: #44ff44; font-weight: bold; font-size: 13px;"></div>
+            <p class="link-auth" onclick="alternarTela('login')" style="margin-top: 15px;">Voltar</p>
         </div>
     </div>
 
     <div class="container hidden" id="main-content">
         <h1>Painel de Controle</h1>
 
+        <div class="config-section" id="sec-adm">
+            <div class="section-title"><i class="fa-solid fa-user-shield"></i> Segurança do Painel</div>
+            <button class="btn-toggle-security" onclick="toggleSecurity()">Expandir Opções de Acesso</button>
+            <div id="security-fields" class="security-content">
+                <input type="text" id="new_u_mail" placeholder="Novo E-mail">
+                <input type="password" id="new_u_pass" placeholder="Nova Senha">
+                <input type="text" id="new_u_pergunta" placeholder="Nova Pergunta Secreta">
+                <input type="text" id="new_u_resposta" placeholder="Nova Resposta Secreta">
+                <div id="update-status" class="status-msg"></div>
+                <button class="btn-save" id="btn-update-acesso" onclick="atualizarAcesso('Atualizar Acesso')">Atualizar Acesso</button>
+            </div>
+        </div>
+
         <div class="config-section">
             <div class="section-title"><i class="fa-solid fa-building"></i> Identidade da Empresa</div>
             <input type="text" id="emp_nome" list="lista_empresas" placeholder="Selecione a Empresa...">
             <datalist id="lista_empresas"></datalist>
             <input type="text" id="emp_doc" placeholder="CNPJ / CPF">
-            <button class="btn-save" onclick="saveData('empresa', this)">Salvar Empresa</button>
+            <button class="btn-save" onclick="saveData('empresa', this, 'Salvar Empresa')">Salvar Empresa</button>
         </div>
 
         <div class="config-section">
@@ -92,7 +154,7 @@
             <input type="text" id="srv_nome" list="lista_servicos" placeholder="Selecione o Serviço...">
             <datalist id="lista_servicos"></datalist>
             <input type="text" id="srv_valor" placeholder="Valor R$">
-            <button class="btn-save" onclick="saveData('servico', this)">Salvar Serviço</button>
+            <button class="btn-save" onclick="saveData('servico', this, 'Salvar Serviço')">Salvar Serviço</button>
         </div>
 
         <div class="config-section">
@@ -102,7 +164,7 @@
             <input type="text" id="cli_doc" placeholder="CPF / CNPJ">
             <input type="tel" id="cli_tel" placeholder="WhatsApp">
             <input type="text" id="cli_end" placeholder="Endereço Completo">
-            <button class="btn-save" onclick="saveData('cliente', this)">Salvar Cliente</button>
+            <button class="btn-save" onclick="saveData('cliente', this, 'Salvar Cliente')">Salvar Cliente</button>
         </div>
 
         <div class="config-section">
@@ -110,174 +172,196 @@
             <input type="text" id="obs_busca" list="lista_obs" placeholder="Pesquisar observação salva...">
             <datalist id="lista_obs"></datalist>
             <textarea id="txt_obs" rows="5" placeholder="Edite o texto aqui..."></textarea>
-            <button class="btn-save" onclick="saveData('obs', this)">Salvar Observações</button>
+            <button class="btn-save" onclick="saveData('obs', this, 'Salvar Observações')">Salvar Observações</button>
         </div>
         
         <p style="text-align: center; color: grey; font-size: 10px; margin-bottom: 40px;">SISTEMA V3.0 PROFESSIONAL</p>
     </div>
 
 <script>
-    // === INÍCIO DAS DEFINIÇÕES DE ENDEREÇOS (APIs) ===
     const URL_LOGIN = "https://script.google.com/macros/s/AKfycbyVHWD028yH3qTXi63aL4Jq17MwNuXnfy8IwwA2SVOs26bsQRxmffePggxM3AriKhI2IQ/exec";
     const URL_DATABASE = "https://script.google.com/macros/s/AKfycbzbGjCHaXHnhAC5gIGmKa7gIb2QNpE3yIhomgU9DhwaNO1DHKUq7b4shMuZRvD5IG99oQ/exec"; 
-    // === FIM DAS DEFINIÇÕES DE ENDEREÇOS ===
 
     let cacheDados = []; 
-// === OTIMIZAÇÃO DE CARREGAMENTO (ALTERADO) ===
-    
-    // PRIORIDADE MÁXIMA: Dispara a busca no milissegundo em que a página abre
-    (function iniciarCargaAntecipada() {
-        buscarDadosPlanilha();
-    })();
+
+    (function iniciarCarga() { buscarDadosPlanilha(); verificarSeExisteDono(); })();
+
+    function showStatus(id, msg, type, cardId) {
+        const el = document.getElementById(id);
+        const card = document.getElementById(cardId);
+        el.innerText = msg; el.className = 'status-msg status-' + type; el.style.display = 'block';
+        if (type === 'error' && card) {
+            card.classList.add('shake');
+            setTimeout(() => card.classList.remove('shake'), 500);
+        }
+    }
+
+    function toggleBtnLoading(btn, isLoading, originalHtml, loadingText = "Aguarde...") {
+        if (isLoading) {
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${loadingText}`;
+        } else {
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+        }
+    }
+
+    async function realizarLogin() {
+        const btn = document.getElementById('btn-entrar');
+        const email = document.getElementById('auth_u_mail').value;
+        const pass = document.getElementById('auth_u_pass').value;
+        if(!email || !pass) return showStatus('login-status', 'Preencha tudo.', 'error', 'card-login');
+        
+        toggleBtnLoading(btn, true, 'Entrar');
+        try {
+            const resp = await fetch(`${URL_LOGIN}?action=login&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}`);
+            const res = await resp.text();
+            if(res.trim() === "logado") {
+                document.getElementById('overlay-login').classList.add('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
+                localStorage.setItem("inforos_logado", "true");
+            } else { showStatus('login-status', 'Dados incorretos.', 'error', 'card-login'); }
+        } catch (e) { showStatus('login-status', 'Erro de conexão.', 'error', 'card-login'); }
+        finally { toggleBtnLoading(btn, false, 'Entrar'); }
+    }
 
     async function buscarDadosPlanilha() {
         try {
-            // Fetch com prioridade alta para reduzir o tempo de resposta do Google
             const resp = await fetch(URL_DATABASE, { priority: 'high' });
             cacheDados = await resp.json();
-            
-            // Renderização modular das listas (mais rápido que o método anterior)
             renderizarDatalists();
-            
-            // Ativa a lógica de busca e preenchimento
             configurarBuscaAutomatica();
-        } catch (e) { console.error("Erro na carga rápida:", e); }
+        } catch (e) { console.error("Erro na carga:", e); }
     }
 
     function renderizarDatalists() {
-        // Função interna para processar os dados e criar as opções de uma vez só
-        const criarOpcoes = (campo) => {
-            return [...new Set(cacheDados.map(d => d[campo]))]
-                   .filter(Boolean)
-                   .map(n => `<option value="${n}">`)
-                   .join('');
-        };
-
+        const criarOpcoes = (campo) => [...new Set(cacheDados.map(d => d[campo]))].filter(Boolean).map(n => `<option value="${n}">`).join('');
         document.getElementById('lista_empresas').innerHTML = criarOpcoes('emp_nome');
         document.getElementById('lista_clientes').innerHTML = criarOpcoes('cli_nome');
         document.getElementById('lista_servicos').innerHTML = criarOpcoes('srv_nome');
         document.getElementById('lista_obs').innerHTML = criarOpcoes('txt_obs');
     }
-    
-    // === FIM DA OTIMIZAÇÃO DE CARREGAMENTO ===
 
-    // === INÍCIO DA LÓGICA DE BUSCA AUTOMÁTICA E PREENCHIMENTO ===
     function configurarBuscaAutomatica() {
         const setupBusca = (idInput, idsDependentes, camposPlanilha) => {
             const el = document.getElementById(idInput);
             el.addEventListener('input', function() {
                 const valor = this.value;
-                if (valor === "") {
-                    idsDependentes.forEach(id => document.getElementById(id).value = "");
-                    return;
-                }
+                if (!valor) { idsDependentes.forEach(id => document.getElementById(id).value = ""); return; }
                 const encontrado = cacheDados.find(x => x[camposPlanilha[0]] === valor);
                 if (encontrado) {
                     idsDependentes.forEach((id, i) => {
                         let valorFinal = encontrado[camposPlanilha[i+1]] || "";
-                        if (id === "srv_valor" && valorFinal !== "") {
-                            let num = valorFinal.toString().replace("R$", "").trim();
-                            valorFinal = "R$ " + num;
-                        }
+                        if (id === "srv_valor" && valorFinal !== "") { valorFinal = "R$ " + valorFinal.toString().replace("R$", "").trim(); }
                         document.getElementById(id).value = valorFinal;
                     });
                 }
             });
         };
-
         setupBusca('emp_nome', ['emp_doc'], ['emp_nome', 'emp_doc']);
         setupBusca('srv_nome', ['srv_valor'], ['srv_nome', 'srv_valor']);
         setupBusca('cli_nome', ['cli_doc', 'cli_tel', 'cli_end'], ['cli_nome', 'cli_doc', 'cli_tel', 'cli_end']);
 
-  // --- INÍCIO DA LÓGICA DE OBSERVAÇÃO AJUSTADA ---
-    const campoBuscaObs = document.getElementById('obs_busca');
-    const areaTextoObs = document.getElementById('txt_obs');
-
-    campoBuscaObs.addEventListener('input', function() {
-        const valor = this.value;
-        const encontrado = cacheDados.find(x => x.txt_obs === valor);
-
-        if (encontrado) {
-            // 1. Passa o texto para a área de edição (textarea)
-            areaTextoObs.value = encontrado.txt_obs;
-            
-            // 2. Guarda a referência para edição inteligente no backend
-            areaTextoObs.dataset.original = encontrado.txt_obs; 
-            
-            // 3. Limpa o seletor e move o foco para o campo de edição
-            setTimeout(() => { 
-                this.value = "";      // Faz o texto sumir da barra de busca
-                this.blur();         // Fecha a lista de sugestões
-                areaTextoObs.focus(); // Joga o cursor para o campo de baixo
-            }, 10); // Delay mínimo de 10ms para garantir a transferência dos dados
-            
-        } else if (valor === "") {
-            areaTextoObs.value = "";
-            delete areaTextoObs.dataset.original;
-        }
-    });
- }
-    // === FIM DA LÓGICA DE OBSERVAÇÃO AJUSTADA ===
-
-    // === INÍCIO DA FUNÇÃO DE SALVAMENTO (POST) ===
-    function saveData(secao, btn) {
-        btn.disabled = true;
-        const toast = document.getElementById('toast-minimal');
+        const campoBuscaObs = document.getElementById('obs_busca');
         const areaTextoObs = document.getElementById('txt_obs');
-        const campoValor = document.getElementById('srv_valor');
-        
-        let valorParaPlanilha = campoValor.value.replace("R$", "").replace(/\s/g, "").replace(",", ".").trim();
+        campoBuscaObs.addEventListener('input', function() {
+            const encontrado = cacheDados.find(x => x.txt_obs === this.value);
+            if (encontrado) {
+                areaTextoObs.value = encontrado.txt_obs;
+                areaTextoObs.dataset.original = encontrado.txt_obs; 
+                setTimeout(() => { this.value = ""; this.blur(); areaTextoObs.focus(); }, 10);
+            }
+        });
+    }
 
+    function saveData(secao, btn, originalText) {
+        toggleBtnLoading(btn, true, originalText, "Salvando...");
         const payload = {
-            emp_nome: document.getElementById('emp_nome').value,
-            emp_doc: document.getElementById('emp_doc').value,
-            srv_nome: document.getElementById('srv_nome').value,
-            srv_valor: valorParaPlanilha, 
-            cli_nome: document.getElementById('cli_nome').value,
-            cli_doc: document.getElementById('cli_doc').value,
-            cli_tel: document.getElementById('cli_tel').value,
-            cli_end: document.getElementById('cli_end').value,
-            txt_obs: areaTextoObs.value,
-            txt_obs_original: areaTextoObs.dataset.original || "" 
+            emp_nome: document.getElementById('emp_nome').value, emp_doc: document.getElementById('emp_doc').value,
+            srv_nome: document.getElementById('srv_nome').value, srv_valor: document.getElementById('srv_valor').value.replace("R$", "").trim(),
+            cli_nome: document.getElementById('cli_nome').value, cli_doc: document.getElementById('cli_doc').value,
+            cli_tel: document.getElementById('cli_tel').value, cli_end: document.getElementById('cli_end').value,
+            txt_obs: document.getElementById('txt_obs').value, txt_obs_original: document.getElementById('txt_obs').dataset.original || ""
         };
-
         fetch(URL_DATABASE, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-
         setTimeout(() => {
-            toast.style.display = 'block';
-            document.querySelectorAll('input, textarea').forEach(el => {
-                if(!['auth_u_mail', 'auth_u_pass'].includes(el.id)) el.value = '';
-            });
-            delete areaTextoObs.dataset.original;
-            setTimeout(() => {
-                toast.style.display = 'none';
-                btn.disabled = false;
+            document.getElementById('toast-minimal').style.display = 'block';
+            document.querySelectorAll('#main-content input, #main-content textarea').forEach(el => el.value = '');
+            setTimeout(() => { 
+                document.getElementById('toast-minimal').style.display = 'none'; 
+                toggleBtnLoading(btn, false, originalText);
                 buscarDadosPlanilha(); 
             }, 2000);
         }, 800);
     }
-    // === FIM DA FUNÇÃO DE SALVAMENTO ===
 
-    // === INÍCIO DA FUNÇÃO DE LOGIN ===
-    async function realizarLogin() {
-        const email = document.getElementById('auth_u_mail').value;
-        const pass = document.getElementById('auth_u_pass').value;
+    async function verificarSeExisteDono() {
+        const btnReg = document.getElementById('btn-registrar');
         try {
-            const resp = await fetch(`${URL_LOGIN}?action=login&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}`);
-            const texto = await resp.text();
-            
-            if(texto.trim() === "logado") {
-                document.getElementById('overlay-login').classList.add('hidden');
-                document.getElementById('main-content').classList.remove('hidden');
-                localStorage.setItem("inforos_logado", "true");
-            } else { 
-                alert("Dados Inválidos"); 
+            const resp = await fetch(`${URL_LOGIN}?action=checar_registro`);
+            const existe = await resp.text();
+            if (existe.trim() === "tem_dono") {
+                document.getElementById('link-registrar-container').classList.add('hidden');
+                btnReg.disabled = true;
+                btnReg.innerText = "Conta Administrador já existe";
+                btnReg.style.marginTop = "25px";
+                btnReg.style.opacity = "0.5";
             }
-        } catch (e) { 
-            alert("Erro de Conexão"); 
+        } catch (e) {}
+    }
+
+    function alternarTela(tela) {
+        document.getElementById('card-login').classList.add('hidden');
+        document.getElementById('card-registrar').classList.add('hidden');
+        document.getElementById('card-recuperar').classList.add('hidden');
+        document.getElementById('card-' + tela).classList.remove('hidden');
+    }
+
+    function toggleSecurity() {
+        const f = document.getElementById('security-fields');
+        f.style.display = (f.style.display === 'flex') ? 'none' : 'flex';
+    }
+
+    async function registrarUsuario() {
+        const btn = document.getElementById('btn-registrar');
+        const email = document.getElementById('reg_u_mail').value;
+        const senha = document.getElementById('reg_u_pass').value;
+        const pergunta = document.getElementById('reg_u_pergunta').value;
+        const resposta = document.getElementById('reg_u_resposta').value;
+
+        if (!email || !senha || !pergunta || !resposta) {
+            return showStatus('reg-status', 'Preencha todos os campos.', 'error', 'card-registrar');
+        }
+
+        toggleBtnLoading(btn, true, 'Salvar Conta');
+        try {
+            const url = `${URL_LOGIN}?action=registrar&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}&pergunta=${encodeURIComponent(pergunta)}&resposta=${encodeURIComponent(resposta)}`;
+            const resp = await fetch(url);
+            const res = await resp.text();
+
+            if (res.trim() === "sucesso") {
+                showStatus('reg-status', 'Conta criada com sucesso!', 'success', 'card-registrar');
+                setTimeout(() => alternarTela('login'), 2000);
+                verificarSeExisteDono();
+            } else {
+                showStatus('reg-status', 'Erro: ' + res, 'error', 'card-registrar');
+            }
+        } catch (e) {
+            showStatus('reg-status', 'Erro de conexão.', 'error', 'card-registrar');
+        } finally {
+            toggleBtnLoading(btn, false, 'Salvar Conta');
         }
     }
-    // === FIM DA FUNÇÃO DE LOGIN ===
+
+    async function atualizarAcesso(originalText) {
+        const btn = document.getElementById('btn-update-acesso');
+        toggleBtnLoading(btn, true, originalText, 'Salvando...');
+        // Implementar fetch aqui se necessário
+        setTimeout(() => toggleBtnLoading(btn, false, originalText), 1000);
+    }
+
+    async function buscarPergunta() { /* implementar fetch action=get_pergunta */ }
+    async function recuperarSenha() { /* implementar fetch action=recuperar */ }
 </script>
 </body>
 </html>
