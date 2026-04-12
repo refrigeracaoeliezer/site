@@ -1,173 +1,93 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="RefriApp">
-    
     <meta charset="UTF-8">
     <title>Login | Refrigeração</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0d1117">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    
-    <link rel="icon" type="image/png" href="https://blogger.googleusercontent.com/img/a/AVvXsEjvyHVCZolj28lEOEFo6M63izh7RcOq9tc7jph7e_Or-jSWVQ5TjRb0hcc-168k9rTwL9XnC9FdUti7imfIyv6QTbWgHDZB7zroM2I3nvUK58Zf6_sARve9qfBkasedBGsBkLahFohBhq2fbLB-hPSlFVrk5haPLt0Uy2jDnTszkHq0Qn3NfzkmK8vhNLI=w104-h117">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
     
     <style>
+        /* --- ESTILOS GERAIS --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column; 
-            align-items: center;
-            justify-content: center; 
-            background: #0d1117; 
-            position: relative;
-            overflow-x: hidden;
-            overflow-y: auto;
-            /* Ajuste de padding para não vazar nas laterais */
-            padding: 20px;
-        }
-
-        .corner-ball {
-            position: fixed;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 50%;
-            z-index: 1;
-            pointer-events: none;
-        }
-
+        body { font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0d1117; position: relative; overflow-x: hidden; padding: 20px; }
+        
+        .corner-ball { position: fixed; background: rgba(255, 255, 255, 0.02); border-radius: 50%; z-index: 1; pointer-events: none; }
         .ball-top-right { width: 550px; height: 550px; top: -200px; right: -150px; }
         .ball-bottom-left { width: 450px; height: 450px; bottom: -150px; left: -150px; }
 
+        .hidden { display: none !important; }
+        
         .login-card {
             background: rgba(255, 255, 255, 0.02);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 4px solid #1e40af; 
             border-radius: 40px; 
-            padding: 40px 30px; /* Reduzi levemente o padding interno para telas menores */
+            padding: 40px 30px;
             width: 100%;
             max-width: 410px;
             position: relative;
             z-index: 10;
+            text-align: center;
             box-shadow: 0 0 50px rgba(30, 64, 175, 0.3), 0 20px 40px rgba(0, 0, 0, 0.6); 
-            transition: transform 0.3s ease;
-            /* Impede o card de crescer além da tela */
-            flex-shrink: 1;
+            transition: 0.3s ease;
         }
 
-        .shake {
-            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
-            border-color: #ff4b4b !important;
-        }
-
+        /* --- ANIMAÇÃO TREMER E ERRO --- */
         @keyframes shake {
             10%, 90% { transform: translate3d(-1px, 0, 0); }
             20%, 80% { transform: translate3d(2px, 0, 0); }
             30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
             40%, 60% { transform: translate3d(4px, 0, 0); }
         }
+        .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; border-color: #ff4b4b !important; }
 
-        .logo-container { text-align: center; margin-bottom: 25px; }
-        .logo-container img { width: 100%; max-width: 220px; height: auto; opacity: 0.9; }
+        .logo-container img { width: 100%; max-width: 220px; margin-bottom: 20px; }
+        h2 { color: white; margin-bottom: 10px; font-size: 22px; }
+        p.subtitle { color: rgba(255, 255, 255, 0.45); font-size: 13px; margin-bottom: 25px; }
 
-        .login-title { text-align: center; color: white; margin-bottom: 30px; }
-        .login-title h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
-        .login-title p { color: rgba(255, 255, 255, 0.45); font-size: 13px; margin-top: 5px; }
+        input, select {
+            width: 100%; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px; padding: 14px; color: white; font-size: 14px; margin-bottom: 15px; outline: none; transition: 0.3s;
+        }
+        input:focus, select:focus { border-color: #1e40af; box-shadow: 0 0 10px rgba(30, 64, 175, 0.3); }
 
-        .input-group { margin-bottom: 18px; text-align: left; }
-        .input-group label { display: block; color: rgba(255, 255, 255, 0.7); font-size: 10px; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; }
-        
-        .input-wrapper { position: relative; }
-        .input-wrapper input {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 14px 15px 14px 45px;
-            color: white;
-            font-size: 14px;
-            transition: 0.3s;
-            -webkit-appearance: none; /* Melhora aparência no iOS */
+        select option { background-color: #0d1117; color: white; }
+
+        .btn-main {
+            width: 100%; padding: 16px; background: linear-gradient(135deg, #1e40af 0%, #27a9e3 100%);
+            border: none; border-radius: 12px; color: white; font-weight: 700; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s;
         }
 
-        .input-wrapper input:focus {
-            outline: none;
-            border-color: #1e40af; 
-            background: rgba(255, 255, 255, 0.06);
-            box-shadow: 0 0 10px rgba(30, 64, 175, 0.3);
+        /* --- TOAST DE SUCESSO --- */
+        #toast-minimal {
+            position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: #27a9e3; color: white;
+            padding: 15px 30px; border-radius: 50px;
+            font-weight: 600; font-size: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: none; z-index: 10000;
         }
-
-        .input-wrapper i {
-            position: absolute;
-            left: 16px; top: 50%;
-            transform: translateY(-50%);
-            color: #1e40af; 
-            font-size: 16px;
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translate(-50%, -60%); }
+            20% { opacity: 1; transform: translate(-50%, -50%); }
+            80% { opacity: 1; transform: translate(-50%, -50%); }
+            100% { opacity: 0; transform: translate(-50%, -40%); }
         }
+        .animate-toast { display: block !important; animation: fadeInOut 2s ease forwards; }
 
-        #login-error {
-            display: none;
-            color: #ff4b4b;
-            font-size: 12px;
-            font-weight: 600;
-            text-align: center;
-            margin-bottom: 15px;
-            background: rgba(255, 75, 75, 0.1);
-            padding: 10px;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 75, 75, 0.2);
-        }
+        .auth-footer { margin-top: 25px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .link-auth { color: #27a9e3; cursor: pointer; font-size: 13px; text-decoration: none; }
+        .link-rec { color: #ff4b4b; }
+        .divider { width: 1px; height: 14px; background-color: rgba(255, 255, 255, 0.3); display: inline-block; }
 
-        .btn-login {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #1e40af 0%, #27a9e3 100%);
-            border: none;
-            border-radius: 12px;
-            color: white;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center; justify-content: center; gap: 10px;
-            margin-top: 10px;
-            box-shadow: 0 4px 15px rgba(30, 64, 175, 0.3);
-        }
-
-        .btn-login:active { transform: scale(0.98); }
-
-        .footer-info {
-            width: 100%;
-            text-align: center;
-            color: rgba(255, 255, 255, 0.25);
-            font-size: 10px;
-            z-index: 10;
-            margin-top: 25px;
-        }
-
-        .badge-teste {
-            display: inline-block;
-            padding: 5px 15px;
-            background: rgba(30, 64, 175, 0.1);
-            border: 1px solid #1e40af;
-            border-radius: 30px;
-            color: #27a9e3; 
-            font-weight: 700;
-            margin-bottom: 10px;
-            font-size: 9px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+        .status-msg { font-size: 12px; padding: 10px; border-radius: 10px; margin-bottom: 15px; display: none; }
+        .error-msg { background: rgba(255, 75, 75, 0.1); color: #ff4b4b; border: 1px solid rgba(255, 75, 75, 0.2); }
+        .result-box { margin-top: 15px; padding: 15px; background: rgba(39, 169, 227, 0.1); border: 1px dashed #27a9e3; color: #44ff44; font-weight: bold; border-radius: 12px; display: none; }
     </style>
 </head>
 <body>
@@ -175,91 +95,178 @@
     <div class="corner-ball ball-top-right"></div>
     <div class="corner-ball ball-bottom-left"></div>
 
-    <div class="login-card" id="cardPrincipal">
+    <div id="toast-minimal">Salvo com sucesso!</div>
+
+    <div class="login-card" id="card-login">
         <div class="logo-container">
-            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgdGGsULMI69OabXBfFU3b8mTYfIWlJoqpwgc_q1UvSITQPj_VQYaW_1cLECh4rF7j5RfhJLsPgUXdvNv-ya494kAfeyZRbdTCn-VFesltpIkZp8Xid-MZwLKBLyC89MTSXf76nrCrBHncl86cYzjm1XuG34hvNrNVkZS8Gkq3FJEZHEb99HL26I52RUqc/w512-h237/TOPO%20POSTO%20RIO%20BRANCO.png" alt="InforOS">
+            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgdGGsULMI69OabXBfFU3b8mTYfIWlJoqpwgc_q1UvSITQPj_VQYaW_1cLECh4rF7j5RfhJLsPgUXdvNv-ya494kAfeyZRbdTCn-VFesltpIkZp8Xid-MZwLKBLyC89MTSXf76nrCrBHncl86cYzjm1XuG34hvNrNVkZS8Gkq3FJEZHEb99HL26I52RUqc/w512-h237/TOPO%20POSTO%20RIO%20BRANCO.png">
         </div>
-
-        <div class="login-title">
-            <h1>Acessar Gestor</h1>
-            <p>Insira os seus dados de acesso</p>
+        <h2>Acessar Gestor</h2>
+        <p class="subtitle">Insira seus dados de acesso</p>
+        <div id="login-status" class="status-msg error-msg"></div>
+        <input type="email" id="l_email" placeholder="E-mail">
+        <input type="password" id="l_pass" placeholder="Senha">
+        <button class="btn-main" onclick="realizarLogin()" id="btn-l">Autenticar</button>
+        
+        <div class="auth-footer">
+            <span class="link-auth" onclick="alternar('registrar')">Criar Conta</span>
+            <span class="divider"></span>
+            <span class="link-auth link-rec" onclick="alternar('recuperar')">Esqueci meus dados</span>
         </div>
-
-        <form id="formLogin">
-            <div class="input-group">
-                <label for="email">E-mail</label>
-                <div class="input-wrapper">
-                    <i class="fa-solid fa-envelope"></i>
-                    <input type="email" id="email" placeholder="login@gmail.com" autocomplete="username" required>
-                </div>
-            </div>
-
-            <div class="input-group">
-                <label for="senha">Senha</label>
-                <div class="input-wrapper">
-                    <i class="fa-solid fa-lock"></i>
-                    <input type="password" id="senha" placeholder="••••••••" autocomplete="current-password" required>
-                </div>
-            </div>
-
-            <div id="login-error"><i class="fa-solid fa-triangle-exclamation"></i> Login incorreto</div>
-
-            <button type="submit" id="btnSubmit" class="btn-login">
-                <i class="fa-solid fa-right-to-bracket"></i> Autenticar
-            </button>
-        </form>
     </div>
 
-    <div class="footer-info">
-        <div class="badge-teste">Refrigeração Eliezer</div>
-        <p>&copy; <span id="anoAtual"></span> - Sistema de Gestão</p>
+    <div class="login-card hidden" id="card-registrar">
+        <i class="fa-solid fa-user-plus" style="font-size: 40px; color: #1e40af; margin-bottom: 20px;"></i>
+        <h2>Nova Conta</h2>
+        <p class="subtitle">Cadastre um novo usuário no sistema</p>
+        <div id="reg-status" class="status-msg error-msg"></div>
+        <input type="email" id="r_email" placeholder="Seu E-mail">
+        <input type="password" id="r_pass" placeholder="Sua Senha">
+        <input type="text" id="r_resp" placeholder="Resposta Secreta (para recuperar)">
+        <button class="btn-main" onclick="registrar()" id="btn-r">Salvar Registro</button>
+        <span class="link-auth" onclick="alternar('login')" style="margin-top:20px; display:block;">Voltar ao Login</span>
+    </div>
+
+    <div class="login-card hidden" id="card-recuperar">
+        <i class="fa-solid fa-shield-halved" style="font-size: 40px; color: #27a9e3; margin-bottom: 20px;"></i>
+        <h2>Recuperar Acesso</h2>
+        <p class="subtitle">Verificação de segurança dupla</p>
+        <div id="rec-status" class="status-msg error-msg"></div>
+        <select id="tipo_rec" onchange="ajustarRec()">
+            <option value="email">Quero ver meu E-mail</option>
+            <option value="senha">Quero ver minha Senha</option>
+        </select>
+        <input type="password" id="rec_dado" placeholder="Confirme sua Senha">
+        <input type="text" id="rec_resp" placeholder="Sua Resposta Secreta">
+        <div id="rec-result" class="result-box"></div>
+        <button class="btn-main" onclick="recuperar()" id="btn-rec">Verificar Dados</button>
+        <span class="link-auth" onclick="alternar('login')" style="margin-top:20px; display:block;">Voltar ao Login</span>
     </div>
 
 <script>
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js');
+    const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbx73W0G4cEHBoHCPOgkvkcMgArROxg9jYevJ5OiWexeXfP0RpGQURWjk52WSTeG3Jk3/exec";
+
+    function aplicarShake(idCard) {
+        const card = $(`#${idCard}`);
+        card.addClass('shake');
+        setTimeout(() => card.removeClass('shake'), 500);
     }
 
-    document.getElementById("anoAtual").textContent = new Date().getFullYear();
+    function showToast(msg) {
+        const toast = $('#toast-minimal');
+        if(msg) toast.text(msg);
+        toast.addClass('animate-toast');
+        setTimeout(() => toast.removeClass('animate-toast'), 2000);
+    }
 
-    $('#formLogin').on('submit', function(e) {
-        e.preventDefault();
-        
-        const btn = $('#btnSubmit');
-        const errorMsg = $('#login-error');
-        const card = $('#cardPrincipal');
-        
-        errorMsg.hide();
-        card.removeClass('shake');
-        
-        btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i> Validando...');
-        
-        const email = $('#email').val();
-        const senha = $('#senha').val();
-        const urlScript = "https://script.google.com/macros/s/AKfycbySlIXi5qq9RUL_vvl9nTPlIQdLQC__acn4Lver0LAXnZXhuwgiAJhOUfuGszLHwg38/exec";
+    function alternar(tela) {
+        $('.login-card').addClass('hidden').removeClass('shake');
+        $('#card-' + tela).removeClass('hidden');
+        $('.status-msg, .result-box').hide().text('');
+    }
 
-        $.ajax({
-            url: urlScript,
-            method: "GET",
-            dataType: "text",
-            data: { email: email, senha: senha },
-            success: function(resposta) {
-                if (resposta.trim() === "success") {
-                    localStorage.setItem("inforos_logado", "true");
-                    window.location.href = "sistemas.html"; 
-                } else {
-                    errorMsg.fadeIn();
-                    card.addClass('shake');
-                    setTimeout(() => card.removeClass('shake'), 500);
-                    btn.prop('disabled', false).html('<i class="fa-solid fa-right-to-bracket"></i> Autenticar');
-                }
-            },
-            error: function() {
-                alert("Erro técnico: Verifique a conexão com a planilha.");
-                btn.prop('disabled', false).html('<i class="fa-solid fa-right-to-bracket"></i> Autenticar');
+    function ajustarRec() {
+        const tipo = $('#tipo_rec').val();
+        $('#rec_dado').val('').attr('placeholder', tipo === 'email' ? "Confirme sua Senha" : "Confirme seu E-mail");
+        $('#rec_dado').attr('type', tipo === 'email' ? "password" : "text");
+    }
+
+    async function realizarLogin() {
+        const email = $('#l_email').val();
+        const senha = $('#l_pass').val();
+        const btn = $('#btn-l');
+        const status = $('#login-status');
+        
+        if(!email || !senha) {
+            status.text("Preencha todos os campos!").show();
+            aplicarShake('card-login');
+            return;
+        }
+        
+        btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i> Entrando...');
+        try {
+            const resp = await fetch(`${URL_SCRIPT}?action=login&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}`);
+            const texto = await resp.text();
+            if(texto.trim() === "success") {
+                localStorage.setItem("inforos_logado", "true");
+                window.location.href = "sistemas.html";
+            } else {
+                status.show().text("Dados incorretos!");
+                aplicarShake('card-login');
             }
-        });
-    });
+        } catch(e) { 
+            status.show().text("Erro de conexão.");
+            aplicarShake('card-login');
+        }
+        btn.prop('disabled', false).text("Autenticar");
+    }
+
+    async function registrar() {
+        const email = $('#r_email').val();
+        const senha = $('#r_pass').val();
+        const resp_sec = $('#r_resp').val();
+        const btn = $('#btn-r');
+        const status = $('#reg-status');
+
+        if(!email || !senha || !resp_sec) {
+            status.text("Preencha todos os campos!").show();
+            aplicarShake('card-registrar');
+            return;
+        }
+
+        btn.prop('disabled', true).text("Salvando...");
+        try {
+            const res = await fetch(`${URL_SCRIPT}?action=registrar&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}&resposta=${encodeURIComponent(resp_sec)}`);
+            const texto = await res.text();
+            
+            if(texto.trim() === "sucesso") {
+                showToast("Conta criada com sucesso!");
+                setTimeout(() => alternar('login'), 2000);
+            } else if(texto.trim() === "atualizado") {
+                showToast("Dados atualizados com sucesso!");
+                setTimeout(() => alternar('login'), 2000);
+            } else {
+                status.text("Erro ao processar conta.").show();
+                aplicarShake('card-registrar');
+            }
+        } catch(e) { 
+            status.text("Erro de conexão.").show();
+            aplicarShake('card-registrar');
+        }
+        btn.prop('disabled', false).text("Salvar Registro");
+    }
+
+    async function recuperar() {
+        const tipo = $('#tipo_rec').val();
+        const dado = $('#rec_dado').val();
+        const resp_sec = $('#rec_resp').val();
+        const btn = $('#btn-rec');
+        const status = $('#rec-status');
+        
+        if(!dado || !resp_sec) {
+            status.text("Preencha todos os campos!").show();
+            aplicarShake('card-recuperar');
+            return;
+        }
+        
+        btn.prop('disabled', true).text("Validando...");
+        try {
+            const url = `${URL_SCRIPT}?action=recuperar&tipo=${tipo}&dado1=${encodeURIComponent(dado)}&resposta=${encodeURIComponent(resp_sec)}`;
+            const resText = await (await fetch(url)).text();
+            if(!resText.includes("ERRO")) {
+                $('#rec-result').show().text(resText);
+                status.hide();
+                showToast("Dados localizados!");
+            } else {
+                status.show().text("Dados incorretos!");
+                aplicarShake('card-recuperar');
+            }
+        } catch(e) { 
+            status.show().text("Erro na consulta.");
+            aplicarShake('card-recuperar');
+        }
+        btn.prop('disabled', false).text("Verificar Dados");
+    }
 </script>
 </body>
 </html>
