@@ -153,7 +153,15 @@
                 const encontrado = cacheDados.find(x => x[camposPlanilha[0]] === valor);
                 if (encontrado) {
                     idsDependentes.forEach((id, i) => {
-                        document.getElementById(id).value = encontrado[camposPlanilha[i+1]] || "";
+                        let valorFinal = encontrado[camposPlanilha[i+1]] || "";
+                        
+                        // LÓGICA DO R$: Se for o campo de valor, adiciona o prefixo
+                        if (id === "srv_valor" && valorFinal !== "") {
+                            // Remove R$ se já existir na planilha para não duplicar, e formata
+                            valorFinal = "R$ " + valorFinal.toString().replace("R$", "").trim();
+                        }
+                        
+                        document.getElementById(id).value = valorFinal;
                     });
                 }
             });
@@ -163,7 +171,6 @@
         setupBusca('srv_nome', ['srv_valor'], ['srv_nome', 'srv_valor']);
         setupBusca('cli_nome', ['cli_doc', 'cli_tel', 'cli_end'], ['cli_nome', 'cli_doc', 'cli_tel', 'cli_end']);
 
-        // --- LÓGICA DE OBSERVAÇÃO AJUSTADA ---
         const campoBuscaObs = document.getElementById('obs_busca');
         const areaTextoObs = document.getElementById('txt_obs');
 
@@ -172,7 +179,6 @@
             const encontrado = cacheDados.find(x => x.txt_obs === valor);
             if (encontrado) {
                 areaTextoObs.value = encontrado.txt_obs;
-                // Guardamos o texto original para o script saber o que substituir
                 areaTextoObs.dataset.original = encontrado.txt_obs; 
                 setTimeout(() => { this.value = ""; }, 500);
             } else if (valor === "") {
@@ -186,18 +192,21 @@
         btn.disabled = true;
         const toast = document.getElementById('toast-minimal');
         const areaTextoObs = document.getElementById('txt_obs');
+        const campoValor = document.getElementById('srv_valor');
         
+        // Antes de enviar, limpamos o R$ para a planilha receber apenas o número (opcional, mas recomendado)
+        const valorLimpo = campoValor.value.replace("R$", "").trim();
+
         const payload = {
             emp_nome: document.getElementById('emp_nome').value,
             emp_doc: document.getElementById('emp_doc').value,
             srv_nome: document.getElementById('srv_nome').value,
-            srv_valor: document.getElementById('srv_valor').value,
+            srv_valor: valorLimpo, // Envia sem o R$ para facilitar cálculos na planilha
             cli_nome: document.getElementById('cli_nome').value,
             cli_doc: document.getElementById('cli_doc').value,
             cli_tel: document.getElementById('cli_tel').value,
             cli_end: document.getElementById('cli_end').value,
             txt_obs: areaTextoObs.value,
-            // Enviamos o valor original para o backend comparar
             txt_obs_original: areaTextoObs.dataset.original || "" 
         };
 
@@ -208,7 +217,6 @@
             document.querySelectorAll('input, textarea').forEach(el => {
                 if(!['auth_u_mail', 'auth_u_pass'].includes(el.id)) el.value = '';
             });
-            // Limpa o dataset original após salvar
             delete areaTextoObs.dataset.original;
 
             setTimeout(() => {
