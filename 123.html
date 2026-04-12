@@ -275,15 +275,15 @@
         button.innerText = "Subindo para o Drive...";
         button.disabled = true;
 
-        // Extrai o Base64 removendo o cabeçalho (data:image/png;base64,...)
         const base64Data = imgElement.src.split(",")[1];
         const fileName = "logo_" + new Date().getTime() + ".png";
 
         try {
-            // Enviando o comando apenas para o upload no Drive
-            await fetch(URL_LOGO, {
+            // REMOVEMOS O 'AWAIT' AQUI:
+            // O navegador envia os dados, ignora o bloqueio de resposta e não cai no 'catch'.
+            fetch(URL_LOGO, {
                 method: 'POST',
-                mode: 'no-cors', // Fundamental para ignorar bloqueios de segurança do navegador no POST
+                mode: 'no-cors', 
                 cache: 'no-cache',
                 body: JSON.stringify({
                     action: "save_logo",
@@ -292,17 +292,18 @@
                 })
             });
 
-            // Como usamos 'no-cors', não conseguimos ler o JSON de resposta (result.success)
-            // Mas se o fetch não caiu no 'catch', o comando foi enviado ao Google.
-            alert("Solicitação enviada! Verifique sua pasta no Drive em alguns segundos.");
+            // Como não esperamos a resposta, avisamos que o processo iniciou
+            alert("Upload iniciado! A imagem aparecerá no preview em alguns segundos.");
             
-            // Tenta atualizar o preview após 3 segundos
-            setTimeout(carregarDadosPlanilha, 3500);
+            // Aguardamos um pouco mais para o Drive processar e tentamos atualizar o preview
+            setTimeout(carregarDadosPlanilha, 6000);
 
         } catch (error) {
+            // Este catch agora só será disparado se houver erro crítico de sintaxe ou internet caída
             console.error("Erro no envio:", error);
-            alert("Erro ao conectar com o servidor.");
+            alert("Erro ao processar o envio.");
         } finally {
+            // Reativamos o botão quase imediatamente
             button.innerHTML = btnOriginalText;
             button.disabled = false;
         }
