@@ -111,16 +111,6 @@
             opacity: 0.8;
         }
 
-        .logo-preview {
-            width: 120px; height: 120px; margin: 0 auto;
-            border-radius: 15px;
-            background: rgba(0,0,0,0.3);
-            display: flex; align-items: center; justify-content: center;
-            border: 1px solid rgba(255,255,255,0.1);
-            overflow: hidden;
-        }
-        .logo-preview img { width: 100%; height: 100%; object-fit: contain; }
-
         .link-auth { color: #27a9e3; cursor: pointer; font-size: 13px; }
         
         .status-msg { font-size: 13px; margin: 10px 0; display: none; }
@@ -128,7 +118,6 @@
         .status-loading { color: #27a9e3; }
         .status-success { color: #44ff44; }
 
-        /* Estilo para a área expansível de segurança */
         .security-content { display: none; flex-direction: column; gap: 10px; padding-top: 10px; }
         .btn-toggle-security { 
             background: none; border: 1px solid rgba(255,255,255,0.1); 
@@ -196,18 +185,11 @@
         </div>
         
         <div class="config-section">
-            <div class="section-title"><i class="fa-solid fa-image"></i> Logo da Empresa</div>
-            <div class="logo-preview" id="logoPreview"><i class="fa-solid fa-camera" style="font-size: 30px; color: rgba(255,255,255,0.1);"></i></div>
-            <input type="file" id="logoInput" accept="image/*" onchange="previewImage(this)">
-            <button class="btn-save" onclick="saveData('logo', this)"><i class="fa-solid fa-floppy-disk"></i> Salvar Logo</button>
-        </div>
-
-        <div class="config-section">
             <div class="section-title"><i class="fa-solid fa-building"></i> Identidade da Empresa</div>
             <input type="text" id="emp_nome" list="lista_empresas" placeholder="Nome Fantasia" autocomplete="off">
             <datalist id="lista_empresas"><option value="Refrigeração Eliezer"></datalist>
             <input type="text" id="emp_doc" placeholder="CNPJ / CPF" autocomplete="off">
-            <button class="btn-save" onclick="saveData('empresa', this)"><i class="fa-solid fa-floppy-disk"></i> Salvar Empresa</button>
+            <button class="btn-save" onclick="alert('Funcionalidade de salvar dados não implementada no JS')"><i class="fa-solid fa-floppy-disk"></i> Salvar Empresa</button>
         </div>
 
         <div class="config-section">
@@ -219,7 +201,7 @@
                 <option value="Instalação Split">
             </datalist>
             <input type="number" id="srv_valor" placeholder="Valor R$" autocomplete="off">
-            <button class="btn-save" onclick="saveData('servico', this)"><i class="fa-solid fa-floppy-disk"></i> Salvar Serviço</button>
+            <button class="btn-save" onclick="alert('Funcionalidade de salvar dados não implementada no JS')"><i class="fa-solid fa-floppy-disk"></i> Salvar Serviço</button>
         </div>
 
         <div class="config-section">
@@ -229,7 +211,7 @@
             <input type="text" id="cli_doc" placeholder="CPF / CNPJ" autocomplete="off">
             <input type="tel" id="cli_tel" placeholder="WhatsApp" autocomplete="off">
             <input type="text" id="cli_end" placeholder="Endereço Completo" autocomplete="off">
-            <button class="btn-save" onclick="saveData('cliente', this)"><i class="fa-solid fa-floppy-disk"></i> Salvar Cliente</button>
+            <button class="btn-save" onclick="alert('Funcionalidade de salvar dados não implementada no JS')"><i class="fa-solid fa-floppy-disk"></i> Salvar Cliente</button>
         </div>
 
         <div class="config-section">
@@ -240,86 +222,104 @@
                 <option value="Checklist de Manutenção">
             </datalist>
             <textarea id="txt_obs" rows="5" placeholder="Texto das observações..."></textarea>
-            <button class="btn-save" onclick="saveData('obs', this)"><i class="fa-solid fa-floppy-disk"></i> Salvar Observações</button>
+            <button class="btn-save" onclick="alert('Funcionalidade de salvar dados não implementada no JS')"><i class="fa-solid fa-floppy-disk"></i> Salvar Observações</button>
         </div>
         
         <p style="text-align: center; color: grey; font-size: 10px; margin-bottom: 40px;">SISTEMA V2.8.2</p>
     </div>
 
 <script>
-    // Seus links oficiais
+    // Configurações de URL
     const URL_LOGIN = "https://script.google.com/macros/s/AKfycbyVHWD028yH3qTXi63aL4Jq17MwNuXnfy8IwwA2SVOs26bsQRxmffePggxM3AriKhI2IQ/exec";
-    const URL_LOGO = "https://script.google.com/macros/s/AKfycbz2y-0uZJTWuNs08cv_L_6J1ANgsbHflIvB5Jb9U7z1IIgqNwiLOUNiBJBfGwwMdx-g/exec";
+    // SUBSTITUA pela URL que você recebeu ao implantar o código das colunas A, B, D, E, G, H, I, J, L
+    const URL_DATABASE = "https://script.google.com/macros/s/AKfycbwdn5cfDT9PIXCCJIZD74LzFLDd8Yknq5dyvDZndpjIUS6sBClniLxHjEapjtuhYtl2Aw/exec"; 
 
-    window.onload = verificarSeExisteDono;
+    let cacheDados = []; // Armazena os dados da planilha para auto-preenchimento
 
-    async function carregarDadosPlanilha() {
+    window.onload = () => {
+        verificarSeExisteDono();
+    };
+
+    // --- FUNÇÕES DE BUSCA E AUTO-PREENCHIMENTO ---
+
+    async function buscarDadosPlanilha() {
         try {
-            const resp = await fetch(`${URL_LOGO}?action=get_data&t=${new Date().getTime()}`);
-            const data = await resp.json();
-            if(data.logo && data.logo.length > 100) {
-                document.getElementById('logoPreview').innerHTML = `<img src="${data.logo}" style="width:100%; height:100%; object-fit:contain;">`;
-            }
-        } catch (e) { console.log("Aguardando logo..."); }
+            const resp = await fetch(URL_DATABASE);
+            cacheDados = await resp.json();
+            configurarAutoPreenchimento();
+        } catch (e) { 
+            console.error("Erro ao carregar dados da planilha:", e); 
+        }
     }
+
+    function configurarAutoPreenchimento() {
+        // Preenche os Datalists (as listas de sugestões)
+        const listEmp = document.getElementById('lista_empresas');
+        const listCli = document.getElementById('lista_clientes');
+        
+        const empresas = [...new Set(cacheDados.map(d => d.emp_nome))].filter(Boolean);
+        const clientes = [...new Set(cacheDados.map(d => d.cli_nome))].filter(Boolean);
+
+        listEmp.innerHTML = empresas.map(n => `<option value="${n}">`).join('');
+        listCli.innerHTML = clientes.map(n => `<option value="${n}">`).join('');
+        
+        // Ativa os eventos de escuta
+        document.getElementById('emp_nome').addEventListener('input', () => {
+            const selecionado = document.getElementById('emp_nome').value;
+            const dados = cacheDados.find(d => d.emp_nome === selecionado);
+            if (dados) document.getElementById('emp_doc').value = dados.emp_doc;
+        });
+
+        document.getElementById('cli_nome').addEventListener('input', () => {
+            const selecionado = document.getElementById('cli_nome').value;
+            const dados = cacheDados.find(d => d.cli_nome === selecionado);
+            if (dados) {
+                document.getElementById('cli_doc').value = dados.cli_doc;
+                document.getElementById('cli_tel').value = dados.cli_tel;
+                document.getElementById('cli_end').value = dados.cli_end;
+            }
+        });
+    }
+
+    // --- FUNÇÃO DE SALVAMENTO (POST) ---
 
     async function saveData(secao, btn) {
-        if (secao !== 'logo') return; 
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerText = "Sincronizando...";
 
-        const button = btn || event.target;
-        const btnOriginalText = button.innerHTML;
-        const imgElement = document.getElementById('logoPreview').querySelector('img');
-
-        if (!imgElement) return alert("Selecione uma imagem primeiro!");
-
-        button.innerText = "Subindo para o Drive...";
-        button.disabled = true;
-
-        const base64Data = imgElement.src.split(",")[1];
-        const fileName = "logo_" + new Date().getTime() + ".png";
+        const payload = {
+            emp_nome: document.getElementById('emp_nome').value,
+            emp_doc: document.getElementById('emp_doc').value,
+            srv_nome: document.getElementById('srv_nome').value,
+            srv_valor: document.getElementById('srv_valor').value,
+            cli_nome: document.getElementById('cli_nome').value,
+            cli_doc: document.getElementById('cli_doc').value,
+            cli_tel: document.getElementById('cli_tel').value,
+            cli_end: document.getElementById('cli_end').value,
+            txt_obs: document.getElementById('txt_obs').value
+        };
 
         try {
-            // REMOVEMOS O 'AWAIT' AQUI:
-            // O navegador envia os dados, ignora o bloqueio de resposta e não cai no 'catch'.
-            fetch(URL_LOGO, {
+            // Usamos mode: 'no-cors' para evitar bloqueios do Google, 
+            // mas lembre-se que com no-cors o JS não consegue ler a resposta de sucesso.
+            await fetch(URL_DATABASE, {
                 method: 'POST',
-                mode: 'no-cors', 
-                cache: 'no-cache',
-                body: JSON.stringify({
-                    action: "save_logo",
-                    file: base64Data,
-                    fileName: fileName
-                })
+                body: JSON.stringify(payload)
             });
-
-            // Como não esperamos a resposta, avisamos que o processo iniciou
-            alert("Upload iniciado! A imagem aparecerá no preview em alguns segundos.");
             
-            // Aguardamos um pouco mais para o Drive processar e tentamos atualizar o preview
-            setTimeout(carregarDadosPlanilha, 6000);
-
-        } catch (error) {
-            // Este catch agora só será disparado se houver erro crítico de sintaxe ou internet caída
-            console.error("Erro no envio:", error);
-            alert("Erro ao processar o envio.");
+            alert("Dados enviados com sucesso para a planilha!");
+            buscarDadosPlanilha(); // Atualiza o cache local
+        } catch (e) {
+            alert("Erro ao salvar. Verifique sua conexão.");
         } finally {
-            // Reativamos o botão quase imediatamente
-            button.innerHTML = btnOriginalText;
-            button.disabled = false;
+            btn.innerHTML = originalText;
+            btn.disabled = false;
         }
     }
 
-    function previewImage(input) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = e => {
-                document.getElementById('logoPreview').innerHTML = `<img src="${e.target.result}" style="width:100%; height:100%; object-fit:contain;">`;
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
+    // --- SUAS FUNÇÕES ORIGINAIS DE LOGIN ---
 
-    // --- Funções de Login e Interface ---
     function showStatus(id, msg, type) {
         const el = document.getElementById(id);
         el.innerText = msg;
@@ -338,7 +338,8 @@
             if(result.trim() === "logado") {
                 document.getElementById('overlay-login').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
-                carregarDadosPlanilha(); 
+                // IMPORTANTE: Busca os dados assim que logar
+                buscarDadosPlanilha(); 
             } else { showStatus('login-status', 'Dados incorretos.', 'error'); }
         } catch (e) { showStatus('login-status', 'Erro de rede.', 'error'); }
     }
