@@ -39,7 +39,6 @@
             margin-bottom: 25px;
             display: flex;
             flex-direction: column; gap: 15px;
-            transition: border-color 0.3s ease;
         }
 
         .section-title { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 10px; color: #27a9e3; }
@@ -47,7 +46,7 @@
         input:focus, select:focus { border-color: #27a9e3; }
         input::placeholder { color: rgba(255,255,255,0.3); }
 
-        .btn-save { border: none; padding: 14px; border-radius: 12px; font-weight: 700; background: #1e40af; color: white; cursor: pointer; width: 100%; display: flex; justify-content: center; align-items: center; gap: 10px; transition: 0.3s; }
+        .btn-save { border: none; padding: 14px; border-radius: 12px; font-weight: 700; background: #1e40af; color: white; cursor: pointer; width: 100%; display: flex; justify-content: center; align-items: center; gap: 10px; transition: 0.3s; margin-top: 25px; } /* Ajustado para 25px */
         .btn-save:hover { background: #2563eb; }
         .btn-save:disabled { background: #2d3748; color: #718096; cursor: not-allowed; }
 
@@ -89,7 +88,7 @@
             <input type="password" id="reg_u_pass" placeholder="Senha" style="margin-top: 10px;">
             <input type="text" id="reg_u_resposta" placeholder="Resposta da Pergunta" style="margin-top: 10px;">
             <div id="reg-status" class="status-msg"></div>
-            <button class="btn-save" id="btn-registrar" onclick="registrarUsuario()" style="margin-top: 25px;">Salvar Conta</button>
+            <button class="btn-save" id="btn-registrar" onclick="registrarUsuario()">Salvar Conta</button>
             <p class="link-auth" onclick="alternarTela('login')" style="margin-top: 25px;">Voltar</p>
         </div>
 
@@ -104,7 +103,7 @@
             <input type="text" id="rec_resposta_seguranca" placeholder="Sua Resposta Secreta" style="margin-top: 15px;">
             <div id="rec-status" class="status-msg"></div>
             <div id="rec-result" class="result-box"></div>
-            <button class="btn-save" id="btn-recuperar" onclick="executarRecuperacao()" style="margin-top: 25px;">Verificar Dados</button>
+            <button class="btn-save" id="btn-recuperar" onclick="executarRecuperacao()">Verificar Dados</button>
             <p class="link-auth" onclick="alternarTela('login')" style="margin-top: 25px;">Voltar</p>
         </div>
     </div>
