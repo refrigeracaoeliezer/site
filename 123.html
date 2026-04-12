@@ -118,231 +118,120 @@
 
 <script>
     const URL_LOGIN = "https://script.google.com/macros/s/AKfycbyVHWD028yH3qTXi63aL4Jq17MwNuXnfy8IwwA2SVOs26bsQRxmffePggxM3AriKhI2IQ/exec";
-    const URL_DATABASE = "https://script.google.com/macros/s/AKfycbxWEQOqQBDe36WEqrrmXcH_4n8iUT8rpt8_UQaVxNvast7cUuMh_YEYPVsy08WDIIe3rg/exec"; 
-
+    const URL_DATABASE = "https://script.google.com/macros/s/AKfycbzbGjCHaXHnhAC5gIGmKa7gIb2QNpE3yIhomgU9DhwaNO1DHKUq7b4shMuZRvD5IG99oQ/exec"; 
 
     let cacheDados = []; 
 
-
-
     async function buscarDadosPlanilha() {
-
         try {
-
             const resp = await fetch(URL_DATABASE);
-
             cacheDados = await resp.json();
-
             
-
             const listEmp = document.getElementById('lista_empresas');
-
             const listCli = document.getElementById('lista_clientes');
-
             const listSrv = document.getElementById('lista_servicos');
-
             const listObs = document.getElementById('lista_obs');
 
-
-
             listEmp.innerHTML = [...new Set(cacheDados.map(d => d.emp_nome))].filter(Boolean).map(n => `<option value="${n}">`).join('');
-
             listCli.innerHTML = [...new Set(cacheDados.map(d => d.cli_nome))].filter(Boolean).map(n => `<option value="${n}">`).join('');
-
             listSrv.innerHTML = [...new Set(cacheDados.map(d => d.srv_nome))].filter(Boolean).map(n => `<option value="${n}">`).join('');
-
             listObs.innerHTML = [...new Set(cacheDados.map(d => d.txt_obs))].filter(Boolean).map(n => `<option value="${n}">`).join('');
-
             
-
             configurarBuscaAutomatica();
-
         } catch (e) { console.error("Erro ao carregar dados:", e); }
-
     }
-
-
 
     function configurarBuscaAutomatica() {
-
-        // Função utilitária para tratar o input e preencher campos
-
         const setupBusca = (idInput, idsDependentes, camposPlanilha) => {
-
             const el = document.getElementById(idInput);
-
             el.addEventListener('input', function() {
-
                 const valor = this.value;
-
                 if (valor === "") {
-
                     idsDependentes.forEach(id => document.getElementById(id).value = "");
-
                     return;
-
                 }
-
                 const encontrado = cacheDados.find(x => x[camposPlanilha[0]] === valor);
-
                 if (encontrado) {
-
                     idsDependentes.forEach((id, i) => {
-
                         document.getElementById(id).value = encontrado[camposPlanilha[i+1]] || "";
-
                     });
-
                 }
-
             });
-
         };
-
-
-
-        // Aplica para Empresa
 
         setupBusca('emp_nome', ['emp_doc'], ['emp_nome', 'emp_doc']);
-
-
-
-        // Aplica para Serviço
-
         setupBusca('srv_nome', ['srv_valor'], ['srv_nome', 'srv_valor']);
-
-
-
-        // Aplica para Cliente
-
         setupBusca('cli_nome', ['cli_doc', 'cli_tel', 'cli_end'], ['cli_nome', 'cli_doc', 'cli_tel', 'cli_end']);
 
-
-
-        // Lógica especial para Observação (Seleciona e limpa a busca para permitir re-seleção)
-
+        // --- LÓGICA DE OBSERVAÇÃO AJUSTADA ---
         const campoBuscaObs = document.getElementById('obs_busca');
-
         const areaTextoObs = document.getElementById('txt_obs');
 
-
-
         campoBuscaObs.addEventListener('input', function() {
-
             const valor = this.value;
-
             const encontrado = cacheDados.find(x => x.txt_obs === valor);
-
             if (encontrado) {
-
                 areaTextoObs.value = encontrado.txt_obs;
-
-                // Usamos um timer curto para limpar o campo sem travar a interface
-
+                // Guardamos o texto original para o script saber o que substituir
+                areaTextoObs.dataset.original = encontrado.txt_obs; 
                 setTimeout(() => { this.value = ""; }, 500);
-
             } else if (valor === "") {
-
                 areaTextoObs.value = "";
-
+                delete areaTextoObs.dataset.original;
             }
-
         });
-
     }
 
-
-
     function saveData(secao, btn) {
-
         btn.disabled = true;
-
         const toast = document.getElementById('toast-minimal');
-
+        const areaTextoObs = document.getElementById('txt_obs');
         
-
         const payload = {
-
             emp_nome: document.getElementById('emp_nome').value,
-
             emp_doc: document.getElementById('emp_doc').value,
-
             srv_nome: document.getElementById('srv_nome').value,
-
             srv_valor: document.getElementById('srv_valor').value,
-
             cli_nome: document.getElementById('cli_nome').value,
-
             cli_doc: document.getElementById('cli_doc').value,
-
             cli_tel: document.getElementById('cli_tel').value,
-
             cli_end: document.getElementById('cli_end').value,
-
-            txt_obs: document.getElementById('txt_obs').value
-
+            txt_obs: areaTextoObs.value,
+            // Enviamos o valor original para o backend comparar
+            txt_obs_original: areaTextoObs.dataset.original || "" 
         };
-
-
 
         fetch(URL_DATABASE, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
 
-
-
         setTimeout(() => {
-
             toast.style.display = 'block';
-
-            // Limpa campos exceto os de login
-
             document.querySelectorAll('input, textarea').forEach(el => {
-
                 if(!['auth_u_mail', 'auth_u_pass'].includes(el.id)) el.value = '';
-
             });
+            // Limpa o dataset original após salvar
+            delete areaTextoObs.dataset.original;
 
             setTimeout(() => {
-
                 toast.style.display = 'none';
-
                 btn.disabled = false;
-
                 buscarDadosPlanilha(); 
-
             }, 2000);
-
         }, 800);
-
     }
-
-
 
     async function realizarLogin() {
-
         const email = document.getElementById('auth_u_mail').value;
-
         const pass = document.getElementById('auth_u_pass').value;
-
         try {
-
             const resp = await fetch(`${URL_LOGIN}?action=login&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}`);
-
             if((await resp.text()).trim() === "logado") {
-
                 document.getElementById('overlay-login').classList.add('hidden');
-
                 document.getElementById('main-content').classList.remove('hidden');
-
                 buscarDadosPlanilha();
-
             } else { alert("Dados Inválidos"); }
-
         } catch (e) { alert("Erro de Conexão"); }
-
     }
-
 </script>
-
 
 </body>
 </html>
