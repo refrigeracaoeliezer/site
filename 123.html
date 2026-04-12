@@ -14,9 +14,33 @@
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; min-height: 100vh; background: #0d1117; color: white; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            min-height: 100vh; 
+            background: #0d1117; 
+            color: white; 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            position: relative;
+            overflow-x: hidden; /* Garante que as bolas de fundo não criem rolagem lateral */
+        }
+
+        /* --- ESTILO DAS ESFERAS DE FUNDO --- */
+        .corner-ball {
+            position: fixed;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 50%;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .ball-top-right { width: 550px; height: 550px; top: -200px; right: -150px; }
+        .ball-bottom-left { width: 450px; height: 450px; bottom: -150px; left: -150px; }
+
         .hidden { display: none !important; }
-        .container { width: 100%; max-width: 600px; }
+        .container { width: 100%; max-width: 600px; position: relative; z-index: 10; }
         h1 { font-size: 28px; font-weight: 700; margin-bottom: 30px; text-align: center; color: #fff; }
 
         @keyframes shake {
@@ -33,13 +57,13 @@
         .config-section {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 20px;
             padding: 20px;
             margin-bottom: 25px;
             display: flex;
             flex-direction: column; gap: 15px;
-            transition: border-color 0.3s ease;
         }
 
         .section-title { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 10px; color: #27a9e3; }
@@ -70,7 +94,7 @@
         }
 
         #overlay-login { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0d1117; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .login-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); padding: 30px; border-radius: 24px; border: 1px solid rgba(30, 64, 175, 0.3); width: 100%; max-width: 380px; text-align: center; transition: 0.3s; }
+        .login-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 30px; border-radius: 24px; border: 1px solid rgba(30, 64, 175, 0.3); width: 100%; max-width: 380px; text-align: center; transition: 0.3s; z-index: 10; }
         
         .link-auth { color: #27a9e3; cursor: pointer; font-size: 13px; }
         .status-msg { font-size: 13px; margin: 10px 0; display: none; padding: 8px; border-radius: 8px; }
@@ -84,6 +108,9 @@
     </style>
 </head>
 <body>
+
+    <div class="corner-ball ball-top-right"></div>
+    <div class="corner-ball ball-bottom-left"></div>
 
     <div id="toast-minimal">Salvo com sucesso!</div>
 
@@ -312,7 +339,6 @@
         });
     }
 
-    // --- FUNÇÃO DE SALVAMENTO CORRIGIDA ---
     function saveData(sectionId, btn, originalText) {
         const container = document.getElementById(sectionId);
         const fields = container.querySelectorAll('input, textarea');
@@ -334,10 +360,8 @@
             txt_obs: document.getElementById('txt_obs').value, txt_obs_original: document.getElementById('txt_obs').dataset.original || ""
         };
         
-        // Envia silenciosamente sem esperar resposta
         fetch(URL_DATABASE, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
 
-        // Feedback visual imediato
         setTimeout(() => {
             document.getElementById('toast-minimal').style.display = 'block';
             fields.forEach(el => el.value = '');
@@ -395,7 +419,6 @@
         f.style.display = (f.style.display === 'flex') ? 'none' : 'flex';
     }
 
-    // --- FUNÇÃO DE ATUALIZAÇÃO CORRIGIDA ---
     async function atualizarAcesso(originalText) {
         const btn = document.getElementById('btn-update-acesso');
         const card = document.getElementById('sec-adm');
@@ -412,10 +435,8 @@
         toggleBtnLoading(btn, true, originalText, 'Salvando...');
         const url = `${URL_LOGIN}?action=atualizar_acesso&email=${encodeURIComponent(m)}&senha=${encodeURIComponent(s)}&resposta=${encodeURIComponent(r)}`;
 
-        // Envia silenciosamente
         fetch(url, { mode: 'no-cors' });
 
-        // Feedback visual imediato
         setTimeout(() => {
             document.getElementById('toast-minimal').style.display = 'block';
             document.getElementById('new_u_mail').value = "";
