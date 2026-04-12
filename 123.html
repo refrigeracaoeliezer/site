@@ -118,7 +118,7 @@
 
 <script>
     const URL_LOGIN = "https://script.google.com/macros/s/AKfycbyVHWD028yH3qTXi63aL4Jq17MwNuXnfy8IwwA2SVOs26bsQRxmffePggxM3AriKhI2IQ/exec";
-    const URL_DATABASE = "https://script.google.com/macros/s/AKfycbwaM7fFngdlPhwMoSy-oIjWkF0REd_uLVa5im_GeA-_cTUBw33vx-9Uxob5lcJobYnKPw/exec"; 
+    const URL_DATABASE = "https://script.google.com/macros/s/AKfycbyGvAm4ApMTxRA_zZyO6G8gj1l4sxQT6S86RIlw0UUU3P-GUPRj50FySyvMOqVMK-ebQw/exec"; 
 
     let cacheDados = []; 
 
@@ -138,57 +138,49 @@
             listObs.innerHTML = [...new Set(cacheDados.map(d => d.txt_obs))].filter(Boolean).map(n => `<option value="${n}">`).join('');
             
             configurarBuscaAutomatica();
-        } catch (e) { console.error(e); }
+        } catch (e) { console.error("Erro ao carregar dados:", e); }
     }
 
     function configurarBuscaAutomatica() {
-        // Busca Empresa
-        document.getElementById('emp_nome').addEventListener('input', function() {
-            const encontrado = cacheDados.find(x => x.emp_nome === this.value && x.emp_doc);
-            if(encontrado) {
-                document.getElementById('emp_doc').value = encontrado.emp_doc;
-            } else if (this.value === "") {
-                document.getElementById('emp_doc').value = "";
-            }
-        });
+        // Função utilitária para tratar o input e preencher campos
+        const setupBusca = (idInput, idsDependentes, camposPlanilha) => {
+            const el = document.getElementById(idInput);
+            el.addEventListener('input', function() {
+                const valor = this.value;
+                if (valor === "") {
+                    idsDependentes.forEach(id => document.getElementById(id).value = "");
+                    return;
+                }
+                const encontrado = cacheDados.find(x => x[camposPlanilha[0]] === valor);
+                if (encontrado) {
+                    idsDependentes.forEach((id, i) => {
+                        document.getElementById(id).value = encontrado[camposPlanilha[i+1]] || "";
+                    });
+                }
+            });
+        };
 
-        // Busca Serviço
-        document.getElementById('srv_nome').addEventListener('input', function() {
-            const encontrado = cacheDados.find(x => x.srv_nome === this.value && x.srv_valor !== "");
-            if(encontrado) {
-                document.getElementById('srv_valor').value = encontrado.srv_valor;
-            } else if (this.value === "") {
-                document.getElementById('srv_valor').value = "";
-            }
-        });
+        // Aplica para Empresa
+        setupBusca('emp_nome', ['emp_doc'], ['emp_nome', 'emp_doc']);
 
-        // Busca Cliente
-        document.getElementById('cli_nome').addEventListener('input', function() {
-            const encontrado = cacheDados.find(x => x.cli_nome === this.value && x.cli_doc);
-            if(encontrado) {
-                document.getElementById('cli_doc').value = encontrado.cli_doc;
-                document.getElementById('cli_tel').value = encontrado.cli_tel;
-                document.getElementById('cli_end').value = encontrado.cli_end;
-            } else if (this.value === "") {
-                document.getElementById('cli_doc').value = "";
-                document.getElementById('cli_tel').value = "";
-                document.getElementById('cli_end').value = "";
-            }
-        });
+        // Aplica para Serviço
+        setupBusca('srv_nome', ['srv_valor'], ['srv_nome', 'srv_valor']);
 
-        // Busca Observação - LOGICA CORRIGIDA PARA SELEÇÃO REPETIDA
+        // Aplica para Cliente
+        setupBusca('cli_nome', ['cli_doc', 'cli_tel', 'cli_end'], ['cli_nome', 'cli_doc', 'cli_tel', 'cli_end']);
+
+        // Lógica especial para Observação (Seleciona e limpa a busca para permitir re-seleção)
         const campoBuscaObs = document.getElementById('obs_busca');
         const areaTextoObs = document.getElementById('txt_obs');
 
         campoBuscaObs.addEventListener('input', function() {
-            const valorDigitado = this.value;
-            const encontrado = cacheDados.find(x => x.txt_obs === valorDigitado);
-            
-            if(encontrado) {
+            const valor = this.value;
+            const encontrado = cacheDados.find(x => x.txt_obs === valor);
+            if (encontrado) {
                 areaTextoObs.value = encontrado.txt_obs;
-                // Limpa o campo de busca com um pequeno delay para permitir nova seleção imediata
-                setTimeout(() => { this.value = ""; }, 100); 
-            } else if (this.value === "") {
+                // Usamos um timer curto para limpar o campo sem travar a interface
+                setTimeout(() => { this.value = ""; }, 500);
+            } else if (valor === "") {
                 areaTextoObs.value = "";
             }
         });
@@ -214,6 +206,7 @@
 
         setTimeout(() => {
             toast.style.display = 'block';
+            // Limpa campos exceto os de login
             document.querySelectorAll('input, textarea').forEach(el => {
                 if(!['auth_u_mail', 'auth_u_pass'].includes(el.id)) el.value = '';
             });
