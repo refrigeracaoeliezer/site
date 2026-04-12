@@ -120,117 +120,229 @@
     const URL_LOGIN = "https://script.google.com/macros/s/AKfycbyVHWD028yH3qTXi63aL4Jq17MwNuXnfy8IwwA2SVOs26bsQRxmffePggxM3AriKhI2IQ/exec";
     const URL_DATABASE = "https://script.google.com/macros/s/AKfycbxWEQOqQBDe36WEqrrmXcH_4n8iUT8rpt8_UQaVxNvast7cUuMh_YEYPVsy08WDIIe3rg/exec"; 
 
+
     let cacheDados = []; 
 
-    window.onload = () => { verificarSeExisteDono(); };
+
 
     async function buscarDadosPlanilha() {
+
         try {
+
             const resp = await fetch(URL_DATABASE);
+
             cacheDados = await resp.json();
-            atualizarDatalists();
+
+            
+
+            const listEmp = document.getElementById('lista_empresas');
+
+            const listCli = document.getElementById('lista_clientes');
+
+            const listSrv = document.getElementById('lista_servicos');
+
+            const listObs = document.getElementById('lista_obs');
+
+
+
+            listEmp.innerHTML = [...new Set(cacheDados.map(d => d.emp_nome))].filter(Boolean).map(n => `<option value="${n}">`).join('');
+
+            listCli.innerHTML = [...new Set(cacheDados.map(d => d.cli_nome))].filter(Boolean).map(n => `<option value="${n}">`).join('');
+
+            listSrv.innerHTML = [...new Set(cacheDados.map(d => d.srv_nome))].filter(Boolean).map(n => `<option value="${n}">`).join('');
+
+            listObs.innerHTML = [...new Set(cacheDados.map(d => d.txt_obs))].filter(Boolean).map(n => `<option value="${n}">`).join('');
+
+            
+
+            configurarBuscaAutomatica();
+
         } catch (e) { console.error("Erro ao carregar dados:", e); }
+
     }
 
-    function atualizarDatalists() {
-        const preencher = (id, campo) => {
-            const list = document.getElementById(id);
-            const itens = [...new Set(cacheDados.map(d => d[campo]))].filter(Boolean);
-            list.innerHTML = itens.map(i => `<option value="${i}">`).join('');
-        };
 
-        preencher('lista_empresas', 'emp_nome');
-        preencher('lista_clientes', 'cli_nome');
-        preencher('lista_servicos', 'srv_nome');
-        preencher('lista_obs', 'txt_obs');
-        
-        configurarEventosBusca();
-    }
 
-    function configurarEventosBusca() {
-        // Função para monitorar mudanças nos inputs de pesquisa
-        const ligarInput = (idBusca, idsDestino, camposPlanilha) => {
-            const input = document.getElementById(idBusca);
-            input.addEventListener('input', function() {
-                const termo = this.value;
-                if (termo === "") {
-                    idsDestino.forEach(id => document.getElementById(id).value = "");
+    function configurarBuscaAutomatica() {
+
+        // Função utilitária para tratar o input e preencher campos
+
+        const setupBusca = (idInput, idsDependentes, camposPlanilha) => {
+
+            const el = document.getElementById(idInput);
+
+            el.addEventListener('input', function() {
+
+                const valor = this.value;
+
+                if (valor === "") {
+
+                    idsDependentes.forEach(id => document.getElementById(id).value = "");
+
                     return;
+
                 }
-                const dado = cacheDados.find(x => x[camposPlanilha[0]] === termo);
-                if (dado) {
-                    idsDestino.forEach((id, index) => {
-                        document.getElementById(id).value = dado[camposPlanilha[index + 1]] || "";
+
+                const encontrado = cacheDados.find(x => x[camposPlanilha[0]] === valor);
+
+                if (encontrado) {
+
+                    idsDependentes.forEach((id, i) => {
+
+                        document.getElementById(id).value = encontrado[camposPlanilha[i+1]] || "";
+
                     });
+
                 }
+
             });
+
         };
 
-        ligarInput('emp_nome', ['emp_doc'], ['emp_nome', 'emp_doc']);
-        ligarInput('srv_nome', ['srv_valor'], ['srv_nome', 'srv_valor']);
-        ligarInput('cli_nome', ['cli_doc', 'cli_tel', 'cli_end'], ['cli_nome', 'cli_doc', 'cli_tel', 'cli_end']);
 
-        // Caso especial Observação: Seleciona e limpa a barra para permitir nova seleção
-        const buscaObs = document.getElementById('obs_busca');
-        const areaObs = document.getElementById('txt_obs');
-        buscaObs.addEventListener('input', function() {
-            const dado = cacheDados.find(x => x.txt_obs === this.value);
-            if (dado) {
-                areaObs.value = dado.txt_obs;
+
+        // Aplica para Empresa
+
+        setupBusca('emp_nome', ['emp_doc'], ['emp_nome', 'emp_doc']);
+
+
+
+        // Aplica para Serviço
+
+        setupBusca('srv_nome', ['srv_valor'], ['srv_nome', 'srv_valor']);
+
+
+
+        // Aplica para Cliente
+
+        setupBusca('cli_nome', ['cli_doc', 'cli_tel', 'cli_end'], ['cli_nome', 'cli_doc', 'cli_tel', 'cli_end']);
+
+
+
+        // Lógica especial para Observação (Seleciona e limpa a busca para permitir re-seleção)
+
+        const campoBuscaObs = document.getElementById('obs_busca');
+
+        const areaTextoObs = document.getElementById('txt_obs');
+
+
+
+        campoBuscaObs.addEventListener('input', function() {
+
+            const valor = this.value;
+
+            const encontrado = cacheDados.find(x => x.txt_obs === valor);
+
+            if (encontrado) {
+
+                areaTextoObs.value = encontrado.txt_obs;
+
+                // Usamos um timer curto para limpar o campo sem travar a interface
+
                 setTimeout(() => { this.value = ""; }, 500);
-            } else if (this.value === "") {
-                areaObs.value = "";
+
+            } else if (valor === "") {
+
+                areaTextoObs.value = "";
+
             }
+
         });
+
     }
+
+
 
     function saveData(secao, btn) {
+
         btn.disabled = true;
+
         const toast = document.getElementById('toast-minimal');
+
         
+
         const payload = {
+
             emp_nome: document.getElementById('emp_nome').value,
+
             emp_doc: document.getElementById('emp_doc').value,
+
             srv_nome: document.getElementById('srv_nome').value,
+
             srv_valor: document.getElementById('srv_valor').value,
+
             cli_nome: document.getElementById('cli_nome').value,
+
             cli_doc: document.getElementById('cli_doc').value,
+
             cli_tel: document.getElementById('cli_tel').value,
+
             cli_end: document.getElementById('cli_end').value,
+
             txt_obs: document.getElementById('txt_obs').value
+
         };
+
+
 
         fetch(URL_DATABASE, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
 
+
+
         setTimeout(() => {
+
             toast.style.display = 'block';
+
+            // Limpa campos exceto os de login
+
             document.querySelectorAll('input, textarea').forEach(el => {
+
                 if(!['auth_u_mail', 'auth_u_pass'].includes(el.id)) el.value = '';
+
             });
+
             setTimeout(() => {
+
                 toast.style.display = 'none';
+
                 btn.disabled = false;
+
                 buscarDadosPlanilha(); 
+
             }, 2000);
+
         }, 800);
+
     }
+
+
 
     async function realizarLogin() {
+
         const email = document.getElementById('auth_u_mail').value;
+
         const pass = document.getElementById('auth_u_pass').value;
+
         try {
+
             const resp = await fetch(`${URL_LOGIN}?action=login&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}`);
+
             if((await resp.text()).trim() === "logado") {
+
                 document.getElementById('overlay-login').classList.add('hidden');
+
                 document.getElementById('main-content').classList.remove('hidden');
+
                 buscarDadosPlanilha();
+
             } else { alert("Dados Inválidos"); }
+
         } catch (e) { alert("Erro de Conexão"); }
+
     }
 
-    function verificarSeExisteDono() {
-        fetch(`${URL_LOGIN}?action=checar_registro`).then(r => r.text()).then(t => {});
-    }
 </script>
+
+
 </body>
 </html>
