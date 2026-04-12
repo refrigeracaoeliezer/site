@@ -32,24 +32,29 @@
             z-index: 10;
             text-align: center;
             box-shadow: 0 0 50px rgba(30, 64, 175, 0.3), 0 20px 40px rgba(0, 0, 0, 0.6); 
+            transition: border-color 0.3s ease;
         }
+
+        /* --- ANIMAÇÃO TREMER --- */
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+        .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; border-color: #ff4b4b !important; }
 
         .logo-container img { width: 100%; max-width: 220px; margin-bottom: 20px; }
         h2 { color: white; margin-bottom: 10px; font-size: 22px; }
         p.subtitle { color: rgba(255, 255, 255, 0.45); font-size: 13px; margin-bottom: 25px; }
 
-        /* --- INPUTS E SELECTS --- */
         input, select {
             width: 100%; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 12px; padding: 14px; color: white; font-size: 14px; margin-bottom: 15px; outline: none; transition: 0.3s;
         }
         input:focus, select:focus { border-color: #1e40af; box-shadow: 0 0 10px rgba(30, 64, 175, 0.3); }
 
-        /* Correção para o Select no fundo escuro */
-        select option {
-            background-color: #0d1117;
-            color: white;
-        }
+        select option { background-color: #0d1117; color: white; }
 
         .btn-main {
             width: 100%; padding: 16px; background: linear-gradient(135deg, #1e40af 0%, #27a9e3 100%);
@@ -57,21 +62,15 @@
             display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s;
         }
 
-        /* --- LINKS E DIVISOR --- */
         .auth-footer { margin-top: 25px; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .link-auth { color: #27a9e3; cursor: pointer; font-size: 13px; text-decoration: none; }
         .link-rec { color: #ff4b4b; }
-        
-        .divider {
-            width: 1px;
-            height: 14px;
-            background-color: rgba(255, 255, 255, 0.3); /* Traço branco suave */
-            display: inline-block;
-        }
+        .divider { width: 1px; height: 14px; background-color: rgba(255, 255, 255, 0.3); display: inline-block; }
 
         .status-msg { font-size: 12px; padding: 10px; border-radius: 10px; margin-bottom: 15px; display: none; }
-        .error { background: rgba(255, 75, 75, 0.1); color: #ff4b4b; border: 1px solid rgba(255, 75, 75, 0.2); }
-        .success { background: rgba(68, 255, 68, 0.1); color: #44ff44; border: 1px solid rgba(68, 255, 68, 0.2); }
+        .error-msg { background: rgba(255, 75, 75, 0.1); color: #ff4b4b; border: 1px solid rgba(255, 75, 75, 0.2); }
+        .success-msg { background: rgba(68, 255, 68, 0.1); color: #44ff44; border: 1px solid rgba(68, 255, 68, 0.2); display: block !important; }
+        
         .result-box { margin-top: 15px; padding: 15px; background: rgba(39, 169, 227, 0.1); border: 1px dashed #27a9e3; color: #44ff44; font-weight: bold; border-radius: 12px; display: none; }
     </style>
 </head>
@@ -86,7 +85,7 @@
         </div>
         <h2>Acessar Gestor</h2>
         <p class="subtitle">Insira seus dados de acesso</p>
-        <div id="login-status" class="status-msg error"></div>
+        <div id="login-status" class="status-msg error-msg"></div>
         <input type="email" id="l_email" placeholder="E-mail">
         <input type="password" id="l_pass" placeholder="Senha">
         <button class="btn-main" onclick="realizarLogin()" id="btn-l">Autenticar</button>
@@ -114,13 +113,13 @@
         <i class="fa-solid fa-shield-halved" style="font-size: 40px; color: #27a9e3; margin-bottom: 20px;"></i>
         <h2>Recuperar Acesso</h2>
         <p class="subtitle">Verificação de segurança dupla</p>
+        <div id="rec-status" class="status-msg error-msg"></div>
         <select id="tipo_rec" onchange="ajustarRec()">
             <option value="email">Quero ver meu E-mail</option>
             <option value="senha">Quero ver minha Senha</option>
         </select>
         <input type="password" id="rec_dado" placeholder="Confirme sua Senha">
         <input type="text" id="rec_resp" placeholder="Sua Resposta Secreta">
-        <div id="rec-status" class="status-msg"></div>
         <div id="rec-result" class="result-box"></div>
         <button class="btn-main" onclick="recuperar()" id="btn-rec">Verificar Dados</button>
         <span class="link-auth" onclick="alternar('login')" style="margin-top:20px; display:block;">Voltar ao Login</span>
@@ -129,10 +128,16 @@
 <script>
     const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbyOyMyg58f4qPL2qNWLp7-pd6b0NMF5nCIahEOV-hQ1_HTkaGTpjITt4bxcNENYmib1/exec";
 
+    function aplicarShake(idCard) {
+        const card = $(`#${idCard}`);
+        card.addClass('shake');
+        setTimeout(() => card.removeClass('shake'), 500);
+    }
+
     function alternar(tela) {
-        $('.login-card').addClass('hidden');
+        $('.login-card').addClass('hidden').removeClass('shake');
         $('#card-' + tela).removeClass('hidden');
-        $('.status-msg, .result-box').hide();
+        $('.status-msg, .result-box').hide().text('');
     }
 
     function ajustarRec() {
@@ -145,7 +150,11 @@
         const email = $('#l_email').val();
         const senha = $('#l_pass').val();
         const btn = $('#btn-l');
-        if(!email || !senha) return alert("Preencha os campos!");
+        
+        if(!email || !senha) {
+            aplicarShake('card-login');
+            return alert("Por favor, preencha todos os campos para entrar.");
+        }
         
         btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i> Entrando...');
         try {
@@ -156,8 +165,7 @@
                 window.location.href = "sistemas.html";
             } else {
                 $('#login-status').show().text("Dados incorretos!");
-                $('#card-login').addClass('shake');
-                setTimeout(() => $('#card-login').removeClass('shake'), 500);
+                aplicarShake('card-login');
             }
         } catch(e) { alert("Erro de conexão"); }
         btn.prop('disabled', false).text("Autenticar");
@@ -168,15 +176,23 @@
         const senha = $('#r_pass').val();
         const resp_sec = $('#r_resp').val();
         const btn = $('#btn-r');
-        if(!email || !senha || !resp_sec) return alert("Preencha todos os campos!");
+        const status = $('#reg-status');
+
+        if(!email || !senha || !resp_sec) {
+            aplicarShake('card-registrar');
+            return alert("Preencha todos os campos para criar sua conta.");
+        }
 
         btn.prop('disabled', true).text("Salvando...");
         try {
             const res = await fetch(`${URL_SCRIPT}?action=registrar&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}&resposta=${encodeURIComponent(resp_sec)}`);
-            if((await res.text()).trim() === "sucesso") {
-                $('#reg-status').className = 'status-msg success';
-                $('#reg-status').show().text("Conta criada com sucesso!");
-                setTimeout(() => alternar('login'), 2000);
+            const texto = await res.text();
+            if(texto.trim() === "sucesso") {
+                status.removeClass('error-msg').addClass('success-msg').text("Conta criada com sucesso! Redirecionando...").show();
+                setTimeout(() => alternar('login'), 2500);
+            } else {
+                status.removeClass('success-msg').addClass('error-msg').text("Erro ao registrar conta.").show();
+                aplicarShake('card-registrar');
             }
         } catch(e) { alert("Erro ao registrar"); }
         btn.prop('disabled', false).text("Salvar Registro");
@@ -187,6 +203,12 @@
         const dado = $('#rec_dado').val();
         const resp_sec = $('#rec_resp').val();
         const btn = $('#btn-rec');
+        const status = $('#rec-status');
+        
+        if(!dado || !resp_sec) {
+            aplicarShake('card-recuperar');
+            return alert("Preencha os dados de validação e a resposta secreta.");
+        }
         
         btn.prop('disabled', true).text("Validando...");
         try {
@@ -194,9 +216,10 @@
             const resText = await (await fetch(url)).text();
             if(!resText.includes("ERRO")) {
                 $('#rec-result').show().text(resText);
-                $('#rec-status').hide();
+                status.hide();
             } else {
-                $('#rec-status').show().addClass('error').text("Dados inválidos!");
+                status.show().text("Dados inválidos ou resposta incorreta!");
+                aplicarShake('card-recuperar');
             }
         } catch(e) { alert("Erro na consulta"); }
         btn.prop('disabled', false).text("Verificar Dados");
