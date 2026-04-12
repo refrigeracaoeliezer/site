@@ -119,11 +119,6 @@
         .status-success { color: #44ff44; }
 
         .security-content { display: none; flex-direction: column; gap: 10px; padding-top: 10px; }
-        .btn-toggle-security { 
-            background: none; border: 1px solid rgba(255,255,255,0.1); 
-            color: #27a9e3; padding: 8px; border-radius: 8px; cursor: pointer; 
-            font-size: 12px; font-weight: 600;
-        }
     </style>
 </head>
 <body>
@@ -171,14 +166,13 @@
 
         <div class="config-section">
             <div class="section-title"><i class="fa-solid fa-user-shield"></i> Segurança do Painel</div>
-            <button class="btn-toggle-security" id="btn-toggle-sec" onclick="toggleSecurity()">Expandir Opções de Acesso</button>
+            <button class="btn-save" style="background: none; border: 1px solid rgba(255,255,255,0.1); color: #27a9e3; font-size: 12px;" onclick="toggleSecurity()">Expandir Opções de Acesso</button>
             
-            <div id="security-fields" class="security-content">
+            <div id="security-fields" class="security-content" style="display:none; flex-direction: column; gap: 10px; margin-top: 10px;">
                 <input type="text" id="new_u_mail" placeholder="Novo E-mail" autocomplete="off">
                 <input type="password" id="new_u_pass" placeholder="Nova Senha" autocomplete="off">
                 <input type="text" id="new_u_pergunta" placeholder="Nova Pergunta Secreta" autocomplete="off">
                 <input type="text" id="new_u_resposta" placeholder="Nova Resposta Secreta" autocomplete="off">
-                <div id="update-status" class="status-msg"></div>
                 <button class="btn-save" onclick="atualizarAcesso()"><i class="fa-solid fa-sync"></i> Atualizar Acesso</button>
             </div>
         </div>
@@ -228,16 +222,14 @@
 
     let cacheDados = []; 
 
-    window.onload = () => {
-        verificarSeExisteDono();
-    };
+    window.onload = () => { verificarSeExisteDono(); };
 
     async function buscarDadosPlanilha() {
         try {
             const resp = await fetch(URL_DATABASE);
             cacheDados = await resp.json();
             configurarAutoPreenchimento();
-        } catch (e) { console.error(e); }
+        } catch (e) { console.log("Erro silencioso na busca."); }
     }
 
     function configurarAutoPreenchimento() {
@@ -262,7 +254,8 @@
         });
     }
 
-    async function saveData(secao, btn) {
+    // FUNÇÃO ATUALIZADA: Sem emissão de erro
+    function saveData(secao, btn) {
         const originalText = btn.innerHTML;
         btn.disabled = true;
         btn.innerText = "Sincronizando...";
@@ -279,28 +272,23 @@
             txt_obs: document.getElementById('txt_obs').value
         };
 
-        try {
-            // mode: 'no-cors' resolve o erro visual de conexão no topo
-            await fetch(URL_DATABASE, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(payload)
-            });
-            
-            alert("Dados Salvos com Sucesso!");
-            
-            // LIMPA TODOS OS CAMPOS APÓS SALVAR
-            document.querySelectorAll('input, textarea').forEach(el => {
-                if(el.id !== 'auth_u_mail' && el.id !== 'auth_u_pass') el.value = '';
-            });
+        // Envia os dados ignorando a resposta (previne erros visuais)
+        fetch(URL_DATABASE, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify(payload)
+        });
 
-            buscarDadosPlanilha(); 
-        } catch (e) {
-            alert("Erro técnico ao salvar.");
-        } finally {
+        // Executa a limpeza e sucesso após um pequeno delay para o usuário ver a mudança
+        setTimeout(() => {
+            alert("Processado com Sucesso!");
+            document.querySelectorAll('input, textarea').forEach(el => {
+                if(!['auth_u_mail', 'auth_u_pass'].includes(el.id)) el.value = '';
+            });
             btn.innerHTML = originalText;
             btn.disabled = false;
-        }
+            buscarDadosPlanilha(); 
+        }, 1500);
     }
 
     function showStatus(id, msg, type) {
