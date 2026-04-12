@@ -1,110 +1,69 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <script>
-        if (localStorage.getItem("inforos_logado") !== "true") {
-            window.location.href = "https://refrigeracaoeliezer.github.io/site/";
-        }
-    </script>
     <meta charset="UTF-8">
-    <title>Configurações | Refrigeração</title>
+    <title>Login | Refrigeração</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0d1117; position: relative; overflow-x: hidden; padding: 20px; }
         
-        body { 
-            font-family: 'Inter', sans-serif; 
-            min-height: 100vh; 
-            background: #0d1117; 
-            color: white; 
-            padding: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            position: relative;
-            overflow-x: hidden; /* Garante que as bolas de fundo não criem rolagem lateral */
-        }
-
-        /* --- ESTILO DAS ESFERAS DE FUNDO --- */
-        .corner-ball {
-            position: fixed;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 50%;
-            z-index: 1;
-            pointer-events: none;
-        }
+        .corner-ball { position: fixed; background: rgba(255, 255, 255, 0.02); border-radius: 50%; z-index: 1; pointer-events: none; }
         .ball-top-right { width: 550px; height: 550px; top: -200px; right: -150px; }
         .ball-bottom-left { width: 450px; height: 450px; bottom: -150px; left: -150px; }
 
         .hidden { display: none !important; }
-        .container { width: 100%; max-width: 600px; position: relative; z-index: 10; }
-        h1 { font-size: 28px; font-weight: 700; margin-bottom: 30px; text-align: center; color: #fff; }
+        
+        .login-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 4px solid #1e40af; 
+            border-radius: 40px; 
+            padding: 40px 30px;
+            width: 100%;
+            max-width: 410px;
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(30, 64, 175, 0.3), 0 20px 40px rgba(0, 0, 0, 0.6); 
+        }
 
+        .logo-container img { width: 100%; max-width: 220px; margin-bottom: 20px; }
+        h2 { color: white; margin-bottom: 10px; font-size: 22px; }
+        p.subtitle { color: rgba(255, 255, 255, 0.45); font-size: 13px; margin-bottom: 25px; }
+
+        input, select {
+            width: 100%; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px; padding: 14px; color: white; font-size: 14px; margin-bottom: 15px; outline: none; transition: 0.3s;
+        }
+        input:focus { border-color: #1e40af; box-shadow: 0 0 10px rgba(30, 64, 175, 0.3); }
+
+        .btn-main {
+            width: 100%; padding: 16px; background: linear-gradient(135deg, #1e40af 0%, #27a9e3 100%);
+            border: none; border-radius: 12px; color: white; font-weight: 700; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s;
+        }
+        .btn-main:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .link-auth { color: #27a9e3; cursor: pointer; font-size: 13px; margin-top: 20px; display: inline-block; }
+        .status-msg { font-size: 12px; padding: 10px; border-radius: 10px; margin-bottom: 15px; display: none; }
+        .error { background: rgba(255, 75, 75, 0.1); color: #ff4b4b; border: 1px solid rgba(255, 75, 75, 0.2); }
+        .success { background: rgba(68, 255, 68, 0.1); color: #44ff44; border: 1px solid rgba(68, 255, 68, 0.2); }
+        
+        .result-box { margin-top: 15px; padding: 15px; background: rgba(39, 169, 227, 0.1); border: 1px dashed #27a9e3; color: #44ff44; font-weight: bold; border-radius: 12px; display: none; }
+
+        .shake { animation: shake 0.5s both; border-color: #ff4b4b !important; }
         @keyframes shake {
             10%, 90% { transform: translate3d(-1px, 0, 0); }
             20%, 80% { transform: translate3d(2px, 0, 0); }
             30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
             40%, 60% { transform: translate3d(4px, 0, 0); }
         }
-        .shake { 
-            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; 
-            border-color: #ff4b4b !important; 
-        }
-
-        .config-section {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 25px;
-            display: flex;
-            flex-direction: column; gap: 15px;
-        }
-
-        .section-title { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 10px; color: #27a9e3; }
-        input, textarea, select { background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 12px; color: white; font-size: 14px; width: 100%; outline: none; transition: 0.3s; }
-        input:focus, select:focus { border-color: #27a9e3; }
-        input::placeholder { color: rgba(255,255,255,0.3); }
-
-        .btn-save { border: none; padding: 14px; border-radius: 12px; font-weight: 700; background: #1e40af; color: white; cursor: pointer; width: 100%; display: flex; justify-content: center; align-items: center; gap: 10px; transition: 0.3s; margin-top: 25px; }
-        .btn-save:hover { background: #2563eb; }
-        .btn-save:disabled { background: #2d3748; color: #718096; cursor: not-allowed; }
-
-        #toast-minimal {
-            position: fixed; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            background: #27a9e3; color: white;
-            padding: 15px 30px; border-radius: 50px;
-            font-weight: 600; font-size: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            display: none; z-index: 10000;
-            animation: fadeInOut 2s ease forwards;
-        }
-
-        @keyframes fadeInOut {
-            0% { opacity: 0; transform: translate(-50%, -60%); }
-            20% { opacity: 1; transform: translate(-50%, -50%); }
-            80% { opacity: 1; transform: translate(-50%, -50%); }
-            100% { opacity: 0; transform: translate(-50%, -40%); }
-        }
-
-        #overlay-login { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0d1117; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .login-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 30px; border-radius: 24px; border: 1px solid rgba(30, 64, 175, 0.3); width: 100%; max-width: 380px; text-align: center; transition: 0.3s; z-index: 10; }
-        
-        .link-auth { color: #27a9e3; cursor: pointer; font-size: 13px; }
-        .status-msg { font-size: 13px; margin: 10px 0; display: none; padding: 8px; border-radius: 8px; }
-        .status-error { color: #ff4b4b; background: rgba(255, 75, 75, 0.1); border: 1px solid rgba(255, 75, 75, 0.2); }
-        .status-loading { color: #27a9e3; }
-        .status-success { color: #44ff44; background: rgba(68, 255, 68, 0.1); border: 1px solid rgba(68, 255, 68, 0.2); }
-        
-        .result-box { margin-top: 20px; padding: 15px; border-radius: 12px; background: rgba(39, 169, 227, 0.1); border: 1px dashed #27a9e3; color: #44ff44; font-weight: bold; font-size: 15px; display: none; word-break: break-all; }
-        .security-content { display: none; flex-direction: column; gap: 10px; padding-top: 10px; }
-        .btn-toggle-security { background: none; border: 1px solid rgba(255,255,255,0.1); color: #27a9e3; padding: 8px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -112,343 +71,121 @@
     <div class="corner-ball ball-top-right"></div>
     <div class="corner-ball ball-bottom-left"></div>
 
-    <div id="toast-minimal">Salvo com sucesso!</div>
-
-    <div id="overlay-login">
-        <div class="login-card" id="card-login">
-            <i class="fa-solid fa-lock" style="font-size: 40px; color: #1e40af; margin-bottom: 20px;"></i>
-            <h2>Acesso Restrito</h2>
-            <input type="text" id="auth_u_mail" placeholder="E-mail" style="margin-top: 20px;">
-            <input type="password" id="auth_u_pass" placeholder="Senha" style="margin-top: 10px;">
-            <div id="login-status" class="status-msg"></div>
-            <button class="btn-save" id="btn-entrar" onclick="realizarLogin()">Entrar</button>
-            <p style="margin-top: 20px;">
-                <span id="link-registrar-container"><span class="link-auth" onclick="alternarTela('registrar')">Criar Conta</span> | </span>
-                <span class="link-auth" onclick="alternarTela('recuperar')" style="color:#ff4b4b">Esqueci meus dados</span>
-            </p>
+    <div class="login-card" id="card-login">
+        <div class="logo-container">
+            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgdGGsULMI69OabXBfFU3b8mTYfIWlJoqpwgc_q1UvSITQPj_VQYaW_1cLECh4rF7j5RfhJLsPgUXdvNv-ya494kAfeyZRbdTCn-VFesltpIkZp8Xid-MZwLKBLyC89MTSXf76nrCrBHncl86cYzjm1XuG34hvNrNVkZS8Gkq3FJEZHEb99HL26I52RUqc/w512-h237/TOPO%20POSTO%20RIO%20BRANCO.png">
         </div>
-
-        <div class="login-card hidden" id="card-registrar">
-            <h2>Novo Registro</h2>
-            <input type="text" id="reg_u_mail" placeholder="E-mail" style="margin-top: 15px;">
-            <input type="password" id="reg_u_pass" placeholder="Senha" style="margin-top: 10px;">
-            <input type="text" id="reg_u_resposta" placeholder="Resposta da Pergunta" style="margin-top: 10px;">
-            <div id="reg-status" class="status-msg"></div>
-            <button class="btn-save" id="btn-registrar" onclick="registrarUsuario()">Salvar Conta</button>
-            <p class="link-auth" onclick="alternarTela('login')" style="margin-top: 25px;">Voltar</p>
-        </div>
-
-        <div class="login-card hidden" id="card-recuperar">
-            <i class="fa-solid fa-shield-halved" style="font-size: 40px; color: #27a9e3; margin-bottom: 20px;"></i>
-            <h2>Recuperar Dados</h2>
-            <select id="tipo_recuperacao" onchange="ajustarInterfaceRecuperacao()" style="margin-top: 20px;">
-                <option value="email">Quero ver meu E-mail</option>
-                <option value="senha">Quero ver minha Senha</option>
-            </select>
-            <input type="password" id="rec_dado_validacao" placeholder="Confirme sua Senha" style="margin-top: 15px;">
-            <input type="text" id="rec_resposta_seguranca" placeholder="Sua Resposta Secreta" style="margin-top: 15px;">
-            <div id="rec-status" class="status-msg"></div>
-            <div id="rec-result" class="result-box"></div>
-            <button class="btn-save" id="btn-recuperar" onclick="executarRecuperacao()">Verificar Dados</button>
-            <p class="link-auth" onclick="alternarTela('login')" style="margin-top: 25px;">Voltar</p>
-        </div>
+        <h2>Acessar Gestor</h2>
+        <p class="subtitle">Insira seus dados de acesso</p>
+        <div id="login-status" class="status-msg error"></div>
+        <input type="email" id="l_email" placeholder="E-mail">
+        <input type="password" id="l_pass" placeholder="Senha">
+        <button class="btn-main" onclick="realizarLogin()" id="btn-l">Autenticar</button>
+        <p><span class="link-auth" onclick="alternar('registrar')">Criar Conta</span> | <span class="link-auth" onclick="alternar('recuperar')" style="color:#ff4b4b">Esqueci meus dados</span></p>
     </div>
 
-    <div class="container hidden" id="main-content">
-        <h1>Painel de Controle</h1>
+    <div class="login-card hidden" id="card-registrar">
+        <i class="fa-solid fa-user-plus" style="font-size: 40px; color: #1e40af; margin-bottom: 20px;"></i>
+        <h2>Nova Conta</h2>
+        <p class="subtitle">Cadastre um novo usuário no sistema</p>
+        <div id="reg-status" class="status-msg"></div>
+        <input type="email" id="r_email" placeholder="Seu E-mail">
+        <input type="password" id="r_pass" placeholder="Sua Senha">
+        <input type="text" id="r_resp" placeholder="Resposta Secreta (para recuperar)">
+        <button class="btn-main" onclick="registrar()" id="btn-r">Salvar Registro</button>
+        <span class="link-auth" onclick="alternar('login')">Voltar ao Login</span>
+    </div>
 
-        <div class="config-section" id="sec-adm">
-            <div class="section-title"><i class="fa-solid fa-user-shield"></i> Segurança do Painel</div>
-            <button class="btn-toggle-security" onclick="toggleSecurity()">Expandir Opções de Acesso</button>
-            <div id="security-fields" class="security-content">
-                <input type="text" id="new_u_mail" placeholder="Novo E-mail">
-                <input type="password" id="new_u_pass" placeholder="Nova Senha">
-                <input type="text" id="new_u_resposta" placeholder="Nova Resposta Secreta">
-                <div id="update-status" class="status-msg"></div>
-                <button class="btn-save" id="btn-update-acesso" onclick="atualizarAcesso('Atualizar Acesso')">Atualizar Acesso</button>
-            </div>
-        </div>
-
-        <div class="config-section" id="sec-empresa">
-            <div class="section-title"><i class="fa-solid fa-building"></i> Identidade da Empresa</div>
-            <input type="text" id="emp_nome" list="lista_empresas" placeholder="Selecione a Empresa...">
-            <datalist id="lista_empresas"></datalist>
-            <input type="text" id="emp_doc" placeholder="CNPJ / CPF">
-            <button class="btn-save" onclick="saveData('sec-empresa', this, 'Salvar Empresa')">Salvar Empresa</button>
-        </div>
-
-        <div class="config-section" id="sec-servico">
-            <div class="section-title"><i class="fa-solid fa-gears"></i> Detalhes do Serviço</div>
-            <input type="text" id="srv_nome" list="lista_servicos" placeholder="Selecione o Serviço...">
-            <datalist id="lista_servicos"></datalist>
-            <input type="text" id="srv_valor" placeholder="Valor R$">
-            <button class="btn-save" onclick="saveData('sec-servico', this, 'Salvar Serviço')">Salvar Serviço</button>
-        </div>
-
-        <div class="config-section" id="sec-cliente">
-            <div class="section-title"><i class="fa-solid fa-user"></i> Dados do Cliente</div>
-            <input type="text" id="cli_nome" list="lista_clientes" placeholder="Selecione o Cliente...">
-            <datalist id="lista_clientes"></datalist>
-            <input type="text" id="cli_doc" placeholder="CPF / CNPJ">
-            <input type="tel" id="cli_tel" placeholder="WhatsApp">
-            <input type="text" id="cli_end" placeholder="Endereço Completo">
-            <button class="btn-save" onclick="saveData('sec-cliente', this, 'Salvar Cliente')">Salvar Cliente</button>
-        </div>
-
-        <div class="config-section" id="sec-obs">
-            <div class="section-title"><i class="fa-solid fa-clipboard-list"></i> Observações Técnicas</div>
-            <input type="text" id="obs_busca" list="lista_obs" placeholder="Pesquisar observação salva...">
-            <datalist id="lista_obs"></datalist>
-            <textarea id="txt_obs" rows="5" placeholder="Edite o texto aqui..."></textarea>
-            <button class="btn-save" onclick="saveData('sec-obs', this, 'Salvar Observações')">Salvar Observações</button>
-        </div>
-        
-        <p style="text-align: center; color: grey; font-size: 10px; margin-bottom: 40px;">SISTEMA V3.0 PROFESSIONAL</p>
+    <div class="login-card hidden" id="card-recuperar">
+        <i class="fa-solid fa-shield-halved" style="font-size: 40px; color: #27a9e3; margin-bottom: 20px;"></i>
+        <h2>Recuperar Acesso</h2>
+        <p class="subtitle">Verificação de segurança dupla</p>
+        <select id="tipo_rec" onchange="ajustarRec()">
+            <option value="email">Quero ver meu E-mail</option>
+            <option value="senha">Quero ver minha Senha</option>
+        </select>
+        <input type="password" id="rec_dado" placeholder="Confirme sua Senha">
+        <input type="text" id="rec_resp" placeholder="Sua Resposta Secreta">
+        <div id="rec-status" class="status-msg"></div>
+        <div id="rec-result" class="result-box"></div>
+        <button class="btn-main" onclick="recuperar()" id="btn-rec">Verificar Dados</button>
+        <span class="link-auth" onclick="alternar('login')">Voltar ao Login</span>
     </div>
 
 <script>
-    const URL_LOGIN = "https://script.google.com/macros/s/AKfycbzTyd4eSh9ey8Ldk0foi7lkRvWLGxOqj40w7J9szxK4JmSduZmfadNBzEidDWNULeNHxQ/exec";
-    const URL_DATABASE = "https://script.google.com/macros/s/AKfycbzbGjCHaXHnhAC5gIGmKa7gIb2QNpE3yIhomgU9DhwaNO1DHKUq7b4shMuZRvD5IG99oQ/exec"; 
+    const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbyOyMyg58f4qPL2qNWLp7-pd6b0NMF5nCIahEOV-hQ1_HTkaGTpjITt4bxcNENYmib1/exec"; // COLE A URL DO SEU SCRIPT GS AQUI
 
-    let cacheDados = []; 
-
-    (function iniciarCarga() { buscarDadosPlanilha(); verificarSeExisteDono(); })();
-
-    function showStatus(id, msg, type, cardId) {
-        const el = document.getElementById(id);
-        const card = document.getElementById(cardId);
-        el.innerText = msg; el.className = 'status-msg status-' + type; el.style.display = 'block';
-        if (type === 'error' && card) {
-            card.classList.add('shake');
-            setTimeout(() => card.classList.remove('shake'), 500);
-        }
+    function alternar(tela) {
+        $('.login-card').addClass('hidden');
+        $('#card-' + tela).removeClass('hidden');
+        $('.status-msg, .result-box').hide();
     }
 
-    function toggleBtnLoading(btn, isLoading, originalHtml, loadingText = "Aguarde...") {
-        if (isLoading) {
-            btn.disabled = true;
-            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${loadingText}`;
-        } else {
-            btn.disabled = false;
-            btn.innerHTML = originalHtml;
-        }
-    }
-
-    function ajustarInterfaceRecuperacao() {
-        const tipo = document.getElementById('tipo_recuperacao').value;
-        const inputValidacao = document.getElementById('rec_dado_validacao');
-        document.getElementById('rec-result').style.display = "none";
-        document.getElementById('rec-status').style.display = "none";
-        inputValidacao.value = "";
-        document.getElementById('rec_resposta_seguranca').value = "";
-        if (tipo === 'email') {
-            inputValidacao.placeholder = "Confirme sua Senha";
-            inputValidacao.type = "password";
-        } else {
-            inputValidacao.placeholder = "Confirme seu E-mail";
-            inputValidacao.type = "text";
-        }
-    }
-
-    async function executarRecuperacao() {
-        const tipo = document.getElementById('tipo_recuperacao').value;
-        const dado1 = document.getElementById('rec_dado_validacao').value;
-        const resposta = document.getElementById('rec_resposta_seguranca').value;
-        const btn = document.getElementById('btn-recuperar');
-        const resultBox = document.getElementById('rec-result');
-        if (!dado1 || !resposta) return showStatus('rec-status', 'Preencha os dois campos.', 'error', 'card-recuperar');
-        resultBox.style.display = "none";
-        toggleBtnLoading(btn, true, 'Verificar Dados');
-        try {
-            const url = `${URL_LOGIN}?action=recuperar&tipo=${tipo}&dado1=${encodeURIComponent(dado1)}&resposta=${encodeURIComponent(resposta)}`;
-            const resp = await fetch(url);
-            const resText = await resp.text();
-            if (!resText.includes("ERRO") && (resText.includes("Seu E-mail:") || resText.includes("Sua Senha:"))) {
-                showStatus('rec-status', 'Dados localizados!', 'success', 'card-recuperar');
-                resultBox.innerText = resText;
-                resultBox.style.display = "block";
-            } else {
-                showStatus('rec-status', 'Dados incorretos ou resposta inválida.', 'error', 'card-recuperar');
-            }
-        } catch (e) { showStatus('rec-status', 'Erro de conexão.', 'error', 'card-recuperar'); }
-        finally { toggleBtnLoading(btn, false, 'Verificar Dados'); }
+    function ajustarRec() {
+        const tipo = $('#tipo_rec').val();
+        $('#rec_dado').val('').attr('placeholder', tipo === 'email' ? "Confirme sua Senha" : "Confirme seu E-mail");
+        $('#rec_dado').attr('type', tipo === 'email' ? "password" : "text");
     }
 
     async function realizarLogin() {
-        const btn = document.getElementById('btn-entrar');
-        const email = document.getElementById('auth_u_mail').value;
-        const pass = document.getElementById('auth_u_pass').value;
-        if(!email || !pass) return showStatus('login-status', 'Preencha tudo.', 'error', 'card-login');
-        toggleBtnLoading(btn, true, 'Entrar');
-        try {
-            const resp = await fetch(`${URL_LOGIN}?action=login&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}`);
-            if((await resp.text()).trim() === "logado") {
-                document.getElementById('overlay-login').classList.add('hidden');
-                document.getElementById('main-content').classList.remove('hidden');
-                localStorage.setItem("inforos_logado", "true");
-            } else { showStatus('login-status', 'Dados incorretos.', 'error', 'card-login'); }
-        } catch (e) { showStatus('login-status', 'Erro de conexão.', 'error', 'card-login'); }
-        finally { toggleBtnLoading(btn, false, 'Entrar'); }
-    }
-
-    async function buscarDadosPlanilha() {
-        try {
-            const resp = await fetch(URL_DATABASE, { priority: 'high' });
-            cacheDados = await resp.json();
-            renderizarDatalists();
-            configurarBuscaAutomatica();
-        } catch (e) { console.error("Erro na carga:", e); }
-    }
-
-    function renderizarDatalists() {
-        const criarOpcoes = (campo) => [...new Set(cacheDados.map(d => d[campo]))].filter(Boolean).map(n => `<option value="${n}">`).join('');
-        document.getElementById('lista_empresas').innerHTML = criarOpcoes('emp_nome');
-        document.getElementById('lista_clientes').innerHTML = criarOpcoes('cli_nome');
-        document.getElementById('lista_servicos').innerHTML = criarOpcoes('srv_nome');
-        document.getElementById('lista_obs').innerHTML = criarOpcoes('txt_obs');
-    }
-
-    function configurarBuscaAutomatica() {
-        const setupBusca = (idInput, idsDependentes, camposPlanilha) => {
-            const el = document.getElementById(idInput);
-            el.addEventListener('input', function() {
-                const valor = this.value;
-                if (!valor) { idsDependentes.forEach(id => document.getElementById(id).value = ""); return; }
-                const encontrado = cacheDados.find(x => x[camposPlanilha[0]] === valor);
-                if (encontrado) {
-                    idsDependentes.forEach((id, i) => {
-                        let valorFinal = encontrado[camposPlanilha[i+1]] || "";
-                        if (id === "srv_valor" && valorFinal !== "") { valorFinal = "R$ " + valorFinal.toString().replace("R$", "").trim(); }
-                        document.getElementById(id).value = valorFinal;
-                    });
-                }
-            });
-        };
-        setupBusca('emp_nome', ['emp_doc'], ['emp_nome', 'emp_doc']);
-        setupBusca('srv_nome', ['srv_valor'], ['srv_nome', 'srv_valor']);
-        setupBusca('cli_nome', ['cli_doc', 'cli_tel', 'cli_end'], ['cli_nome', 'cli_doc', 'cli_tel', 'cli_end']);
-        const campoBuscaObs = document.getElementById('obs_busca');
-        const areaTextoObs = document.getElementById('txt_obs');
-        campoBuscaObs.addEventListener('input', function() {
-            const encontrado = cacheDados.find(x => x.txt_obs === this.value);
-            if (encontrado) {
-                areaTextoObs.value = encontrado.txt_obs;
-                areaTextoObs.dataset.original = encontrado.txt_obs; 
-                setTimeout(() => { this.value = ""; this.blur(); areaTextoObs.focus(); }, 10);
-            }
-        });
-    }
-
-    function saveData(sectionId, btn, originalText) {
-        const container = document.getElementById(sectionId);
-        const fields = container.querySelectorAll('input, textarea');
-        let hasValue = false;
-        fields.forEach(f => { if(f.value.trim() !== "") hasValue = true; });
-
-        if(!hasValue) {
-            container.classList.add('shake');
-            setTimeout(() => container.classList.remove('shake'), 500);
-            return;
-        }
-
-        toggleBtnLoading(btn, true, originalText, "Salvando...");
-        const payload = {
-            emp_nome: document.getElementById('emp_nome').value, emp_doc: document.getElementById('emp_doc').value,
-            srv_nome: document.getElementById('srv_nome').value, srv_valor: document.getElementById('srv_valor').value.replace("R$", "").trim(),
-            cli_nome: document.getElementById('cli_nome').value, cli_doc: document.getElementById('cli_doc').value,
-            cli_tel: document.getElementById('cli_tel').value, cli_end: document.getElementById('cli_end').value,
-            txt_obs: document.getElementById('txt_obs').value, txt_obs_original: document.getElementById('txt_obs').dataset.original || ""
-        };
+        const email = $('#l_email').val();
+        const senha = $('#l_pass').val();
+        const btn = $('#btn-l');
+        if(!email || !senha) return alert("Preencha os campos!");
         
-        fetch(URL_DATABASE, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-
-        setTimeout(() => {
-            document.getElementById('toast-minimal').style.display = 'block';
-            fields.forEach(el => el.value = '');
-            setTimeout(() => { 
-                document.getElementById('toast-minimal').style.display = 'none'; 
-                toggleBtnLoading(btn, false, originalText);
-                buscarDadosPlanilha(); 
-            }, 2000);
-        }, 800);
-    }
-
-    async function registrarUsuario() {
-        const btn = document.getElementById('btn-registrar');
-        const email = document.getElementById('reg_u_mail').value;
-        const senha = document.getElementById('reg_u_pass').value;
-        const resposta = document.getElementById('reg_u_resposta').value;
-        if (!email || !senha || !resposta) return showStatus('reg-status', 'Preencha tudo.', 'error', 'card-registrar');
-        toggleBtnLoading(btn, true, 'Salvar Conta');
+        btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i> Entrando...');
         try {
-            const url = `${URL_LOGIN}?action=registrar&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}&resposta=${encodeURIComponent(resposta)}`;
-            const resp = await fetch(url);
-            const res = await resp.text();
-            if (res.trim() === "sucesso") {
-                showStatus('reg-status', 'Sucesso!', 'success', 'card-registrar');
-                setTimeout(() => alternarTela('login'), 2000);
-                verificarSeExisteDono();
-            } else { showStatus('reg-status', 'Erro ao registrar.', 'error', 'card-registrar'); }
-        } catch (e) { showStatus('reg-status', 'Erro de conexão.', 'error', 'card-registrar'); }
-        finally { toggleBtnLoading(btn, false, 'Salvar Conta'); }
-    }
-
-    async function verificarSeExisteDono() {
-        const btnReg = document.getElementById('btn-registrar');
-        try {
-            const resp = await fetch(`${URL_LOGIN}?action=checar_registro`);
-            const res = await resp.text();
-            if (res.trim() === "tem_dono") {
-                document.getElementById('link-registrar-container').classList.add('hidden');
-                btnReg.disabled = true;
-                btnReg.innerText = "Conta Administrador já existe";
-                btnReg.style.marginTop = "25px";
-                btnReg.style.opacity = "0.5";
+            const resp = await fetch(`${URL_SCRIPT}?action=login&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}`);
+            const texto = await resp.text();
+            if(texto.trim() === "success") {
+                localStorage.setItem("inforos_logado", "true");
+                window.location.href = "sistemas.html";
+            } else {
+                $('#login-status').show().text("Dados incorretos!");
+                $('#card-login').addClass('shake');
+                setTimeout(() => $('#card-login').removeClass('shake'), 500);
             }
-        } catch (e) {}
+        } catch(e) { alert("Erro de conexão"); }
+        btn.prop('disabled', false).text("Autenticar");
     }
 
-    function alternarTela(tela) {
-        document.querySelectorAll('.login-card').forEach(c => c.classList.add('hidden'));
-        document.getElementById('card-' + tela).classList.remove('hidden');
-        if(tela === 'recuperar') ajustarInterfaceRecuperacao();
+    async function registrar() {
+        const email = $('#r_email').val();
+        const senha = $('#r_pass').val();
+        const resp_sec = $('#r_resp').val();
+        const btn = $('#btn-r');
+        if(!email || !senha || !resp_sec) return alert("Preencha todos os campos!");
+
+        btn.prop('disabled', true).text("Salvando...");
+        try {
+            const res = await fetch(`${URL_SCRIPT}?action=registrar&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}&resposta=${encodeURIComponent(resp_sec)}`);
+            if((await res.text()).trim() === "sucesso") {
+                $('#reg-status').className = 'status-msg success';
+                $('#reg-status').show().text("Conta criada com sucesso!");
+                setTimeout(() => alternar('login'), 2000);
+            }
+        } catch(e) { alert("Erro ao registrar"); }
+        btn.prop('disabled', false).text("Salvar Registro");
     }
 
-    function toggleSecurity() {
-        const f = document.getElementById('security-fields');
-        f.style.display = (f.style.display === 'flex') ? 'none' : 'flex';
-    }
-
-    async function atualizarAcesso(originalText) {
-        const btn = document.getElementById('btn-update-acesso');
-        const card = document.getElementById('sec-adm');
-        const m = document.getElementById('new_u_mail').value;
-        const s = document.getElementById('new_u_pass').value;
-        const r = document.getElementById('new_u_resposta').value;
-
-        if(!m && !s && !r) {
-            card.classList.add('shake');
-            setTimeout(() => card.classList.remove('shake'), 500);
-            return;
-        }
-
-        toggleBtnLoading(btn, true, originalText, 'Salvando...');
-        const url = `${URL_LOGIN}?action=atualizar_acesso&email=${encodeURIComponent(m)}&senha=${encodeURIComponent(s)}&resposta=${encodeURIComponent(r)}`;
-
-        fetch(url, { mode: 'no-cors' });
-
-        setTimeout(() => {
-            document.getElementById('toast-minimal').style.display = 'block';
-            document.getElementById('new_u_mail').value = "";
-            document.getElementById('new_u_pass').value = "";
-            document.getElementById('new_u_resposta').value = "";
-            document.getElementById('update-status').style.display = "none";
-            
-            setTimeout(() => {
-                document.getElementById('toast-minimal').style.display = 'none';
-                toggleBtnLoading(btn, false, originalText);
-            }, 2000);
-        }, 800);
+    async function recuperar() {
+        const tipo = $('#tipo_rec').val();
+        const dado = $('#rec_dado').val();
+        const resp_sec = $('#rec_resp').val();
+        const btn = $('#btn-rec');
+        
+        btn.prop('disabled', true).text("Validando...");
+        try {
+            const url = `${URL_SCRIPT}?action=recuperar&tipo=${tipo}&dado1=${encodeURIComponent(dado)}&resposta=${encodeURIComponent(resp_sec)}`;
+            const resText = await (await fetch(url)).text();
+            if(!resText.includes("ERRO")) {
+                $('#rec-result').show().text(resText);
+                $('#rec-status').hide();
+            } else {
+                $('#rec-status').show().addClass('error').text("Dados inválidos!");
+            }
+        } catch(e) { alert("Erro na consulta"); }
+        btn.prop('disabled', false).text("Verificar Dados");
     }
 </script>
 </body>
