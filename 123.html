@@ -88,6 +88,29 @@
         .status-msg { font-size: 12px; padding: 10px; border-radius: 10px; margin-bottom: 15px; display: none; }
         .error-msg { background: rgba(255, 75, 75, 0.1); color: #ff4b4b; border: 1px solid rgba(255, 75, 75, 0.2); }
         .result-box { margin-top: 15px; padding: 15px; background: rgba(39, 169, 227, 0.1); border: 1px dashed #27a9e3; color: #44ff44; font-weight: bold; border-radius: 12px; display: none; }
+
+        /* --- ESTILOS DO RODAPÉ --- */
+        .footer-info {
+            width: 100%;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.25);
+            font-size: 10px;
+            z-index: 10;
+            margin-top: 25px;
+        }
+        .badge-teste {
+            display: inline-block;
+            padding: 5px 15px;
+            background: rgba(30, 64, 175, 0.1);
+            border: 1px solid #1e40af;
+            border-radius: 30px;
+            color: #27a9e3; 
+            font-weight: 700;
+            margin-bottom: 10px;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
     </style>
 </head>
 <body>
@@ -116,13 +139,14 @@
     </div>
 
     <div class="login-card hidden" id="card-registrar">
-        <i class="fa-solid fa-user-plus" style="font-size: 40px; color: #1e40af; margin-bottom: 20px;"></i>
+        <i class="fa-solid fa-user-shield" style="font-size: 40px; color: #1e40af; margin-bottom: 20px;"></i>
         <h2>Nova Conta</h2>
-        <p class="subtitle">Cadastre um novo usuário no sistema</p>
+        <p class="subtitle">Preencha os dados e valide com o Admin</p>
         <div id="reg-status" class="status-msg error-msg"></div>
-        <input type="email" id="r_email" placeholder="Seu E-mail">
-        <input type="password" id="r_pass" placeholder="Sua Senha">
-        <input type="text" id="r_resp" placeholder="Resposta Secreta (para recuperar)">
+        <input type="email" id="r_email" placeholder="E-mail do Novo Usuário">
+        <input type="password" id="r_pass" placeholder="Senha de Acesso">
+        <input type="text" id="r_resp_nova" placeholder="Defina SUA Palavra Secreta">
+        <input type="password" id="r_admin_pass" placeholder="Palavra Secreta do ADMIN">
         <button class="btn-main" onclick="registrar()" id="btn-r">Salvar Registro</button>
         <span class="link-auth" onclick="alternar('login')" style="margin-top:20px; display:block;">Voltar ao Login</span>
     </div>
@@ -143,8 +167,15 @@
         <span class="link-auth" onclick="alternar('login')" style="margin-top:20px; display:block;">Voltar ao Login</span>
     </div>
 
+    <div class="footer-info">
+        <div class="badge-teste">Refrigeração Eliezer</div>
+        <p>&copy; <span id="anoAtual"></span> - Sistema de Gestão</p>
+    </div>
+
 <script>
-    const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbx73W0G4cEHBoHCPOgkvkcMgArROxg9jYevJ5OiWexeXfP0RpGQURWjk52WSTeG3Jk3/exec";
+    const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbxi-7wsU6BfTr5LMD2AN3FIlb3ODpSZI7sgP9VY2rIq08RLH4DIxAnNkboq7Iv6_Eps/exec";
+
+    document.getElementById("anoAtual").textContent = new Date().getFullYear();
 
     function aplicarShake(idCard) {
         const card = $(`#${idCard}`);
@@ -204,20 +235,23 @@
     async function registrar() {
         const email = $('#r_email').val();
         const senha = $('#r_pass').val();
-        const resp_sec = $('#r_resp').val();
+        const resp_nova = $('#r_resp_nova').val(); // A palavra que ele quer salvar
+        const admin_key = $('#r_admin_pass').val(); // A palavra do Admin para validar
         const btn = $('#btn-r');
         const status = $('#reg-status');
 
-        if(!email || !senha || !resp_sec) {
-            status.text("Preencha todos os campos!").show();
+        if(!email || !senha || !resp_nova || !admin_key) {
+            status.text("Preencha os 4 campos!").show();
             aplicarShake('card-registrar');
             return;
         }
 
         btn.prop('disabled', true).text("Salvando...");
         try {
-            const res = await fetch(`${URL_SCRIPT}?action=registrar&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}&resposta=${encodeURIComponent(resp_sec)}`);
-            const texto = await res.text();
+            // Enviamos admin_key separadamente para o script validar o dono
+            const url = `${URL_SCRIPT}?action=registrar&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}&resposta=${encodeURIComponent(resp_nova)}&admin_key=${encodeURIComponent(admin_key)}`;
+            const resp = await fetch(url);
+            const texto = await resp.text();
             
             if(texto.trim() === "sucesso") {
                 showToast("Conta criada com sucesso!");
@@ -225,6 +259,9 @@
             } else if(texto.trim() === "atualizado") {
                 showToast("Dados atualizados com sucesso!");
                 setTimeout(() => alternar('login'), 2000);
+            } else if(texto.trim() === "negado") {
+                status.text("Palavra do ADMIN incorreta! Autorização negada.").show();
+                aplicarShake('card-registrar');
             } else {
                 status.text("Erro ao processar conta.").show();
                 aplicarShake('card-registrar');
