@@ -38,7 +38,7 @@
         .btn-save:hover { background: #2563eb; }
         .btn-save:disabled { background: #2d3748; color: #718096; cursor: not-allowed; }
 
-        /* NOTIFICAÇÃO MINIMALISTA CENTRALIZADA */
+        /* NOTIFICAÇÃO MINIMALISTA */
         #toast-minimal {
             position: fixed; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
@@ -83,15 +83,15 @@
             <input type="text" id="emp_nome" list="lista_empresas" placeholder="Nome Fantasia">
             <datalist id="lista_empresas"></datalist>
             <input type="text" id="emp_doc" placeholder="CNPJ / CPF">
-            <button class="btn-save" onclick="saveData('empresa', this)"><i class="fa-solid fa-sync"></i> Atualizar Identidade</button>
+            <button class="btn-save" onclick="saveData('empresa', this)"><i class="fa-solid fa-sync"></i> Salvar Alterações</button>
         </div>
 
         <div class="config-section">
             <div class="section-title"><i class="fa-solid fa-gears"></i> Detalhes do Serviço</div>
             <input type="text" id="srv_nome" list="lista_servicos" placeholder="Descrição do Serviço">
-            <datalist id="lista_servicos"><option value="Higienização de Ar Condicionado"><option value="Carga de Gás"><option value="Instalação Split"></datalist>
+            <datalist id="lista_servicos"></datalist>
             <input type="number" id="srv_valor" placeholder="Valor R$">
-            <button class="btn-save" onclick="saveData('servico', this)"><i class="fa-solid fa-plus"></i> Adicionar Serviço</button>
+            <button class="btn-save" onclick="saveData('servico', this)"><i class="fa-solid fa-plus"></i> Salvar Serviço</button>
         </div>
 
         <div class="config-section">
@@ -101,7 +101,7 @@
             <input type="text" id="cli_doc" placeholder="CPF / CNPJ">
             <input type="tel" id="cli_tel" placeholder="WhatsApp">
             <input type="text" id="cli_end" placeholder="Endereço Completo">
-            <button class="btn-save" onclick="saveData('cliente', this)"><i class="fa-solid fa-user-plus"></i> Registrar Cliente</button>
+            <button class="btn-save" onclick="saveData('cliente', this)"><i class="fa-solid fa-user-plus"></i> Salvar Cliente</button>
         </div>
 
         <div class="config-section">
@@ -115,7 +115,7 @@
 
 <script>
     const URL_LOGIN = "https://script.google.com/macros/s/AKfycbyVHWD028yH3qTXi63aL4Jq17MwNuXnfy8IwwA2SVOs26bsQRxmffePggxM3AriKhI2IQ/exec";
-    const URL_DATABASE = "https://script.google.com/macros/s/AKfycby-pVXrSIcK3CGd61ms2VRplEgoB3nWw9vJN-aoLr3T8L596jxaJmZE_0xVSDQ-MBTKYQ/exec"; 
+    const URL_DATABASE = "https://script.google.com/macros/s/AKfycbxWEXbmOr3fcoenP6BYTOyyA9T9ALkLaAur-iL5mUzSkSUdXkl1VfwJIHiUzCU7YGPT/exec"; 
 
     let cacheDados = []; 
 
@@ -123,16 +123,42 @@
         try {
             const resp = await fetch(URL_DATABASE);
             cacheDados = await resp.json();
+            
             const listEmp = document.getElementById('lista_empresas');
             const listCli = document.getElementById('lista_clientes');
+            const listSrv = document.getElementById('lista_servicos');
+
+            // Preencher listas de seleção (Datalists) com dados únicos
             listEmp.innerHTML = [...new Set(cacheDados.map(d => d.emp_nome))].filter(Boolean).map(n => `<option value="${n}">`).join('');
             listCli.innerHTML = [...new Set(cacheDados.map(d => d.cli_nome))].filter(Boolean).map(n => `<option value="${n}">`).join('');
+            listSrv.innerHTML = [...new Set(cacheDados.map(d => d.srv_nome))].filter(Boolean).map(n => `<option value="${n}">`).join('');
             
-            document.getElementById('emp_nome').oninput = () => {
-                const d = cacheDados.find(x => x.emp_nome === document.getElementById('emp_nome').value);
-                if(d) document.getElementById('emp_doc').value = d.emp_doc;
-            };
-        } catch (e) {}
+            configurarBuscaAutomatica();
+        } catch (e) { console.error("Erro ao buscar dados:", e); }
+    }
+
+    function configurarBuscaAutomatica() {
+        // Busca Empresa
+        document.getElementById('emp_nome').addEventListener('input', function() {
+            const encontrado = cacheDados.find(x => x.emp_nome === this.value);
+            if(encontrado) document.getElementById('emp_doc').value = encontrado.emp_doc;
+        });
+
+        // Busca Cliente
+        document.getElementById('cli_nome').addEventListener('input', function() {
+            const encontrado = cacheDados.find(x => x.cli_nome === this.value);
+            if(encontrado) {
+                document.getElementById('cli_doc').value = encontrado.cli_doc;
+                document.getElementById('cli_tel').value = encontrado.cli_tel;
+                document.getElementById('cli_end').value = encontrado.cli_end;
+            }
+        });
+
+        // Busca Serviço
+        document.getElementById('srv_nome').addEventListener('input', function() {
+            const encontrado = cacheDados.find(x => x.srv_nome === this.value);
+            if(encontrado) document.getElementById('srv_valor').value = encontrado.srv_valor;
+        });
     }
 
     function saveData(secao, btn) {
@@ -153,18 +179,17 @@
         fetch(URL_DATABASE, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
 
         setTimeout(() => {
-            // MOSTRAR TOAST
             toast.style.display = 'block';
             
-            // LIMPAR CAMPOS ESPECÍFICOS (mantendo empresa se desejar, ou limpando tudo)
+            // LIMPA TODOS OS CAMPOS (Inclusive Empresa)
             document.querySelectorAll('input, textarea').forEach(el => {
-                if(!['auth_u_mail', 'auth_u_pass', 'emp_nome', 'emp_doc'].includes(el.id)) el.value = '';
+                if(!['auth_u_mail', 'auth_u_pass'].includes(el.id)) el.value = '';
             });
 
             setTimeout(() => {
                 toast.style.display = 'none';
                 btn.disabled = false;
-                buscarDadosPlanilha();
+                buscarDadosPlanilha(); // Atualiza o cache para a próxima busca
             }, 2000);
         }, 800);
     }
@@ -174,23 +199,13 @@
         const pass = document.getElementById('auth_u_pass').value;
         try {
             const resp = await fetch(`${URL_LOGIN}?action=login&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}`);
-            if((await resp.text()).trim() === "logado") {
+            const texto = await resp.text();
+            if(texto.trim() === "logado") {
                 document.getElementById('overlay-login').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
                 buscarDadosPlanilha();
             } else { alert("Dados Inválidos"); }
         } catch (e) { alert("Erro de Conexão"); }
-    }
-
-    function verificarSeExisteDono() {
-        fetch(`${URL_LOGIN}?action=checar_registro`).then(r => r.text()).then(t => {
-            if(t.trim() === "tem_dono") {} 
-        });
-    }
-
-    function toggleSecurity() {
-        const s = document.getElementById('security-fields').style;
-        s.display = s.display === 'flex' ? 'none' : 'flex';
     }
 </script>
 </body>
