@@ -175,29 +175,32 @@
         setupBusca('srv_nome', ['srv_valor'], ['srv_nome', 'srv_valor']);
         setupBusca('cli_nome', ['cli_doc', 'cli_tel', 'cli_end'], ['cli_nome', 'cli_doc', 'cli_tel', 'cli_end']);
 
-        // --- LÓGICA DE OBSERVAÇÃO AJUSTADA E TESTADA ---
+    // --- LÓGICA DE OBSERVAÇÃO AJUSTADA E TESTADA ---
         const campoBuscaObs = document.getElementById('obs_busca');
         const areaTextoObs = document.getElementById('txt_obs');
 
         campoBuscaObs.addEventListener('input', function() {
             const valor = this.value;
+            // Procuramos se o que foi digitado/selecionado bate exatamente com uma obs do cache
             const encontrado = cacheDados.find(x => x.txt_obs === valor);
             
             if (encontrado) {
+                // 1. Passa o texto para a área de edição (textarea)
                 areaTextoObs.value = encontrado.txt_obs;
+                // 2. Guarda a referência para edição inteligente no backend
                 areaTextoObs.dataset.original = encontrado.txt_obs; 
                 
+                // 3. O "Pulo do Gato": Limpa o seletor com um micro-delay para garantir a transferência
                 setTimeout(() => { 
                     this.value = ""; 
-                    this.blur();
-                    areaTextoObs.focus();
+                    this.blur(); // Tira o foco do campo de busca para fechar o teclado/lista
+                    areaTextoObs.focus(); // Joga o foco automaticamente para o campo de edição
                 }, 10);
             } else if (valor === "") {
                 areaTextoObs.value = "";
                 delete areaTextoObs.dataset.original;
             }
         });
-    }
     // === FIM DA LÓGICA DE BUSCA AUTOMÁTICA ===
 
     // === INÍCIO DA FUNÇÃO DE SALVAMENTO (POST) ===
