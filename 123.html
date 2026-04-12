@@ -111,17 +111,44 @@
             opacity: 0.8;
         }
 
-        .link-auth { color: #27a9e3; cursor: pointer; font-size: 13px; }
-        
+        /* ESTILO DA MENSAGEM DE SUCESSO NO MEIO DA TELA */
+        #success-toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(30, 64, 175, 0.95);
+            color: white;
+            padding: 20px 40px;
+            border-radius: 20px;
+            border: 1px solid #27a9e3;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            z-index: 10000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -40%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
+        }
+
         .status-msg { font-size: 13px; margin: 10px 0; display: none; }
         .status-error { color: #ff4b4b; font-weight: 600; }
         .status-loading { color: #27a9e3; }
         .status-success { color: #44ff44; }
-
-        .security-content { display: none; flex-direction: column; gap: 10px; padding-top: 10px; }
     </style>
 </head>
 <body>
+
+    <div id="success-toast">
+        <i class="fa-solid fa-circle-check" style="font-size: 40px; color: #44ff44;"></i>
+        <span style="font-weight: 700; font-size: 18px;">Dados salvos com sucesso!</span>
+    </div>
 
     <div id="overlay-login">
         <div class="login-card" id="card-login">
@@ -136,47 +163,11 @@
                 <span class="link-auth" onclick="alternarTela('recuperar')" style="color:#ff4b4b">Esqueci meus dados</span>
             </p>
         </div>
-
-        <div class="login-card hidden" id="card-registrar">
-            <h2>Novo Registro</h2>
-            <input type="text" id="reg_u_mail" placeholder="E-mail" autocomplete="off" spellcheck="false" style="margin-top: 15px;">
-            <input type="password" id="reg_u_pass" placeholder="Senha" autocomplete="new-password" style="margin-top: 10px;">
-            <input type="text" id="reg_u_pergunta" placeholder="Pergunta (Ex: Nome do Pet?)" autocomplete="off" style="margin-top: 10px;">
-            <input type="text" id="reg_u_resposta" placeholder="Resposta da Pergunta" autocomplete="off" style="margin-top: 10px;">
-            <div id="reg-status" class="status-msg"></div>
-            <button class="btn-save" id="btn-registrar" onclick="registrarUsuario()" style="margin-top: 15px;">Salvar Conta</button>
-            <p class="link-auth" onclick="alternarTela('login')" style="margin-top: 15px;">Voltar</p>
         </div>
-
-        <div class="login-card hidden" id="card-recuperar">
-            <h2>Recuperar Acesso</h2>
-            <p style="font-size: 12px; color: grey; margin: 10px 0;">Digite o e-mail cadastrado para ver a pergunta.</p>
-            <input type="text" id="rec_u_mail" placeholder="Seu E-mail" autocomplete="one-time-code" spellcheck="false" onblur="buscarPergunta()">
-            <div id="display-pergunta" style="margin: 10px 0; color: #27a9e3; font-style: italic; font-size: 13px;"></div>
-            <input type="text" id="rec_u_resposta" placeholder="Sua Resposta" autocomplete="off" spellcheck="false">
-            <div id="rec-status" class="status-msg"></div>
-            <button class="btn-save" id="btn-recuperar" onclick="recuperarSenha()" style="margin-top: 15px;">Verificar Dados</button>
-            <div id="dica-email" style="margin-top: 15px; color: #44ff44; font-weight: bold; font-size: 13px; line-height: 1.4;"></div>
-            <p class="link-auth" onclick="alternarTela('login')" style="margin-top: 15px;">Voltar</p>
-        </div>
-    </div>
 
     <div class="container hidden" id="main-content">
         <h1>Configurações</h1>
 
-        <div class="config-section">
-            <div class="section-title"><i class="fa-solid fa-user-shield"></i> Segurança do Painel</div>
-            <button class="btn-save" style="background: none; border: 1px solid rgba(255,255,255,0.1); color: #27a9e3; font-size: 12px;" onclick="toggleSecurity()">Expandir Opções de Acesso</button>
-            
-            <div id="security-fields" class="security-content" style="display:none; flex-direction: column; gap: 10px; margin-top: 10px;">
-                <input type="text" id="new_u_mail" placeholder="Novo E-mail" autocomplete="off">
-                <input type="password" id="new_u_pass" placeholder="Nova Senha" autocomplete="off">
-                <input type="text" id="new_u_pergunta" placeholder="Nova Pergunta Secreta" autocomplete="off">
-                <input type="text" id="new_u_resposta" placeholder="Nova Resposta Secreta" autocomplete="off">
-                <button class="btn-save" onclick="atualizarAcesso()"><i class="fa-solid fa-sync"></i> Atualizar Acesso</button>
-            </div>
-        </div>
-        
         <div class="config-section">
             <div class="section-title"><i class="fa-solid fa-building"></i> Identidade da Empresa</div>
             <input type="text" id="emp_nome" list="lista_empresas" placeholder="Nome Fantasia" autocomplete="off">
@@ -254,9 +245,9 @@
         });
     }
 
-    // FUNÇÃO ATUALIZADA: Sem emissão de erro
     function saveData(secao, btn) {
         const originalText = btn.innerHTML;
+        const toast = document.getElementById('success-toast');
         btn.disabled = true;
         btn.innerText = "Sincronizando...";
 
@@ -272,25 +263,34 @@
             txt_obs: document.getElementById('txt_obs').value
         };
 
-        // Envia os dados ignorando a resposta (previne erros visuais)
         fetch(URL_DATABASE, {
             method: 'POST',
             mode: 'no-cors',
             body: JSON.stringify(payload)
         });
 
-        // Executa a limpeza e sucesso após um pequeno delay para o usuário ver a mudança
         setTimeout(() => {
-            alert("Processado com Sucesso!");
+            // MOSTRAR AVISO NO MEIO DA TELA
+            toast.style.display = 'flex';
+            
+            // LIMPAR CAMPOS
             document.querySelectorAll('input, textarea').forEach(el => {
                 if(!['auth_u_mail', 'auth_u_pass'].includes(el.id)) el.value = '';
             });
+
             btn.innerHTML = originalText;
             btn.disabled = false;
             buscarDadosPlanilha(); 
-        }, 1500);
+
+            // ESCONDER O AVISO DEPOIS DE 3 SEGUNDOS
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+
+        }, 1200);
     }
 
+    // FUNÇÕES DE LOGIN (Mantidas)
     function showStatus(id, msg, type) {
         const el = document.getElementById(id);
         el.innerText = msg;
@@ -324,11 +324,7 @@
 
     function alternarTela(tela) {
         document.getElementById('card-login').classList.add('hidden');
-        document.getElementById('card-registrar').classList.add('hidden');
-        document.getElementById('card-recuperar').classList.add('hidden');
         if(tela === 'login') document.getElementById('card-login').classList.remove('hidden');
-        if(tela === 'registrar') document.getElementById('card-registrar').classList.remove('hidden');
-        if(tela === 'recuperar') document.getElementById('card-recuperar').classList.remove('hidden');
     }
 
     function toggleSecurity() {
