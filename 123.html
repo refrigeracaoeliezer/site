@@ -74,7 +74,7 @@
         .login-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); padding: 30px; border-radius: 24px; border: 1px solid rgba(30, 64, 175, 0.3); width: 100%; max-width: 380px; text-align: center; transition: 0.3s; }
         
         .link-auth { color: #27a9e3; cursor: pointer; font-size: 13px; }
-        .status-msg { font-size: 13px; margin-top: 15px; display: none; padding: 8px; border-radius: 8px; }
+        .status-msg { font-size: 13px; margin: 10px 0; display: none; padding: 8px; border-radius: 8px; }
         .status-error { color: #ff4b4b; background: rgba(255, 75, 75, 0.1); border: 1px solid rgba(255, 75, 75, 0.2); }
         .status-loading { color: #27a9e3; }
         .status-success { color: #44ff44; background: rgba(68, 255, 68, 0.1); border: 1px solid rgba(68, 255, 68, 0.2); }
@@ -122,7 +122,7 @@
                 <option value="senha">Quero ver minha Senha</option>
             </select>
 
-            <input type="password" id="rec_dado_validacao" placeholder="Digite sua Senha" style="margin-top: 15px;">
+            <input type="password" id="rec_dado_validacao" placeholder="Confirme sua Senha" style="margin-top: 15px;">
             <input type="text" id="rec_resposta_seguranca" placeholder="Sua Resposta Secreta" style="margin-top: 15px;">
 
             <div id="rec-status" class="status-msg"></div>
@@ -135,6 +135,7 @@
 
     <div class="container hidden" id="main-content">
         <h1>Painel de Controle</h1>
+
         <div class="config-section" id="sec-adm">
             <div class="section-title"><i class="fa-solid fa-user-shield"></i> Segurança do Painel</div>
             <button class="btn-toggle-security" onclick="toggleSecurity()">Expandir Opções de Acesso</button>
@@ -186,7 +187,7 @@
     </div>
 
 <script>
-    const URL_LOGIN = "https://script.google.com/macros/s/AKfycbyVHWD028yH3qTXi63aL4Jq17MwNuXnfy8IwwA2SVOs26bsQRxmffePggxM3AriKhI2IQ/exec";
+    const URL_LOGIN = "https://script.google.com/macros/s/AKfycbw_8zQB-23tKme2T-iVtSM_vp2zbw30J-v8tsFtgKw0RqOTBkNwDFW2HDXyQ3hbHJu03g/exec";
     const URL_DATABASE = "https://script.google.com/macros/s/AKfycbzbGjCHaXHnhAC5gIGmKa7gIb2QNpE3yIhomgU9DhwaNO1DHKUq7b4shMuZRvD5IG99oQ/exec"; 
 
     let cacheDados = []; 
@@ -213,13 +214,14 @@
         }
     }
 
-    // --- LÓGICA DE RECUPERAÇÃO (ATUALIZADA) ---
+    // --- LÓGICA DE RECUPERAÇÃO CORRIGIDA ---
     function ajustarInterfaceRecuperacao() {
         const tipo = document.getElementById('tipo_recuperacao').value;
         const inputValidacao = document.getElementById('rec_dado_validacao');
         
         document.getElementById('rec-result').style.display = "none";
         document.getElementById('rec-status').style.display = "none";
+        document.getElementById('rec-result').innerText = "";
         inputValidacao.value = "";
         document.getElementById('rec_resposta_seguranca').value = "";
 
@@ -241,20 +243,22 @@
 
         if (!dado1 || !resposta) return showStatus('rec-status', 'Preencha os dois campos.', 'error', 'card-recuperar');
 
-        toggleBtnLoading(btn, true, 'Verificar Dados');
         resultBox.style.display = "none";
+        resultBox.innerText = "";
+        toggleBtnLoading(btn, true, 'Verificar Dados');
 
         try {
             const url = `${URL_LOGIN}?action=recuperar&tipo=${tipo}&dado1=${encodeURIComponent(dado1)}&resposta=${encodeURIComponent(resposta)}`;
             const resp = await fetch(url);
             const resText = await resp.text();
 
-            if (resText.includes("Seu E-mail:") || resText.includes("Sua Senha:")) {
+            if (!resText.includes("ERRO") && (resText.includes("Seu E-mail:") || resText.includes("Sua Senha:"))) {
                 showStatus('rec-status', 'Dados localizados!', 'success', 'card-recuperar');
                 resultBox.innerText = resText;
                 resultBox.style.display = "block";
             } else {
-                showStatus('rec-status', resText, 'error', 'card-recuperar');
+                showStatus('rec-status', 'Dados incorretos ou resposta inválida.', 'error', 'card-recuperar');
+                resultBox.style.display = "none";
             }
         } catch (e) {
             showStatus('rec-status', 'Erro de conexão.', 'error', 'card-recuperar');
@@ -263,7 +267,6 @@
         }
     }
 
-    // --- MANTIDAS AS OUTRAS FUNÇÕES ---
     async function realizarLogin() {
         const btn = document.getElementById('btn-entrar');
         const email = document.getElementById('auth_u_mail').value;
@@ -393,6 +396,12 @@
     function toggleSecurity() {
         const f = document.getElementById('security-fields');
         f.classList.toggle('hidden');
+    }
+
+    async function atualizarAcesso(originalText) {
+        const btn = document.getElementById('btn-update-acesso');
+        toggleBtnLoading(btn, true, originalText, 'Salvando...');
+        setTimeout(() => toggleBtnLoading(btn, false, originalText), 1000);
     }
 </script>
 </body>
