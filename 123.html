@@ -106,6 +106,8 @@
 
         <div class="config-section">
             <div class="section-title"><i class="fa-solid fa-clipboard-list"></i> Observações Técnicas</div>
+            <input type="text" id="obs_busca" list="lista_obs" placeholder="Buscar ou escrever observação...">
+            <datalist id="lista_obs"></datalist>
             <textarea id="txt_obs" rows="4" placeholder="Escreva as observações técnicas..."></textarea>
             <button class="btn-save" onclick="saveData('obs', this)"><i class="fa-solid fa-save"></i> Salvar Observações</button>
         </div>
@@ -115,7 +117,7 @@
 
 <script>
     const URL_LOGIN = "https://script.google.com/macros/s/AKfycbyVHWD028yH3qTXi63aL4Jq17MwNuXnfy8IwwA2SVOs26bsQRxmffePggxM3AriKhI2IQ/exec";
-    const URL_DATABASE = "https://script.google.com/macros/s/AKfycbxWEXbmOr3fcoenP6BYTOyyA9T9ALkLaAur-iL5mUzSkSUdXkl1VfwJIHiUzCU7YGPT/exec"; 
+    const URL_DATABASE = "https://script.google.com/macros/s/AKfycbxqgj9xP_Sdl1ZGown_5snJ11wXCspAvrw142O_PyScixcfxjFwyjhYiJhpd3DOz_TtRw/exec"; 
 
     let cacheDados = []; 
 
@@ -127,11 +129,14 @@
             const listEmp = document.getElementById('lista_empresas');
             const listCli = document.getElementById('lista_clientes');
             const listSrv = document.getElementById('lista_servicos');
+            const listObs = document.getElementById('lista_obs');
 
-            // Preencher listas de seleção (Datalists) com dados únicos
+            // Preencher listas de seleção com dados únicos
             listEmp.innerHTML = [...new Set(cacheDados.map(d => d.emp_nome))].filter(Boolean).map(n => `<option value="${n}">`).join('');
             listCli.innerHTML = [...new Set(cacheDados.map(d => d.cli_nome))].filter(Boolean).map(n => `<option value="${n}">`).join('');
             listSrv.innerHTML = [...new Set(cacheDados.map(d => d.srv_nome))].filter(Boolean).map(n => `<option value="${n}">`).join('');
+            // Puxar observações para a lista
+            listObs.innerHTML = [...new Set(cacheDados.map(d => d.txt_obs))].filter(Boolean).map(n => `<option value="${n}">`).join('');
             
             configurarBuscaAutomatica();
         } catch (e) { console.error("Erro ao buscar dados:", e); }
@@ -159,6 +164,12 @@
             const encontrado = cacheDados.find(x => x.srv_nome === this.value);
             if(encontrado) document.getElementById('srv_valor').value = encontrado.srv_valor;
         });
+
+        // Busca Observação
+        document.getElementById('obs_busca').addEventListener('input', function() {
+            const encontrado = cacheDados.find(x => x.txt_obs === this.value);
+            if(encontrado) document.getElementById('txt_obs').value = encontrado.txt_obs;
+        });
     }
 
     function saveData(secao, btn) {
@@ -181,7 +192,6 @@
         setTimeout(() => {
             toast.style.display = 'block';
             
-            // LIMPA TODOS OS CAMPOS (Inclusive Empresa)
             document.querySelectorAll('input, textarea').forEach(el => {
                 if(!['auth_u_mail', 'auth_u_pass'].includes(el.id)) el.value = '';
             });
@@ -189,7 +199,7 @@
             setTimeout(() => {
                 toast.style.display = 'none';
                 btn.disabled = false;
-                buscarDadosPlanilha(); // Atualiza o cache para a próxima busca
+                buscarDadosPlanilha();
             }, 2000);
         }, 800);
     }
