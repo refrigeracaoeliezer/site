@@ -187,9 +187,9 @@
         <div class="config-section">
             <div class="section-title"><i class="fa-solid fa-building"></i> Identidade da Empresa</div>
             <input type="text" id="emp_nome" list="lista_empresas" placeholder="Nome Fantasia" autocomplete="off">
-            <datalist id="lista_empresas"><option value="Refrigeração Eliezer"></datalist>
+            <datalist id="lista_empresas"></datalist>
             <input type="text" id="emp_doc" placeholder="CNPJ / CPF" autocomplete="off">
-            <button class="btn-save" onclick="alert('Funcionalidade de salvar dados não implementada no JS')"><i class="fa-solid fa-floppy-disk"></i> Salvar Empresa</button>
+            <button class="btn-save" onclick="saveData('empresa', this)"><i class="fa-solid fa-floppy-disk"></i> Salvar Empresa</button>
         </div>
 
         <div class="config-section">
@@ -201,46 +201,37 @@
                 <option value="Instalação Split">
             </datalist>
             <input type="number" id="srv_valor" placeholder="Valor R$" autocomplete="off">
-            <button class="btn-save" onclick="alert('Funcionalidade de salvar dados não implementada no JS')"><i class="fa-solid fa-floppy-disk"></i> Salvar Serviço</button>
+            <button class="btn-save" onclick="saveData('servico', this)"><i class="fa-solid fa-floppy-disk"></i> Salvar Serviço</button>
         </div>
 
         <div class="config-section">
             <div class="section-title"><i class="fa-solid fa-user"></i> Dados do Cliente</div>
             <input type="text" id="cli_nome" list="lista_clientes" placeholder="Nome do Cliente" autocomplete="off">
-            <datalist id="lista_clientes"><option value="João Silva"></datalist>
+            <datalist id="lista_clientes"></datalist>
             <input type="text" id="cli_doc" placeholder="CPF / CNPJ" autocomplete="off">
             <input type="tel" id="cli_tel" placeholder="WhatsApp" autocomplete="off">
             <input type="text" id="cli_end" placeholder="Endereço Completo" autocomplete="off">
-            <button class="btn-save" onclick="alert('Funcionalidade de salvar dados não implementada no JS')"><i class="fa-solid fa-floppy-disk"></i> Salvar Cliente</button>
+            <button class="btn-save" onclick="saveData('cliente', this)"><i class="fa-solid fa-floppy-disk"></i> Salvar Cliente</button>
         </div>
 
         <div class="config-section">
             <div class="section-title"><i class="fa-solid fa-clipboard-list"></i> Observações Técnicas</div>
-            <input type="text" id="obs_busca" list="lista_obs" placeholder="Puxar Modelo (Garantia, etc)..." oninput="checkObsSelection()" autocomplete="off">
-            <datalist id="lista_obs">
-                <option value="Garantia Padrão (90 dias)">
-                <option value="Checklist de Manutenção">
-            </datalist>
             <textarea id="txt_obs" rows="5" placeholder="Texto das observações..."></textarea>
-            <button class="btn-save" onclick="alert('Funcionalidade de salvar dados não implementada no JS')"><i class="fa-solid fa-floppy-disk"></i> Salvar Observações</button>
+            <button class="btn-save" onclick="saveData('obs', this)"><i class="fa-solid fa-floppy-disk"></i> Salvar Observações</button>
         </div>
         
         <p style="text-align: center; color: grey; font-size: 10px; margin-bottom: 40px;">SISTEMA V2.8.2</p>
     </div>
 
 <script>
-    // Configurações de URL
     const URL_LOGIN = "https://script.google.com/macros/s/AKfycbyVHWD028yH3qTXi63aL4Jq17MwNuXnfy8IwwA2SVOs26bsQRxmffePggxM3AriKhI2IQ/exec";
-    // SUBSTITUA pela URL que você recebeu ao implantar o código das colunas A, B, D, E, G, H, I, J, L
     const URL_DATABASE = "https://script.google.com/macros/s/AKfycbwGZgHmP-4T9loPPewsrM0mFNxtqyMKbn3pH_GZi9NLZNcpsAhRH7ewKdg5gzZT4KdT6g/exec"; 
 
-    let cacheDados = []; // Armazena os dados da planilha para auto-preenchimento
+    let cacheDados = []; 
 
     window.onload = () => {
         verificarSeExisteDono();
     };
-
-    // --- FUNÇÕES DE BUSCA E AUTO-PREENCHIMENTO ---
 
     async function buscarDadosPlanilha() {
         try {
@@ -253,7 +244,6 @@
     }
 
     function configurarAutoPreenchimento() {
-        // Preenche os Datalists (as listas de sugestões)
         const listEmp = document.getElementById('lista_empresas');
         const listCli = document.getElementById('lista_clientes');
         
@@ -263,7 +253,6 @@
         listEmp.innerHTML = empresas.map(n => `<option value="${n}">`).join('');
         listCli.innerHTML = clientes.map(n => `<option value="${n}">`).join('');
         
-        // Ativa os eventos de escuta
         document.getElementById('emp_nome').addEventListener('input', () => {
             const selecionado = document.getElementById('emp_nome').value;
             const dados = cacheDados.find(d => d.emp_nome === selecionado);
@@ -280,8 +269,6 @@
             }
         });
     }
-
-    // --- FUNÇÃO DE SALVAMENTO (POST) ---
 
     async function saveData(secao, btn) {
         const originalText = btn.innerHTML;
@@ -301,15 +288,13 @@
         };
 
         try {
-            // Usamos mode: 'no-cors' para evitar bloqueios do Google, 
-            // mas lembre-se que com no-cors o JS não consegue ler a resposta de sucesso.
             await fetch(URL_DATABASE, {
                 method: 'POST',
                 body: JSON.stringify(payload)
             });
             
             alert("Dados enviados com sucesso para a planilha!");
-            buscarDadosPlanilha(); // Atualiza o cache local
+            buscarDadosPlanilha(); 
         } catch (e) {
             alert("Erro ao salvar. Verifique sua conexão.");
         } finally {
@@ -317,8 +302,6 @@
             btn.disabled = false;
         }
     }
-
-    // --- SUAS FUNÇÕES ORIGINAIS DE LOGIN ---
 
     function showStatus(id, msg, type) {
         const el = document.getElementById(id);
@@ -338,7 +321,6 @@
             if(result.trim() === "logado") {
                 document.getElementById('overlay-login').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
-                // IMPORTANTE: Busca os dados assim que logar
                 buscarDadosPlanilha(); 
             } else { showStatus('login-status', 'Dados incorretos.', 'error'); }
         } catch (e) { showStatus('login-status', 'Erro de rede.', 'error'); }
