@@ -155,10 +155,11 @@
                     idsDependentes.forEach((id, i) => {
                         let valorFinal = encontrado[camposPlanilha[i+1]] || "";
                         
-                        // LÓGICA DO R$: Se for o campo de valor, adiciona o prefixo
+                        // FORMATADOR PARA O SITE: Se for o campo de valor, coloca R$ na frente
                         if (id === "srv_valor" && valorFinal !== "") {
-                            // Remove R$ se já existir na planilha para não duplicar, e formata
-                            valorFinal = "R$ " + valorFinal.toString().replace("R$", "").trim();
+                            // Limpa qualquer R$ antigo e formata
+                            let num = valorFinal.toString().replace("R$", "").trim();
+                            valorFinal = "R$ " + num;
                         }
                         
                         document.getElementById(id).value = valorFinal;
@@ -194,14 +195,15 @@
         const areaTextoObs = document.getElementById('txt_obs');
         const campoValor = document.getElementById('srv_valor');
         
-        // Antes de enviar, limpamos o R$ para a planilha receber apenas o número (opcional, mas recomendado)
-        const valorLimpo = campoValor.value.replace("R$", "").trim();
+        // --- LIMPEZA PARA A PLANILHA ---
+        // Remove "R$", espaços e troca vírgula por ponto para a planilha entender como número puro
+        let valorParaPlanilha = campoValor.value.replace("R$", "").replace(/\s/g, "").replace(",", ".").trim();
 
         const payload = {
             emp_nome: document.getElementById('emp_nome').value,
             emp_doc: document.getElementById('emp_doc').value,
             srv_nome: document.getElementById('srv_nome').value,
-            srv_valor: valorLimpo, // Envia sem o R$ para facilitar cálculos na planilha
+            srv_valor: valorParaPlanilha, 
             cli_nome: document.getElementById('cli_nome').value,
             cli_doc: document.getElementById('cli_doc').value,
             cli_tel: document.getElementById('cli_tel').value,
