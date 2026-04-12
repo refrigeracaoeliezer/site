@@ -139,13 +139,19 @@
     </div>
 
     <div class="login-card hidden" id="card-registrar">
-        <i class="fa-solid fa-user-plus" style="font-size: 40px; color: #1e40af; margin-bottom: 20px;"></i>
-        <h2>Nova Conta</h2>
-        <p class="subtitle">Cadastre um novo usuário no sistema</p>
+        <i class="fa-solid fa-user-shield" id="icon-reg" style="font-size: 40px; color: #1e40af; margin-bottom: 20px;"></i>
+        <h2 id="title-reg">Nova Conta</h2>
+        <p class="subtitle" id="sub-reg">Preencha os dados abaixo</p>
         <div id="reg-status" class="status-msg error-msg"></div>
-        <input type="email" id="r_email" placeholder="Seu E-mail">
-        <input type="password" id="r_pass" placeholder="Sua Senha">
-        <input type="text" id="r_resp" placeholder="Resposta Secreta (para recuperar)">
+        
+        <input type="email" id="r_email" placeholder="E-mail do Novo Usuário">
+        <input type="password" id="r_pass" placeholder="Senha de Acesso">
+        <input type="text" id="r_resp_nova" placeholder="Defina SUA Palavra Secreta">
+        
+        <div id="container-admin-key" class="hidden">
+            <input type="password" id="r_admin_pass" placeholder="Palavra Secreta do ADMIN">
+        </div>
+        
         <button class="btn-main" onclick="registrar()" id="btn-r">Salvar Registro</button>
         <span class="link-auth" onclick="alternar('login')" style="margin-top:20px; display:block;">Voltar ao Login</span>
     </div>
@@ -172,10 +178,28 @@
     </div>
 
 <script>
-    const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbx73W0G4cEHBoHCPOgkvkcMgArROxg9jYevJ5OiWexeXfP0RpGQURWjk52WSTeG3Jk3/exec";
+    const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbxB94mCzlo1-ZG00QQKJzcZtlXG3nTSEX6t8gpLEuxlndbdwW07-6_D_2mBugxkKaQC/exec";
+    let sistemaVazio = false;
 
-    // Reestabelece o ano atual automaticamente
     document.getElementById("anoAtual").textContent = new Date().getFullYear();
+
+    async function checarSeVazio() {
+        try {
+            const resp = await fetch(`${URL_SCRIPT}?action=checar_vazio`);
+            const texto = await resp.text();
+            if(texto.trim() === "vazio") {
+                sistemaVazio = true;
+                $('#container-admin-key').addClass('hidden');
+                $('#sub-reg').text("Primeiro acesso: Defina os dados do Dono");
+                $('#icon-reg').removeClass('fa-user-shield').addClass('fa-user-tie');
+            } else {
+                sistemaVazio = false;
+                $('#container-admin-key').removeClass('hidden');
+                $('#sub-reg').text("Preencha os dados e valide com o Admin");
+                $('#icon-reg').removeClass('fa-user-tie').addClass('fa-user-shield');
+            }
+        } catch(e) { console.log("Erro ao checar status"); }
+    }
 
     function aplicarShake(idCard) {
         const card = $(`#${idCard}`);
@@ -194,6 +218,7 @@
         $('.login-card').addClass('hidden').removeClass('shake');
         $('#card-' + tela).removeClass('hidden');
         $('.status-msg, .result-box').hide().text('');
+        if(tela === 'registrar') checarSeVazio();
     }
 
     function ajustarRec() {
@@ -235,11 +260,13 @@
     async function registrar() {
         const email = $('#r_email').val();
         const senha = $('#r_pass').val();
-        const resp_sec = $('#r_resp').val();
+        const resp_nova = $('#r_resp_nova').val();
+        const admin_key = $('#r_admin_pass').val();
         const btn = $('#btn-r');
         const status = $('#reg-status');
 
-        if(!email || !senha || !resp_sec) {
+        // Validação condicional: Se não estiver vazio, exige a admin_key
+        if(!email || !senha || !resp_nova || (!sistemaVazio && !admin_key)) {
             status.text("Preencha todos os campos!").show();
             aplicarShake('card-registrar');
             return;
@@ -247,8 +274,9 @@
 
         btn.prop('disabled', true).text("Salvando...");
         try {
-            const res = await fetch(`${URL_SCRIPT}?action=registrar&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}&resposta=${encodeURIComponent(resp_sec)}`);
-            const texto = await res.text();
+            const url = `${URL_SCRIPT}?action=registrar&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}&resposta=${encodeURIComponent(resp_nova)}&admin_key=${encodeURIComponent(admin_key || '')}`;
+            const resp = await fetch(url);
+            const texto = await resp.text();
             
             if(texto.trim() === "sucesso") {
                 showToast("Conta criada com sucesso!");
@@ -256,6 +284,9 @@
             } else if(texto.trim() === "atualizado") {
                 showToast("Dados atualizados com sucesso!");
                 setTimeout(() => alternar('login'), 2000);
+            } else if(texto.trim() === "negado") {
+                status.text("Palavra do ADMIN incorreta! Autorização negada.").show();
+                aplicarShake('card-registrar');
             } else {
                 status.text("Erro ao processar conta.").show();
                 aplicarShake('card-registrar');
