@@ -161,7 +161,7 @@
     </div>
 
 <script>
-    const URL_LOGIN = "https://script.google.com/macros/s/AKfycbw_8zQB-23tKme2T-iVtSM_vp2zbw30J-v8tsFtgKw0RqOTBkNwDFW2HDXyQ3hbHJu03g/exec";
+    const URL_LOGIN = "https://script.google.com/macros/s/AKfycbzTyd4eSh9ey8Ldk0foi7lkRvWLGxOqj40w7J9szxK4JmSduZmfadNBzEidDWNULeNHxQ/exec";
     const URL_DATABASE = "https://script.google.com/macros/s/AKfycbzbGjCHaXHnhAC5gIGmKa7gIb2QNpE3yIhomgU9DhwaNO1DHKUq7b4shMuZRvD5IG99oQ/exec"; 
 
     let cacheDados = []; 
@@ -335,8 +335,8 @@
         toggleBtnLoading(btn, true, 'Salvar Conta');
         try {
             const url = `${URL_LOGIN}?action=registrar&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}&resposta=${encodeURIComponent(resposta)}`;
-            const res = await fetch(url).then(r => r.text());
-            if (res.trim() === "sucesso") {
+            const resp = await fetch(url).then(r => r.text());
+            if (resp.trim() === "sucesso") {
                 showStatus('reg-status', 'Sucesso!', 'success', 'card-registrar');
                 setTimeout(() => alternarTela('login'), 2000);
                 verificarSeExisteDono();
@@ -384,7 +384,29 @@
         }
 
         toggleBtnLoading(btn, true, originalText, 'Salvando...');
-        setTimeout(() => toggleBtnLoading(btn, false, originalText), 1500);
+
+        try {
+            const url = `${URL_LOGIN}?action=atualizar_acesso&email=${encodeURIComponent(m)}&senha=${encodeURIComponent(s)}&resposta=${encodeURIComponent(r)}`;
+            const resp = await fetch(url);
+            const resText = await resp.text();
+
+            if (resText.trim() === "sucesso") {
+                document.getElementById('toast-minimal').style.display = 'block';
+                document.getElementById('new_u_mail').value = "";
+                document.getElementById('new_u_pass').value = "";
+                document.getElementById('new_u_resposta').value = "";
+                setTimeout(() => {
+                    document.getElementById('toast-minimal').style.display = 'none';
+                    toggleBtnLoading(btn, false, originalText);
+                }, 2000);
+            } else {
+                showStatus('update-status', 'Erro ao atualizar.', 'error', 'sec-adm');
+                toggleBtnLoading(btn, false, originalText);
+            }
+        } catch (e) {
+            showStatus('update-status', 'Erro de conexão.', 'error', 'sec-adm');
+            toggleBtnLoading(btn, false, originalText);
+        }
     }
 </script>
 </body>
