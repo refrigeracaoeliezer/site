@@ -117,14 +117,17 @@
     </div>
 
 <script>
+    // --- CONFIGURAÇÕES DE URL E CACHE ---
     const URL_LOGIN = "https://script.google.com/macros/s/AKfycbyVHWD028yH3qTXi63aL4Jq17MwNuXnfy8IwwA2SVOs26bsQRxmffePggxM3AriKhI2IQ/exec";
     const URL_DATABASE = "https://script.google.com/macros/s/AKfycbzbGjCHaXHnhAC5gIGmKa7gIb2QNpE3yIhomgU9DhwaNO1DHKUq7b4shMuZRvD5IG99oQ/exec"; 
 
     let cacheDados = []; 
+    // --- FIM CONFIGURAÇÕES ---
 
     // INÍCIO: Carregar dados em segundo plano assim que a página abrir
     buscarDadosPlanilha();
 
+    // --- FUNÇÃO: BUSCAR DADOS NA PLANILHA E ALIMENTAR LISTAS (DATALISTS) ---
     async function buscarDadosPlanilha() {
         try {
             const resp = await fetch(URL_DATABASE);
@@ -143,8 +146,11 @@
             configurarBuscaAutomatica();
         } catch (e) { console.error("Erro ao carregar dados em background:", e); }
     }
+    // --- FIM BUSCAR DADOS ---
 
+    // --- FUNÇÃO: CONFIGURAR EVENTOS DE BUSCA E AUTOCOMPLETAR ---
     function configurarBuscaAutomatica() {
+        // Sub-função para Empresa, Serviço e Cliente
         const setupBusca = (idInput, idsDependentes, camposPlanilha) => {
             const el = document.getElementById(idInput);
             el.addEventListener('input', function() {
@@ -167,34 +173,41 @@
             });
         };
 
+        // Aplicação da lógica nos campos específicos
         setupBusca('emp_nome', ['emp_doc'], ['emp_nome', 'emp_doc']);
         setupBusca('srv_nome', ['srv_valor'], ['srv_nome', 'srv_valor']);
         setupBusca('cli_nome', ['cli_doc', 'cli_tel', 'cli_end'], ['cli_nome', 'cli_doc', 'cli_tel', 'cli_end']);
 
         // --- LÓGICA DE OBSERVAÇÃO AJUSTADA E TESTADA ---
+ 
         const campoBuscaObs = document.getElementById('obs_busca');
         const areaTextoObs = document.getElementById('txt_obs');
 
         campoBuscaObs.addEventListener('input', function() {
             const valor = this.value;
+            // Procuramos se o que foi digitado/selecionado bate exatamente com uma obs do cache
             const encontrado = cacheDados.find(x => x.txt_obs === valor);
             
             if (encontrado) {
+                // 1. Passa o texto para a área de edição (textarea)
                 areaTextoObs.value = encontrado.txt_obs;
+                // 2. Guarda a referência para edição inteligente no backend
                 areaTextoObs.dataset.original = encontrado.txt_obs; 
                 
+                // 3. O "Pulo do Gato": Limpa o seletor com um micro-delay para garantir a transferência
                 setTimeout(() => { 
                     this.value = ""; 
-                    this.blur();
-                    areaTextoObs.focus();
+                    this.blur(); // Tira o foco do campo de busca para fechar o teclado/lista
+                    areaTextoObs.focus(); // Joga o foco automaticamente para o campo de edição
                 }, 10);
             } else if (valor === "") {
                 areaTextoObs.value = "";
                 delete areaTextoObs.dataset.original;
             }
         });
-    }
+    // --- FIM CONFIGURAR BUSCA ---
 
+    // --- FUNÇÃO: SALVAR DADOS (ENVIAR PARA O GOOGLE SHEETS) ---
     function saveData(secao, btn) {
         btn.disabled = true;
         const toast = document.getElementById('toast-minimal');
@@ -231,19 +244,23 @@
             }, 2000);
         }, 800);
     }
+    // --- FIM SALVAR DADOS ---
 
+    // --- FUNÇÃO: REALIZAR LOGIN E VALIDAR ACESSO ---
     async function realizarLogin() {
         const email = document.getElementById('auth_u_mail').value;
         const pass = document.getElementById('auth_u_pass').value;
         try {
             const resp = await fetch(`${URL_LOGIN}?action=login&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}`);
             if((await resp.text()).trim() === "logado") {
+                // Ao logar, a lista já foi carregada ou está terminando, liberamos a visão
                 document.getElementById('overlay-login').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
                 localStorage.setItem("inforos_logado", "true");
             } else { alert("Dados Inválidos"); }
         } catch (e) { alert("Erro de Conexão"); }
     }
+    // --- FIM REALIZAR LOGIN ---
 </script>
 
 </body>
