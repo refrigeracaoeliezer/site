@@ -50,31 +50,11 @@
         .btn-save:hover { background: #2563eb; }
         .btn-save:disabled { background: #2d3748; color: #718096; cursor: not-allowed; }
 
-        #btn-entrar { margin-top: 25px; }
-
-        #toast-minimal {
-            position: fixed; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            background: #27a9e3; color: white;
-            padding: 15px 30px; border-radius: 50px;
-            font-weight: 600; font-size: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            display: none; z-index: 10000;
-            animation: fadeInOut 2s ease forwards;
-        }
-
-        @keyframes fadeInOut {
-            0% { opacity: 0; transform: translate(-50%, -60%); }
-            20% { opacity: 1; transform: translate(-50%, -50%); }
-            80% { opacity: 1; transform: translate(-50%, -50%); }
-            100% { opacity: 0; transform: translate(-50%, -40%); }
-        }
-
         #overlay-login { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0d1117; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
         .login-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); padding: 30px; border-radius: 24px; border: 1px solid rgba(30, 64, 175, 0.3); width: 100%; max-width: 380px; text-align: center; transition: 0.3s; }
         
         .link-auth { color: #27a9e3; cursor: pointer; font-size: 13px; }
-        .status-msg { font-size: 13px; margin: 10px 0; display: none; padding: 8px; border-radius: 8px; }
+        .status-msg { font-size: 13px; margin-top: 15px; display: none; padding: 8px; border-radius: 8px; }
         .status-error { color: #ff4b4b; background: rgba(255, 75, 75, 0.1); border: 1px solid rgba(255, 75, 75, 0.2); }
         .status-loading { color: #27a9e3; }
         .status-success { color: #44ff44; background: rgba(68, 255, 68, 0.1); border: 1px solid rgba(68, 255, 68, 0.2); }
@@ -95,7 +75,7 @@
             <input type="text" id="auth_u_mail" placeholder="E-mail" style="margin-top: 20px;">
             <input type="password" id="auth_u_pass" placeholder="Senha" style="margin-top: 10px;">
             <div id="login-status" class="status-msg"></div>
-            <button class="btn-save" id="btn-entrar" onclick="realizarLogin()">Entrar</button>
+            <button class="btn-save" id="btn-entrar" onclick="realizarLogin()" style="margin-top: 25px;">Entrar</button>
             <p style="margin-top: 20px;">
                 <span id="link-registrar-container"><span class="link-auth" onclick="alternarTela('registrar')">Criar Conta</span> | </span>
                 <span class="link-auth" onclick="alternarTela('recuperar')" style="color:#ff4b4b">Esqueci meus dados</span>
@@ -106,7 +86,7 @@
             <h2>Novo Registro</h2>
             <input type="text" id="reg_u_mail" placeholder="E-mail" style="margin-top: 15px;">
             <input type="password" id="reg_u_pass" placeholder="Senha" style="margin-top: 10px;">
-            <input type="text" id="reg_u_pergunta" placeholder="Pergunta Secreta" style="margin-top: 10px;">
+           
             <input type="text" id="reg_u_resposta" placeholder="Resposta da Pergunta" style="margin-top: 10px;">
             <div id="reg-status" class="status-msg"></div>
             <button class="btn-save" id="btn-registrar" onclick="registrarUsuario()" style="margin-top: 25px;">Salvar Conta</button>
@@ -116,18 +96,14 @@
         <div class="login-card hidden" id="card-recuperar">
             <i class="fa-solid fa-shield-halved" style="font-size: 40px; color: #27a9e3; margin-bottom: 20px;"></i>
             <h2>Recuperar Dados</h2>
-            
             <select id="tipo_recuperacao" onchange="ajustarInterfaceRecuperacao()" style="margin-top: 20px;">
                 <option value="email">Quero ver meu E-mail</option>
                 <option value="senha">Quero ver minha Senha</option>
             </select>
-
             <input type="password" id="rec_dado_validacao" placeholder="Confirme sua Senha" style="margin-top: 15px;">
             <input type="text" id="rec_resposta_seguranca" placeholder="Sua Resposta Secreta" style="margin-top: 15px;">
-
             <div id="rec-status" class="status-msg"></div>
             <div id="rec-result" class="result-box"></div>
-
             <button class="btn-save" id="btn-recuperar" onclick="executarRecuperacao()" style="margin-top: 25px;">Verificar Dados</button>
             <p class="link-auth" onclick="alternarTela('login')" style="margin-top: 25px;">Voltar</p>
         </div>
@@ -214,17 +190,13 @@
         }
     }
 
-    // --- LÓGICA DE RECUPERAÇÃO CORRIGIDA ---
     function ajustarInterfaceRecuperacao() {
         const tipo = document.getElementById('tipo_recuperacao').value;
         const inputValidacao = document.getElementById('rec_dado_validacao');
-        
         document.getElementById('rec-result').style.display = "none";
         document.getElementById('rec-status').style.display = "none";
-        document.getElementById('rec-result').innerText = "";
         inputValidacao.value = "";
         document.getElementById('rec_resposta_seguranca').value = "";
-
         if (tipo === 'email') {
             inputValidacao.placeholder = "Confirme sua Senha";
             inputValidacao.type = "password";
@@ -240,31 +212,22 @@
         const resposta = document.getElementById('rec_resposta_seguranca').value;
         const btn = document.getElementById('btn-recuperar');
         const resultBox = document.getElementById('rec-result');
-
         if (!dado1 || !resposta) return showStatus('rec-status', 'Preencha os dois campos.', 'error', 'card-recuperar');
-
         resultBox.style.display = "none";
-        resultBox.innerText = "";
         toggleBtnLoading(btn, true, 'Verificar Dados');
-
         try {
             const url = `${URL_LOGIN}?action=recuperar&tipo=${tipo}&dado1=${encodeURIComponent(dado1)}&resposta=${encodeURIComponent(resposta)}`;
             const resp = await fetch(url);
             const resText = await resp.text();
-
             if (!resText.includes("ERRO") && (resText.includes("Seu E-mail:") || resText.includes("Sua Senha:"))) {
                 showStatus('rec-status', 'Dados localizados!', 'success', 'card-recuperar');
                 resultBox.innerText = resText;
                 resultBox.style.display = "block";
             } else {
                 showStatus('rec-status', 'Dados incorretos ou resposta inválida.', 'error', 'card-recuperar');
-                resultBox.style.display = "none";
             }
-        } catch (e) {
-            showStatus('rec-status', 'Erro de conexão.', 'error', 'card-recuperar');
-        } finally {
-            toggleBtnLoading(btn, false, 'Verificar Dados');
-        }
+        } catch (e) { showStatus('rec-status', 'Erro de conexão.', 'error', 'card-recuperar'); }
+        finally { toggleBtnLoading(btn, false, 'Verificar Dados'); }
     }
 
     async function realizarLogin() {
@@ -320,7 +283,6 @@
         setupBusca('emp_nome', ['emp_doc'], ['emp_nome', 'emp_doc']);
         setupBusca('srv_nome', ['srv_valor'], ['srv_nome', 'srv_valor']);
         setupBusca('cli_nome', ['cli_doc', 'cli_tel', 'cli_end'], ['cli_nome', 'cli_doc', 'cli_tel', 'cli_end']);
-
         const campoBuscaObs = document.getElementById('obs_busca');
         const areaTextoObs = document.getElementById('txt_obs');
         campoBuscaObs.addEventListener('input', function() {
@@ -395,13 +357,14 @@
 
     function toggleSecurity() {
         const f = document.getElementById('security-fields');
-        f.classList.toggle('hidden');
+        f.style.display = (f.style.display === 'flex') ? 'none' : 'flex';
     }
 
     async function atualizarAcesso(originalText) {
         const btn = document.getElementById('btn-update-acesso');
         toggleBtnLoading(btn, true, originalText, 'Salvando...');
-        setTimeout(() => toggleBtnLoading(btn, false, originalText), 1000);
+        // Implementar fetch action=atualizar aqui conforme necessário
+        setTimeout(() => toggleBtnLoading(btn, false, originalText), 1500);
     }
 </script>
 </body>
