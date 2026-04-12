@@ -247,8 +247,9 @@
     </div>
 
 <script>
+    // Seus links oficiais
     const URL_LOGIN = "https://script.google.com/macros/s/AKfycbyVHWD028yH3qTXi63aL4Jq17MwNuXnfy8IwwA2SVOs26bsQRxmffePggxM3AriKhI2IQ/exec";
-    const URL_LOGO = "https://script.google.com/macros/s/AKfycbyc_p5fQfbBRWmPTl0nwrqk_JUL4t3xz3K6QdmMcYLCl6MmtygBfxMf-zrDjlOjaCOx/exec";
+    const URL_LOGO = "https://script.google.com/macros/s/AKfycbwOX55FsHybIvmvD0p8p6Lpd8Lb40QIiERG2k2Gm-xkhe7oKqSTxEnk3jCfgHAzkWT2/exec";
 
     window.onload = verificarSeExisteDono;
 
@@ -274,26 +275,37 @@
         button.innerText = "Enviando ao Drive...";
         button.disabled = true;
 
-        // Usamos URLSearchParams para evitar erros de CORS e limites de JSON
-        const bodyParams = new URLSearchParams();
-        bodyParams.append("action", "save_logo");
-        bodyParams.append("imagem", imgElement.src);
+        // Extrai o Base64 da imagem do preview
+        const base64Data = imgElement.src.split(",")[1];
+        const fileName = "logo_" + new Date().getTime() + ".png";
 
-        fetch(URL_LOGO, {
-            method: 'POST',
-            mode: 'no-cors', // Fundamental para o Google não bloquear a requisição
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: bodyParams.toString()
-        }).then(() => {
-            alert("Solicitação enviada! Aguarde 3 segundos para atualizar.");
-            setTimeout(carregarDadosPlanilha, 3000);
-        }).catch((error) => {
+        // Enviando via POST JSON para o Apps Script
+        try {
+            const response = await fetch(URL_LOGO, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: "save_logo",
+                    file: base64Data,
+                    fileName: fileName
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert("Sucesso! Imagem salva no Drive e link gerado.");
+                // Opcional: carregar os dados novamente após o upload
+                setTimeout(carregarDadosPlanilha, 2000);
+            } else {
+                alert("Erro no servidor: " + result.message);
+            }
+        } catch (error) {
             console.error("Erro:", error);
-            alert("Erro ao conectar com o servidor.");
-        }).finally(() => {
+            alert("Erro ao conectar com o servidor. Verifique a publicação do Script.");
+        } finally {
             button.innerHTML = btnOriginalText;
             button.disabled = false;
-        });
+        }
     }
 
     function previewImage(input) {
@@ -306,7 +318,7 @@
         }
     }
 
-    // --- Outras funções permanecem iguais ---
+    // --- Funções de Login e Interface ---
     function showStatus(id, msg, type) {
         const el = document.getElementById(id);
         el.innerText = msg;
