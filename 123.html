@@ -38,7 +38,6 @@
         .btn-save:hover { background: #2563eb; }
         .btn-save:disabled { background: #2d3748; color: #718096; cursor: not-allowed; }
 
-        /* NOTIFICAÇÃO MINIMALISTA */
         #toast-minimal {
             position: fixed; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
@@ -106,7 +105,7 @@
 
         <div class="config-section">
             <div class="section-title"><i class="fa-solid fa-clipboard-list"></i> Observações Técnicas</div>
-            <input type="text" id="obs_busca" list="lista_obs" placeholder="Buscar ou escrever observação...">
+            <input type="text" id="obs_busca" list="lista_obs" placeholder="Buscar observação existente...">
             <datalist id="lista_obs"></datalist>
             <textarea id="txt_obs" rows="4" placeholder="Escreva as observações técnicas..."></textarea>
             <button class="btn-save" onclick="saveData('obs', this)"><i class="fa-solid fa-save"></i> Salvar Observações</button>
@@ -117,7 +116,7 @@
 
 <script>
     const URL_LOGIN = "https://script.google.com/macros/s/AKfycbyVHWD028yH3qTXi63aL4Jq17MwNuXnfy8IwwA2SVOs26bsQRxmffePggxM3AriKhI2IQ/exec";
-    const URL_DATABASE = "https://script.google.com/macros/s/AKfycbxqgj9xP_Sdl1ZGown_5snJ11wXCspAvrw142O_PyScixcfxjFwyjhYiJhpd3DOz_TtRw/exec"; 
+    const URL_DATABASE = "https://script.google.com/macros/s/AKfycbxWEXbmOr3fcoenP6BYTOyyA9T9ALkLaAur-iL5mUzSkSUdXkl1VfwJIHiUzCU7YGPT/exec"; 
 
     let cacheDados = []; 
 
@@ -131,11 +130,9 @@
             const listSrv = document.getElementById('lista_servicos');
             const listObs = document.getElementById('lista_obs');
 
-            // Preencher listas de seleção com dados únicos
             listEmp.innerHTML = [...new Set(cacheDados.map(d => d.emp_nome))].filter(Boolean).map(n => `<option value="${n}">`).join('');
             listCli.innerHTML = [...new Set(cacheDados.map(d => d.cli_nome))].filter(Boolean).map(n => `<option value="${n}">`).join('');
             listSrv.innerHTML = [...new Set(cacheDados.map(d => d.srv_nome))].filter(Boolean).map(n => `<option value="${n}">`).join('');
-            // Puxar observações para a lista
             listObs.innerHTML = [...new Set(cacheDados.map(d => d.txt_obs))].filter(Boolean).map(n => `<option value="${n}">`).join('');
             
             configurarBuscaAutomatica();
@@ -143,13 +140,13 @@
     }
 
     function configurarBuscaAutomatica() {
-        // Busca Empresa
+        // Busca Empresa -> CNPJ
         document.getElementById('emp_nome').addEventListener('input', function() {
             const encontrado = cacheDados.find(x => x.emp_nome === this.value);
             if(encontrado) document.getElementById('emp_doc').value = encontrado.emp_doc;
         });
 
-        // Busca Cliente
+        // Busca Cliente -> Todos os dados
         document.getElementById('cli_nome').addEventListener('input', function() {
             const encontrado = cacheDados.find(x => x.cli_nome === this.value);
             if(encontrado) {
@@ -159,13 +156,15 @@
             }
         });
 
-        // Busca Serviço
+        // CORREÇÃO: Busca Serviço -> Traz o VALOR para o site
         document.getElementById('srv_nome').addEventListener('input', function() {
             const encontrado = cacheDados.find(x => x.srv_nome === this.value);
-            if(encontrado) document.getElementById('srv_valor').value = encontrado.srv_valor;
+            if(encontrado) {
+                document.getElementById('srv_valor').value = encontrado.srv_valor;
+            }
         });
 
-        // Busca Observação
+        // Busca Observação -> Traz o texto para o textarea
         document.getElementById('obs_busca').addEventListener('input', function() {
             const encontrado = cacheDados.find(x => x.txt_obs === this.value);
             if(encontrado) document.getElementById('txt_obs').value = encontrado.txt_obs;
@@ -191,11 +190,9 @@
 
         setTimeout(() => {
             toast.style.display = 'block';
-            
             document.querySelectorAll('input, textarea').forEach(el => {
                 if(!['auth_u_mail', 'auth_u_pass'].includes(el.id)) el.value = '';
             });
-
             setTimeout(() => {
                 toast.style.display = 'none';
                 btn.disabled = false;
