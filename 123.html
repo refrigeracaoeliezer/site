@@ -39,6 +39,7 @@
             margin-bottom: 25px;
             display: flex;
             flex-direction: column; gap: 15px;
+            transition: border-color 0.3s ease;
         }
 
         .section-title { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 10px; color: #27a9e3; }
@@ -75,7 +76,7 @@
             <input type="text" id="auth_u_mail" placeholder="E-mail" style="margin-top: 20px;">
             <input type="password" id="auth_u_pass" placeholder="Senha" style="margin-top: 10px;">
             <div id="login-status" class="status-msg"></div>
-            <button class="btn-save" id="btn-entrar" onclick="realizarLogin()" style="margin-top: 25px;">Entrar</button>
+            <button class="btn-save" id="btn-entrar" onclick="realizarLogin()">Entrar</button>
             <p style="margin-top: 20px;">
                 <span id="link-registrar-container"><span class="link-auth" onclick="alternarTela('registrar')">Criar Conta</span> | </span>
                 <span class="link-auth" onclick="alternarTela('recuperar')" style="color:#ff4b4b">Esqueci meus dados</span>
@@ -301,7 +302,8 @@
         fields.forEach(f => { if(f.value.trim() !== "") hasValue = true; });
 
         if(!hasValue) {
-            alert("Preencha pelo menos um campo para salvar.");
+            container.classList.add('shake');
+            setTimeout(() => container.classList.remove('shake'), 500);
             return;
         }
 
@@ -333,8 +335,9 @@
         if (!email || !senha || !resposta) return showStatus('reg-status', 'Preencha tudo.', 'error', 'card-registrar');
         toggleBtnLoading(btn, true, 'Salvar Conta');
         try {
-            const resp = await fetch(`${URL_LOGIN}?action=registrar&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}&resposta=${encodeURIComponent(resposta)}`);
-            if ((await resp.text()).trim() === "sucesso") {
+            const url = `${URL_LOGIN}?action=registrar&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}&resposta=${encodeURIComponent(resposta)}`;
+            const res = await fetch(url).then(r => r.text());
+            if (res.trim() === "sucesso") {
                 showStatus('reg-status', 'Sucesso!', 'success', 'card-registrar');
                 setTimeout(() => alternarTela('login'), 2000);
                 verificarSeExisteDono();
@@ -370,12 +373,14 @@
 
     async function atualizarAcesso(originalText) {
         const btn = document.getElementById('btn-update-acesso');
+        const card = document.getElementById('sec-adm');
         const m = document.getElementById('new_u_mail').value;
         const s = document.getElementById('new_u_pass').value;
         const r = document.getElementById('new_u_resposta').value;
 
         if(!m && !s && !r) {
-            alert("Preencha pelo menos um campo para atualizar.");
+            card.classList.add('shake');
+            setTimeout(() => card.classList.remove('shake'), 500);
             return;
         }
 
