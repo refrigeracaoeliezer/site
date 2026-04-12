@@ -19,7 +19,6 @@
         .container { width: 100%; max-width: 600px; }
         h1 { font-size: 28px; font-weight: 700; margin-bottom: 30px; text-align: center; color: #fff; }
 
-        /* EFEITO DE TREMOR (SHAKE) PARA ERROS */
         @keyframes shake {
             10%, 90% { transform: translate3d(-1px, 0, 0); }
             20%, 80% { transform: translate3d(2px, 0, 0); }
@@ -43,15 +42,15 @@
         }
 
         .section-title { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 10px; color: #27a9e3; }
-        input, textarea { background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 12px; color: white; font-size: 14px; width: 100%; outline: none; transition: 0.3s; }
-        input:focus { border-color: #27a9e3; }
+        input, textarea, select { background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 12px; color: white; font-size: 14px; width: 100%; outline: none; transition: 0.3s; }
+        input:focus, select:focus { border-color: #27a9e3; }
         input::placeholder { color: rgba(255,255,255,0.3); }
 
         .btn-save { border: none; padding: 14px; border-radius: 12px; font-weight: 700; background: #1e40af; color: white; cursor: pointer; width: 100%; display: flex; justify-content: center; align-items: center; gap: 10px; transition: 0.3s; }
         .btn-save:hover { background: #2563eb; }
         .btn-save:disabled { background: #2d3748; color: #718096; cursor: not-allowed; }
 
-        #btn-entrar { margin-top: 25px; } /* Ajuste de distância do login */
+        #btn-entrar { margin-top: 25px; }
 
         #toast-minimal {
             position: fixed; top: 50%; left: 50%;
@@ -75,11 +74,12 @@
         .login-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); padding: 30px; border-radius: 24px; border: 1px solid rgba(30, 64, 175, 0.3); width: 100%; max-width: 380px; text-align: center; transition: 0.3s; }
         
         .link-auth { color: #27a9e3; cursor: pointer; font-size: 13px; }
-        .status-msg { font-size: 13px; margin: 10px 0; display: none; padding: 8px; border-radius: 8px; }
+        .status-msg { font-size: 13px; margin-top: 15px; display: none; padding: 8px; border-radius: 8px; }
         .status-error { color: #ff4b4b; background: rgba(255, 75, 75, 0.1); border: 1px solid rgba(255, 75, 75, 0.2); }
         .status-loading { color: #27a9e3; }
         .status-success { color: #44ff44; background: rgba(68, 255, 68, 0.1); border: 1px solid rgba(68, 255, 68, 0.2); }
         
+        .result-box { margin-top: 20px; padding: 15px; border-radius: 12px; background: rgba(39, 169, 227, 0.1); border: 1px dashed #27a9e3; color: #44ff44; font-weight: bold; font-size: 15px; display: none; word-break: break-all; }
         .security-content { display: none; flex-direction: column; gap: 10px; padding-top: 10px; }
         .btn-toggle-security { background: none; border: 1px solid rgba(255,255,255,0.1); color: #27a9e3; padding: 8px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; }
     </style>
@@ -114,20 +114,27 @@
         </div>
 
         <div class="login-card hidden" id="card-recuperar">
-            <h2>Recuperar Acesso</h2>
-            <input type="text" id="rec_u_mail" placeholder="Seu E-mail" onblur="buscarPergunta()" style="margin-top: 15px;">
-            <div id="display-pergunta" style="margin: 10px 0; color: #27a9e3; font-style: italic; font-size: 13px;"></div>
-            <input type="text" id="rec_u_resposta" placeholder="Sua Resposta" style="margin-top: 5px;">
+            <i class="fa-solid fa-shield-halved" style="font-size: 40px; color: #27a9e3; margin-bottom: 20px;"></i>
+            <h2>Recuperar Dados</h2>
+            
+            <select id="tipo_recuperacao" onchange="ajustarInterfaceRecuperacao()" style="margin-top: 20px;">
+                <option value="email">Quero ver meu E-mail</option>
+                <option value="senha">Quero ver minha Senha</option>
+            </select>
+
+            <input type="password" id="rec_dado_validacao" placeholder="Digite sua Senha" style="margin-top: 15px;">
+            <input type="text" id="rec_resposta_seguranca" placeholder="Sua Resposta Secreta" style="margin-top: 15px;">
+
             <div id="rec-status" class="status-msg"></div>
-            <button class="btn-save" id="btn-recuperar" onclick="recuperarSenha()">Verificar Dados</button>
-            <div id="dica-email" style="margin-top: 15px; color: #44ff44; font-weight: bold; font-size: 13px;"></div>
-            <p class="link-auth" onclick="alternarTela('login')" style="margin-top: 15px;">Voltar</p>
+            <div id="rec-result" class="result-box"></div>
+
+            <button class="btn-save" id="btn-recuperar" onclick="executarRecuperacao()" style="margin-top: 25px;">Verificar Dados</button>
+            <p class="link-auth" onclick="alternarTela('login')" style="margin-top: 25px;">Voltar</p>
         </div>
     </div>
 
     <div class="container hidden" id="main-content">
         <h1>Painel de Controle</h1>
-
         <div class="config-section" id="sec-adm">
             <div class="section-title"><i class="fa-solid fa-user-shield"></i> Segurança do Painel</div>
             <button class="btn-toggle-security" onclick="toggleSecurity()">Expandir Opções de Acesso</button>
@@ -179,7 +186,7 @@
     </div>
 
 <script>
-    const URL_LOGIN = "https://script.google.com/macros/s/AKfycbyi3DdSyBu5HGApVpqTFlpie8hDc87_-zESawqMgx8xzlUOCZGYbv9Opx0nwZYhmmSw/exec";
+    const URL_LOGIN = "https://script.google.com/macros/s/AKfycbyVHWD028yH3qTXi63aL4Jq17MwNuXnfy8IwwA2SVOs26bsQRxmffePggxM3AriKhI2IQ/exec";
     const URL_DATABASE = "https://script.google.com/macros/s/AKfycbzbGjCHaXHnhAC5gIGmKa7gIb2QNpE3yIhomgU9DhwaNO1DHKUq7b4shMuZRvD5IG99oQ/exec"; 
 
     let cacheDados = []; 
@@ -206,17 +213,66 @@
         }
     }
 
+    // --- LÓGICA DE RECUPERAÇÃO (ATUALIZADA) ---
+    function ajustarInterfaceRecuperacao() {
+        const tipo = document.getElementById('tipo_recuperacao').value;
+        const inputValidacao = document.getElementById('rec_dado_validacao');
+        
+        document.getElementById('rec-result').style.display = "none";
+        document.getElementById('rec-status').style.display = "none";
+        inputValidacao.value = "";
+        document.getElementById('rec_resposta_seguranca').value = "";
+
+        if (tipo === 'email') {
+            inputValidacao.placeholder = "Confirme sua Senha";
+            inputValidacao.type = "password";
+        } else {
+            inputValidacao.placeholder = "Confirme seu E-mail";
+            inputValidacao.type = "text";
+        }
+    }
+
+    async function executarRecuperacao() {
+        const tipo = document.getElementById('tipo_recuperacao').value;
+        const dado1 = document.getElementById('rec_dado_validacao').value;
+        const resposta = document.getElementById('rec_resposta_seguranca').value;
+        const btn = document.getElementById('btn-recuperar');
+        const resultBox = document.getElementById('rec-result');
+
+        if (!dado1 || !resposta) return showStatus('rec-status', 'Preencha os dois campos.', 'error', 'card-recuperar');
+
+        toggleBtnLoading(btn, true, 'Verificar Dados');
+        resultBox.style.display = "none";
+
+        try {
+            const url = `${URL_LOGIN}?action=recuperar&tipo=${tipo}&dado1=${encodeURIComponent(dado1)}&resposta=${encodeURIComponent(resposta)}`;
+            const resp = await fetch(url);
+            const resText = await resp.text();
+
+            if (resText.includes("Seu E-mail:") || resText.includes("Sua Senha:")) {
+                showStatus('rec-status', 'Dados localizados!', 'success', 'card-recuperar');
+                resultBox.innerText = resText;
+                resultBox.style.display = "block";
+            } else {
+                showStatus('rec-status', resText, 'error', 'card-recuperar');
+            }
+        } catch (e) {
+            showStatus('rec-status', 'Erro de conexão.', 'error', 'card-recuperar');
+        } finally {
+            toggleBtnLoading(btn, false, 'Verificar Dados');
+        }
+    }
+
+    // --- MANTIDAS AS OUTRAS FUNÇÕES ---
     async function realizarLogin() {
         const btn = document.getElementById('btn-entrar');
         const email = document.getElementById('auth_u_mail').value;
         const pass = document.getElementById('auth_u_pass').value;
         if(!email || !pass) return showStatus('login-status', 'Preencha tudo.', 'error', 'card-login');
-        
         toggleBtnLoading(btn, true, 'Entrar');
         try {
             const resp = await fetch(`${URL_LOGIN}?action=login&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}`);
-            const res = await resp.text();
-            if(res.trim() === "logado") {
+            if((await resp.text()).trim() === "logado") {
                 document.getElementById('overlay-login').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
                 localStorage.setItem("inforos_logado", "true");
@@ -295,12 +351,30 @@
         }, 800);
     }
 
+    async function registrarUsuario() {
+        const btn = document.getElementById('btn-registrar');
+        const email = document.getElementById('reg_u_mail').value;
+        const senha = document.getElementById('reg_u_pass').value;
+        const pergunta = document.getElementById('reg_u_pergunta').value;
+        const resposta = document.getElementById('reg_u_resposta').value;
+        if (!email || !senha || !pergunta || !resposta) return showStatus('reg-status', 'Preencha tudo.', 'error', 'card-registrar');
+        toggleBtnLoading(btn, true, 'Salvar Conta');
+        try {
+            const resp = await fetch(`${URL_LOGIN}?action=registrar&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}&pergunta=${encodeURIComponent(pergunta)}&resposta=${encodeURIComponent(resposta)}`);
+            if ((await resp.text()).trim() === "sucesso") {
+                showStatus('reg-status', 'Sucesso!', 'success', 'card-registrar');
+                setTimeout(() => alternarTela('login'), 2000);
+                verificarSeExisteDono();
+            } else { showStatus('reg-status', 'Erro ao registrar.', 'error', 'card-registrar'); }
+        } catch (e) { showStatus('reg-status', 'Erro de conexão.', 'error', 'card-registrar'); }
+        finally { toggleBtnLoading(btn, false, 'Salvar Conta'); }
+    }
+
     async function verificarSeExisteDono() {
         const btnReg = document.getElementById('btn-registrar');
         try {
             const resp = await fetch(`${URL_LOGIN}?action=checar_registro`);
-            const existe = await resp.text();
-            if (existe.trim() === "tem_dono") {
+            if ((await resp.text()).trim() === "tem_dono") {
                 document.getElementById('link-registrar-container').classList.add('hidden');
                 btnReg.disabled = true;
                 btnReg.innerText = "Conta Administrador já existe";
@@ -311,57 +385,15 @@
     }
 
     function alternarTela(tela) {
-        document.getElementById('card-login').classList.add('hidden');
-        document.getElementById('card-registrar').classList.add('hidden');
-        document.getElementById('card-recuperar').classList.add('hidden');
+        document.querySelectorAll('.login-card').forEach(c => c.classList.add('hidden'));
         document.getElementById('card-' + tela).classList.remove('hidden');
+        if(tela === 'recuperar') ajustarInterfaceRecuperacao();
     }
 
     function toggleSecurity() {
         const f = document.getElementById('security-fields');
-        f.style.display = (f.style.display === 'flex') ? 'none' : 'flex';
+        f.classList.toggle('hidden');
     }
-
-    async function registrarUsuario() {
-        const btn = document.getElementById('btn-registrar');
-        const email = document.getElementById('reg_u_mail').value;
-        const senha = document.getElementById('reg_u_pass').value;
-        const pergunta = document.getElementById('reg_u_pergunta').value;
-        const resposta = document.getElementById('reg_u_resposta').value;
-
-        if (!email || !senha || !pergunta || !resposta) {
-            return showStatus('reg-status', 'Preencha todos os campos.', 'error', 'card-registrar');
-        }
-
-        toggleBtnLoading(btn, true, 'Salvar Conta');
-        try {
-            const url = `${URL_LOGIN}?action=registrar&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}&pergunta=${encodeURIComponent(pergunta)}&resposta=${encodeURIComponent(resposta)}`;
-            const resp = await fetch(url);
-            const res = await resp.text();
-
-            if (res.trim() === "sucesso") {
-                showStatus('reg-status', 'Conta criada com sucesso!', 'success', 'card-registrar');
-                setTimeout(() => alternarTela('login'), 2000);
-                verificarSeExisteDono();
-            } else {
-                showStatus('reg-status', 'Erro: ' + res, 'error', 'card-registrar');
-            }
-        } catch (e) {
-            showStatus('reg-status', 'Erro de conexão.', 'error', 'card-registrar');
-        } finally {
-            toggleBtnLoading(btn, false, 'Salvar Conta');
-        }
-    }
-
-    async function atualizarAcesso(originalText) {
-        const btn = document.getElementById('btn-update-acesso');
-        toggleBtnLoading(btn, true, originalText, 'Salvando...');
-        // Implementar fetch aqui se necessário
-        setTimeout(() => toggleBtnLoading(btn, false, originalText), 1000);
-    }
-
-    async function buscarPergunta() { /* implementar fetch action=get_pergunta */ }
-    async function recuperarSenha() { /* implementar fetch action=recuperar */ }
 </script>
 </body>
 </html>
