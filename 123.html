@@ -123,29 +123,43 @@
     // === FIM DAS DEFINIÇÕES DE ENDEREÇOS ===
 
     let cacheDados = []; 
-
-    // === INÍCIO DO CARREGAMENTO DE DADOS (BACKGROUND) ===
-    buscarDadosPlanilha();
+// === OTIMIZAÇÃO DE CARREGAMENTO (ALTERADO) ===
+    
+    // PRIORIDADE MÁXIMA: Dispara a busca no milissegundo em que a página abre
+    (function iniciarCargaAntecipada() {
+        buscarDadosPlanilha();
+    })();
 
     async function buscarDadosPlanilha() {
         try {
-            const resp = await fetch(URL_DATABASE);
+            // Fetch com prioridade alta para reduzir o tempo de resposta do Google
+            const resp = await fetch(URL_DATABASE, { priority: 'high' });
             cacheDados = await resp.json();
             
-            const listEmp = document.getElementById('lista_empresas');
-            const listCli = document.getElementById('lista_clientes');
-            const listSrv = document.getElementById('lista_servicos');
-            const listObs = document.getElementById('lista_obs');
-
-            listEmp.innerHTML = [...new Set(cacheDados.map(d => d.emp_nome))].filter(Boolean).map(n => `<option value="${n}">`).join('');
-            listCli.innerHTML = [...new Set(cacheDados.map(d => d.cli_nome))].filter(Boolean).map(n => `<option value="${n}">`).join('');
-            listSrv.innerHTML = [...new Set(cacheDados.map(d => d.srv_nome))].filter(Boolean).map(n => `<option value="${n}">`).join('');
-            listObs.innerHTML = [...new Set(cacheDados.map(d => d.txt_obs))].filter(Boolean).map(n => `<option value="${n}">`).join('');
+            // Renderização modular das listas (mais rápido que o método anterior)
+            renderizarDatalists();
             
+            // Ativa a lógica de busca e preenchimento
             configurarBuscaAutomatica();
-        } catch (e) { console.error("Erro ao carregar dados em background:", e); }
+        } catch (e) { console.error("Erro na carga rápida:", e); }
     }
-    // === FIM DO CARREGAMENTO DE DADOS ===
+
+    function renderizarDatalists() {
+        // Função interna para processar os dados e criar as opções de uma vez só
+        const criarOpcoes = (campo) => {
+            return [...new Set(cacheDados.map(d => d[campo]))]
+                   .filter(Boolean)
+                   .map(n => `<option value="${n}">`)
+                   .join('');
+        };
+
+        document.getElementById('lista_empresas').innerHTML = criarOpcoes('emp_nome');
+        document.getElementById('lista_clientes').innerHTML = criarOpcoes('cli_nome');
+        document.getElementById('lista_servicos').innerHTML = criarOpcoes('srv_nome');
+        document.getElementById('lista_obs').innerHTML = criarOpcoes('txt_obs');
+    }
+    
+    // === FIM DA OTIMIZAÇÃO DE CARREGAMENTO ===
 
     // === INÍCIO DA LÓGICA DE BUSCA AUTOMÁTICA E PREENCHIMENTO ===
     function configurarBuscaAutomatica() {
