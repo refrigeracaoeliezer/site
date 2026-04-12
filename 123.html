@@ -118,7 +118,7 @@
 
 <script>
     const URL_LOGIN = "https://script.google.com/macros/s/AKfycbyVHWD028yH3qTXi63aL4Jq17MwNuXnfy8IwwA2SVOs26bsQRxmffePggxM3AriKhI2IQ/exec";
-    const URL_DATABASE = "https://script.google.com/macros/s/AKfycbyGvAm4ApMTxRA_zZyO6G8gj1l4sxQT6S86RIlw0UUU3P-GUPRj50FySyvMOqVMK-ebQw/exec"; 
+    const URL_DATABASE = "https://script.google.com/macros/s/AKfycbwaM7fFngdlPhwMoSy-oIjWkF0REd_uLVa5im_GeA-_cTUBw33vx-9Uxob5lcJobYnKPw/exec"; 
 
     let cacheDados = []; 
 
@@ -176,14 +176,20 @@
             }
         });
 
-        // Busca Observação - LOGICA MELHORADA
-        document.getElementById('obs_busca').addEventListener('input', function() {
-            const encontrado = cacheDados.find(x => x.txt_obs === this.value);
+        // Busca Observação - LOGICA CORRIGIDA PARA SELEÇÃO REPETIDA
+        const campoBuscaObs = document.getElementById('obs_busca');
+        const areaTextoObs = document.getElementById('txt_obs');
+
+        campoBuscaObs.addEventListener('input', function() {
+            const valorDigitado = this.value;
+            const encontrado = cacheDados.find(x => x.txt_obs === valorDigitado);
+            
             if(encontrado) {
-                document.getElementById('txt_obs').value = encontrado.txt_obs;
-                this.value = ""; // Limpa o seletor após "colar" no textarea
+                areaTextoObs.value = encontrado.txt_obs;
+                // Limpa o campo de busca com um pequeno delay para permitir nova seleção imediata
+                setTimeout(() => { this.value = ""; }, 100); 
             } else if (this.value === "") {
-                document.getElementById('txt_obs').value = "";
+                areaTextoObs.value = "";
             }
         });
     }
