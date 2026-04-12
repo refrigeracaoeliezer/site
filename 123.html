@@ -54,7 +54,7 @@
         .login-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); padding: 30px; border-radius: 24px; border: 1px solid rgba(30, 64, 175, 0.3); width: 100%; max-width: 380px; text-align: center; transition: 0.3s; }
         
         .link-auth { color: #27a9e3; cursor: pointer; font-size: 13px; }
-        .status-msg { font-size: 13px; margin-top: 15px; display: none; padding: 8px; border-radius: 8px; }
+        .status-msg { font-size: 13px; margin: 10px 0; display: none; padding: 8px; border-radius: 8px; }
         .status-error { color: #ff4b4b; background: rgba(255, 75, 75, 0.1); border: 1px solid rgba(255, 75, 75, 0.2); }
         .status-loading { color: #27a9e3; }
         .status-success { color: #44ff44; background: rgba(68, 255, 68, 0.1); border: 1px solid rgba(68, 255, 68, 0.2); }
@@ -86,7 +86,6 @@
             <h2>Novo Registro</h2>
             <input type="text" id="reg_u_mail" placeholder="E-mail" style="margin-top: 15px;">
             <input type="password" id="reg_u_pass" placeholder="Senha" style="margin-top: 10px;">
-           
             <input type="text" id="reg_u_resposta" placeholder="Resposta da Pergunta" style="margin-top: 10px;">
             <div id="reg-status" class="status-msg"></div>
             <button class="btn-save" id="btn-registrar" onclick="registrarUsuario()" style="margin-top: 25px;">Salvar Conta</button>
@@ -118,45 +117,44 @@
             <div id="security-fields" class="security-content">
                 <input type="text" id="new_u_mail" placeholder="Novo E-mail">
                 <input type="password" id="new_u_pass" placeholder="Nova Senha">
-                <input type="text" id="new_u_pergunta" placeholder="Nova Pergunta Secreta">
                 <input type="text" id="new_u_resposta" placeholder="Nova Resposta Secreta">
                 <div id="update-status" class="status-msg"></div>
                 <button class="btn-save" id="btn-update-acesso" onclick="atualizarAcesso('Atualizar Acesso')">Atualizar Acesso</button>
             </div>
         </div>
 
-        <div class="config-section">
+        <div class="config-section" id="sec-empresa">
             <div class="section-title"><i class="fa-solid fa-building"></i> Identidade da Empresa</div>
             <input type="text" id="emp_nome" list="lista_empresas" placeholder="Selecione a Empresa...">
             <datalist id="lista_empresas"></datalist>
             <input type="text" id="emp_doc" placeholder="CNPJ / CPF">
-            <button class="btn-save" onclick="saveData('empresa', this, 'Salvar Empresa')">Salvar Empresa</button>
+            <button class="btn-save" onclick="saveData('sec-empresa', this, 'Salvar Empresa')">Salvar Empresa</button>
         </div>
 
-        <div class="config-section">
+        <div class="config-section" id="sec-servico">
             <div class="section-title"><i class="fa-solid fa-gears"></i> Detalhes do Serviço</div>
             <input type="text" id="srv_nome" list="lista_servicos" placeholder="Selecione o Serviço...">
             <datalist id="lista_servicos"></datalist>
             <input type="text" id="srv_valor" placeholder="Valor R$">
-            <button class="btn-save" onclick="saveData('servico', this, 'Salvar Serviço')">Salvar Serviço</button>
+            <button class="btn-save" onclick="saveData('sec-servico', this, 'Salvar Serviço')">Salvar Serviço</button>
         </div>
 
-        <div class="config-section">
+        <div class="config-section" id="sec-cliente">
             <div class="section-title"><i class="fa-solid fa-user"></i> Dados do Cliente</div>
             <input type="text" id="cli_nome" list="lista_clientes" placeholder="Selecione o Cliente...">
             <datalist id="lista_clientes"></datalist>
             <input type="text" id="cli_doc" placeholder="CPF / CNPJ">
             <input type="tel" id="cli_tel" placeholder="WhatsApp">
             <input type="text" id="cli_end" placeholder="Endereço Completo">
-            <button class="btn-save" onclick="saveData('cliente', this, 'Salvar Cliente')">Salvar Cliente</button>
+            <button class="btn-save" onclick="saveData('sec-cliente', this, 'Salvar Cliente')">Salvar Cliente</button>
         </div>
 
-        <div class="config-section">
+        <div class="config-section" id="sec-obs">
             <div class="section-title"><i class="fa-solid fa-clipboard-list"></i> Observações Técnicas</div>
             <input type="text" id="obs_busca" list="lista_obs" placeholder="Pesquisar observação salva...">
             <datalist id="lista_obs"></datalist>
             <textarea id="txt_obs" rows="5" placeholder="Edite o texto aqui..."></textarea>
-            <button class="btn-save" onclick="saveData('obs', this, 'Salvar Observações')">Salvar Observações</button>
+            <button class="btn-save" onclick="saveData('sec-obs', this, 'Salvar Observações')">Salvar Observações</button>
         </div>
         
         <p style="text-align: center; color: grey; font-size: 10px; margin-bottom: 40px;">SISTEMA V3.0 PROFESSIONAL</p>
@@ -295,7 +293,18 @@
         });
     }
 
-    function saveData(secao, btn, originalText) {
+    function saveData(sectionId, btn, originalText) {
+        const container = document.getElementById(sectionId);
+        const fields = container.querySelectorAll('input, textarea');
+        let hasValue = false;
+        
+        fields.forEach(f => { if(f.value.trim() !== "") hasValue = true; });
+
+        if(!hasValue) {
+            alert("Preencha pelo menos um campo para salvar.");
+            return;
+        }
+
         toggleBtnLoading(btn, true, originalText, "Salvando...");
         const payload = {
             emp_nome: document.getElementById('emp_nome').value, emp_doc: document.getElementById('emp_doc').value,
@@ -307,7 +316,7 @@
         fetch(URL_DATABASE, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
         setTimeout(() => {
             document.getElementById('toast-minimal').style.display = 'block';
-            document.querySelectorAll('#main-content input, #main-content textarea').forEach(el => el.value = '');
+            fields.forEach(el => el.value = '');
             setTimeout(() => { 
                 document.getElementById('toast-minimal').style.display = 'none'; 
                 toggleBtnLoading(btn, false, originalText);
@@ -320,12 +329,11 @@
         const btn = document.getElementById('btn-registrar');
         const email = document.getElementById('reg_u_mail').value;
         const senha = document.getElementById('reg_u_pass').value;
-        const pergunta = document.getElementById('reg_u_pergunta').value;
         const resposta = document.getElementById('reg_u_resposta').value;
-        if (!email || !senha || !pergunta || !resposta) return showStatus('reg-status', 'Preencha tudo.', 'error', 'card-registrar');
+        if (!email || !senha || !resposta) return showStatus('reg-status', 'Preencha tudo.', 'error', 'card-registrar');
         toggleBtnLoading(btn, true, 'Salvar Conta');
         try {
-            const resp = await fetch(`${URL_LOGIN}?action=registrar&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}&pergunta=${encodeURIComponent(pergunta)}&resposta=${encodeURIComponent(resposta)}`);
+            const resp = await fetch(`${URL_LOGIN}?action=registrar&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}&resposta=${encodeURIComponent(resposta)}`);
             if ((await resp.text()).trim() === "sucesso") {
                 showStatus('reg-status', 'Sucesso!', 'success', 'card-registrar');
                 setTimeout(() => alternarTela('login'), 2000);
@@ -362,8 +370,16 @@
 
     async function atualizarAcesso(originalText) {
         const btn = document.getElementById('btn-update-acesso');
+        const m = document.getElementById('new_u_mail').value;
+        const s = document.getElementById('new_u_pass').value;
+        const r = document.getElementById('new_u_resposta').value;
+
+        if(!m && !s && !r) {
+            alert("Preencha pelo menos um campo para atualizar.");
+            return;
+        }
+
         toggleBtnLoading(btn, true, originalText, 'Salvando...');
-        // Implementar fetch action=atualizar aqui conforme necessário
         setTimeout(() => toggleBtnLoading(btn, false, originalText), 1500);
     }
 </script>
