@@ -175,26 +175,35 @@
         setupBusca('srv_nome', ['srv_valor'], ['srv_nome', 'srv_valor']);
         setupBusca('cli_nome', ['cli_doc', 'cli_tel', 'cli_end'], ['cli_nome', 'cli_doc', 'cli_tel', 'cli_end']);
 
-      // --- INÍCIO DA LÓGICA DE OBSERVAÇÃO AJUSTADA ---
-        const campoBuscaObs = document.getElementById('obs_busca');
-        const areaTextoObs = document.getElementById('txt_obs');
+  // --- INÍCIO DA LÓGICA DE OBSERVAÇÃO AJUSTADA ---
+    const campoBuscaObs = document.getElementById('obs_busca');
+    const areaTextoObs = document.getElementById('txt_obs');
 
-        campoBuscaObs.addEventListener('input', function() {
-            const valor = this.value;
-            const encontrado = cacheDados.find(x => x.txt_obs === valor);
-            if (encontrado) {
-                areaTextoObs.value = encontrado.txt_obs;
-                // Guardamos o texto original para o script saber o que substituir
-                areaTextoObs.dataset.original = encontrado.txt_obs; 
-                setTimeout(() => { this.value = ""; }, 500);
-            } else if (valor === "") {
-                areaTextoObs.value = "";
-                delete areaTextoObs.dataset.original;
-   
-            }
-        });
-    }
-    // === FIM DA LÓGICA DE BUSCA AUTOMÁTICA ===
+    campoBuscaObs.addEventListener('input', function() {
+        const valor = this.value;
+        const encontrado = cacheDados.find(x => x.txt_obs === valor);
+
+        if (encontrado) {
+            // 1. Passa o texto para a área de edição (textarea)
+            areaTextoObs.value = encontrado.txt_obs;
+            
+            // 2. Guarda a referência para edição inteligente no backend
+            areaTextoObs.dataset.original = encontrado.txt_obs; 
+            
+            // 3. Limpa o seletor e move o foco para o campo de edição
+            setTimeout(() => { 
+                this.value = "";      // Faz o texto sumir da barra de busca
+                this.blur();         // Fecha a lista de sugestões
+                areaTextoObs.focus(); // Joga o cursor para o campo de baixo
+            }, 10); // Delay mínimo de 10ms para garantir a transferência dos dados
+            
+        } else if (valor === "") {
+            areaTextoObs.value = "";
+            delete areaTextoObs.dataset.original;
+        }
+    });
+ }
+    // === FIM DA LÓGICA DE OBSERVAÇÃO AJUSTADA ===
 
     // === INÍCIO DA FUNÇÃO DE SALVAMENTO (POST) ===
     function saveData(secao, btn) {
