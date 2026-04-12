@@ -6,7 +6,6 @@
             window.location.href = "https://refrigeracaoeliezer.github.io/site/";
         }
     </script>
-
     <meta charset="UTF-8">
     <title>Configurações | Refrigeração</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -16,39 +15,43 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
-        body {
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
-            background: #0d1117;
-            color: white;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            overflow-x: hidden;
+        body { 
+            font-family: 'Inter', sans-serif; 
+            min-height: 100vh; 
+            background: #0d1117; 
+            color: white; 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            position: relative;
+            overflow-x: hidden; /* Garante que as bolas de fundo não criem rolagem lateral */
         }
 
-        .background-glow {
+        /* --- ESTILO DAS ESFERAS DE FUNDO --- */
+        .corner-ball {
             position: fixed;
-            width: 300px;
-            height: 300px;
-            background: rgba(30, 64, 175, 0.15);
-            filter: blur(80px);
+            background: rgba(255, 255, 255, 0.02);
             border-radius: 50%;
-            z-index: -1;
-            top: 10%;
+            z-index: 1;
+            pointer-events: none;
         }
+        .ball-top-right { width: 550px; height: 550px; top: -200px; right: -150px; }
+        .ball-bottom-left { width: 450px; height: 450px; bottom: -150px; left: -150px; }
 
-        .container { 
-            width: 100%; 
-            max-width: 600px;
+        .hidden { display: none !important; }
+        .container { width: 100%; max-width: 600px; position: relative; z-index: 10; }
+        h1 { font-size: 28px; font-weight: 700; margin-bottom: 30px; text-align: center; color: #fff; }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
         }
-
-        h1 { 
-            font-size: 28px; 
-            font-weight: 700; 
-            margin-bottom: 30px; 
-            text-align: center;
+        .shake { 
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; 
+            border-color: #ff4b4b !important; 
         }
 
         .config-section {
@@ -59,229 +62,394 @@
             border-radius: 20px;
             padding: 20px;
             margin-bottom: 25px;
-            width: 100%;
             display: flex;
-            flex-direction: column;
-            gap: 15px;
+            flex-direction: column; gap: 15px;
         }
 
-        .section-title {
-            font-size: 16px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            padding-bottom: 10px;
+        .section-title { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 10px; color: #27a9e3; }
+        input, textarea, select { background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 12px; color: white; font-size: 14px; width: 100%; outline: none; transition: 0.3s; }
+        input:focus, select:focus { border-color: #27a9e3; }
+        input::placeholder { color: rgba(255,255,255,0.3); }
+
+        .btn-save { border: none; padding: 14px; border-radius: 12px; font-weight: 700; background: #1e40af; color: white; cursor: pointer; width: 100%; display: flex; justify-content: center; align-items: center; gap: 10px; transition: 0.3s; margin-top: 25px; }
+        .btn-save:hover { background: #2563eb; }
+        .btn-save:disabled { background: #2d3748; color: #718096; cursor: not-allowed; }
+
+        #toast-minimal {
+            position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: #27a9e3; color: white;
+            padding: 15px 30px; border-radius: 50px;
+            font-weight: 600; font-size: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: none; z-index: 10000;
+            animation: fadeInOut 2s ease forwards;
         }
 
-        .section-title i { color: #27a9e3; }
-
-        .logo-box {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translate(-50%, -60%); }
+            20% { opacity: 1; transform: translate(-50%, -50%); }
+            80% { opacity: 1; transform: translate(-50%, -50%); }
+            100% { opacity: 0; transform: translate(-50%, -40%); }
         }
 
-        .logo-preview {
-            width: 120px;
-            height: 120px;
-            border-radius: 15px;
-            background: rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid rgba(255,255,255,0.1);
-            overflow: hidden;
-        }
+        #overlay-login { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0d1117; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .login-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 30px; border-radius: 24px; border: 1px solid rgba(30, 64, 175, 0.3); width: 100%; max-width: 380px; text-align: center; transition: 0.3s; z-index: 10; }
         
-        .logo-preview img { width: 100%; height: 100%; object-fit: contain; }
-
-        .grid-inputs {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 15px;
-        }
-
-        .input-group { display: flex; flex-direction: column; gap: 6px; width: 100%; }
-        .input-group label { font-size: 11px; color: rgba(255, 255, 255, 0.5); text-transform: uppercase; font-weight: 700; }
+        .link-auth { color: #27a9e3; cursor: pointer; font-size: 13px; }
+        .status-msg { font-size: 13px; margin: 10px 0; display: none; padding: 8px; border-radius: 8px; }
+        .status-error { color: #ff4b4b; background: rgba(255, 75, 75, 0.1); border: 1px solid rgba(255, 75, 75, 0.2); }
+        .status-loading { color: #27a9e3; }
+        .status-success { color: #44ff44; background: rgba(68, 255, 68, 0.1); border: 1px solid rgba(68, 255, 68, 0.2); }
         
-        input, textarea {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            padding: 12px;
-            color: white;
-            font-size: 14px;
-            width: 100%;
-            transition: 0.3s;
-        }
-
-        input:focus, textarea:focus { border-color: #27a9e3; outline: none; background: rgba(0, 0, 0, 0.5); }
-
-        .btn-save {
-            border: none;
-            padding: 14px;
-            border-radius: 12px;
-            font-weight: 700;
-            background: #1e40af;
-            color: white;
-            cursor: pointer;
-            transition: 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            width: 100%;
-            margin-top: 5px;
-        }
-
-        .btn-save:hover { background: #2563eb; transform: translateY(-2px); }
-        .btn-save i { font-size: 14px; }
-
-        @media (max-width: 480px) {
-            h1 { font-size: 24px; }
-            .config-section { padding: 18px; }
-        }
+        .result-box { margin-top: 20px; padding: 15px; border-radius: 12px; background: rgba(39, 169, 227, 0.1); border: 1px dashed #27a9e3; color: #44ff44; font-weight: bold; font-size: 15px; display: none; word-break: break-all; }
+        .security-content { display: none; flex-direction: column; gap: 10px; padding-top: 10px; }
+        .btn-toggle-security { background: none; border: 1px solid rgba(255,255,255,0.1); color: #27a9e3; padding: 8px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; }
     </style>
 </head>
 <body>
 
-    <div class="background-glow"></div>
+    <div class="corner-ball ball-top-right"></div>
+    <div class="corner-ball ball-bottom-left"></div>
 
-    <div class="container">
-        <h1>Configurações</h1>
+    <div id="toast-minimal">Salvo com sucesso!</div>
 
-        <div class="config-section">
-            <div class="section-title"><i class="fa-solid fa-image"></i> Logo da Empresa</div>
-            <div class="logo-box">
-                <div class="logo-preview" id="logoPreview">
-                    <i class="fa-solid fa-camera" style="font-size: 30px; color: rgba(255,255,255,0.1);"></i>
-                </div>
-                <input type="file" id="logoInput" accept="image/*" onchange="previewImage(this)">
-            </div>
-            <button class="btn-save" onclick="saveData('logo')"><i class="fa-solid fa-floppy-disk"></i> Salvar Logo</button>
+    <div id="overlay-login">
+        <div class="login-card" id="card-login">
+            <i class="fa-solid fa-lock" style="font-size: 40px; color: #1e40af; margin-bottom: 20px;"></i>
+            <h2>Acesso Restrito</h2>
+            <input type="text" id="auth_u_mail" placeholder="E-mail" style="margin-top: 20px;">
+            <input type="password" id="auth_u_pass" placeholder="Senha" style="margin-top: 10px;">
+            <div id="login-status" class="status-msg"></div>
+            <button class="btn-save" id="btn-entrar" onclick="realizarLogin()">Entrar</button>
+            <p style="margin-top: 20px;">
+                <span id="link-registrar-container"><span class="link-auth" onclick="alternarTela('registrar')">Criar Conta</span> | </span>
+                <span class="link-auth" onclick="alternarTela('recuperar')" style="color:#ff4b4b">Esqueci meus dados</span>
+            </p>
         </div>
 
-        <div class="config-section">
-            <div class="section-title"><i class="fa-solid fa-building"></i> Identidade da Empresa</div>
-            <div class="grid-inputs">
-                <div class="input-group">
-                    <label>Nome Fantasia</label>
-                    <input type="text" id="emp_nome" list="lista_empresas" placeholder="Buscar ou digitar empresa...">
-                    <datalist id="lista_empresas">
-                        <option value="Refrigeração Eliezer">
-                    </datalist>
-                </div>
-                <div class="input-group">
-                    <label>CNPJ / CPF</label>
-                    <input type="text" id="emp_doc">
-                </div>
-            </div>
-            <button class="btn-save" onclick="saveData('empresa')"><i class="fa-solid fa-floppy-disk"></i> Salvar Empresa</button>
+        <div class="login-card hidden" id="card-registrar">
+            <h2>Novo Registro</h2>
+            <input type="text" id="reg_u_mail" placeholder="E-mail" style="margin-top: 15px;">
+            <input type="password" id="reg_u_pass" placeholder="Senha" style="margin-top: 10px;">
+            <input type="text" id="reg_u_resposta" placeholder="Resposta da Pergunta" style="margin-top: 10px;">
+            <div id="reg-status" class="status-msg"></div>
+            <button class="btn-save" id="btn-registrar" onclick="registrarUsuario()">Salvar Conta</button>
+            <p class="link-auth" onclick="alternarTela('login')" style="margin-top: 25px;">Voltar</p>
         </div>
 
-        <div class="config-section">
-            <div class="section-title"><i class="fa-solid fa-gears"></i> Detalhes do Serviço</div>
-            <div class="grid-inputs">
-                <div class="input-group">
-                    <label>Descrição do Serviço</label>
-                    <input type="text" id="srv_nome" list="lista_servicos" placeholder="Buscar serviço...">
-                    <datalist id="lista_servicos">
-                        <option value="Higienização de Ar Condicionado">
-                        <option value="Carga de Gás">
-                    </datalist>
-                </div>
-                <div class="input-group">
-                    <label>Valor (R$)</label>
-                    <input type="number" id="srv_valor" placeholder="0.00">
-                </div>
-            </div>
-            <button class="btn-save" onclick="saveData('servico')"><i class="fa-solid fa-floppy-disk"></i> Salvar Serviço</button>
+        <div class="login-card hidden" id="card-recuperar">
+            <i class="fa-solid fa-shield-halved" style="font-size: 40px; color: #27a9e3; margin-bottom: 20px;"></i>
+            <h2>Recuperar Dados</h2>
+            <select id="tipo_recuperacao" onchange="ajustarInterfaceRecuperacao()" style="margin-top: 20px;">
+                <option value="email">Quero ver meu E-mail</option>
+                <option value="senha">Quero ver minha Senha</option>
+            </select>
+            <input type="password" id="rec_dado_validacao" placeholder="Confirme sua Senha" style="margin-top: 15px;">
+            <input type="text" id="rec_resposta_seguranca" placeholder="Sua Resposta Secreta" style="margin-top: 15px;">
+            <div id="rec-status" class="status-msg"></div>
+            <div id="rec-result" class="result-box"></div>
+            <button class="btn-save" id="btn-recuperar" onclick="executarRecuperacao()">Verificar Dados</button>
+            <p class="link-auth" onclick="alternarTela('login')" style="margin-top: 25px;">Voltar</p>
         </div>
-
-        <div class="config-section">
-            <div class="section-title"><i class="fa-solid fa-user"></i> Dados do Cliente</div>
-            <div class="grid-inputs">
-                <div class="input-group">
-                    <label>Nome do Cliente</label>
-                    <input type="text" id="cli_nome" list="lista_clientes" placeholder="Buscar cliente...">
-                    <datalist id="lista_clientes">
-                        <option value="João Silva">
-                    </datalist>
-                </div>
-                <div class="input-group">
-                    <label>CPF / CNPJ</label>
-                    <input type="text" id="cli_doc">
-                </div>
-                <div class="input-group">
-                    <label>WhatsApp</label>
-                    <input type="tel" id="cli_tel">
-                </div>
-                <div class="input-group">
-                    <label>Endereço</label>
-                    <input type="text" id="cli_end">
-                </div>
-            </div>
-            <button class="btn-save" onclick="saveData('cliente')"><i class="fa-solid fa-floppy-disk"></i> Salvar Cliente</button>
-        </div>
-
-        <div class="config-section">
-            <div class="section-title"><i class="fa-solid fa-clipboard-list"></i> Observações Técnicas</div>
-            <div class="grid-inputs">
-                <div class="input-group">
-                    <label>Puxar Modelo de Texto</label>
-                    <input type="text" id="obs_busca" list="lista_obs" placeholder="Ex: Garantia, Checklist..." oninput="checkObsSelection()">
-                    <datalist id="lista_obs">
-                        <option value="Garantia Padrão (90 dias)">
-                        <option value="Checklist de Manutenção">
-                        <option value="Termos de Instalação">
-                    </datalist>
-                </div>
-                <div class="input-group">
-                    <label>Conteúdo para Orçamento</label>
-                    <textarea id="txt_obs" rows="6" placeholder="O texto aparecerá aqui para ser editado..."></textarea>
-                </div>
-            </div>
-            <button class="btn-save" onclick="saveData('obs')"><i class="fa-solid fa-floppy-disk"></i> Salvar Observações</button>
-        </div>
-
-        <p style="text-align: center; color: rgba(255,255,255,0.1); font-size: 10px; margin-bottom: 30px;">
-            CONSOLE DE CONFIGURAÇÃO V2.4
-        </p>
     </div>
 
-    <script>
-        // Função para preencher observações automaticamente
-        function checkObsSelection() {
-            const busca = document.getElementById('obs_busca').value;
-            const campoTexto = document.getElementById('txt_obs');
+    <div class="container hidden" id="main-content">
+        <h1>Painel de Controle</h1>
 
-            // Simulação de busca de dados (Puxar do servidor)
-            if (busca === "Garantia Padrão (90 dias)") {
-                campoTexto.value = "Garantia de 90 dias conforme CDC, válida apenas para mão de obra de execução. Não cobrimos danos por oscilação de energia ou mau uso.";
-            } else if (busca === "Checklist de Manutenção") {
-                campoTexto.value = "- Limpeza de filtros e serpentinas\n- Verificação de dreno\n- Teste de consumo (A)\n- Verificação de fluido refrigerante.";
-            } else if (busca === "Termos de Instalação") {
-                campoTexto.value = "Instalação realizada com vácuo e teste de estanqueidade. Equipamento entregue em pleno funcionamento.";
+        <div class="config-section" id="sec-adm">
+            <div class="section-title"><i class="fa-solid fa-user-shield"></i> Segurança do Painel</div>
+            <button class="btn-toggle-security" onclick="toggleSecurity()">Expandir Opções de Acesso</button>
+            <div id="security-fields" class="security-content">
+                <input type="text" id="new_u_mail" placeholder="Novo E-mail">
+                <input type="password" id="new_u_pass" placeholder="Nova Senha">
+                <input type="text" id="new_u_resposta" placeholder="Nova Resposta Secreta">
+                <div id="update-status" class="status-msg"></div>
+                <button class="btn-save" id="btn-update-acesso" onclick="atualizarAcesso('Atualizar Acesso')">Atualizar Acesso</button>
+            </div>
+        </div>
+
+        <div class="config-section" id="sec-empresa">
+            <div class="section-title"><i class="fa-solid fa-building"></i> Identidade da Empresa</div>
+            <input type="text" id="emp_nome" list="lista_empresas" placeholder="Selecione a Empresa...">
+            <datalist id="lista_empresas"></datalist>
+            <input type="text" id="emp_doc" placeholder="CNPJ / CPF">
+            <button class="btn-save" onclick="saveData('sec-empresa', this, 'Salvar Empresa')">Salvar Empresa</button>
+        </div>
+
+        <div class="config-section" id="sec-servico">
+            <div class="section-title"><i class="fa-solid fa-gears"></i> Detalhes do Serviço</div>
+            <input type="text" id="srv_nome" list="lista_servicos" placeholder="Selecione o Serviço...">
+            <datalist id="lista_servicos"></datalist>
+            <input type="text" id="srv_valor" placeholder="Valor R$">
+            <button class="btn-save" onclick="saveData('sec-servico', this, 'Salvar Serviço')">Salvar Serviço</button>
+        </div>
+
+        <div class="config-section" id="sec-cliente">
+            <div class="section-title"><i class="fa-solid fa-user"></i> Dados do Cliente</div>
+            <input type="text" id="cli_nome" list="lista_clientes" placeholder="Selecione o Cliente...">
+            <datalist id="lista_clientes"></datalist>
+            <input type="text" id="cli_doc" placeholder="CPF / CNPJ">
+            <input type="tel" id="cli_tel" placeholder="WhatsApp">
+            <input type="text" id="cli_end" placeholder="Endereço Completo">
+            <button class="btn-save" onclick="saveData('sec-cliente', this, 'Salvar Cliente')">Salvar Cliente</button>
+        </div>
+
+        <div class="config-section" id="sec-obs">
+            <div class="section-title"><i class="fa-solid fa-clipboard-list"></i> Observações Técnicas</div>
+            <input type="text" id="obs_busca" list="lista_obs" placeholder="Pesquisar observação salva...">
+            <datalist id="lista_obs"></datalist>
+            <textarea id="txt_obs" rows="5" placeholder="Edite o texto aqui..."></textarea>
+            <button class="btn-save" onclick="saveData('sec-obs', this, 'Salvar Observações')">Salvar Observações</button>
+        </div>
+        
+        <p style="text-align: center; color: grey; font-size: 10px; margin-bottom: 40px;">SISTEMA V3.0 PROFESSIONAL</p>
+    </div>
+
+<script>
+    const URL_LOGIN = "https://script.google.com/macros/s/AKfycbzTyd4eSh9ey8Ldk0foi7lkRvWLGxOqj40w7J9szxK4JmSduZmfadNBzEidDWNULeNHxQ/exec";
+    const URL_DATABASE = "https://script.google.com/macros/s/AKfycbzbGjCHaXHnhAC5gIGmKa7gIb2QNpE3yIhomgU9DhwaNO1DHKUq7b4shMuZRvD5IG99oQ/exec"; 
+
+    let cacheDados = []; 
+
+    (function iniciarCarga() { buscarDadosPlanilha(); verificarSeExisteDono(); })();
+
+    function showStatus(id, msg, type, cardId) {
+        const el = document.getElementById(id);
+        const card = document.getElementById(cardId);
+        el.innerText = msg; el.className = 'status-msg status-' + type; el.style.display = 'block';
+        if (type === 'error' && card) {
+            card.classList.add('shake');
+            setTimeout(() => card.classList.remove('shake'), 500);
+        }
+    }
+
+    function toggleBtnLoading(btn, isLoading, originalHtml, loadingText = "Aguarde...") {
+        if (isLoading) {
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${loadingText}`;
+        } else {
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+        }
+    }
+
+    function ajustarInterfaceRecuperacao() {
+        const tipo = document.getElementById('tipo_recuperacao').value;
+        const inputValidacao = document.getElementById('rec_dado_validacao');
+        document.getElementById('rec-result').style.display = "none";
+        document.getElementById('rec-status').style.display = "none";
+        inputValidacao.value = "";
+        document.getElementById('rec_resposta_seguranca').value = "";
+        if (tipo === 'email') {
+            inputValidacao.placeholder = "Confirme sua Senha";
+            inputValidacao.type = "password";
+        } else {
+            inputValidacao.placeholder = "Confirme seu E-mail";
+            inputValidacao.type = "text";
+        }
+    }
+
+    async function executarRecuperacao() {
+        const tipo = document.getElementById('tipo_recuperacao').value;
+        const dado1 = document.getElementById('rec_dado_validacao').value;
+        const resposta = document.getElementById('rec_resposta_seguranca').value;
+        const btn = document.getElementById('btn-recuperar');
+        const resultBox = document.getElementById('rec-result');
+        if (!dado1 || !resposta) return showStatus('rec-status', 'Preencha os dois campos.', 'error', 'card-recuperar');
+        resultBox.style.display = "none";
+        toggleBtnLoading(btn, true, 'Verificar Dados');
+        try {
+            const url = `${URL_LOGIN}?action=recuperar&tipo=${tipo}&dado1=${encodeURIComponent(dado1)}&resposta=${encodeURIComponent(resposta)}`;
+            const resp = await fetch(url);
+            const resText = await resp.text();
+            if (!resText.includes("ERRO") && (resText.includes("Seu E-mail:") || resText.includes("Sua Senha:"))) {
+                showStatus('rec-status', 'Dados localizados!', 'success', 'card-recuperar');
+                resultBox.innerText = resText;
+                resultBox.style.display = "block";
+            } else {
+                showStatus('rec-status', 'Dados incorretos ou resposta inválida.', 'error', 'card-recuperar');
             }
-        }
+        } catch (e) { showStatus('rec-status', 'Erro de conexão.', 'error', 'card-recuperar'); }
+        finally { toggleBtnLoading(btn, false, 'Verificar Dados'); }
+    }
 
-        // Pré-visualização da Imagem
-        function previewImage(input) {
-            const preview = document.getElementById('logoPreview');
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = e => preview.innerHTML = `<img src="${e.target.result}">`;
-                reader.readAsDataURL(input.files[0]);
+    async function realizarLogin() {
+        const btn = document.getElementById('btn-entrar');
+        const email = document.getElementById('auth_u_mail').value;
+        const pass = document.getElementById('auth_u_pass').value;
+        if(!email || !pass) return showStatus('login-status', 'Preencha tudo.', 'error', 'card-login');
+        toggleBtnLoading(btn, true, 'Entrar');
+        try {
+            const resp = await fetch(`${URL_LOGIN}?action=login&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}`);
+            if((await resp.text()).trim() === "logado") {
+                document.getElementById('overlay-login').classList.add('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
+                localStorage.setItem("inforos_logado", "true");
+            } else { showStatus('login-status', 'Dados incorretos.', 'error', 'card-login'); }
+        } catch (e) { showStatus('login-status', 'Erro de conexão.', 'error', 'card-login'); }
+        finally { toggleBtnLoading(btn, false, 'Entrar'); }
+    }
+
+    async function buscarDadosPlanilha() {
+        try {
+            const resp = await fetch(URL_DATABASE, { priority: 'high' });
+            cacheDados = await resp.json();
+            renderizarDatalists();
+            configurarBuscaAutomatica();
+        } catch (e) { console.error("Erro na carga:", e); }
+    }
+
+    function renderizarDatalists() {
+        const criarOpcoes = (campo) => [...new Set(cacheDados.map(d => d[campo]))].filter(Boolean).map(n => `<option value="${n}">`).join('');
+        document.getElementById('lista_empresas').innerHTML = criarOpcoes('emp_nome');
+        document.getElementById('lista_clientes').innerHTML = criarOpcoes('cli_nome');
+        document.getElementById('lista_servicos').innerHTML = criarOpcoes('srv_nome');
+        document.getElementById('lista_obs').innerHTML = criarOpcoes('txt_obs');
+    }
+
+    function configurarBuscaAutomatica() {
+        const setupBusca = (idInput, idsDependentes, camposPlanilha) => {
+            const el = document.getElementById(idInput);
+            el.addEventListener('input', function() {
+                const valor = this.value;
+                if (!valor) { idsDependentes.forEach(id => document.getElementById(id).value = ""); return; }
+                const encontrado = cacheDados.find(x => x[camposPlanilha[0]] === valor);
+                if (encontrado) {
+                    idsDependentes.forEach((id, i) => {
+                        let valorFinal = encontrado[camposPlanilha[i+1]] || "";
+                        if (id === "srv_valor" && valorFinal !== "") { valorFinal = "R$ " + valorFinal.toString().replace("R$", "").trim(); }
+                        document.getElementById(id).value = valorFinal;
+                    });
+                }
+            });
+        };
+        setupBusca('emp_nome', ['emp_doc'], ['emp_nome', 'emp_doc']);
+        setupBusca('srv_nome', ['srv_valor'], ['srv_nome', 'srv_valor']);
+        setupBusca('cli_nome', ['cli_doc', 'cli_tel', 'cli_end'], ['cli_nome', 'cli_doc', 'cli_tel', 'cli_end']);
+        const campoBuscaObs = document.getElementById('obs_busca');
+        const areaTextoObs = document.getElementById('txt_obs');
+        campoBuscaObs.addEventListener('input', function() {
+            const encontrado = cacheDados.find(x => x.txt_obs === this.value);
+            if (encontrado) {
+                areaTextoObs.value = encontrado.txt_obs;
+                areaTextoObs.dataset.original = encontrado.txt_obs; 
+                setTimeout(() => { this.value = ""; this.blur(); areaTextoObs.focus(); }, 10);
             }
+        });
+    }
+
+    function saveData(sectionId, btn, originalText) {
+        const container = document.getElementById(sectionId);
+        const fields = container.querySelectorAll('input, textarea');
+        let hasValue = false;
+        fields.forEach(f => { if(f.value.trim() !== "") hasValue = true; });
+
+        if(!hasValue) {
+            container.classList.add('shake');
+            setTimeout(() => container.classList.remove('shake'), 500);
+            return;
         }
 
-        // Salvar dados
-        function saveData(secao) {
-            alert("Dados de " + secao + " salvos com sucesso!");
+        toggleBtnLoading(btn, true, originalText, "Salvando...");
+        const payload = {
+            emp_nome: document.getElementById('emp_nome').value, emp_doc: document.getElementById('emp_doc').value,
+            srv_nome: document.getElementById('srv_nome').value, srv_valor: document.getElementById('srv_valor').value.replace("R$", "").trim(),
+            cli_nome: document.getElementById('cli_nome').value, cli_doc: document.getElementById('cli_doc').value,
+            cli_tel: document.getElementById('cli_tel').value, cli_end: document.getElementById('cli_end').value,
+            txt_obs: document.getElementById('txt_obs').value, txt_obs_original: document.getElementById('txt_obs').dataset.original || ""
+        };
+        
+        fetch(URL_DATABASE, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+
+        setTimeout(() => {
+            document.getElementById('toast-minimal').style.display = 'block';
+            fields.forEach(el => el.value = '');
+            setTimeout(() => { 
+                document.getElementById('toast-minimal').style.display = 'none'; 
+                toggleBtnLoading(btn, false, originalText);
+                buscarDadosPlanilha(); 
+            }, 2000);
+        }, 800);
+    }
+
+    async function registrarUsuario() {
+        const btn = document.getElementById('btn-registrar');
+        const email = document.getElementById('reg_u_mail').value;
+        const senha = document.getElementById('reg_u_pass').value;
+        const resposta = document.getElementById('reg_u_resposta').value;
+        if (!email || !senha || !resposta) return showStatus('reg-status', 'Preencha tudo.', 'error', 'card-registrar');
+        toggleBtnLoading(btn, true, 'Salvar Conta');
+        try {
+            const url = `${URL_LOGIN}?action=registrar&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}&resposta=${encodeURIComponent(resposta)}`;
+            const resp = await fetch(url);
+            const res = await resp.text();
+            if (res.trim() === "sucesso") {
+                showStatus('reg-status', 'Sucesso!', 'success', 'card-registrar');
+                setTimeout(() => alternarTela('login'), 2000);
+                verificarSeExisteDono();
+            } else { showStatus('reg-status', 'Erro ao registrar.', 'error', 'card-registrar'); }
+        } catch (e) { showStatus('reg-status', 'Erro de conexão.', 'error', 'card-registrar'); }
+        finally { toggleBtnLoading(btn, false, 'Salvar Conta'); }
+    }
+
+    async function verificarSeExisteDono() {
+        const btnReg = document.getElementById('btn-registrar');
+        try {
+            const resp = await fetch(`${URL_LOGIN}?action=checar_registro`);
+            const res = await resp.text();
+            if (res.trim() === "tem_dono") {
+                document.getElementById('link-registrar-container').classList.add('hidden');
+                btnReg.disabled = true;
+                btnReg.innerText = "Conta Administrador já existe";
+                btnReg.style.marginTop = "25px";
+                btnReg.style.opacity = "0.5";
+            }
+        } catch (e) {}
+    }
+
+    function alternarTela(tela) {
+        document.querySelectorAll('.login-card').forEach(c => c.classList.add('hidden'));
+        document.getElementById('card-' + tela).classList.remove('hidden');
+        if(tela === 'recuperar') ajustarInterfaceRecuperacao();
+    }
+
+    function toggleSecurity() {
+        const f = document.getElementById('security-fields');
+        f.style.display = (f.style.display === 'flex') ? 'none' : 'flex';
+    }
+
+    async function atualizarAcesso(originalText) {
+        const btn = document.getElementById('btn-update-acesso');
+        const card = document.getElementById('sec-adm');
+        const m = document.getElementById('new_u_mail').value;
+        const s = document.getElementById('new_u_pass').value;
+        const r = document.getElementById('new_u_resposta').value;
+
+        if(!m && !s && !r) {
+            card.classList.add('shake');
+            setTimeout(() => card.classList.remove('shake'), 500);
+            return;
         }
-    </script>
+
+        toggleBtnLoading(btn, true, originalText, 'Salvando...');
+        const url = `${URL_LOGIN}?action=atualizar_acesso&email=${encodeURIComponent(m)}&senha=${encodeURIComponent(s)}&resposta=${encodeURIComponent(r)}`;
+
+        fetch(url, { mode: 'no-cors' });
+
+        setTimeout(() => {
+            document.getElementById('toast-minimal').style.display = 'block';
+            document.getElementById('new_u_mail').value = "";
+            document.getElementById('new_u_pass').value = "";
+            document.getElementById('new_u_resposta').value = "";
+            document.getElementById('update-status').style.display = "none";
+            
+            setTimeout(() => {
+                document.getElementById('toast-minimal').style.display = 'none';
+                toggleBtnLoading(btn, false, originalText);
+            }, 2000);
+        }, 800);
+    }
+</script>
 </body>
 </html>
