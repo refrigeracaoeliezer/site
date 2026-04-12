@@ -174,7 +174,6 @@
             <button class="btn-toggle-security" id="btn-toggle-sec" onclick="toggleSecurity()">Expandir Opções de Acesso</button>
             
             <div id="security-fields" class="security-content">
-                <p style="font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 5px;">Altere seus dados de acesso administrativo aqui.</p>
                 <input type="text" id="new_u_mail" placeholder="Novo E-mail" autocomplete="off">
                 <input type="password" id="new_u_pass" placeholder="Nova Senha" autocomplete="off">
                 <input type="text" id="new_u_pergunta" placeholder="Nova Pergunta Secreta" autocomplete="off">
@@ -238,30 +237,23 @@
             const resp = await fetch(URL_DATABASE);
             cacheDados = await resp.json();
             configurarAutoPreenchimento();
-        } catch (e) { 
-            console.error("Erro ao carregar dados da planilha:", e); 
-        }
+        } catch (e) { console.error(e); }
     }
 
     function configurarAutoPreenchimento() {
         const listEmp = document.getElementById('lista_empresas');
         const listCli = document.getElementById('lista_clientes');
-        
         const empresas = [...new Set(cacheDados.map(d => d.emp_nome))].filter(Boolean);
         const clientes = [...new Set(cacheDados.map(d => d.cli_nome))].filter(Boolean);
-
         listEmp.innerHTML = empresas.map(n => `<option value="${n}">`).join('');
         listCli.innerHTML = clientes.map(n => `<option value="${n}">`).join('');
         
         document.getElementById('emp_nome').addEventListener('input', () => {
-            const selecionado = document.getElementById('emp_nome').value;
-            const dados = cacheDados.find(d => d.emp_nome === selecionado);
+            const dados = cacheDados.find(d => d.emp_nome === document.getElementById('emp_nome').value);
             if (dados) document.getElementById('emp_doc').value = dados.emp_doc;
         });
-
         document.getElementById('cli_nome').addEventListener('input', () => {
-            const selecionado = document.getElementById('cli_nome').value;
-            const dados = cacheDados.find(d => d.cli_nome === selecionado);
+            const dados = cacheDados.find(d => d.cli_nome === document.getElementById('cli_nome').value);
             if (dados) {
                 document.getElementById('cli_doc').value = dados.cli_doc;
                 document.getElementById('cli_tel').value = dados.cli_tel;
@@ -288,15 +280,23 @@
         };
 
         try {
+            // mode: 'no-cors' resolve o erro visual de conexão no topo
             await fetch(URL_DATABASE, {
                 method: 'POST',
+                mode: 'no-cors',
                 body: JSON.stringify(payload)
             });
             
-            alert("Dados enviados com sucesso para a planilha!");
+            alert("Dados Salvos com Sucesso!");
+            
+            // LIMPA TODOS OS CAMPOS APÓS SALVAR
+            document.querySelectorAll('input, textarea').forEach(el => {
+                if(el.id !== 'auth_u_mail' && el.id !== 'auth_u_pass') el.value = '';
+            });
+
             buscarDadosPlanilha(); 
         } catch (e) {
-            alert("Erro ao salvar. Verifique sua conexão.");
+            alert("Erro técnico ao salvar.");
         } finally {
             btn.innerHTML = originalText;
             btn.disabled = false;
