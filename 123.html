@@ -116,7 +116,7 @@
 
 <script>
     const URL_LOGIN = "https://script.google.com/macros/s/AKfycbyVHWD028yH3qTXi63aL4Jq17MwNuXnfy8IwwA2SVOs26bsQRxmffePggxM3AriKhI2IQ/exec";
-    const URL_DATABASE = "https://script.google.com/macros/s/AKfycbzpLnSepnhTMiNqBvmQwuh_l5nPPYcaRz013tnciht7E9IPNUFQlJk-wLyuZsOINoSjEw/exec"; 
+    const URL_DATABASE = "https://script.google.com/macros/s/AKfycbxWEXbmOr3fcoenP6BYTOyyA9T9ALkLaAur-iL5mUzSkSUdXkl1VfwJIHiUzCU7YGPT/exec"; 
 
     let cacheDados = []; 
 
@@ -130,6 +130,7 @@
             const listSrv = document.getElementById('lista_servicos');
             const listObs = document.getElementById('lista_obs');
 
+            // Preencher Datalists com valores únicos
             listEmp.innerHTML = [...new Set(cacheDados.map(d => d.emp_nome))].filter(Boolean).map(n => `<option value="${n}">`).join('');
             listCli.innerHTML = [...new Set(cacheDados.map(d => d.cli_nome))].filter(Boolean).map(n => `<option value="${n}">`).join('');
             listSrv.innerHTML = [...new Set(cacheDados.map(d => d.srv_nome))].filter(Boolean).map(n => `<option value="${n}">`).join('');
@@ -140,15 +141,21 @@
     }
 
     function configurarBuscaAutomatica() {
-        // Busca Empresa -> CNPJ
+        // Busca Empresa -> Traz o Documento correspondente
         document.getElementById('emp_nome').addEventListener('input', function() {
-            const encontrado = cacheDados.find(x => x.emp_nome === this.value);
+            const encontrado = cacheDados.find(x => x.emp_nome === this.value && x.emp_doc);
             if(encontrado) document.getElementById('emp_doc').value = encontrado.emp_doc;
         });
 
-        // Busca Cliente -> Todos os dados
+        // Busca Serviço -> Traz o Valor correspondente
+        document.getElementById('srv_nome').addEventListener('input', function() {
+            const encontrado = cacheDados.find(x => x.srv_nome === this.value && x.srv_valor !== "");
+            if(encontrado) document.getElementById('srv_valor').value = encontrado.srv_valor;
+        });
+
+        // Busca Cliente -> Traz todos os dados do cliente
         document.getElementById('cli_nome').addEventListener('input', function() {
-            const encontrado = cacheDados.find(x => x.cli_nome === this.value);
+            const encontrado = cacheDados.find(x => x.cli_nome === this.value && x.cli_doc);
             if(encontrado) {
                 document.getElementById('cli_doc').value = encontrado.cli_doc;
                 document.getElementById('cli_tel').value = encontrado.cli_tel;
@@ -156,15 +163,7 @@
             }
         });
 
-        // CORREÇÃO: Busca Serviço -> Traz o VALOR para o site
-        document.getElementById('srv_nome').addEventListener('input', function() {
-            const encontrado = cacheDados.find(x => x.srv_nome === this.value);
-            if(encontrado) {
-                document.getElementById('srv_valor').value = encontrado.srv_valor;
-            }
-        });
-
-        // Busca Observação -> Traz o texto para o textarea
+        // Busca Observação -> Traz para o textarea
         document.getElementById('obs_busca').addEventListener('input', function() {
             const encontrado = cacheDados.find(x => x.txt_obs === this.value);
             if(encontrado) document.getElementById('txt_obs').value = encontrado.txt_obs;
@@ -174,6 +173,9 @@
     function saveData(secao, btn) {
         btn.disabled = true;
         const toast = document.getElementById('toast-minimal');
+        
+        // Criamos o pacote de dados. Note que se o campo estiver vazio, 
+        // o Apps Script que instalamos por último vai ignorar e não apagar a linha 3.
         const payload = {
             emp_nome: document.getElementById('emp_nome').value,
             emp_doc: document.getElementById('emp_doc').value,
@@ -190,13 +192,16 @@
 
         setTimeout(() => {
             toast.style.display = 'block';
+            
+            // Limpa os campos após salvar
             document.querySelectorAll('input, textarea').forEach(el => {
                 if(!['auth_u_mail', 'auth_u_pass'].includes(el.id)) el.value = '';
             });
+
             setTimeout(() => {
                 toast.style.display = 'none';
                 btn.disabled = false;
-                buscarDadosPlanilha();
+                buscarDadosPlanilha(); 
             }, 2000);
         }, 800);
     }
