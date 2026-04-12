@@ -9,6 +9,7 @@
     <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
     
     <style>
+        /* --- ESTILOS GERAIS --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0d1117; position: relative; overflow-x: hidden; padding: 20px; }
         
@@ -37,33 +38,41 @@
         h2 { color: white; margin-bottom: 10px; font-size: 22px; }
         p.subtitle { color: rgba(255, 255, 255, 0.45); font-size: 13px; margin-bottom: 25px; }
 
+        /* --- INPUTS E SELECTS --- */
         input, select {
             width: 100%; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 12px; padding: 14px; color: white; font-size: 14px; margin-bottom: 15px; outline: none; transition: 0.3s;
         }
-        input:focus { border-color: #1e40af; box-shadow: 0 0 10px rgba(30, 64, 175, 0.3); }
+        input:focus, select:focus { border-color: #1e40af; box-shadow: 0 0 10px rgba(30, 64, 175, 0.3); }
+
+        /* Correção para o Select no fundo escuro */
+        select option {
+            background-color: #0d1117;
+            color: white;
+        }
 
         .btn-main {
             width: 100%; padding: 16px; background: linear-gradient(135deg, #1e40af 0%, #27a9e3 100%);
             border: none; border-radius: 12px; color: white; font-weight: 700; cursor: pointer;
             display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s;
         }
-        .btn-main:disabled { opacity: 0.6; cursor: not-allowed; }
 
-        .link-auth { color: #27a9e3; cursor: pointer; font-size: 13px; margin-top: 20px; display: inline-block; }
+        /* --- LINKS E DIVISOR --- */
+        .auth-footer { margin-top: 25px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .link-auth { color: #27a9e3; cursor: pointer; font-size: 13px; text-decoration: none; }
+        .link-rec { color: #ff4b4b; }
+        
+        .divider {
+            width: 1px;
+            height: 14px;
+            background-color: rgba(255, 255, 255, 0.3); /* Traço branco suave */
+            display: inline-block;
+        }
+
         .status-msg { font-size: 12px; padding: 10px; border-radius: 10px; margin-bottom: 15px; display: none; }
         .error { background: rgba(255, 75, 75, 0.1); color: #ff4b4b; border: 1px solid rgba(255, 75, 75, 0.2); }
         .success { background: rgba(68, 255, 68, 0.1); color: #44ff44; border: 1px solid rgba(68, 255, 68, 0.2); }
-        
         .result-box { margin-top: 15px; padding: 15px; background: rgba(39, 169, 227, 0.1); border: 1px dashed #27a9e3; color: #44ff44; font-weight: bold; border-radius: 12px; display: none; }
-
-        .shake { animation: shake 0.5s both; border-color: #ff4b4b !important; }
-        @keyframes shake {
-            10%, 90% { transform: translate3d(-1px, 0, 0); }
-            20%, 80% { transform: translate3d(2px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-            40%, 60% { transform: translate3d(4px, 0, 0); }
-        }
     </style>
 </head>
 <body>
@@ -81,7 +90,12 @@
         <input type="email" id="l_email" placeholder="E-mail">
         <input type="password" id="l_pass" placeholder="Senha">
         <button class="btn-main" onclick="realizarLogin()" id="btn-l">Autenticar</button>
-        <p><span class="link-auth" onclick="alternar('registrar')">Criar Conta</span> | <span class="link-auth" onclick="alternar('recuperar')" style="color:#ff4b4b">Esqueci meus dados</span></p>
+        
+        <div class="auth-footer">
+            <span class="link-auth" onclick="alternar('registrar')">Criar Conta</span>
+            <span class="divider"></span>
+            <span class="link-auth link-rec" onclick="alternar('recuperar')">Esqueci meus dados</span>
+        </div>
     </div>
 
     <div class="login-card hidden" id="card-registrar">
@@ -93,7 +107,7 @@
         <input type="password" id="r_pass" placeholder="Sua Senha">
         <input type="text" id="r_resp" placeholder="Resposta Secreta (para recuperar)">
         <button class="btn-main" onclick="registrar()" id="btn-r">Salvar Registro</button>
-        <span class="link-auth" onclick="alternar('login')">Voltar ao Login</span>
+        <span class="link-auth" onclick="alternar('login')" style="margin-top:20px; display:block;">Voltar ao Login</span>
     </div>
 
     <div class="login-card hidden" id="card-recuperar">
@@ -109,11 +123,11 @@
         <div id="rec-status" class="status-msg"></div>
         <div id="rec-result" class="result-box"></div>
         <button class="btn-main" onclick="recuperar()" id="btn-rec">Verificar Dados</button>
-        <span class="link-auth" onclick="alternar('login')">Voltar ao Login</span>
+        <span class="link-auth" onclick="alternar('login')" style="margin-top:20px; display:block;">Voltar ao Login</span>
     </div>
 
 <script>
-    const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbyOyMyg58f4qPL2qNWLp7-pd6b0NMF5nCIahEOV-hQ1_HTkaGTpjITt4bxcNENYmib1/exec"; // COLE A URL DO SEU SCRIPT GS AQUI
+    const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbyOyMyg58f4qPL2qNWLp7-pd6b0NMF5nCIahEOV-hQ1_HTkaGTpjITt4bxcNENYmib1/exec";
 
     function alternar(tela) {
         $('.login-card').addClass('hidden');
