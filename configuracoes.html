@@ -294,7 +294,7 @@
         const btn = document.getElementById('btn-entrar');
         const email = document.getElementById('auth_u_mail').value;
         const pass = document.getElementById('auth_u_pass').value;
-        if(!email || !pass) return showStatus('login-status', 'Preencha tudo.', 'error', 'card-login');
+        if(!email || !pass) return showStatus('login-status', 'Acesso restrito. Por favor, crie uma conta.', 'error', 'card-login');
         toggleBtnLoading(btn, true, 'Entrar');
         try {
             const resp = await fetch(`${URL_LOGIN}?action=login&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}`);
