@@ -116,18 +116,133 @@
         <p style="text-align: center; color: grey; font-size: 10px; margin-bottom: 40px;">SISTEMA V3.0 PROFESSIONAL</p>
     </div>
 
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <script>
+        if (localStorage.getItem("inforos_logado") !== "true") {
+            window.location.href = "https://refrigeracaoeliezer.github.io/site/";
+        }
+    </script>
+    <meta charset="UTF-8">
+    <title>Configurações | Refrigeração</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; min-height: 100vh; background: #0d1117; color: white; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .hidden { display: none !important; }
+        .container { width: 100%; max-width: 600px; }
+        h1 { font-size: 28px; font-weight: 700; margin-bottom: 30px; text-align: center; color: #fff; }
+
+        .config-section {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 25px;
+            display: flex;
+            flex-direction: column; gap: 15px;
+        }
+
+        .section-title { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 10px; color: #27a9e3; }
+        input, textarea { background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 12px; color: white; font-size: 14px; width: 100%; outline: none; }
+        input:focus { border-color: #27a9e3; }
+        
+        input::placeholder { color: rgba(255,255,255,0.3); }
+
+        .btn-save { border: none; padding: 14px; border-radius: 12px; font-weight: 700; background: #1e40af; color: white; cursor: pointer; width: 100%; display: flex; justify-content: center; align-items: center; gap: 10px; transition: 0.3s; }
+        .btn-save:hover { background: #2563eb; }
+        .btn-save:disabled { background: #2d3748; color: #718096; cursor: not-allowed; }
+
+        #toast-minimal {
+            position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: #27a9e3; color: white;
+            padding: 15px 30px; border-radius: 50px;
+            font-weight: 600; font-size: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: none; z-index: 10000;
+            animation: fadeInOut 2s ease forwards;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translate(-50%, -60%); }
+            20% { opacity: 1; transform: translate(-50%, -50%); }
+            80% { opacity: 1; transform: translate(-50%, -50%); }
+            100% { opacity: 0; transform: translate(-50%, -40%); }
+        }
+
+        #overlay-login { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0d1117; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .login-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); padding: 30px; border-radius: 24px; border: 1px solid rgba(30, 64, 175, 0.3); width: 100%; max-width: 380px; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div id="toast-minimal">Salvo com sucesso!</div>
+
+    <div id="overlay-login">
+        <div class="login-card" id="card-login">
+            <i class="fa-solid fa-lock" style="font-size: 40px; color: #1e40af; margin-bottom: 20px;"></i>
+            <h2>Acesso Restrito</h2>
+            <input type="text" id="auth_u_mail" placeholder="E-mail" style="margin-top: 20px;">
+            <input type="password" id="auth_u_pass" placeholder="Senha" style="margin-top: 10px;">
+            <button class="btn-save" onclick="realizarLogin()" style="margin-top: 15px;">Entrar</button>
+        </div>
+    </div>
+
+    <div class="container hidden" id="main-content">
+        <h1>Painel de Controle</h1>
+
+        <div class="config-section">
+            <div class="section-title"><i class="fa-solid fa-building"></i> Identidade da Empresa</div>
+            <input type="text" id="emp_nome" list="lista_empresas" placeholder="Selecione a Empresa...">
+            <datalist id="lista_empresas"></datalist>
+            <input type="text" id="emp_doc" placeholder="CNPJ / CPF">
+            <button class="btn-save" onclick="saveData('empresa', this)">Salvar Empresa</button>
+        </div>
+
+        <div class="config-section">
+            <div class="section-title"><i class="fa-solid fa-gears"></i> Detalhes do Serviço</div>
+            <input type="text" id="srv_nome" list="lista_servicos" placeholder="Selecione o Serviço...">
+            <datalist id="lista_servicos"></datalist>
+            <input type="text" id="srv_valor" placeholder="Valor R$">
+            <button class="btn-save" onclick="saveData('servico', this)">Salvar Serviço</button>
+        </div>
+
+        <div class="config-section">
+            <div class="section-title"><i class="fa-solid fa-user"></i> Dados do Cliente</div>
+            <input type="text" id="cli_nome" list="lista_clientes" placeholder="Selecione o Cliente...">
+            <datalist id="lista_clientes"></datalist>
+            <input type="text" id="cli_doc" placeholder="CPF / CNPJ">
+            <input type="tel" id="cli_tel" placeholder="WhatsApp">
+            <input type="text" id="cli_end" placeholder="Endereço Completo">
+            <button class="btn-save" onclick="saveData('cliente', this)">Salvar Cliente</button>
+        </div>
+
+        <div class="config-section">
+            <div class="section-title"><i class="fa-solid fa-clipboard-list"></i> Observações Técnicas</div>
+            <input type="text" id="obs_busca" list="lista_obs" placeholder="Pesquisar observação salva...">
+            <datalist id="lista_obs"></datalist>
+            <textarea id="txt_obs" rows="5" placeholder="Edite o texto aqui..."></textarea>
+            <button class="btn-save" onclick="saveData('obs', this)">Salvar Observações</button>
+        </div>
+        
+        <p style="text-align: center; color: grey; font-size: 10px; margin-bottom: 40px;">SISTEMA V3.0 PROFESSIONAL</p>
+    </div>
+
 <script>
-    // --- CONFIGURAÇÕES DE URL E CACHE ---
     const URL_LOGIN = "https://script.google.com/macros/s/AKfycbyVHWD028yH3qTXi63aL4Jq17MwNuXnfy8IwwA2SVOs26bsQRxmffePggxM3AriKhI2IQ/exec";
     const URL_DATABASE = "https://script.google.com/macros/s/AKfycbzbGjCHaXHnhAC5gIGmKa7gIb2QNpE3yIhomgU9DhwaNO1DHKUq7b4shMuZRvD5IG99oQ/exec"; 
 
     let cacheDados = []; 
-    // --- FIM CONFIGURAÇÕES ---
 
     // INÍCIO: Carregar dados em segundo plano assim que a página abrir
     buscarDadosPlanilha();
 
-    // --- FUNÇÃO: BUSCAR DADOS NA PLANILHA E ALIMENTAR LISTAS (DATALISTS) ---
     async function buscarDadosPlanilha() {
         try {
             const resp = await fetch(URL_DATABASE);
@@ -146,11 +261,8 @@
             configurarBuscaAutomatica();
         } catch (e) { console.error("Erro ao carregar dados em background:", e); }
     }
-    // --- FIM BUSCAR DADOS ---
 
-    // --- FUNÇÃO: CONFIGURAR EVENTOS DE BUSCA E AUTOCOMPLETAR ---
     function configurarBuscaAutomatica() {
-        // Sub-função para Empresa, Serviço e Cliente
         const setupBusca = (idInput, idsDependentes, camposPlanilha) => {
             const el = document.getElementById(idInput);
             el.addEventListener('input', function() {
@@ -173,41 +285,34 @@
             });
         };
 
-        // Aplicação da lógica nos campos específicos
         setupBusca('emp_nome', ['emp_doc'], ['emp_nome', 'emp_doc']);
         setupBusca('srv_nome', ['srv_valor'], ['srv_nome', 'srv_valor']);
         setupBusca('cli_nome', ['cli_doc', 'cli_tel', 'cli_end'], ['cli_nome', 'cli_doc', 'cli_tel', 'cli_end']);
 
         // --- LÓGICA DE OBSERVAÇÃO AJUSTADA E TESTADA ---
- 
         const campoBuscaObs = document.getElementById('obs_busca');
         const areaTextoObs = document.getElementById('txt_obs');
 
         campoBuscaObs.addEventListener('input', function() {
             const valor = this.value;
-            // Procuramos se o que foi digitado/selecionado bate exatamente com uma obs do cache
             const encontrado = cacheDados.find(x => x.txt_obs === valor);
             
             if (encontrado) {
-                // 1. Passa o texto para a área de edição (textarea)
                 areaTextoObs.value = encontrado.txt_obs;
-                // 2. Guarda a referência para edição inteligente no backend
                 areaTextoObs.dataset.original = encontrado.txt_obs; 
                 
-                // 3. O "Pulo do Gato": Limpa o seletor com um micro-delay para garantir a transferência
                 setTimeout(() => { 
                     this.value = ""; 
-                    this.blur(); // Tira o foco do campo de busca para fechar o teclado/lista
-                    areaTextoObs.focus(); // Joga o foco automaticamente para o campo de edição
+                    this.blur();
+                    areaTextoObs.focus();
                 }, 10);
             } else if (valor === "") {
                 areaTextoObs.value = "";
                 delete areaTextoObs.dataset.original;
             }
         });
-    // --- FIM CONFIGURAR BUSCA ---
+    }
 
-    // --- FUNÇÃO: SALVAR DADOS (ENVIAR PARA O GOOGLE SHEETS) ---
     function saveData(secao, btn) {
         btn.disabled = true;
         const toast = document.getElementById('toast-minimal');
@@ -244,24 +349,22 @@
             }, 2000);
         }, 800);
     }
-    // --- FIM SALVAR DADOS ---
 
-    // --- FUNÇÃO: REALIZAR LOGIN E VALIDAR ACESSO ---
     async function realizarLogin() {
         const email = document.getElementById('auth_u_mail').value;
         const pass = document.getElementById('auth_u_pass').value;
         try {
             const resp = await fetch(`${URL_LOGIN}?action=login&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}`);
             if((await resp.text()).trim() === "logado") {
-                // Ao logar, a lista já foi carregada ou está terminando, liberamos a visão
                 document.getElementById('overlay-login').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
                 localStorage.setItem("inforos_logado", "true");
             } else { alert("Dados Inválidos"); }
         } catch (e) { alert("Erro de Conexão"); }
     }
-    // --- FIM REALIZAR LOGIN ---
 </script>
+</body>
+</html>
 
 </body>
 </html>
