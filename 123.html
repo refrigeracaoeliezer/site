@@ -61,6 +61,8 @@
         input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
 
         #modal-mensagens { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.95); backdrop-filter: blur(10px); z-index: 100; overflow-y: auto; display: none; padding: 20px; }
+        
+        /* Centralização e efeito do Copiado */
         .btn-copy-success { background-color: #3b82f6 !important; color: white !important; }
     </style>
 </head>
@@ -86,7 +88,7 @@
                 <div id="txt-proposta" style="background: #000; border-radius: 15px; padding: 15px; font-family: monospace; font-size: 13px; color: #d1d1d1; white-space: pre-wrap; word-break: break-all; margin: 15px 0; border: 1px solid rgba(255,255,255,0.05);"></div>
                 <div class="grid grid-cols-3 gap-2">
                     <button onclick="copiarTextoProfissional('txt-proposta', this)" class="py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[9px] uppercase">COPIAR</button>
-                    <button onclick="abrirPaginaImpressao()" class="py-3 bg-red-600/20 text-red-500 border border-red-500/30 rounded-xl font-bold text-[9px] uppercase">IMPRIMIR A4</button>
+                    <button onclick="baixarPDF()" class="py-3 bg-red-600/20 text-red-500 border border-red-500/30 rounded-xl font-bold text-[9px] uppercase">GERAR PDF</button>
                     <button onclick="enviarWpp('txt-proposta')" class="py-3 bg-blue-600 text-white rounded-xl font-bold text-[9px] uppercase">WHATSAPP</button>
                 </div>
             </div>
@@ -119,6 +121,8 @@
             </div>
         </div>
     </div>
+
+    <div id="pdf-template" style="display:none;"></div>
 
     <div class="max-w-md mx-auto relative z-10" id="main-container">
         <div class="mb-6">
@@ -224,7 +228,7 @@
         const URL_DATABASE = "https://script.google.com/macros/s/AKfycbwXxgwoZ5Qov5xGUN9CMQnCOqsS4HL2gJdGtaPad9Df8ShuykbMUzq3_jKlb-0gLMju8Q/exec";
         let cacheDados = [];
         let modoOS = false;
-        let saldoQuitado = false;
+        let saldoQuitado = false; // Controle de quitação
 
         function forcarLista(input) {
             input.setAttribute('autocomplete', 'off');
@@ -430,36 +434,7 @@
                 btn.classList.replace('bg-green-600', 'bg-green-500/10');
                 btn.classList.replace('text-white', 'text-green-500');
             }
-            gerarDocumento();
-        }
-
-        // --- FUNÇÃO ATUALIZADA PARA ENVIAR DADOS COMPLETOS PARA IMPRESSÃO ---
-        function abrirPaginaImpressao() {
-            const dadosOrcamento = {
-                tipo: modoOS ? "ORDEM DE SERVIÇO" : "ORÇAMENTO TÉCNICO",
-                cliente: document.getElementById('nomeCliente').value,
-                endereco: document.getElementById('enderecoCliente').value,
-                whatsapp: document.getElementById('telCliente').value,
-                emissao: document.getElementById('dataInicio').value.split('-').reverse().join('/'),
-                validade: document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/'),
-                total: document.getElementById('totalFinal').value,
-                obs: document.getElementById('obsGeral').value, // ADICIONADO PARA ENVIAR OBSERVAÇÕES
-                itens: []
-            };
-
-            document.querySelectorAll('.service-card').forEach(card => {
-                const desc = card.querySelector('.service-name').value;
-                if (desc) {
-                    dadosOrcamento.itens.push({
-                        descricao: desc,
-                        qtd: card.querySelector('.service-qty').innerText,
-                        valor: card.querySelector('.service-price').value
-                    });
-                }
-            });
-
-            localStorage.setItem('dados_impressao', JSON.stringify(dadosOrcamento));
-            window.open('impressao.html', '_blank');
+            gerarDocumento(); // Atualiza o texto da conclusão
         }
 
         function gerarDocumento() {
@@ -485,10 +460,13 @@
             const sinalValor = (totalNum * 0.3).toLocaleString('pt-BR', {minimumFractionDigits: 2});
             const saldoValor = (totalNum * 0.7).toLocaleString('pt-BR', {minimumFractionDigits: 2});
 
+            // LOGICA DA FRASE DE SALDO
             const fraseSaldo = saldoQuitado ? "*Pagamento Confirmado:* R$ 0,00 (Total Pago)" : `*Saldo Restante:* R$ ${saldoValor}`;
 
             document.getElementById('txt-proposta').innerText = `*ORÇAMENTO TÉCNICO - ${prestador.toUpperCase()}*\n\nOlá ${cliente}! Segue o orçamento:\n\n*SERVIÇOS:*\n${servicosTexto}\n*OBS:*\n${obs}\n\n*INVESTIMENTO TOTAL:* R$ ${total}\n(Material + Mão de Obra incluso)\n\n*${modoOS ? 'Garantia' : 'Vencimento'}:* ${dias} dias\n*Data Prevista:* ${dataFim}\n\nFico no aguardo.`;
+
             document.getElementById('txt-sinal').innerText = `Olá ${cliente}! 🤝\n\nPara agendarmos e comprarmos material, precisamos de um sinal.\n\n*Sinal (30%): R$ ${sinalValor}*\n\nChave PIX: ${chavePix}\n\nPor favor, envie o comprovante. Obrigado!`;
+
             document.getElementById('txt-conclusao').innerText = `*Serviço Concluído!* ✅\n\n${cliente}, equipamento pronto.\n\n${fraseSaldo}\n\nLembrando que você tem *${dias} dias* de garantia.\n\nObrigado pela preferência!\n${prestador}`;
 
             document.getElementById('modal-mensagens').style.display = 'block';
@@ -498,6 +476,7 @@
         function fecharModal() {
             document.getElementById('modal-mensagens').style.display = 'none';
             document.body.style.overflow = 'auto';
+            // Reseta quitação ao fechar se desejar, ou mantenha
         }
 
         function enviarWpp(id) {
@@ -518,6 +497,62 @@
                     elemento.classList.remove('btn-copy-success');
                 }, 2000);
             });
+        }
+
+        function baixarPDF() {
+            const prestador = document.getElementById('nomePrestador').value || "ELIEZER";
+            const cliente = document.getElementById('nomeCliente').value || "Cliente";
+            const total = document.getElementById('totalFinal').value;
+            const obs = document.getElementById('obsGeral').value;
+            
+            let servicosHTML = "";
+            document.querySelectorAll('.service-card').forEach(card => {
+                const nome = card.querySelector('.service-name').value;
+                const preco = card.querySelector('.service-price').value;
+                const qtde = card.querySelector('.service-qty').innerText;
+                if(nome) {
+                    servicosHTML += `<tr><td style="padding:8px; border-bottom:1px solid #eee;">${qtde}x ${nome}</td><td style="padding:8px; border-bottom:1px solid #eee; text-align:right;">R$ ${preco}</td></tr>`;
+                }
+            });
+// Dentro da lógica de geração do documento ou envio para impressão
+const dadosParaImpressao = {
+    tipo: modoOS ? "ORDEM DE SERVIÇO" : "ORÇAMENTO",
+    cliente: document.getElementById('nomeCliente').value,
+    endereco: document.getElementById('enderecoCliente').value,
+    emissao: document.getElementById('dataInicio').value.split('-').reverse().join('/'),
+    validade: document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/'),
+    total: document.getElementById('totalFinal').value,
+    obs: document.getElementById('obsGeral').value,
+    garantia: document.getElementById('inputGarantia').value, // Pega os dias selecionados
+    itens: Array.from(document.querySelectorAll('.service-card')).map(card => ({
+        descricao: card.querySelector('.service-name').value,
+        qtd: card.querySelector('.service-qty').innerText,
+        valor: card.querySelector('.service-price').value
+    }))
+};
+localStorage.setItem('dados_impressao', JSON.stringify(dadosParaImpressao));
+            const template = `<div style="font-family:Arial; padding:30px; color:#333;">
+                <h2 style="color:#1e40af; border-bottom:2px solid #1e40af; padding-bottom:10px;">ORÇAMENTO - ${prestador}</h2>
+                <p><strong>Cliente:</strong> ${cliente} | <strong>Data:</strong> ${new Date().toLocaleDateString('pt-BR')}</p>
+                <table style="width:100%; border-collapse:collapse; margin:20px 0;">
+                    <tr style="background:#1e40af; color:white;">
+                        <th style="padding:10px; text-align:left;">Descrição</th>
+                        <th style="padding:10px; text-align:right;">Valor</th>
+                    </tr>
+                    ${servicosHTML}
+                </table>
+                <div style="background:#f9f9f9; padding:15px; border-radius:10px; margin-bottom:20px;">
+                    <strong>Observações Técnicas:</strong><br>${obs.replace(/\n/g, '<br>')}
+                </div>
+                <h3 style="text-align:right;">Total: R$ ${total}</h3>
+            </div>`;
+
+            const element = document.getElementById('pdf-template');
+            element.innerHTML = template;
+            element.style.display = 'block';
+            
+            const opt = { margin: 10, filename: `Orcamento_${cliente}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
+            html2pdf().set(opt).from(element).save().then(() => { element.style.display = 'none'; });
         }
     </script>
 </body>
