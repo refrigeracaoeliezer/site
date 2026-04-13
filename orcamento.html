@@ -57,8 +57,7 @@
         .active-label { color: white !important; }
         .mode-os .switch-bg { left: 50%; background: #10b981; }
 
-        input[type="date"]::-webkit-calendar-picker-indicator,
-        input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(1); }
+        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
     </style>
 </head>
 <body class="p-4 pb-10">
@@ -101,24 +100,21 @@
                     <input type="text" id="enderecoCliente" placeholder="Endereço Completo" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
                     <input type="tel" id="telCliente" placeholder="WhatsApp" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
                     
-                    <div class="grid grid-cols-2 gap-2 pt-2">
-                        <div class="space-y-1">
-                            <label class="text-[9px] font-bold text-white/30 uppercase ml-2">Início / Data</label>
-                            <input type="date" id="dataInicio" class="w-full p-3 rounded-xl dark-input text-[11px] font-bold text-center">
-                        </div>
-                        <div class="space-y-1 hidden" id="campo-termino">
-                            <label class="text-[9px] font-bold text-white/30 uppercase ml-2">Término</label>
-                            <input type="date" id="dataFim" class="w-full p-3 rounded-xl dark-input text-[11px] font-bold text-center">
-                        </div>
-                        <div class="space-y-1" id="campo-hora">
-                            <label class="text-[9px] font-bold text-white/30 uppercase ml-2">Hora</label>
-                            <input type="time" id="horaAtual" class="w-full p-3 rounded-xl dark-input text-[11px] font-bold text-center">
-                        </div>
+                    <div class="space-y-1 pt-2">
+                        <label class="text-[9px] font-bold text-white/30 uppercase ml-2">Data de Início</label>
+                        <input type="date" id="dataInicio" class="w-full p-4 rounded-2xl dark-input text-sm font-bold text-center" onchange="calcularDataFinal()">
                     </div>
 
-                    <div class="relative pt-2">
-                        <input type="number" id="inputGarantia" value="30" class="w-full p-4 rounded-2xl dark-input text-sm font-bold text-center">
-                        <span id="label-prazo" class="absolute -top-1 left-1/2 -translate-x-1/2 bg-blue-600 text-[8px] px-2 py-0.5 rounded text-white font-black tracking-widest uppercase shadow-lg">Vencimento</span>
+                    <div class="grid grid-cols-2 gap-2 relative pt-2">
+                        <div class="relative">
+                            <input type="number" id="inputGarantia" value="30" class="w-full p-4 rounded-2xl dark-input text-sm font-bold text-center" oninput="calcularDataFinal()">
+                            <span id="label-prazo" class="absolute -top-1 left-1/2 -translate-x-1/2 bg-blue-600 text-[8px] px-2 py-0.5 rounded text-white font-black tracking-widest uppercase shadow-lg">Vencimento</span>
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] text-white/20 font-black">DIAS</span>
+                        </div>
+                        <div class="relative">
+                            <input type="date" id="dataPrazoFinal" class="w-full p-4 rounded-2xl dark-input text-[11px] font-bold text-center" readonly>
+                            <span class="absolute -top-1 left-1/2 -translate-x-1/2 bg-white/10 text-[7px] px-2 py-0.5 rounded text-white/50 font-black tracking-widest uppercase">Data Final</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -186,13 +182,29 @@
             textarea.style.height = textarea.scrollHeight + 'px';
         }
 
+        function calcularDataFinal() {
+            const dataInicioVal = document.getElementById('dataInicio').value;
+            const diasPrazo = parseInt(document.getElementById('inputGarantia').value) || 0;
+            const campoDataFinal = document.getElementById('dataPrazoFinal');
+
+            if (dataInicioVal) {
+                let data = new Date(dataInicioVal + 'T00:00:00');
+                data.setDate(data.getDate() + diasPrazo);
+                const y = data.getFullYear();
+                const m = String(data.getMonth() + 1).padStart(2, '0');
+                const d = String(data.getDate()).padStart(2, '0');
+                campoDataFinal.value = `${y}-${m}-${d}`;
+            }
+        }
+
         async function buscarDadosPlanilha() {
             try {
                 const resp = await fetch(URL_DATABASE);
                 cacheDados = await resp.json();
                 renderizarDatalists();
                 configurarListeners();
-                aplicarTextoPadrao(); // Carrega o primeiro texto ao abrir
+                aplicarTextoPadrao();
+                calcularDataFinal();
             } catch (e) { console.error("Erro na carga:", e); }
         }
 
@@ -201,7 +213,6 @@
             document.getElementById('lista_clientes').innerHTML = criarOpcoes('cli_nome');
             document.getElementById('lista_servicos').innerHTML = criarOpcoes('srv_nome');
             document.getElementById('lista_obs').innerHTML = criarOpcoes('txt_obs');
-            
             if(cacheDados.length > 0 && cacheDados[0].emp_nome) {
                 document.getElementById('nomePrestador').value = cacheDados[0].emp_nome;
             }
@@ -209,14 +220,10 @@
 
         function aplicarTextoPadrao() {
             const txtArea = document.getElementById('obsGeral');
-            // Busca apenas os textos da coluna de observações que não são vazios
             const listaObsValidas = cacheDados.map(d => d.txt_obs).filter(Boolean);
-            
             if (modoOS) {
-                // Se estiver no modo OS, pega o 2º texto (Linha 2)
                 txtArea.value = listaObsValidas[1] || "";
             } else {
-                // Se estiver no modo Orçamento, pega o 1º texto (Linha 1)
                 txtArea.value = listaObsValidas[0] || "";
             }
             autoExpandir(txtArea);
@@ -322,7 +329,6 @@
             const lblPrazo = document.getElementById('label-prazo');
             const btnAddIcon = document.getElementById('btn-add-icon');
 
-            // Aplica texto padrão da planilha conforme o modo
             aplicarTextoPadrao();
 
             if (modoOS) {
@@ -334,8 +340,6 @@
                 lblPrazo.classList.replace('bg-blue-600', 'bg-green-600');
                 document.getElementById('lbl-os').classList.add('active-label');
                 document.getElementById('lbl-orc').classList.remove('active-label');
-                document.getElementById('campo-termino').classList.remove('hidden');
-                document.getElementById('campo-hora').classList.add('hidden');
                 btnAddIcon.className = "fa-solid fa-circle-plus mr-2 text-green-500";
             } else {
                 thumb.classList.remove('mode-os'); card.classList.remove('is-os');
@@ -346,22 +350,19 @@
                 lblPrazo.classList.replace('bg-green-600', 'bg-blue-600');
                 document.getElementById('lbl-orc').classList.add('active-label');
                 document.getElementById('lbl-os').classList.remove('active-label');
-                document.getElementById('campo-termino').classList.add('hidden');
-                document.getElementById('campo-hora').classList.remove('hidden');
                 btnAddIcon.className = "fa-solid fa-circle-plus mr-2 text-blue-500";
             }
+            calcularDataFinal();
         }
 
         window.onload = () => {
             const agora = new Date();
             document.getElementById('dataInicio').value = agora.toISOString().split('T')[0];
-            document.getElementById('dataFim').value = agora.toISOString().split('T')[0];
-            document.getElementById('horaAtual').value = String(agora.getHours()).padStart(2, '0') + ":" + String(agora.getMinutes()).padStart(2, '0');
             buscarDadosPlanilha();
             adicionarServico();
         };
 
-        function gerarDocumento() { alert("Documento sendo preparado..."); }
+        function gerarDocumento() { alert("Processando..."); }
     </script>
 </body>
 </html>
