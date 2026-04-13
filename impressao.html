@@ -62,26 +62,28 @@
 
 .btn-flutuante {
     position: fixed; 
-    bottom: 80px; 
-    right: 80px; 
+    bottom: 30px; 
+    right: 30px; 
     z-index: 10000;
     background-color: #e74c3c; 
     color: white; 
     
-    /* AQUI VOCÊ CONTROLA O TAMANHO DO CÍRCULO */
-    width: 150px;  /* Antes era 65px ou 80px */
-    height: 150px; /* Deve ser igual ao width para ser um círculo perfeito */
+    /* Tamanho do Círculo */
+    width: 150px;  
+    height: 150px; 
     
     border-radius: 50%; 
     border: none; 
     box-shadow: 0 5px 20px rgba(0,0,0,0.5);
     cursor: pointer; 
+    
+    /* Centralização do ícone */
     display: flex; 
     align-items: center; 
     justify-content: center; 
     
-    /* AQUI VOCÊ CONTROLA O TAMANHO DO ÍCONE DO PDF */
-    font-size: 45px; /* Aumente aqui se o ícone parecer pequeno dentro do círculo */
+    /* TAMANHO DO ÍCONE DO PDF (O desenho dentro da bola) */
+    font-size: 80px; /* Aumente este valor para o ícone crescer */
     
     transition: 0.3s;
 }
