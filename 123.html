@@ -61,9 +61,17 @@
         input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
 
         #modal-mensagens { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.95); backdrop-filter: blur(10px); z-index: 100; overflow-y: auto; display: none; padding: 20px; }
-        .btn-copy-success { background-color: #3b82f6 !important; color: white !important; }
         
-        /* Container do PDF corrigido: block porém invisível e fora de interação */
+        /* NOVO EFEITO DE TRANSIÇÃO SUAVE PARA O BOTÃO COPIAR */
+        .btn-copy-default {
+            transition: background-color 0.8s ease, color 0.8s ease, transform 0.2s ease;
+        }
+        .btn-copy-success { 
+            background-color: #3b82f6 !important; 
+            color: white !important; 
+            transition: background-color 0.1s ease !important; /* Muda rápido para azul */
+        }
+        
         #pdf-offscreen { 
             position: fixed; 
             left: -5000px; 
@@ -98,9 +106,9 @@
                 </div>
                 <div id="txt-proposta" style="background: #000; border-radius: 15px; padding: 15px; font-family: monospace; font-size: 13px; color: #d1d1d1; white-space: pre-wrap; word-break: break-all; margin: 15px 0; border: 1px solid rgba(255,255,255,0.05);"></div>
                 <div class="grid grid-cols-3 gap-2">
-                    <button onclick="copiarTextoProfissional('txt-proposta', this)" class="py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[9px] uppercase">COPIAR</button>
+                    <button onclick="copiarTextoProfissional('txt-proposta', this)" class="btn-copy-default py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[10px] uppercase">COPIAR</button>
                     <button onclick="baixarPDF()" class="py-3 bg-red-600 text-white rounded-xl font-bold text-[9px] uppercase shadow-lg shadow-red-600/20">GERAR PDF</button>
-                    <button onclick="enviarWpp('txt-proposta')" class="py-3 bg-blue-600 text-white rounded-xl font-bold text-[9px] uppercase">WHATSAPP</button>
+                    <button onclick="enviarWpp('txt-proposta')" class="py-3 bg-blue-600 text-white rounded-xl font-bold text-[10px] uppercase">WHATSAPP</button>
                 </div>
             </div>
 
@@ -111,7 +119,7 @@
                 </div>
                 <div id="txt-sinal" style="background: #000; border-radius: 15px; padding: 15px; font-family: monospace; font-size: 13px; color: #d1d1d1; white-space: pre-wrap; word-break: break-all; margin: 15px 0; border: 1px solid rgba(255,255,255,0.05);"></div>
                 <div class="grid grid-cols-2 gap-2">
-                    <button onclick="copiarTextoProfissional('txt-sinal', this)" class="py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[10px] uppercase">COPIAR</button>
+                    <button onclick="copiarTextoProfissional('txt-sinal', this)" class="btn-copy-default py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[10px] uppercase">COPIAR</button>
                     <button onclick="enviarWpp('txt-sinal')" class="py-3 bg-orange-600 text-white rounded-xl font-bold text-[10px] uppercase">WHATSAPP</button>
                 </div>
             </div>
@@ -126,7 +134,7 @@
                 </div>
                 <div id="txt-conclusao" style="background: #000; border-radius: 15px; padding: 15px; font-family: monospace; font-size: 13px; color: #d1d1d1; white-space: pre-wrap; word-break: break-all; margin: 15px 0; border: 1px solid rgba(255,255,255,0.05);"></div>
                 <div class="grid grid-cols-2 gap-2">
-                    <button onclick="copiarTextoProfissional('txt-conclusao', this)" class="py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[10px] uppercase">COPIAR</button>
+                    <button onclick="copiarTextoProfissional('txt-conclusao', this)" class="btn-copy-default py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[10px] uppercase">COPIAR</button>
                     <button onclick="enviarWpp('txt-conclusao')" class="py-3 bg-green-600 text-white rounded-xl font-bold text-[10px] uppercase">WHATSAPP</button>
                 </div>
             </div>
@@ -449,13 +457,16 @@
 
         function copiarTextoProfissional(id, elemento) {
             const texto = document.getElementById(id).innerText;
-            const originalText = elemento.innerText;
+            const originalHTML = elemento.innerHTML;
+            
             navigator.clipboard.writeText(texto).then(() => {
-                elemento.innerText = "COPIADO!";
                 elemento.classList.add('btn-copy-success');
+                elemento.innerHTML = '<i class="fa-solid fa-check"></i> COPIADO!';
+                
+                // O azul vai sumindo gradualmente por causa do CSS transition (0.8s)
                 setTimeout(() => {
-                    elemento.innerText = originalText;
                     elemento.classList.remove('btn-copy-success');
+                    elemento.innerHTML = originalHTML;
                 }, 2000);
             });
         }
@@ -486,13 +497,13 @@
             });
 
             const template = `
-            <div style="font-family: Arial, sans-serif; color: #334155; padding: 40px; background: white; width: 210mm;">
+            <div style="font-family: Arial, sans-serif; color: #334155; padding: 40px; background: white; width: 210mm; min-height: 297mm; box-sizing: border-box;">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #1e40af; padding-bottom: 20px; margin-bottom: 30px;">
-                    <div>
-                        <h1 style="font-size: 22px; font-weight: 800; color: #0f172a; margin: 0;">${prestador.toUpperCase()}</h1>
+                    <div style="width: 60%;">
+                        <h1 style="margin: 0; color: #1e40af; font-size: 24px; font-weight: bold;">${prestador.toUpperCase()}</h1>
                         <p style="font-size: 11px; color: #64748b; margin-top: 5px;">CNPJ/CPF: ${cnpjEmp}</p>
                     </div>
-                    <div style="text-align: right;">
+                    <div style="width: 35%; text-align: right;">
                         <div style="font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase;">${modoOS ? 'Ordem de Serviço' : 'Orçamento'}</div>
                         <div style="font-size: 16px; font-weight: 600; color: #0f172a;">${dataEmissao}</div>
                     </div>
@@ -507,7 +518,8 @@
                 </table>
                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                     <div style="flex: 1; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; font-size: 11px; margin-right: 20px;">
-                        <strong>Observações:</strong><br>${obs.replace(/\n/g, '<br>')}
+                        <strong style="color: #1e40af;">Observações:</strong><br>
+                        <p style="margin-top: 5px; white-space: pre-wrap;">${obs}</p>
                     </div>
                     <div style="width: 200px; text-align: right;">
                         <p style="font-size: 14px; font-weight: 800; color: #0f172a; text-transform: uppercase; border-top: 2px solid #e2e8f0; padding-top: 15px;">Total Geral</p>
@@ -515,7 +527,7 @@
                         <p style="font-size: 10px; color: #94a3b8; margin-top: 5px;">Válido até: ${dataValidade}</p>
                     </div>
                 </div>
-                <div style="margin-top: 80px; text-align: center; font-size: 11px; border-top: 1px solid #333; width: 250px; margin: 0 auto; padding-top: 5px;">Assinatura do Responsável</div>
+                <div style="margin-top: 100px; text-align: center; font-size: 11px; border-top: 1px solid #333; width: 250px; margin: 0 auto; padding-top: 5px;">Assinatura do Responsável</div>
             </div>`;
 
             const element = document.getElementById('pdf-offscreen');
@@ -523,7 +535,7 @@
 
             const opt = {
                 margin: 0,
-                filename: `${modoOS ? 'OS' : 'Orcamento'}_${cliente}.pdf`,
+                filename: `${modoOS ? 'OS' : 'Orcamento'}_${cliente.replace(/\s+/g, '_')}.pdf`,
                 image: { type: 'jpeg', quality: 1 },
                 html2canvas: { scale: 3, useCORS: true, backgroundColor: '#ffffff' },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
