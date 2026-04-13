@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <script>
-        if (localStorage.getItem("inforos_logado") !== "true") {
-            window.location.href = "https://refrigeracaoeliezer.github.io/site/";
-        }
-    </script>
+  <script>
+    // Verifica se o usuário está logado logo no carregamento
+    if (localStorage.getItem("inforos_logado") !== "true") {
+        window.location.replace("https://refrigeracaoeliezer.github.io/site/");
+    }
+</script>
     <meta charset="UTF-8">
     <title>Configurações | Refrigeração</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
