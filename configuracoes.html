@@ -265,6 +265,26 @@
         }
     }
 
+
+
+function preencherDadosFixos() {
+    if(cacheDados.length > 0) {
+        const dados = cacheDados[0]; // Pega os dados da primeira linha
+        
+        // Preenche o nome da empresa no topo
+        if(dados.emp_nome) {
+            document.getElementById('nomePrestador').value = dados.emp_nome;
+        }
+        
+        // Nota: Para o CPF/CNPJ e PIX aparecerem automaticamente em campos na tela, 
+        // os inputs precisam ter IDs (ex: id="cnpjEmpresa" e id="pixEmpresa").
+    }
+}
+
+
+
+ 
+
     function ajustarInterfaceRecuperacao() {
         const tipo = document.getElementById('tipo_recuperacao').value;
         const inputValidacao = document.getElementById('rec_dado_validacao');
@@ -322,23 +342,41 @@
         finally { toggleBtnLoading(btn, false, 'Entrar'); }
     }
 
-    async function buscarDadosPlanilha() {
-        try {
-            const resp = await fetch(URL_DATABASE, { priority: 'high' });
-            cacheDados = await resp.json();
-            renderizarDatalists();
-            configurarBuscaAutomatica();
-        } catch (e) { console.error("Erro na carga:", e); }
+// INÍCIO DA FUNÇÃO BUSCAR DADOS
+async function buscarDadosPlanilha() {
+    try {
+        // O fetch com prioridade alta acelera o carregamento dos dados
+        const resp = await fetch(URL_DATABASE, { priority: 'high' }); 
+        cacheDados = await resp.json();
+        
+        renderizarDatalists();
+        configurarListeners();
+        aplicarTextoPadrao();
+        calcularDataFinal();
+        
+        // Mantendo a função que preenche o PIX e Identidade da Empresa
+        preencherDadosFixos(); 
+        
+    } catch (e) { 
+        console.error("Erro na carga:", e); 
     }
+}
+// FIM DA FUNÇÃO BUSCAR DADOS 
 
-    function renderizarDatalists() {
-        const criarOpcoes = (campo) => [...new Set(cacheDados.map(d => d[campo]))].filter(Boolean).map(n => `<option value="${n}">`).join('');
-        document.getElementById('lista_empresas').innerHTML = criarOpcoes('emp_nome');
-        document.getElementById('lista_clientes').innerHTML = criarOpcoes('cli_nome');
-        document.getElementById('lista_servicos').innerHTML = criarOpcoes('srv_nome');
-        document.getElementById('lista_obs').innerHTML = criarOpcoes('txt_obs');
-    }
+ 
+ function renderizarDatalists() {
+    // MODIFICAÇÃO: Filtra apenas as 5 primeiras linhas para a lista de empresas (ignora linha 6+)
+    const criarOpcoesEmpresa = (campo) => [...new Set(cacheDados.slice(0, 5).map(d => d[campo]))].filter(Boolean).map(n => `<option value="${n}">`).join('');
+    
+    // As outras listas continuam pegando todos os dados normalmente
+    const criarOpcoesGeral = (campo) => [...new Set(cacheDados.map(d => d[campo]))].filter(Boolean).map(n => `<option value="${n}">`).join('');
 
+    document.getElementById('lista_clientes').innerHTML = criarOpcoesGeral('cli_nome');
+    document.getElementById('lista_servicos').innerHTML = criarOpcoesGeral('srv_nome');
+    document.getElementById('lista_obs').innerHTML = criarOpcoesGeral('txt_obs');
+    
+    // Se você tiver um datalist para nomes de empresas, use: criarOpcoesEmpresa('emp_nome');
+}
 
 
 
