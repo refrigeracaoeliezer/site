@@ -106,9 +106,12 @@
             </div>
 
             <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 25px; padding: 20px; margin-bottom: 20px;">
-                <div class="flex items-center gap-3 mb-2">
-                    <span class="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center text-[10px] font-bold">3</span>
-                    <span class="text-xs font-bold uppercase">Conclusão</span>
+                <div class="flex justify-between items-center mb-2">
+                    <div class="flex items-center gap-3">
+                        <span class="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center text-[10px] font-bold">3</span>
+                        <span class="text-xs font-bold uppercase">Conclusão</span>
+                    </div>
+                    <button id="btn-quitar" onclick="alternarQuitacao()" class="text-[9px] font-black px-3 py-1 rounded-lg border border-green-500/30 text-green-500 bg-green-500/10">QUITAR SALDO</button>
                 </div>
                 <div id="txt-conclusao" style="background: #000; border-radius: 15px; padding: 15px; font-family: monospace; font-size: 13px; color: #d1d1d1; white-space: pre-wrap; word-break: break-all; margin: 15px 0; border: 1px solid rgba(255,255,255,0.05);"></div>
                 <div class="grid grid-cols-2 gap-2">
@@ -225,6 +228,7 @@
         const URL_DATABASE = "https://script.google.com/macros/s/AKfycbwXxgwoZ5Qov5xGUN9CMQnCOqsS4HL2gJdGtaPad9Df8ShuykbMUzq3_jKlb-0gLMju8Q/exec";
         let cacheDados = [];
         let modoOS = false;
+        let saldoQuitado = false; // Controle de quitação
 
         function forcarLista(input) {
             input.setAttribute('autocomplete', 'off');
@@ -418,6 +422,21 @@
             adicionarServico();
         };
 
+        function alternarQuitacao() {
+            saldoQuitado = !saldoQuitado;
+            const btn = document.getElementById('btn-quitar');
+            if(saldoQuitado) {
+                btn.innerText = "PAGAMENTO CONFIRMADO";
+                btn.classList.replace('bg-green-500/10', 'bg-green-600');
+                btn.classList.replace('text-green-500', 'text-white');
+            } else {
+                btn.innerText = "QUITAR SALDO";
+                btn.classList.replace('bg-green-600', 'bg-green-500/10');
+                btn.classList.replace('text-white', 'text-green-500');
+            }
+            gerarDocumento(); // Atualiza o texto da conclusão
+        }
+
         function gerarDocumento() {
             const prestador = document.getElementById('nomePrestador').value || "ELIEZER";
             const cliente = document.getElementById('nomeCliente').value || "Cliente";
@@ -426,7 +445,6 @@
             const dias = document.getElementById('inputGarantia').value;
             const dataFim = document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/');
             
-            // Busca correta da Chave PIX
             const dadosEmpresa = cacheDados.find(d => d.emp_pix);
             const chavePix = dadosEmpresa ? dadosEmpresa.emp_pix : "[CHAVE NÃO ENCONTRADA]";
 
@@ -442,14 +460,14 @@
             const sinalValor = (totalNum * 0.3).toLocaleString('pt-BR', {minimumFractionDigits: 2});
             const saldoValor = (totalNum * 0.7).toLocaleString('pt-BR', {minimumFractionDigits: 2});
 
-            // Preenche 1: Proposta
+            // LOGICA DA FRASE DE SALDO
+            const fraseSaldo = saldoQuitado ? "*Pagamento Confirmado:* R$ 0,00 (Total Pago)" : `*Saldo Restante:* R$ ${saldoValor}`;
+
             document.getElementById('txt-proposta').innerText = `*ORÇAMENTO TÉCNICO - ${prestador.toUpperCase()}*\n\nOlá ${cliente}! Segue o orçamento:\n\n*SERVIÇOS:*\n${servicosTexto}\n*OBS:*\n${obs}\n\n*INVESTIMENTO TOTAL:* R$ ${total}\n(Material + Mão de Obra incluso)\n\n*${modoOS ? 'Garantia' : 'Vencimento'}:* ${dias} dias\n*Data Prevista:* ${dataFim}\n\nFico no aguardo.`;
 
-            // Preenche 2: Sinal
             document.getElementById('txt-sinal').innerText = `Olá ${cliente}! 🤝\n\nPara agendarmos e comprarmos material, precisamos de um sinal.\n\n*Sinal (30%): R$ ${sinalValor}*\n\nChave PIX: ${chavePix}\n\nPor favor, envie o comprovante. Obrigado!`;
 
-            // Preenche 3: Conclusão
-            document.getElementById('txt-conclusao').innerText = `*Serviço Concluído!* ✅\n\n${cliente}, equipamento pronto.\n\n*Saldo Restante:* R$ ${saldoValor}\n\nLembrando que você tem *${dias} dias* de garantia.\n\nObrigado pela preferência!\n${prestador}`;
+            document.getElementById('txt-conclusao').innerText = `*Serviço Concluído!* ✅\n\n${cliente}, equipamento pronto.\n\n${fraseSaldo}\n\nLembrando que você tem *${dias} dias* de garantia.\n\nObrigado pela preferência!\n${prestador}`;
 
             document.getElementById('modal-mensagens').style.display = 'block';
             document.body.style.overflow = 'hidden';
@@ -458,6 +476,7 @@
         function fecharModal() {
             document.getElementById('modal-mensagens').style.display = 'none';
             document.body.style.overflow = 'auto';
+            // Reseta quitação ao fechar se desejar, ou mantenha
         }
 
         function enviarWpp(id) {
