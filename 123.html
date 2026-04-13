@@ -1,7 +1,11 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-
+    <script>
+    if (localStorage.getItem("inforos_logado") !== "true") {
+        window.location.replace("https://refrigeracaoeliezer.github.io/site/");
+    }
+    </script>
 
     <meta charset="UTF-8">
     <title>Orçamento | Profissional</title>
@@ -24,7 +28,6 @@
         .is-os { border-top-color: #10b981 !important; }
         .is-os .text-blue-500, .is-os .text-blue-400, .is-os .section-header i, .is-os .section-header span { color: #10b981 !important; }
         .is-os .btn-primary { background: linear-gradient(135deg, #065f46 0%, #10b981 100%) !important; }
-        .is-os .bg-blue-600 { background-color: #059669 !important; }
 
         .dark-input { background: rgba(255, 255, 255, 0.05) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; color: white !important; transition: all 0.3s ease; cursor: pointer; }
         .dark-input:focus { border-color: #3b82f6 !important; background: rgba(255, 255, 255, 0.08) !important; outline: none; }
@@ -32,7 +35,6 @@
 
         .service-card { background: rgba(255, 255, 255, 0.02); border-radius: 20px; padding: 15px; border: 1px solid rgba(255, 255, 255, 0.08); }
         .qty-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: #3b82f6; transition: 0.2s; border: 1px solid rgba(59, 130, 246, 0.2); }
-        .is-os .qty-btn { color: #10b981 !important; border-color: rgba(16, 185, 129, 0.2) !important; }
         
         .section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
         .section-header i { font-size: 14px; color: #3b82f6; }
@@ -52,6 +54,10 @@
         .switch-labels div { flex: 1; text-align: center; color: rgba(255,255,255,0.4); }
         .active-label { color: white !important; }
         .mode-os .switch-bg { left: 50%; background: #10b981; }
+
+        /* Estilos das Mensagens Prontas */
+        .msg-ready { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; padding: 15px; margin-top: 10px; }
+        .msg-text-box { background: #0d1117; border-radius: 15px; padding: 12px; font-family: monospace; font-size: 12px; color: #a1a1aa; white-space: pre-wrap; margin: 10px 0; border: 1px solid rgba(255,255,255,0.05); }
 
         input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
     </style>
@@ -116,11 +122,9 @@
             </div>
 
             <div id="sec-servicos" class="space-y-4">
-                <div class="flex justify-between items-center mb-1">
-                    <div class="section-header !mb-0">
-                        <i class="fa-solid fa-screwdriver-wrench"></i>
-                        <span>Serviços Realizados</span>
-                    </div>
+                <div class="section-header">
+                    <i class="fa-solid fa-screwdriver-wrench"></i>
+                    <span>Serviços Realizados</span>
                 </div>
                 <div id="services-container" class="space-y-4"></div>
                 <button onclick="adicionarServico()" class="btn-add-item">
@@ -146,7 +150,7 @@
                 <div class="bg-blue-600/5 p-5 rounded-3xl border border-blue-500/10">
                     <div class="flex items-center gap-3">
                         <span class="text-xl font-black text-white/20">R$</span>
-                        <input type="text" id="totalFinal" placeholder="0,00" class="w-full bg-transparent border-none text-2xl font-black text-white focus:outline-none" readonly>
+                        <input type="text" id="totalFinal" value="0,00" class="w-full bg-transparent border-none text-2xl font-black text-white focus:outline-none" readonly>
                     </div>
                 </div>
             </div>
@@ -154,6 +158,43 @@
             <button onclick="gerarDocumento()" id="btn-acao" class="w-full btn-primary text-white py-5 rounded-2xl font-black text-base uppercase tracking-widest flex items-center justify-center gap-3">
                 Gerar Orçamento <i class="fa-solid fa-arrow-right"></i>
             </button>
+
+            <div id="mensagens-prontas" class="hidden space-y-4">
+                <div class="text-center text-[10px] font-black uppercase text-white/30 tracking-[4px] mt-6">Mensagens Prontas</div>
+                
+                <div class="msg-ready">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-[10px] font-bold">1</span>
+                        <span class="text-xs font-bold uppercase tracking-widest">Proposta</span>
+                    </div>
+                    <div id="txt-proposta" class="msg-text-box"></div>
+                    <button onclick="copiarTexto('txt-proposta')" class="w-full py-3 bg-blue-600/20 text-blue-400 rounded-xl font-bold text-[10px] uppercase border border-blue-500/20 hover:bg-blue-600 hover:text-white transition-all">
+                        <i class="fa-solid fa-copy mr-2"></i> Copiar Texto
+                    </button>
+                </div>
+
+                <div class="msg-ready">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="w-6 h-6 rounded-full bg-orange-600 flex items-center justify-center text-[10px] font-bold">2</span>
+                        <span class="text-xs font-bold uppercase tracking-widest">Sinal</span>
+                    </div>
+                    <div id="txt-sinal" class="msg-text-box"></div>
+                    <button onclick="copiarTexto('txt-sinal')" class="w-full py-3 bg-orange-600/20 text-orange-400 rounded-xl font-bold text-[10px] uppercase border border-orange-500/20 hover:bg-orange-600 hover:text-white transition-all">
+                        <i class="fa-solid fa-copy mr-2"></i> Copiar Texto
+                    </button>
+                </div>
+
+                <div class="msg-ready">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center text-[10px] font-bold">3</span>
+                        <span class="text-xs font-bold uppercase tracking-widest">Conclusão</span>
+                    </div>
+                    <div id="txt-conclusao" class="msg-text-box"></div>
+                    <button onclick="copiarTexto('txt-conclusao')" class="w-full py-3 bg-green-600/20 text-green-400 rounded-xl font-bold text-[10px] uppercase border border-green-500/20 hover:bg-green-600 hover:text-white transition-all">
+                        <i class="fa-solid fa-copy mr-2"></i> Copiar Texto
+                    </button>
+                </div>
+            </div>
         </main>
     </div>
 
@@ -198,7 +239,7 @@
                 cacheDados = await resp.json();
                 renderizarDatalists();
                 configurarListeners();
-                aplicarTextoPadrao(); 
+                aplicarTextoPadrao();
                 calcularDataFinal();
             } catch (e) { console.error("Erro na carga:", e); }
         }
@@ -216,14 +257,7 @@
         function aplicarTextoPadrao() {
             const txtArea = document.getElementById('obsGeral');
             const listaObsValidas = cacheDados.map(d => d.txt_obs).filter(Boolean);
-            
-            if (modoOS) {
-                // Modo OS: Limpa o campo
-                txtArea.value = "";
-            } else {
-                // Modo Orçamento: Carrega Linha 1
-                txtArea.value = listaObsValidas[0] || "";
-            }
+            if (modoOS) { txtArea.value = ""; } else { txtArea.value = listaObsValidas[0] || ""; }
             autoExpandir(txtArea);
         }
 
@@ -317,15 +351,94 @@
             atualizarSoma();
         }
 
+        function formatarDataBR(dataISO) {
+            if(!dataISO) return "--/--/----";
+            const [y, m, d] = dataISO.split('-');
+            return `${d}/${m}/${y}`;
+        }
+
+        // --- FUNÇÃO PARA GERAR OS TEXTOS ---
+        function gerarDocumento() {
+            const prestador = document.getElementById('nomePrestador').value || "REFRIGERAÇÃO ELIEZER";
+            const cliente = document.getElementById('nomeCliente').value || "Cliente";
+            const total = document.getElementById('totalFinal').value;
+            const obs = document.getElementById('obsGeral').value;
+            const garantia = document.getElementById('inputGarantia').value;
+            const dataFim = formatarDataBR(document.getElementById('dataPrazoFinal').value);
+            
+            let servicosTexto = "";
+            document.querySelectorAll('.service-card').forEach(card => {
+                const nome = card.querySelector('.service-name').value;
+                const preco = card.querySelector('.service-price').value;
+                const qtde = card.querySelector('.service-qty').innerText;
+                if(nome) servicosTexto += `• ${qtde}x ${nome} - R$ ${preco}\n`;
+            });
+
+            const sinalValor = (parseFloat(total.replace(/\./g, "").replace(",", ".")) * 0.3).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            const saldoValor = (parseFloat(total.replace(/\./g, "").replace(",", ".")) * 0.7).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+
+            // Montagem Proposta
+            document.getElementById('txt-proposta').innerText = 
+`*ORÇAMENTO TÉCNICO - ${prestador.toUpperCase()}*
+
+Olá ${cliente}! Segue o orçamento:
+
+*SERVIÇOS:*
+${servicosTexto}
+*OBS:*
+${obs}
+
+*INVESTIMENTO TOTAL:* R$ ${total}
+(Material + Mão de Obra incluso)
+
+*Vencimento:* ${garantia} dias
+*Data Prevista:* ${dataFim}
+
+Fico no aguardo.`;
+
+            // Montagem Sinal
+            document.getElementById('txt-sinal').innerText = 
+`Olá ${cliente}! 🤝
+
+Para agendarmos dia *${dataFim}* e comprarmos material, precisamos de um sinal.
+
+*Sinal (30%): R$ ${sinalValor}*
+
+Chave PIX: [SUA CHAVE AQUI]
+
+Por favor, envie o comprovante. Obrigado!`;
+
+            // Montagem Conclusão
+            document.getElementById('txt-conclusao').innerText = 
+`*Serviço Concluído!* ✅
+
+${cliente}, equipamento pronto.
+
+*Saldo Restante:* R$ ${saldoValor}
+
+Lembrando que você tem *${garantia} dias* de garantia.
+
+Obrigado pela preferência!
+${prestador}`;
+
+            document.getElementById('mensagens-prontas').classList.remove('hidden');
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+
+        function copiarTexto(id) {
+            const texto = document.getElementById(id).innerText;
+            navigator.clipboard.writeText(texto).then(() => {
+                alert("Texto copiado para o WhatsApp!");
+            });
+        }
+
         function alternarModo() {
             modoOS = !modoOS;
             const card = document.getElementById('card-principal');
             const thumb = document.getElementById('toggleMode');
             const subTitle = document.getElementById('sub-title');
             const btnAcao = document.getElementById('btn-acao');
-            const lblDados = document.getElementById('label-dados');
             const lblPrazo = document.getElementById('label-prazo');
-            const btnAddIcon = document.getElementById('btn-add-icon');
 
             aplicarTextoPadrao();
 
@@ -333,22 +446,18 @@
                 thumb.classList.add('mode-os'); card.classList.add('is-os');
                 subTitle.innerText = "Ordem de Serviço (OS)";
                 btnAcao.innerHTML = 'Finalizar O.S <i class="fa-solid fa-check"></i>';
-                lblDados.innerText = "Dados da Ordem de Serviço";
                 lblPrazo.innerText = "Garantia";
                 lblPrazo.classList.replace('bg-blue-600', 'bg-green-600');
                 document.getElementById('lbl-os').classList.add('active-label');
                 document.getElementById('lbl-orc').classList.remove('active-label');
-                btnAddIcon.className = "fa-solid fa-circle-plus mr-2 text-green-500";
             } else {
                 thumb.classList.remove('mode-os'); card.classList.remove('is-os');
                 subTitle.innerText = "Sistema de Orçamento";
                 btnAcao.innerHTML = 'Gerar Orçamento <i class="fa-solid fa-arrow-right"></i>';
-                lblDados.innerText = "Dados do Orçamento";
                 lblPrazo.innerText = "Vencimento";
                 lblPrazo.classList.replace('bg-green-600', 'bg-blue-600');
                 document.getElementById('lbl-orc').classList.add('active-label');
                 document.getElementById('lbl-os').classList.remove('active-label');
-                btnAddIcon.className = "fa-solid fa-circle-plus mr-2 text-blue-500";
             }
             calcularDataFinal();
         }
