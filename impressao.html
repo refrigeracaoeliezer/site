@@ -162,6 +162,93 @@
     </div>
 
 <script>
+
+        document.getElementById('num-random').innerText = Math.floor(100 + Math.random() * 899) + '/2026';
+
+        const dados = JSON.parse(localStorage.getItem('dados_impressao'));
+
+
+
+        if(dados) {
+
+            document.getElementById('view-tipo').innerText = dados.tipo;
+
+            document.getElementById('view-cliente').innerText = dados.cliente;
+
+            document.getElementById('view-endereco').innerText = dados.endereco;
+
+            document.getElementById('view-data').innerText = dados.emissao;
+
+            document.getElementById('view-venc').innerText = dados.validade;
+
+            document.getElementById('view-total').innerText = 'R$ ' + dados.total;
+
+            document.getElementById('view-obs').innerText = dados.obs || "Nenhuma observação técnica registrada.";
+
+
+
+            const corpo = document.getElementById('tabela-corpo');
+
+            dados.itens.forEach(i => {
+
+                corpo.innerHTML += `<tr><td>${i.descricao}</td><td style="text-align:center">${i.qtd}</td><td style="text-align:right">R$ ${i.valor}</td></tr>`;
+
+            });
+
+        }
+
+
+
+        function baixarPDF() {
+
+            const element = document.getElementById('conteudo-pdf');
+
+            const opt = {
+
+                margin: 0,
+
+                filename: `Orcamento_${dados.cliente}.pdf`,
+
+                image: { type: 'jpeg', quality: 1 },
+
+                html2canvas: { 
+
+                    scale: 3, 
+
+                    useCORS: true, 
+
+                    logging: false,
+
+                    allowTaint: true // Permite capturar imagens de outros domínios
+
+                },
+
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+
+            };
+
+            
+
+            // Pequeno delay para garantir que o navegador "desenhou" a logo antes de capturar
+
+            setTimeout(() => {
+
+                html2pdf().set(opt).from(element).save();
+
+            }, 500);
+
+        }
+
+    </script>
+
+Peço desculpas pela confusão anterior. Entendi que o script original já funciona para o layout, o único problema é a logo não "subir" para o PDF no celular.
+
+Para resolver isso sem mexer na estrutura que está dando certo, adicionei apenas duas linhas de comando (logging e proxy) e um ajuste de segurança no html2canvas. Mantenha a sua tag <img> exatamente como está no seu HTML, o ajuste será apenas aqui no script.
+
+Aqui está o seu script arrumado e simplificado:
+
+JavaScript
+<script>
     document.getElementById('num-random').innerText = Math.floor(100 + Math.random() * 899) + '/2026';
     const dados = JSON.parse(localStorage.getItem('dados_impressao'));
 
