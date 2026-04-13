@@ -192,11 +192,9 @@
             </div>
 
             <div id="sec-custos" class="space-y-4">
-                <div class="bg-blue-600/5 p-5 rounded-3xl border border-blue-500/10">
-                    <div class="flex items-center gap-3">
-                        <span class="text-xl font-black text-white/20">R$</span>
-                        <input type="text" id="totalFinal" placeholder="0,00" class="w-full bg-transparent border-none text-2xl font-black text-white focus:outline-none" readonly>
-                    </div>
+                <div class="bg-blue-600/5 p-5 rounded-3xl border border-blue-500/10 flex items-center gap-3">
+                    <span class="text-xl font-black text-white/20">R$</span>
+                    <input type="text" id="totalFinal" placeholder="0,00" class="w-full bg-transparent border-none text-2xl font-black text-white focus:outline-none" readonly>
                 </div>
             </div>
 
@@ -215,32 +213,6 @@
         let cacheDados = [];
         let modoOS = false;
         let saldoQuitado = false;
-
-        function forcarLista(input) {
-            input.setAttribute('autocomplete', 'off');
-            const valOriginal = input.value;
-            input.value = '';
-            setTimeout(() => { input.value = valOriginal; }, 1);
-        }
-
-        function autoExpandir(textarea) {
-            textarea.style.height = 'auto';
-            textarea.style.height = textarea.scrollHeight + 'px';
-        }
-
-        function calcularDataFinal() {
-            const dataInicioVal = document.getElementById('dataInicio').value;
-            const diasPrazo = parseInt(document.getElementById('inputGarantia').value) || 0;
-            const campoDataFinal = document.getElementById('dataPrazoFinal');
-            if (dataInicioVal) {
-                let data = new Date(dataInicioVal + 'T00:00:00');
-                data.setDate(data.getDate() + diasPrazo);
-                const y = data.getFullYear();
-                const m = String(data.getMonth() + 1).padStart(2, '0');
-                const d = String(data.getDate()).padStart(2, '0');
-                campoDataFinal.value = `${y}-${m}-${d}`;
-            }
-        }
 
         async function buscarDadosPlanilha() {
             try {
@@ -475,6 +447,8 @@
             buscarDadosPlanilha();
             adicionarServico();
         };
+
+        function forcarLista(i) { i.setAttribute('autocomplete', 'off'); const v = i.value; i.value = ''; setTimeout(() => i.value = v, 1); }
     </script>
 </body>
 </html>
