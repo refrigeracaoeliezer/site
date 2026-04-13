@@ -57,12 +57,49 @@
         .mode-os .switch-bg { left: 50%; background: #10b981; }
 
         input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
+
+        #modal-mensagens { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.95); backdrop-filter: blur(10px); z-index: 100; overflow-y: auto; display: none; padding: 20px; }
     </style>
 </head>
 <body class="p-4 pb-10">
 
     <div class="corner-ball ball-top-right"></div>
     <div class="corner-ball ball-bottom-left"></div>
+
+    <div id="modal-mensagens">
+        <div class="max-w-md mx-auto">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-xl font-black uppercase tracking-tighter">Mensagens <span class="text-blue-500">Prontas</span></h2>
+                <button onclick="fecharModal()" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 25px; padding: 20px; margin-bottom: 20px;">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-[10px] font-bold">1</span>
+                    <span class="text-xs font-bold uppercase">Proposta</span>
+                </div>
+                <div id="txt-proposta" style="background: #000; border-radius: 15px; padding: 15px; font-family: monospace; font-size: 13px; color: #d1d1d1; white-space: pre-wrap; word-break: break-all; margin: 15px 0; border: 1px solid rgba(255,255,255,0.05);"></div>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="copiarTextoProfissional('txt-proposta', this)" class="py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[10px] uppercase">COPIAR</button>
+                    <button onclick="enviarWpp('txt-proposta')" class="py-3 bg-blue-600 text-white rounded-xl font-bold text-[10px] uppercase">WHATSAPP</button>
+                </div>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 25px; padding: 20px; margin-bottom: 20px;">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="w-6 h-6 rounded-full bg-orange-600 flex items-center justify-center text-[10px] font-bold">2</span>
+                    <span class="text-xs font-bold uppercase">Sinal</span>
+                </div>
+                <div id="txt-sinal" style="background: #000; border-radius: 15px; padding: 15px; font-family: monospace; font-size: 13px; color: #d1d1d1; white-space: pre-wrap; word-break: break-all; margin: 15px 0; border: 1px solid rgba(255,255,255,0.05);"></div>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="copiarTextoProfissional('txt-sinal', this)" class="py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[10px] uppercase">COPIAR</button>
+                    <button onclick="enviarWpp('txt-sinal')" class="py-3 bg-orange-600 text-white rounded-xl font-bold text-[10px] uppercase">WHATSAPP</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="max-w-md mx-auto relative z-10" id="main-container">
         <div class="mb-6">
@@ -360,50 +397,59 @@
             adicionarServico();
         };
 
-   function gerarDocumento() {
-    const prestador = document.getElementById('nomePrestador').value || "ELIEZER";
-    const cliente = document.getElementById('nomeCliente').value || "Cliente";
-    const endereco = document.getElementById('enderecoCliente').value;
-    const telefone = document.getElementById('telCliente').value;
-    const dataInicio = document.getElementById('dataInicio').value;
-    const dataFim = document.getElementById('dataPrazoFinal').value;
-    const obs = document.getElementById('obsGeral').value;
-    const total = document.getElementById('totalFinal').value;
+        function gerarDocumento() {
+            const prestador = document.getElementById('nomePrestador').value || "ELIEZER";
+            const cliente = document.getElementById('nomeCliente').value || "Cliente";
+            const total = document.getElementById('totalFinal').value;
+            const obs = document.getElementById('obsGeral').value;
+            const dias = document.getElementById('inputGarantia').value;
+            const dataFim = document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/');
+            
+            const chavePix = (cacheDados.length > 0 && cacheDados[0].emp_pix) ? cacheDados[0].emp_pix : "[CHAVE NÃO CADASTRADA]";
 
-    // A linha que você adicionou está perfeita:
-    const chavePix = (cacheDados.length > 0 && cacheDados[0].emp_pix) ? cacheDados[0].emp_pix : "[CHAVE NÃO CADASTRADA]";
-    
-    // Captura os serviços da lista
-    let itens = [];
-    document.querySelectorAll('.service-card').forEach(card => {
-        itens.push({
-            nome: card.querySelector('.service-name').value,
-            preco: card.querySelector('.service-price').value,
-            qtd: card.querySelector('.service-qty').innerText
-        });
-    });
+            let servicosTexto = "";
+            document.querySelectorAll('.service-card').forEach(card => {
+                const nome = card.querySelector('.service-name').value;
+                const preco = card.querySelector('.service-price').value;
+                const qtde = card.querySelector('.service-qty').innerText;
+                if(nome) servicosTexto += `• ${qtde}x ${nome} - R$ ${preco}\n`;
+            });
 
-    // Aqui você deve decidir o que fazer com os dados. 
-    // Exemplo: Salvar no localStorage para abrir a página de impressão
-    const dadosParaImpressao = {
-        tipo: modoOS ? "ORDEM DE SERVIÇO" : "ORÇAMENTO",
-        prestador,
-        cliente,
-        endereco,
-        telefone,
-        dataInicio,
-        dataFim,
-        itens,
-        total,
-        obs,
-        pix: chavePix // Passando a chave PIX capturada
-    };
+            const totalNum = parseFloat(total.replace(/\./g, "").replace(",", ".")) || 0;
+            const sinalValor = (totalNum * 0.3).toLocaleString('pt-BR', {minimumFractionDigits: 2});
 
-    localStorage.setItem("dados_documento", JSON.stringify(dadosParaImpressao));
-    
-    // Abre a sua página de visualização/impressão (ajuste o nome do arquivo se necessário)
-    window.location.href = "visualizar.html"; 
-}
+            document.getElementById('txt-proposta').innerText = `*ORÇAMENTO TÉCNICO - ${prestador.toUpperCase()}*\n\nOlá ${cliente}! Segue o orçamento:\n\n*SERVIÇOS:*\n${servicosTexto}\n*OBS:*\n${obs}\n\n*INVESTIMENTO TOTAL:* R$ ${total}\n\n*${modoOS ? 'Garantia' : 'Vencimento'}:* ${dias} dias\n*Data Prevista:* ${dataFim}\n\nFico no aguardo.`;
+
+            document.getElementById('txt-sinal').innerText = `Olá ${cliente}! 🤝\n\nPara agendarmos e comprarmos material, precisamos de um sinal.\n\n*Sinal (30%): R$ ${sinalValor}*\n\nChave PIX: ${chavePix}\n\nObrigado!`;
+
+            document.getElementById('modal-mensagens').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function fecharModal() {
+            document.getElementById('modal-mensagens').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function enviarWpp(id) {
+            const texto = document.getElementById(id).innerText;
+            const tel = document.getElementById('telCliente').value.replace(/\D/g, '');
+            if(!tel) { alert("Informe o WhatsApp!"); return; }
+            window.open(`https://api.whatsapp.com/send?phone=55${tel}&text=${encodeURIComponent(texto)}`, '_blank');
+        }
+
+        function copiarTextoProfissional(id, elemento) {
+            const texto = document.getElementById(id).innerText;
+            const originalText = elemento.innerText;
+            navigator.clipboard.writeText(texto).then(() => {
+                elemento.innerText = "COPIADO!";
+                elemento.style.background = "#3b82f6";
+                setTimeout(() => {
+                    elemento.innerText = originalText;
+                    elemento.style.background = "";
+                }, 2000);
+            });
+        }
     </script>
 </body>
 </html>
