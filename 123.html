@@ -15,6 +15,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; min-height: 100vh; background: #0d1117; color: white; position: relative; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
@@ -70,6 +72,9 @@
         .mode-os .switch-bg { left: 50%; background: #10b981; }
 
         input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
+
+        /* ESTILO PARA O PDF (INVISÍVEL NA TELA) */
+        #pdf-template { color: #333; padding: 40px; font-family: Arial, sans-serif; display: none; }
     </style>
 </head>
 <body class="p-4 pb-10">
@@ -184,9 +189,10 @@
                     <span class="text-xs font-bold uppercase">Proposta</span>
                 </div>
                 <div id="txt-proposta" class="msg-text-box"></div>
-                <div class="grid grid-cols-2 gap-2">
-                    <button onclick="copiarTexto('txt-proposta')" class="py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[10px] uppercase">COPIAR</button>
-                    <button onclick="enviarWpp('txt-proposta')" class="py-3 bg-blue-600 text-white rounded-xl font-bold text-[10px] uppercase">WHATSAPP</button>
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="copiarTexto('txt-proposta')" class="py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[9px] uppercase">COPIAR</button>
+                    <button onclick="baixarPDF()" class="py-3 bg-red-600/20 text-red-500 border border-red-500/30 rounded-xl font-bold text-[9px] uppercase">GERAR PDF</button>
+                    <button onclick="enviarWpp('txt-proposta')" class="py-3 bg-blue-600 text-white rounded-xl font-bold text-[9px] uppercase">WHATSAPP</button>
                 </div>
             </div>
 
@@ -217,6 +223,8 @@
             <p class="text-center text-[9px] text-white/20 uppercase font-bold mt-10">Refrigeração Eliezer v3.0</p>
         </div>
     </div>
+
+    <div id="pdf-template"></div>
 
     <datalist id="lista_clientes"></datalist>
     <datalist id="lista_servicos"></datalist>
@@ -368,7 +376,6 @@
             return `${d}/${m}/${y}`;
         }
 
-        // --- GERA O DOCUMENTO E ABRE O MODAL ---
         function gerarDocumento() {
             const prestador = document.getElementById('nomePrestador').value || "ELIEZER";
             const cliente = document.getElementById('nomeCliente').value || "Cliente";
@@ -396,7 +403,85 @@
             document.getElementById('txt-conclusao').innerText = `*Serviço Concluído!* ✅\n\n${cliente}, equipamento pronto.\n\n*Saldo Restante:* R$ ${saldoValor}\n\nLembrando que você tem *${dias} dias* de garantia.\n\nObrigado pela preferência!\n${prestador}`;
 
             document.getElementById('modal-mensagens').style.display = 'block';
-            document.body.style.overflow = 'hidden'; // Trava a rolagem de fundo
+            document.body.style.overflow = 'hidden';
+        }
+
+        /* FUNÇÃO PARA GERAR E BAIXAR O PDF */
+        function baixarPDF() {
+            const prestador = document.getElementById('nomePrestador').value || "ELIEZER";
+            const cliente = document.getElementById('nomeCliente').value || "Cliente";
+            const total = document.getElementById('totalFinal').value;
+            const obs = document.getElementById('obsGeral').value;
+            const dataFim = formatarDataBR(document.getElementById('dataPrazoFinal').value);
+            const dias = document.getElementById('inputGarantia').value;
+            
+            let servicosHTML = "";
+            document.querySelectorAll('.service-card').forEach(card => {
+                const nome = card.querySelector('.service-name').value;
+                const preco = card.querySelector('.service-price').value;
+                const qtde = card.querySelector('.service-qty').innerText;
+                if(nome) {
+                    servicosHTML += `<tr>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee;">${qtde}x ${nome}</td>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">R$ ${preco}</td>
+                    </tr>`;
+                }
+            });
+
+            const template = `
+                <div style="font-family: Arial, sans-serif; color: #333;">
+                    <div style="text-align: center; border-bottom: 2px solid #1e40af; padding-bottom: 20px; margin-bottom: 20px;">
+                        <h1 style="margin: 0; color: #1e40af;">REFRIGERAÇÃO ${prestador.toUpperCase()}</h1>
+                        <p style="margin: 5px 0; font-size: 14px; color: #666;">Orçamento Técnico Profissional</p>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <p><strong>Cliente:</strong> ${cliente}</p>
+                        <p><strong>Data:</strong> ${new Date().toLocaleDateString('pt-BR')}</p>
+                    </div>
+
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <thead>
+                            <tr style="background: #1e40af; color: white;">
+                                <th style="padding: 10px; text-align: left;">Descrição do Serviço / Peça</th>
+                                <th style="padding: 10px; text-align: right;">Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>${servicosHTML}</tbody>
+                    </table>
+
+                    <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <p style="margin: 0; font-weight: bold; color: #1e40af;">Observações Técnicas:</p>
+                        <p style="margin: 10px 0 0 0; white-space: pre-wrap; font-size: 13px;">${obs}</p>
+                    </div>
+
+                    <div style="text-align: right; border-top: 2px solid #eee; padding-top: 10px;">
+                        <p style="font-size: 14px; margin: 5px 0;">${modoOS ? 'Garantia' : 'Vencimento'}: ${dias} dias</p>
+                        <p style="font-size: 14px; margin: 5px 0;">Previsão: ${dataFim}</p>
+                        <h2 style="color: #1e40af; margin: 10px 0;">Total: R$ ${total}</h2>
+                    </div>
+                    
+                    <div style="margin-top: 40px; text-align: center; font-size: 12px; color: #999;">
+                        <p>Este documento é uma proposta técnica de serviços.</p>
+                    </div>
+                </div>
+            `;
+
+            const element = document.getElementById('pdf-template');
+            element.innerHTML = template;
+            element.style.display = 'block';
+
+            const opt = {
+                margin: 10,
+                filename: `Orcamento_${cliente.replace(/\s+/g, '_')}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                element.style.display = 'none';
+            });
         }
 
         function fecharModal() {
