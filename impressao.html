@@ -177,7 +177,9 @@
                     document.getElementById('emp-tel').innerText = "Tel: " + emp.emp_tel;
                     document.getElementById('view-resp-tecnico').innerText = emp.emp_resp;
                 }
-
+// Dentro de carregarPagina() no seu impressao.html
+document.getElementById('emp-tel').innerText = "Tel: " + emp.emp_tel;
+                
                 // Buscar CPF do cliente atual
                 const cliInfo = cacheDados.find(d => d.cli_nome === dadosLocal.cliente);
                 if(cliInfo) {
