@@ -8,7 +8,7 @@
     </script>
 
     <meta charset="UTF-8">
-    <title>Orçamento | Profissional</title>
+    <title>Sistema Profissional | Refrigeração</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -23,10 +23,15 @@
         .ball-top-right { width: 400px; height: 400px; top: -100px; right: -100px; }
         .ball-bottom-left { width: 300px; height: 300px; bottom: -100px; left: -100px; }
 
-        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-top: 4px solid #1e40af; border-radius: 30px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-top: 4px solid #1e40af; border-radius: 30px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); transition: all 0.5s ease; }
+
+        .is-os { border-top-color: #10b981 !important; }
+        .is-os .text-blue-500 { color: #10b981 !important; }
+        .is-os .bg-blue-600 { background-color: #059669 !important; }
+        .is-os .btn-primary { background: linear-gradient(135deg, #065f46 0%, #10b981 100%) !important; }
 
         .dark-input { background: rgba(255, 255, 255, 0.05) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; color: white !important; transition: all 0.3s ease; }
-        .dark-input:focus { border-color: #3b82f6 !important; background: rgba(255, 255, 255, 0.08) !important; outline: none; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3); }
+        .dark-input:focus { border-color: #3b82f6 !important; background: rgba(255, 255, 255, 0.08) !important; outline: none; }
 
         .service-card { background: rgba(255, 255, 255, 0.02); border-radius: 20px; padding: 15px; border: 1px solid rgba(255, 255, 255, 0.08); }
         .qty-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: #3b82f6; transition: 0.2s; border: 1px solid rgba(59, 130, 246, 0.2); }
@@ -35,11 +40,18 @@
         .section-header i { font-size: 14px; color: #3b82f6; }
         .section-header span { font-size: 11px; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        .btn-primary { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); transition: transform 0.2s; box-shadow: 0 10px 20px -5px rgba(30, 64, 175, 0.5); }
+        .btn-primary { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); transition: transform 0.2s; box-shadow: 0 10px 20px -5px rgba(0,0,0,0.3); }
         .btn-primary:active { transform: scale(0.95); }
         
         input[type="date"]::-webkit-calendar-picker-indicator,
         input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(1); }
+
+        .switch { position: relative; display: inline-block; width: 100%; height: 44px; background: rgba(255,255,255,0.05); border-radius: 15px; padding: 4px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; }
+        .switch-bg { position: absolute; top: 4px; left: 4px; width: calc(50% - 4px); height: calc(100% - 8px); background: #1e40af; border-radius: 12px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1; }
+        .switch-labels { position: relative; display: flex; height: 100%; z-index: 2; align-items: center; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+        .switch-labels div { flex: 1; text-align: center; color: rgba(255,255,255,0.4); transition: 0.3s; }
+        .active-label { color: white !important; }
+        .mode-os .switch-bg { left: 50%; background: #10b981; }
     </style>
 </head>
 <body class="p-4 pb-10">
@@ -47,124 +59,178 @@
     <div class="corner-ball ball-top-right"></div>
     <div class="corner-ball ball-bottom-left"></div>
 
-    <div class="max-w-md mx-auto relative z-10">
-        <header class="flex justify-between items-center mb-8 pt-4">
-            <div class="flex items-center gap-3">
-                <div id="headerLogoArea" class="hidden w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center overflow-hidden border border-white/10">
-                    <img id="headerLogoImg" src="" class="object-contain w-full h-full">
+    <div class="max-w-md mx-auto relative z-10" id="main-container">
+        <div class="mb-6">
+            <div class="switch" id="toggleMode" onclick="alternarModo()">
+                <div class="switch-bg" id="switch-thumb"></div>
+                <div class="switch-labels">
+                    <div id="lbl-orc" class="active-label">Orçamento</div>
+                    <div id="lbl-os">Ordem de Serviço</div>
                 </div>
+            </div>
+        </div>
+
+        <header class="flex justify-between items-center mb-8">
+            <div class="flex items-center gap-3">
                 <div>
                     <h1 class="text-xl font-black tracking-tighter uppercase leading-none">
-                        REFRIGERAÇÃO <span class="text-blue-500">ELIEZER</span>
+                        REFRIGERAÇÃO <span class="text-blue-500" id="header-name">ELIEZER</span>
                     </h1>
-                    <span class="text-[10px] text-blue-400 font-bold uppercase tracking-widest">Sistema de Orçamento</span>
+                    <span class="text-[10px] text-blue-400 font-bold uppercase tracking-widest" id="sub-title">Sistema de Orçamento</span>
                 </div>
             </div>
             <div class="flex gap-2">
-                <button onclick="toggleHistory()" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10 transition-colors">
-                    <i class="fa-solid fa-clock-rotate-left"></i>
-                </button>
-                <button onclick="toggleSettings()" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10 transition-colors">
-                    <i class="fa-solid fa-gear"></i>
-                </button>
+                <button class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10"><i class="fa-solid fa-clock-rotate-left"></i></button>
+                <button class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10"><i class="fa-solid fa-gear"></i></button>
             </div>
         </header>
 
-        <main class="glass-card p-6 space-y-7">
-            <div id="sec-dados" class="space-y-4">
+        <main class="glass-card p-6 space-y-7" id="card-principal">
+            <div class="space-y-4">
                 <div class="section-header">
                     <i class="fa-solid fa-user-gear"></i>
-                    <span>Dados do Orçamento</span>
+                    <span id="label-dados">Dados do Orçamento</span>
                 </div>
                 <div class="space-y-3">
-                    <input type="text" id="nomePrestador" placeholder="Seu Nome / Sua Empresa" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
-                    <input type="text" id="nomeCliente" placeholder="Nome do Cliente" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
-                    <input type="text" id="enderecoCliente" placeholder="Endereço (Rua, Nº, Bairro)" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
-                    <input type="tel" id="telCliente" placeholder="(DD) 9XXXX-XXXX" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
+                    <input type="text" placeholder="Seu Nome / Sua Empresa" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
+                    <input type="text" placeholder="Nome do Cliente" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
+                    <input type="text" placeholder="Endereço Completo" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
                     
-                    <div class="grid grid-cols-3 gap-2 pt-2">
+                    <div class="grid grid-cols-2 gap-2">
                         <div class="space-y-1">
-                            <label class="text-[9px] font-bold text-white/30 uppercase ml-2">Data</label>
-                            <input type="date" id="dataServico" class="w-full p-3 rounded-xl dark-input text-[11px] font-bold text-center">
+                            <label class="text-[9px] font-bold text-white/30 uppercase ml-2">Início / Data</label>
+                            <input type="date" id="dataInicio" class="w-full p-3 rounded-xl dark-input text-[11px] font-bold text-center">
                         </div>
-                        <div class="space-y-1">
-                            <label class="text-[9px] font-bold text-white/30 uppercase ml-2">Hora</label>
-                            <input type="time" id="horaServico" value="09:00" class="w-full p-3 rounded-xl dark-input text-[11px] font-bold text-center">
+                        <div class="space-y-1 hidden" id="campo-termino">
+                            <label class="text-[9px] font-bold text-white/30 uppercase ml-2">Término</label>
+                            <input type="date" id="dataFim" class="w-full p-3 rounded-xl dark-input text-[11px] font-bold text-center border-green-500/30">
                         </div>
+                        <div class="space-y-1" id="campo-hora">
+                            <label class="text-[9px] font-bold text-white/30 uppercase ml-2">Hora Atual</label>
+                            <input type="time" id="horaAtual" class="w-full p-3 rounded-xl dark-input text-[11px] font-bold text-center">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
                         <div class="space-y-1">
                             <label class="text-[9px] font-bold text-white/30 uppercase ml-2">Garantia</label>
                             <div class="relative">
                                 <input type="number" id="inputGarantia" value="90" class="w-full p-3 rounded-xl dark-input text-[11px] font-bold text-center">
-                                <span class="absolute right-2 top-1/2 -translate-y-1/2 text-[8px] text-white/20 font-bold">D</span>
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[8px] text-white/20 font-bold">DIAS</span>
                             </div>
                         </div>
+                        <div class="space-y-1 hidden" id="campo-status-os">
+                            <label class="text-[9px] font-bold text-white/30 uppercase ml-2">Status OS</label>
+                            <select class="w-full p-3 rounded-xl dark-input text-[11px] font-bold outline-none appearance-none">
+                                <option>CONCLUÍDO</option>
+                                <option>EM ANDAMENTO</option>
+                                <option>PENDENTE</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div id="sec-servicos" class="space-y-4">
-                <div class="flex justify-between items-center mb-1">
-                    <div class="section-header !mb-0">
-                        <i class="fa-solid fa-screwdriver-wrench"></i>
-                        <span>Serviços</span>
-                    </div>
-                    <span class="bg-blue-600/20 text-blue-400 text-[9px] px-2.5 py-1 rounded-full font-black uppercase tracking-tighter border border-blue-500/20">Itens</span>
+            <div class="space-y-4">
+                <div class="section-header">
+                    <i class="fa-solid fa-screwdriver-wrench"></i>
+                    <span>Serviços Realizados</span>
                 </div>
-                
                 <div id="services-container" class="space-y-4"></div>
-                <datalist id="lista_servicos_planilha"></datalist>
-
-                <button onclick="adicionarServico()" class="w-full py-4 border-2 border-dashed border-white/5 rounded-2xl text-white/20 font-bold text-xs hover:border-blue-500/50 hover:text-white transition-all">
+                <button onclick="adicionarServico()" class="w-full py-4 border-2 border-dashed border-white/5 rounded-2xl text-white/20 font-bold text-xs hover:text-white transition-all">
                     <i class="fa-solid fa-circle-plus mr-2"></i> ADICIONAR ITEM
                 </button>
-                
-                <div class="relative">
-                   <textarea id="detalhesServico" placeholder="Observações técnicas (Ex: Tubulação de cobre, suporte...)" class="w-full p-4 rounded-2xl dark-input text-sm h-24 outline-none"></textarea>
-                   <i class="fa-solid fa-pen-to-square absolute right-4 top-4 text-white/10"></i>
-                </div>
             </div>
 
-            <div id="sec-custos" class="space-y-4">
+            <div class="space-y-4">
                 <div class="section-header">
                     <i class="fa-solid fa-calculator"></i>
-                    <span>Custos Operacionais</span>
+                    <span>Total do Serviço</span>
                 </div>
-                
-                <div class="bg-blue-600/5 p-5 rounded-3xl border border-blue-500/10 space-y-4">
+                <div class="bg-white/5 p-5 rounded-3xl border border-white/5 space-y-4">
                     <div class="relative">
-                        <label class="text-[9px] font-bold text-blue-400 uppercase mb-2 block tracking-widest">Total em Materiais / Peças</label>
+                        <label class="text-[9px] font-bold text-blue-400 uppercase mb-1 block tracking-widest">Soma de Materiais e Mão de Obra</label>
                         <div class="flex items-center gap-3">
                             <span class="text-xl font-black text-white/20">R$</span>
-                            <input type="text" id="custoPecas" placeholder="0,00" class="w-full bg-transparent border-none text-2xl font-black text-white focus:outline-none" onkeyup="formatarMoeda(this)">
-                            <span class="bg-white/5 text-[8px] px-2 py-1 rounded font-bold text-white/40">MATERIAL</span>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-3 pt-2">
-                        <div class="relative">
-                             <i class="fa-solid fa-route absolute left-3 top-1/2 -translate-y-1/2 text-white/10 text-xs"></i>
-                             <input type="text" placeholder="Km Total" class="w-full pl-9 p-3 rounded-xl dark-input text-xs font-bold outline-none">
-                        </div>
-                        <div class="relative">
-                             <i class="fa-solid fa-clock absolute left-3 top-1/2 -translate-y-1/2 text-white/10 text-xs"></i>
-                             <input type="text" placeholder="Horas" class="w-full pl-9 p-3 rounded-xl dark-input text-xs font-bold outline-none">
+                            <input type="text" id="custoPecas" value="0,00" class="w-full bg-transparent border-none text-2xl font-black text-white outline-none" readonly>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <button onclick="calcularTudo()" class="w-full btn-primary text-white py-5 rounded-2xl font-black text-base shadow-2xl uppercase tracking-widest flex items-center justify-center gap-3">
-                Calcular Agora <i class="fa-solid fa-arrow-right"></i>
+            <button onclick="gerarDocumento()" id="btn-acao" class="w-full btn-primary text-white py-5 rounded-2xl font-black text-base uppercase tracking-widest flex items-center justify-center gap-3">
+                Gerar Orçamento <i class="fa-solid fa-arrow-right"></i>
             </button>
         </main>
     </div>
 
     <script>
+        let modoOS = false;
+
+        function alternarModo() {
+            modoOS = !modoOS;
+            const card = document.getElementById('card-principal');
+            const thumb = document.getElementById('toggleMode');
+            const subTitle = document.getElementById('sub-title');
+            const btnAcao = document.getElementById('btn-acao');
+            const labelDados = document.getElementById('label-dados');
+            
+            if (modoOS) {
+                thumb.classList.add('mode-os');
+                card.classList.add('is-os');
+                subTitle.innerText = "Ordem de Serviço (OS)";
+                btnAcao.innerHTML = 'Finalizar Ordem de Serviço <i class="fa-solid fa-check-double"></i>';
+                labelDados.innerText = "Dados da Ordem de Serviço";
+                document.getElementById('lbl-os').classList.add('active-label');
+                document.getElementById('lbl-orc').classList.remove('active-label');
+                document.getElementById('campo-termino').classList.remove('hidden');
+                document.getElementById('campo-status-os').classList.remove('hidden');
+                document.getElementById('campo-hora').classList.add('hidden');
+            } else {
+                thumb.classList.remove('mode-os');
+                card.classList.remove('is-os');
+                subTitle.innerText = "Sistema de Orçamento";
+                btnAcao.innerHTML = 'Gerar Orçamento <i class="fa-solid fa-arrow-right"></i>';
+                labelDados.innerText = "Dados do Orçamento";
+                document.getElementById('lbl-orc').classList.add('active-label');
+                document.getElementById('lbl-os').classList.remove('active-label');
+                document.getElementById('campo-termino').classList.add('hidden');
+                document.getElementById('campo-status-os').classList.add('hidden');
+                document.getElementById('campo-hora').classList.remove('hidden');
+            }
+        }
+
+        // Função para capturar e preencher Data e Hora atuais
+        function setDataHoraAtual() {
+            const agora = new Date();
+            
+            // Preenche Data (Formato YYYY-MM-DD)
+            const dataISO = agora.toISOString().split('T')[0];
+            document.getElementById('dataInicio').value = dataISO;
+            document.getElementById('dataFim').value = dataISO;
+            
+            // Preenche Hora (Formato HH:MM)
+            const horas = String(agora.getHours()).padStart(2, '0');
+            const minutos = String(agora.getMinutes()).padStart(2, '0');
+            document.getElementById('horaAtual').value = `${horas}:${minutos}`;
+        }
+
         function formatarMoeda(i) {
             let v = i.value.replace(/\D/g, "");
             v = (v / 100).toFixed(2).replace(".", ",");
             v = v.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
             i.value = v;
+            atualizarSomaMateriais(); 
+        }
+
+        function atualizarSomaMateriais() {
+            let total = 0;
+            document.querySelectorAll('.service-card').forEach(card => {
+                let preco = parseFloat(card.querySelector('.service-price').value.replace(/\./g, "").replace(",", ".")) || 0;
+                let qtde = parseInt(card.querySelector('.service-qty').innerText) || 1;
+                total += (preco * qtde);
+            });
+            document.getElementById('custoPecas').value = total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
         }
 
         function adicionarServico() {
@@ -173,8 +239,8 @@
             div.className = "service-card flex flex-col gap-3";
             div.innerHTML = `
                 <div class="flex items-center gap-2">
-                    <input type="text" list="lista_servicos_planilha" placeholder="Nome do Serviço ou Peça..." class="flex-grow dark-input p-3 rounded-xl text-sm outline-none service-name">
-                    <button onclick="this.closest('.service-card').remove()" class="text-white/10 hover:text-red-500 p-2 transition-colors"><i class="fa-solid fa-trash-can"></i></button>
+                    <input type="text" placeholder="Nome do Serviço ou Peça..." class="flex-grow dark-input p-3 rounded-xl text-sm outline-none service-name">
+                    <button onclick="this.closest('.service-card').remove(); atualizarSomaMateriais();" class="text-white/10 hover:text-red-500 p-2"><i class="fa-solid fa-trash-can"></i></button>
                 </div>
                 <div class="flex items-center gap-2">
                     <div class="flex-grow relative">
@@ -196,15 +262,16 @@
             let val = parseInt(span.innerText) + delta;
             if (val < 1) val = 1;
             span.innerText = val;
+            atualizarSomaMateriais();
         }
 
-        function calcularTudo() {
-            // Lógica de cálculo aqui
-            alert("Orçamento Calculado com Sucesso!");
+        function gerarDocumento() {
+            const tipo = modoOS ? "ORDEM DE SERVIÇO" : "ORÇAMENTO";
+            alert(`${tipo} gerado em ${document.getElementById('dataInicio').value} às ${document.getElementById('horaAtual').value}`);
         }
 
         window.onload = () => {
-            document.getElementById('dataServico').valueAsDate = new Date();
+            setDataHoraAtual(); // Preenche tudo ao abrir
             adicionarServico();
         };
     </script>
