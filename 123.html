@@ -1,334 +1,347 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
+    <script>
+    if (localStorage.getItem("inforos_logado") !== "true") {
+        window.location.replace("https://refrigeracaoeliezer.github.io/site/");
+    }
+    </script>
+
     <meta charset="UTF-8">
-    <title>Login | Refrigeração</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Orçamento | Profissional</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     
     <style>
-        /* --- ESTILOS GERAIS --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0d1117; position: relative; overflow-x: hidden; padding: 20px; }
+        body { font-family: 'Inter', sans-serif; min-height: 100vh; background: #0d1117; color: white; position: relative; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+
+        .corner-ball { position: fixed; background: rgba(30, 64, 175, 0.1); border-radius: 50%; z-index: 0; pointer-events: none; filter: blur(80px); }
+        .ball-top-right { width: 400px; height: 400px; top: -100px; right: -100px; }
+        .ball-bottom-left { width: 300px; height: 300px; bottom: -100px; left: -100px; }
+
+        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-top: 4px solid #1e40af; border-radius: 30px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+
+        .dark-input { background: rgba(255, 255, 255, 0.05) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; color: white !important; transition: all 0.3s ease; }
+        .dark-input:focus { border-color: #3b82f6 !important; background: rgba(255, 255, 255, 0.08) !important; outline: none; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3); }
+
+        .accordion-content { max-height: 0; opacity: 0; overflow: hidden; transition: all 0.3s ease; }
+        .accordion-open .accordion-content { max-height: 1000px; opacity: 1; padding: 1rem; }
+        .accordion-open .accordion-icon { transform: rotate(180deg); }
+
+        .btn-primary { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); transition: transform 0.2s; }
+        .btn-primary:active { transform: scale(0.95); }
         
-        .corner-ball { position: fixed; background: rgba(255, 255, 255, 0.02); border-radius: 50%; z-index: 1; pointer-events: none; }
-        .ball-top-right { width: 550px; height: 550px; top: -200px; right: -150px; }
-        .ball-bottom-left { width: 450px; height: 450px; bottom: -150px; left: -150px; }
-
-        .hidden { display: none !important; }
+        .modal-transition { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         
-        .login-card {
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 4px solid #1e40af; 
-            border-radius: 40px; 
-            padding: 40px 30px;
-            width: 100%;
-            max-width: 410px;
-            position: relative;
-            z-index: 10;
-            text-align: center;
-            box-shadow: 0 0 50px rgba(30, 64, 175, 0.3), 0 20px 40px rgba(0, 0, 0, 0.6); 
-            transition: 0.3s ease;
-        }
-
-        /* --- ANIMAÇÃO TREMER E ERRO --- */
-        @keyframes shake {
-            10%, 90% { transform: translate3d(-1px, 0, 0); }
-            20%, 80% { transform: translate3d(2px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-            40%, 60% { transform: translate3d(4px, 0, 0); }
-        }
-        .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; border-color: #ff4b4b !important; }
-
-        .logo-container img { width: 100%; max-width: 220px; margin-bottom: 20px; }
-        h2 { color: white; margin-bottom: 10px; font-size: 22px; }
-        p.subtitle { color: rgba(255, 255, 255, 0.45); font-size: 13px; margin-bottom: 25px; }
-
-        input, select {
-            width: 100%; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px; padding: 14px; color: white; font-size: 14px; margin-bottom: 15px; outline: none; transition: 0.3s;
-        }
-        input:focus, select:focus { border-color: #1e40af; box-shadow: 0 0 10px rgba(30, 64, 175, 0.3); }
-
-        select option { background-color: #0d1117; color: white; }
-
-        .btn-main {
-            width: 100%; padding: 16px; background: linear-gradient(135deg, #1e40af 0%, #27a9e3 100%);
-            border: none; border-radius: 12px; color: white; font-weight: 700; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s;
-        }
-
-        /* --- TOAST DE SUCESSO --- */
-        #toast-minimal {
-            position: fixed; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            background: #27a9e3; color: white;
-            padding: 15px 30px; border-radius: 50px;
-            font-weight: 600; font-size: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            display: none; z-index: 10000;
-        }
-        @keyframes fadeInOut {
-            0% { opacity: 0; transform: translate(-50%, -60%); }
-            20% { opacity: 1; transform: translate(-50%, -50%); }
-            80% { opacity: 1; transform: translate(-50%, -50%); }
-            100% { opacity: 0; transform: translate(-50%, -40%); }
-        }
-        .animate-toast { display: block !important; animation: fadeInOut 2s ease forwards; }
-
-        .auth-footer { margin-top: 25px; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .link-auth { color: #27a9e3; cursor: pointer; font-size: 13px; text-decoration: none; }
-        .link-rec { color: #ff4b4b; }
-        .divider { width: 1px; height: 14px; background-color: rgba(255, 255, 255, 0.3); display: inline-block; }
-
-        .status-msg { font-size: 12px; padding: 10px; border-radius: 10px; margin-bottom: 15px; display: none; }
-        .error-msg { background: rgba(255, 75, 75, 0.1); color: #ff4b4b; border: 1px solid rgba(255, 75, 75, 0.2); }
-        .result-box { margin-top: 15px; padding: 15px; background: rgba(39, 169, 227, 0.1); border: 1px dashed #27a9e3; color: #44ff44; font-weight: bold; border-radius: 12px; display: none; }
-
-        /* --- ESTILOS DO RODAPÉ --- */
-        .footer-info {
-            width: 100%;
-            text-align: center;
-            color: rgba(255, 255, 255, 0.25);
-            font-size: 10px;
-            z-index: 10;
-            margin-top: 25px;
-        }
-        .badge-teste {
-            display: inline-block;
-            padding: 5px 15px;
-            background: rgba(30, 64, 175, 0.1);
-            border: 1px solid #1e40af;
-            border-radius: 30px;
-            color: #27a9e3; 
-            font-weight: 700;
-            margin-bottom: 10px;
-            font-size: 9px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(1); }
     </style>
 </head>
-<body>
+<body class="p-4 pb-10">
 
     <div class="corner-ball ball-top-right"></div>
     <div class="corner-ball ball-bottom-left"></div>
 
-    <div id="toast-minimal">Salvo com sucesso!</div>
+    <div class="max-w-md mx-auto relative z-10">
+        <header class="flex justify-between items-center mb-8 pt-4">
+            <div class="flex items-center gap-3">
+                <div id="headerLogoArea" class="hidden w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center overflow-hidden border border-white/10">
+                    <img id="headerLogoImg" src="" class="object-contain w-full h-full">
+                </div>
+                <div>
+                    <h1 class="text-xl font-black tracking-tighter uppercase leading-none">
+                        REFRIGERAÇÃO <span class="text-blue-500">ELIEZER</span>
+                    </h1>
+                    <span class="text-[10px] text-blue-400 font-bold uppercase tracking-widest">Sistema de Orçamento</span>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="toggleHistory()" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10 hover:bg-white/10 transition-colors">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                </button>
+                <button onclick="toggleSettings()" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10 hover:bg-white/10 transition-colors">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
+            </div>
+        </header>
 
-    <div class="login-card" id="card-login">
-        <div class="logo-container">
-            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgdGGsULMI69OabXBfFU3b8mTYfIWlJoqpwgc_q1UvSITQPj_VQYaW_1cLECh4rF7j5RfhJLsPgUXdvNv-ya494kAfeyZRbdTCn-VFesltpIkZp8Xid-MZwLKBLyC89MTSXf76nrCrBHncl86cYzjm1XuG34hvNrNVkZS8Gkq3FJEZHEb99HL26I52RUqc/w512-h237/TOPO%20POSTO%20RIO%20BRANCO.png">
+        <main class="glass-card p-6 space-y-6">
+            <div id="input-section" class="space-y-5">
+                <div class="text-center pb-2">
+                    <h2 class="text-lg font-bold">Novo Orçamento</h2>
+                    <p class="text-xs text-white/40">Preencha os dados técnicos abaixo</p>
+                </div>
+
+                <div class="space-y-3">
+                    <input type="text" id="nomePrestador" placeholder="Sua Empresa" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
+                    <input type="text" id="nomeCliente" placeholder="Nome do Cliente" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
+                    <input type="text" id="enderecoCliente" placeholder="Endereço do Serviço" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div class="flex flex-col gap-1">
+                            <label class="text-[9px] font-bold text-white/30 ml-2 uppercase">Data</label>
+                            <input type="date" id="dataServico" class="w-full p-3 rounded-xl dark-input text-[11px] font-bold text-center">
+                        </div>
+                        
+                        <div class="flex flex-col gap-1">
+                            <label class="text-[9px] font-bold text-white/30 ml-2 uppercase">Hora</label>
+                            <input type="time" id="horaServico" value="09:00" class="w-full p-3 rounded-xl dark-input text-[11px] font-bold text-center">
+                        </div>
+
+                        <div class="flex flex-col gap-1">
+                            <label class="text-[9px] font-bold text-white/30 ml-2 uppercase">Garantia (Dias)</label>
+                            <input type="number" id="inputGarantia" value="90" class="w-full p-3 rounded-xl dark-input text-[11px] font-bold text-center">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="services-container" class="space-y-3"></div>
+
+                <button onclick="adicionarServico()" class="w-full py-4 border-2 border-dashed border-white/10 rounded-2xl text-white/40 font-bold text-xs hover:border-blue-500/50 hover:text-white transition-all">
+                    <i class="fa-solid fa-plus mr-2"></i> ADICIONAR ITEM OU PEÇA
+                </button>
+
+                <textarea id="detalhesServico" placeholder="Observações e diagnóstico técnico..." class="w-full p-4 rounded-2xl dark-input text-sm h-24 outline-none"></textarea>
+
+                <div class="bg-blue-600/10 p-4 rounded-2xl border border-blue-500/20">
+                    <label class="text-[10px] font-bold text-blue-400 uppercase mb-2 block tracking-widest">Total em Materiais/Peças</label>
+                    <div class="relative">
+                        <span class="absolute left-0 top-1/2 -translate-y-1/2 text-lg font-bold text-white/30">R$</span>
+                        <input type="text" id="custoPecas" placeholder="0,00" class="w-full bg-transparent border-none pl-8 text-2xl font-black text-white focus:outline-none" onkeyup="formatarMoeda(this)">
+                    </div>
+                </div>
+
+                <button onclick="calcularTudo()" class="w-full btn-primary text-white py-5 rounded-2xl font-black text-lg shadow-2xl uppercase tracking-wider">
+                    Gerar Orçamento
+                </button>
+            </div>
+
+            <div id="results-section" class="hidden space-y-6">
+                <div class="text-center bg-blue-600 p-8 rounded-3xl shadow-inner relative overflow-hidden">
+                    <div class="relative z-10">
+                        <p class="text-[10px] font-bold text-white/60 uppercase tracking-widest mb-1">Valor Total Sugerido</p>
+                        <h3 class="text-5xl font-black text-white" id="displayPrecoFinal">R$ 0,00</h3>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-white/5 p-4 rounded-2xl border border-white/10 text-center">
+                        <p class="text-[9px] text-white/40 uppercase font-bold mb-1">Mão de Obra</p>
+                        <p class="text-lg font-bold text-green-400" id="displayLucroLiquido">R$ 0,00</p>
+                    </div>
+                    <div class="bg-white/5 p-4 rounded-2xl border border-white/10 text-center">
+                        <p class="text-[9px] text-white/40 uppercase font-bold mb-1">Materiais</p>
+                        <p class="text-lg font-bold text-red-400" id="displayDespesas">R$ 0,00</p>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <button onclick="compartilharOrcamento()" class="w-full py-4 bg-white text-black rounded-2xl font-bold flex items-center justify-center gap-3">
+                        <i class="fa-brands fa-whatsapp text-xl"></i> ENVIAR PARA O CLIENTE
+                    </button>
+                    <button onclick="location.reload()" class="w-full py-3 bg-transparent border border-white/20 text-white/60 rounded-xl font-bold text-sm">
+                        <i class="fa-solid fa-rotate-left mr-2"></i> NOVO CÁLCULO
+                    </button>
+                </div>
+
+                <div id="acc1" class="accordion bg-white/5 border border-white/10 rounded-2xl">
+                    <button onclick="toggleAccordion('acc1')" class="w-full p-4 flex justify-between items-center text-xs font-bold uppercase text-blue-400">
+                        Ver Proposta em Texto <i class="fa-solid fa-chevron-down accordion-icon transition-transform"></i>
+                    </button>
+                    <div class="accordion-content border-t border-white/5">
+                        <div id="txt_proposta" class="text-[11px] font-mono p-4 text-white/70 whitespace-pre-wrap bg-black/20 rounded-xl mb-3"></div>
+                        <button onclick="copiarTexto('txt_proposta', this)" class="w-full py-3 bg-blue-600 rounded-xl text-xs font-bold uppercase">Copiar Texto</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="historyModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-md" onclick="toggleHistory()"></div>
+        <div id="historyContent" class="absolute inset-y-0 right-0 w-full max-w-sm bg-[#0d1117] border-l border-white/10 transform translate-x-full modal-transition flex flex-col">
+            <div class="p-6 border-b border-white/10 flex justify-between items-center">
+                <h2 class="font-black uppercase tracking-tighter">Histórico</h2>
+                <button onclick="toggleHistory()" class="text-white/40"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="historyList" class="flex-grow overflow-y-auto p-4 space-y-4"></div>
+            <div class="p-4 border-t border-white/10">
+                <button onclick="limparHistorico()" class="w-full py-3 text-red-500 font-bold text-xs uppercase border border-red-500/20 rounded-xl hover:bg-red-500/10">Limpar Tudo</button>
+            </div>
         </div>
-        <h2>Acessar Gestor</h2>
-        <p class="subtitle">Insira seus dados de acesso</p>
-        <div id="login-status" class="status-msg error-msg"></div>
-        <input type="email" id="l_email" placeholder="E-mail">
-        <input type="password" id="l_pass" placeholder="Senha">
-        <button class="btn-main" onclick="realizarLogin()" id="btn-l">Autenticar</button>
-        
-        <div class="auth-footer">
-            <span class="link-auth" onclick="alternar('registrar')">Criar Conta</span>
-            <span class="divider"></span>
-            <span class="link-auth link-rec" onclick="alternar('recuperar')">Esqueci meus dados</span>
+    </div>
+
+    <div id="settingsModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-md" onclick="toggleSettings()"></div>
+        <div id="settingsContent" class="absolute inset-x-0 bottom-0 sm:inset-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 w-full max-w-md bg-[#0d1117] border border-white/10 rounded-t-3xl sm:rounded-3xl p-6 transform translate-y-full modal-transition">
+            <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
+                <h2 class="font-black uppercase tracking-tighter flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-blue-500"></i> Ajustes
+                </h2>
+                <button onclick="toggleSettings()" class="text-white/40"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-6">
+                <div>
+                    <h3 class="text-[10px] font-bold text-white/40 uppercase mb-3 tracking-widest">Logotipo da Empresa</h3>
+                    <input type="file" id="logoInput" accept="image/*" onchange="handleLogoUpload(this)" class="block w-full text-xs text-white/50 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-600 file:text-white">
+                    <button onclick="removerLogo()" class="text-[10px] text-red-500 font-bold mt-2 uppercase tracking-widest">Remover Logo</button>
+                </div>
+                <button onclick="logout()" class="w-full py-4 bg-red-500/10 text-red-500 border border-red-500/20 rounded-2xl font-bold uppercase text-xs flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-power-off"></i> Encerrar Sessão
+                </button>
+            </div>
         </div>
     </div>
 
-    <div class="login-card hidden" id="card-registrar">
-        <i class="fa-solid fa-user-shield" id="icon-reg" style="font-size: 40px; color: #1e40af; margin-bottom: 20px;"></i>
-        <h2 id="title-reg">Nova Conta</h2>
-        <p class="subtitle" id="sub-reg">Preencha os dados abaixo</p>
-        <div id="reg-status" class="status-msg error-msg"></div>
-        
-        <input type="email" id="r_email" placeholder="E-mail do Novo Usuário">
-        <input type="password" id="r_pass" placeholder="Senha de Acesso">
-        <input type="text" id="r_resp_nova" placeholder="Defina SUA Palavra Secreta">
-        
-        <div id="container-admin-key" class="hidden">
-            <input type="password" id="r_admin_pass" placeholder="Palavra Secreta do ADMIN">
-        </div>
-        
-        <button class="btn-main" onclick="registrar()" id="btn-r">Salvar Registro</button>
-        <span class="link-auth" onclick="alternar('login')" style="margin-top:20px; display:block;">Voltar ao Login</span>
-    </div>
+    <script>
+        let state = JSON.parse(localStorage.getItem('refrig_data')) || { logoBase64: null, historico: [] };
 
-    <div class="login-card hidden" id="card-recuperar">
-        <i class="fa-solid fa-shield-halved" style="font-size: 40px; color: #27a9e3; margin-bottom: 20px;"></i>
-        <h2>Recuperar Acesso</h2>
-        <p class="subtitle">Verificação de segurança dupla</p>
-        <div id="rec-status" class="status-msg error-msg"></div>
-        <select id="tipo_rec" onchange="ajustarRec()">
-            <option value="email">Quero ver meu E-mail</option>
-            <option value="senha">Quero ver minha Senha</option>
-        </select>
-        <input type="password" id="rec_dado" placeholder="Confirme sua Senha">
-        <input type="text" id="rec_resp" placeholder="Sua Resposta Secreta">
-        <div id="rec-result" class="result-box"></div>
-        <button class="btn-main" onclick="recuperar()" id="btn-rec">Verificar Dados</button>
-        <span class="link-auth" onclick="alternar('login')" style="margin-top:20px; display:block;">Voltar ao Login</span>
-    </div>
+        function formatarMoeda(i) {
+            let v = i.value.replace(/\D/g, "");
+            v = (v / 100).toFixed(2).replace(".", ",");
+            v = v.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
+            i.value = v;
+        }
 
-    <div class="footer-info">
-        <div class="badge-teste">Refrigeração Eliezer</div>
-        <p>&copy; <span id="anoAtual"></span> - Sistema de Gestão</p>
-    </div>
+        function adicionarServico() {
+            const container = document.getElementById('services-container');
+            const div = document.createElement('div');
+            div.className = "flex gap-2 bg-white/5 p-3 rounded-2xl border border-white/10 relative group";
+            div.innerHTML = `
+                <input type="text" placeholder="Ex: Higienização" class="flex-grow bg-transparent p-1 text-sm font-bold text-white outline-none service-name">
+                <div class="relative w-28">
+                    <span class="absolute left-2 top-1.5 text-[10px] text-white/30 font-bold">R$</span>
+                    <input type="text" placeholder="0,00" class="w-full bg-white/10 rounded-lg pl-7 p-1.5 text-sm font-bold border-none text-white service-price" onkeyup="formatarMoeda(this)">
+                </div>
+                <button onclick="this.parentElement.remove()" class="text-white/20 hover:text-red-500 transition-colors px-1"><i class="fa-solid fa-xmark"></i></button>
+            `;
+            container.appendChild(div);
+        }
 
-<script>
-    const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbxB94mCzlo1-ZG00QQKJzcZtlXG3nTSEX6t8gpLEuxlndbdwW07-6_D_2mBugxkKaQC/exec";
-    let sistemaVazio = false;
+        function calcularTudo() {
+            let totalMaoObra = 0;
+            let listaItensTxt = "";
+            document.querySelectorAll('#services-container > div').forEach(row => {
+                const nome = row.querySelector('.service-name').value || "Serviço";
+                const preco = parseFloat(row.querySelector('.service-price').value.replace(/\./g, '').replace(',', '.')) || 0;
+                if(preco > 0) { totalMaoObra += preco; listaItensTxt += `• ${nome}: R$ ${preco.toLocaleString('pt-BR', {minimumFractionDigits: 2})}\n`; }
+            });
+            const mat = parseFloat(document.getElementById('custoPecas').value.replace(/\./g, '').replace(',', '.')) || 0;
+            const final = totalMaoObra + mat;
+            document.getElementById('displayPrecoFinal').innerText = "R$ " + final.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            document.getElementById('displayLucroLiquido').innerText = "R$ " + totalMaoObra.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            document.getElementById('displayDespesas').innerText = "R$ " + mat.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            const cliente = document.getElementById('nomeCliente').value || "Cliente";
+            const empresa = document.getElementById('nomePrestador').value || "Sua Empresa";
+            const garantia = document.getElementById('inputGarantia').value;
+            document.getElementById('txt_proposta').innerText = `*ORÇAMENTO TÉCNICO*\n\nOlá ${cliente}, segue detalhes:\n\n${listaItensTxt}\n*Material:* R$ ${mat.toLocaleString('pt-BR', {minimumFractionDigits: 2})}\n\n*TOTAL:* R$ ${final.toLocaleString('pt-BR', {minimumFractionDigits: 2})}\n\nGarantia: ${garantia} dias\n\nAtt, ${empresa}`;
+            const log = { id: Date.now(), cliente: cliente, valor: final, data: new Date().toLocaleDateString() };
+            state.historico.unshift(log);
+            localStorage.setItem('refrig_data', JSON.stringify(state));
+            document.getElementById('input-section').classList.add('hidden');
+            document.getElementById('results-section').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
 
-    document.getElementById("anoAtual").textContent = new Date().getFullYear();
-
-    async function checarSeVazio() {
-        try {
-            const resp = await fetch(`${URL_SCRIPT}?action=checar_vazio`);
-            const texto = await resp.text();
-            if(texto.trim() === "vazio") {
-                sistemaVazio = true;
-                $('#container-admin-key').addClass('hidden');
-                $('#sub-reg').text("Primeiro acesso: Defina os dados do Dono");
-                $('#icon-reg').removeClass('fa-user-shield').addClass('fa-user-tie');
+        function toggleHistory() {
+            const m = document.getElementById('historyModal');
+            const c = document.getElementById('historyContent');
+            if (m.classList.contains('hidden')) {
+                renderHistorico();
+                m.classList.remove('hidden');
+                setTimeout(() => c.classList.remove('translate-x-full'), 10);
             } else {
-                sistemaVazio = false;
-                $('#container-admin-key').removeClass('hidden');
-                $('#sub-reg').text("Preencha os dados e valide com o Admin");
-                $('#icon-reg').removeClass('fa-user-tie').addClass('fa-user-shield');
+                c.classList.add('translate-x-full');
+                setTimeout(() => m.classList.add('hidden'), 300);
             }
-        } catch(e) { console.log("Erro ao checar status"); }
-    }
-
-    function aplicarShake(idCard) {
-        const card = $(`#${idCard}`);
-        card.addClass('shake');
-        setTimeout(() => card.removeClass('shake'), 500);
-    }
-
-    function showToast(msg) {
-        const toast = $('#toast-minimal');
-        if(msg) toast.text(msg);
-        toast.addClass('animate-toast');
-        setTimeout(() => toast.removeClass('animate-toast'), 2000);
-    }
-
-    function alternar(tela) {
-        $('.login-card').addClass('hidden').removeClass('shake');
-        $('#card-' + tela).removeClass('hidden');
-        $('.status-msg, .result-box').hide().text('');
-        if(tela === 'registrar') checarSeVazio();
-    }
-
-    function ajustarRec() {
-        const tipo = $('#tipo_rec').val();
-        $('#rec_dado').val('').attr('placeholder', tipo === 'email' ? "Confirme sua Senha" : "Confirme seu E-mail");
-        $('#rec_dado').attr('type', tipo === 'email' ? "password" : "text");
-    }
-
-    async function realizarLogin() {
-        const email = $('#l_email').val();
-        const senha = $('#l_pass').val();
-        const btn = $('#btn-l');
-        const status = $('#login-status');
-        
-        if(!email || !senha) {
-            status.text("Preencha todos os campos!").show();
-            aplicarShake('card-login');
-            return;
         }
-        
-        btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i> Entrando...');
-        try {
-            const resp = await fetch(`${URL_SCRIPT}?action=login&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}`);
-            const texto = await resp.text();
-            if(texto.trim() === "success") {
-                localStorage.setItem("inforos_logado", "true");
-                window.location.href = "sistemas.html";
+
+        function renderHistorico() {
+            const list = document.getElementById('historyList');
+            list.innerHTML = state.historico.length ? "" : "<p class='text-center text-white/20 text-xs py-10'>Sem registros</p>";
+            state.historico.forEach(item => {
+                list.innerHTML += `
+                    <div class="p-4 bg-white/5 border border-white/10 rounded-2xl flex justify-between items-center group">
+                        <div>
+                            <p class="font-bold text-sm text-white">${item.cliente}</p>
+                            <p class="text-[9px] text-white/30 uppercase font-bold">${item.data}</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-blue-500 font-black text-sm">R$ ${item.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
+                            <button onclick="excluirItemHistorico(${item.id})" class="text-white/10 hover:text-red-500 transition-colors"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function excluirItemHistorico(id) {
+            state.historico = state.historico.filter(i => i.id !== id);
+            localStorage.setItem('refrig_data', JSON.stringify(state));
+            renderHistorico();
+        }
+
+        function limparHistorico() {
+            if(confirm("Deseja apagar todo o histórico?")) {
+                state.historico = [];
+                localStorage.setItem('refrig_data', JSON.stringify(state));
+                renderHistorico();
+            }
+        }
+
+        function toggleSettings() {
+            const m = document.getElementById('settingsModal');
+            const c = document.getElementById('settingsContent');
+            if (m.classList.contains('hidden')) {
+                m.classList.remove('hidden');
+                setTimeout(() => c.classList.remove('translate-y-full'), 10);
             } else {
-                status.show().text("Dados incorretos!");
-                aplicarShake('card-login');
+                c.classList.add('translate-y-full');
+                setTimeout(() => m.classList.add('hidden'), 300);
             }
-        } catch(e) { 
-            status.show().text("Erro de conexão.");
-            aplicarShake('card-login');
-        }
-        btn.prop('disabled', false).text("Autenticar");
-    }
-
-    async function registrar() {
-        const email = $('#r_email').val();
-        const senha = $('#r_pass').val();
-        const resp_nova = $('#r_resp_nova').val();
-        const admin_key = $('#r_admin_pass').val();
-        const btn = $('#btn-r');
-        const status = $('#reg-status');
-
-        // Validação condicional: Se não estiver vazio, exige a admin_key
-        if(!email || !senha || !resp_nova || (!sistemaVazio && !admin_key)) {
-            status.text("Preencha todos os campos!").show();
-            aplicarShake('card-registrar');
-            return;
         }
 
-        btn.prop('disabled', true).text("Salvando...");
-        try {
-            const url = `${URL_SCRIPT}?action=registrar&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}&resposta=${encodeURIComponent(resp_nova)}&admin_key=${encodeURIComponent(admin_key || '')}`;
-            const resp = await fetch(url);
-            const texto = await resp.text();
-            
-            if(texto.trim() === "sucesso") {
-                showToast("Conta criada com sucesso!");
-                setTimeout(() => alternar('login'), 2000);
-            } else if(texto.trim() === "atualizado") {
-                showToast("Dados atualizados com sucesso!");
-                setTimeout(() => alternar('login'), 2000);
-            } else if(texto.trim() === "negado") {
-                status.text("Palavra do ADMIN incorreta! Autorização negada.").show();
-                aplicarShake('card-registrar');
-            } else {
-                status.text("Erro ao processar conta.").show();
-                aplicarShake('card-registrar');
+        function handleLogoUpload(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    state.logoBase64 = e.target.result;
+                    document.getElementById('headerLogoImg').src = e.target.result;
+                    document.getElementById('headerLogoArea').classList.remove('hidden');
+                    localStorage.setItem('refrig_data', JSON.stringify(state));
+                };
+                reader.readAsDataURL(input.files[0]);
             }
-        } catch(e) { 
-            status.text("Erro de conexão.").show();
-            aplicarShake('card-registrar');
         }
-        btn.prop('disabled', false).text("Salvar Registro");
-    }
 
-    async function recuperar() {
-        const tipo = $('#tipo_rec').val();
-        const dado = $('#rec_dado').val();
-        const resp_sec = $('#rec_resp').val();
-        const btn = $('#btn-rec');
-        const status = $('#rec-status');
-        
-        if(!dado || !resp_sec) {
-            status.text("Preencha todos os campos!").show();
-            aplicarShake('card-recuperar');
-            return;
+        function removerLogo() {
+            state.logoBase64 = null;
+            document.getElementById('headerLogoArea').classList.add('hidden');
+            localStorage.setItem('refrig_data', JSON.stringify(state));
         }
-        
-        btn.prop('disabled', true).text("Validando...");
-        try {
-            const url = `${URL_SCRIPT}?action=recuperar&tipo=${tipo}&dado1=${encodeURIComponent(dado)}&resposta=${encodeURIComponent(resp_sec)}`;
-            const resText = await (await fetch(url)).text();
-            if(!resText.includes("ERRO")) {
-                $('#rec-result').show().text(resText);
-                status.hide();
-                showToast("Dados localizados!");
-            } else {
-                status.show().text("Dados incorretos!");
-                aplicarShake('card-recuperar');
+
+        function toggleAccordion(id) { document.getElementById(id).classList.toggle('accordion-open'); }
+        function logout() { localStorage.removeItem("inforos_logado"); window.location.href = "https://refrigeracaoeliezer.github.io/site/"; }
+        function copiarTexto(id, btn) {
+            const texto = document.getElementById(id).innerText;
+            navigator.clipboard.writeText(texto);
+            const original = btn.innerText;
+            btn.innerText = "COPIADO!";
+            setTimeout(() => btn.innerText = original, 2000);
+        }
+
+        window.onload = () => {
+            if(state.logoBase64) {
+                document.getElementById('headerLogoImg').src = state.logoBase64;
+                document.getElementById('headerLogoArea').classList.remove('hidden');
             }
-        } catch(e) { 
-            status.show().text("Erro na consulta.");
-            aplicarShake('card-recuperar');
-        }
-        btn.prop('disabled', false).text("Verificar Dados");
-    }
-</script>
+            document.getElementById('dataServico').valueAsDate = new Date();
+            adicionarServico();
+        };
+    </script>
 </body>
 </html>
