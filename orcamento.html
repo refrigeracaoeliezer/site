@@ -122,8 +122,6 @@
         </div>
     </div>
 
-    <div id="pdf-template" style="display:none;"></div>
-
     <div class="max-w-md mx-auto relative z-10" id="main-container">
         <div class="mb-6">
             <div class="switch" id="toggleMode" onclick="alternarModo()">
@@ -225,10 +223,10 @@
     <datalist id="lista_obs"></datalist>
 
     <script>
-        const URL_DATABASE = "https://script.google.com/macros/s/AKfycbwXxgwoZ5Qov5xGUN9CMQnCOqsS4HL2gJdGtaPad9Df8ShuykbMUzq3_jKlb-0gLMju8Q/exec";
+        const URL_DATABASE = "https://script.google.com/macros/s/AKfycbxaC2mMUYEOakL4LzMKNhK6KaHDnLiPkRMdub3n63Cnt1crqNrv5jxrSHST4GxhRn95JQ/exec"; 
         let cacheDados = [];
         let modoOS = false;
-        let saldoQuitado = false; // Controle de quitação
+        let saldoQuitado = false;
 
         function forcarLista(input) {
             input.setAttribute('autocomplete', 'off');
@@ -434,7 +432,7 @@
                 btn.classList.replace('bg-green-600', 'bg-green-500/10');
                 btn.classList.replace('text-white', 'text-green-500');
             }
-            gerarDocumento(); // Atualiza o texto da conclusão
+            gerarDocumento();
         }
 
         function gerarDocumento() {
@@ -460,13 +458,10 @@
             const sinalValor = (totalNum * 0.3).toLocaleString('pt-BR', {minimumFractionDigits: 2});
             const saldoValor = (totalNum * 0.7).toLocaleString('pt-BR', {minimumFractionDigits: 2});
 
-            // LOGICA DA FRASE DE SALDO
             const fraseSaldo = saldoQuitado ? "*Pagamento Confirmado:* R$ 0,00 (Total Pago)" : `*Saldo Restante:* R$ ${saldoValor}`;
 
             document.getElementById('txt-proposta').innerText = `*ORÇAMENTO TÉCNICO - ${prestador.toUpperCase()}*\n\nOlá ${cliente}! Segue o orçamento:\n\n*SERVIÇOS:*\n${servicosTexto}\n*OBS:*\n${obs}\n\n*INVESTIMENTO TOTAL:* R$ ${total}\n(Material + Mão de Obra incluso)\n\n*${modoOS ? 'Garantia' : 'Vencimento'}:* ${dias} dias\n*Data Prevista:* ${dataFim}\n\nFico no aguardo.`;
-
             document.getElementById('txt-sinal').innerText = `Olá ${cliente}! 🤝\n\nPara agendarmos e comprarmos material, precisamos de um sinal.\n\n*Sinal (30%): R$ ${sinalValor}*\n\nChave PIX: ${chavePix}\n\nPor favor, envie o comprovante. Obrigado!`;
-
             document.getElementById('txt-conclusao').innerText = `*Serviço Concluído!* ✅\n\n${cliente}, equipamento pronto.\n\n${fraseSaldo}\n\nLembrando que você tem *${dias} dias* de garantia.\n\nObrigado pela preferência!\n${prestador}`;
 
             document.getElementById('modal-mensagens').style.display = 'block';
@@ -476,7 +471,6 @@
         function fecharModal() {
             document.getElementById('modal-mensagens').style.display = 'none';
             document.body.style.overflow = 'auto';
-            // Reseta quitação ao fechar se desejar, ou mantenha
         }
 
         function enviarWpp(id) {
@@ -499,61 +493,33 @@
             });
         }
 
+        // FUNÇÃO AJUSTADA PARA REDIRECIONAR PARA A PÁGINA DE IMPRESSÃO
         function baixarPDF() {
-            const prestador = document.getElementById('nomePrestador').value || "ELIEZER";
             const cliente = document.getElementById('nomeCliente').value || "Cliente";
-            const total = document.getElementById('totalFinal').value;
-            const obs = document.getElementById('obsGeral').value;
-            
-            let servicosHTML = "";
-            document.querySelectorAll('.service-card').forEach(card => {
-                const nome = card.querySelector('.service-name').value;
-                const preco = card.querySelector('.service-price').value;
-                const qtde = card.querySelector('.service-qty').innerText;
-                if(nome) {
-                    servicosHTML += `<tr><td style="padding:8px; border-bottom:1px solid #eee;">${qtde}x ${nome}</td><td style="padding:8px; border-bottom:1px solid #eee; text-align:right;">R$ ${preco}</td></tr>`;
-                }
-            });
-// Dentro da lógica de geração do documento ou envio para impressão
-const dadosParaImpressao = {
-    tipo: modoOS ? "ORDEM DE SERVIÇO" : "ORÇAMENTO",
-    cliente: document.getElementById('nomeCliente').value,
-    endereco: document.getElementById('enderecoCliente').value,
-    emissao: document.getElementById('dataInicio').value.split('-').reverse().join('/'),
-    validade: document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/'),
-    total: document.getElementById('totalFinal').value,
-    obs: document.getElementById('obsGeral').value,
-    garantia: document.getElementById('inputGarantia').value, // Pega os dias selecionados
-    itens: Array.from(document.querySelectorAll('.service-card')).map(card => ({
-        descricao: card.querySelector('.service-name').value,
-        qtd: card.querySelector('.service-qty').innerText,
-        valor: card.querySelector('.service-price').value
-    }))
-};
-localStorage.setItem('dados_impressao', JSON.stringify(dadosParaImpressao));
-            const template = `<div style="font-family:Arial; padding:30px; color:#333;">
-                <h2 style="color:#1e40af; border-bottom:2px solid #1e40af; padding-bottom:10px;">ORÇAMENTO - ${prestador}</h2>
-                <p><strong>Cliente:</strong> ${cliente} | <strong>Data:</strong> ${new Date().toLocaleDateString('pt-BR')}</p>
-                <table style="width:100%; border-collapse:collapse; margin:20px 0;">
-                    <tr style="background:#1e40af; color:white;">
-                        <th style="padding:10px; text-align:left;">Descrição</th>
-                        <th style="padding:10px; text-align:right;">Valor</th>
-                    </tr>
-                    ${servicosHTML}
-                </table>
-                <div style="background:#f9f9f9; padding:15px; border-radius:10px; margin-bottom:20px;">
-                    <strong>Observações Técnicas:</strong><br>${obs.replace(/\n/g, '<br>')}
-                </div>
-                <h3 style="text-align:right;">Total: R$ ${total}</h3>
-            </div>`;
 
-            const element = document.getElementById('pdf-template');
-            element.innerHTML = template;
-            element.style.display = 'block';
-            
-            const opt = { margin: 10, filename: `Orcamento_${cliente}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
-            html2pdf().set(opt).from(element).save().then(() => { element.style.display = 'none'; });
+            // 1. Captura os dados para o LocalStorage
+            const dadosParaImpressao = {
+                tipo: modoOS ? "ORDEM DE SERVIÇO" : "ORÇAMENTO",
+                cliente: cliente,
+                endereco: document.getElementById('enderecoCliente').value,
+                emissao: document.getElementById('dataInicio').value.split('-').reverse().join('/'),
+                validade: document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/'),
+                total: document.getElementById('totalFinal').value,
+                obs: document.getElementById('obsGeral').value,
+                garantia: document.getElementById('inputGarantia').value,
+                itens: Array.from(document.querySelectorAll('.service-card')).map(card => ({
+                    descricao: card.querySelector('.service-name').value,
+                    qtd: card.querySelector('.service-qty').innerText,
+                    valor: card.querySelector('.service-price').value
+                }))
+            };
+
+            // 2. Salva no LocalStorage
+            localStorage.setItem('dados_impressao', JSON.stringify(dadosParaImpressao));
+
+            // 3. Redireciona para a página profissional (mude para o nome correto do seu arquivo)
+            window.location.href = "impressao.html"; 
         }
     </script>
 </body>
-</html>
+</html> 
