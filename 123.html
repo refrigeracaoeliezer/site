@@ -156,11 +156,10 @@
         let cacheDados = [];
         let modoOS = false;
 
-        // FUNÇÃO PARA FORÇAR A LISTA A APARECER NO CLIQUE
         function forcarLista(input) {
             input.setAttribute('autocomplete', 'off');
             const valOriginal = input.value;
-            input.value = ''; // Limpa rápido para o datalist aparecer
+            input.value = '';
             setTimeout(() => {
                 input.value = valOriginal;
             }, 1);
@@ -186,7 +185,16 @@
 
         function configurarAutoPreenchimento() {
             document.getElementById('nomeCliente').addEventListener('input', function() {
-                const encontrado = cacheDados.find(x => x.cli_nome === this.value);
+                const valorAtual = this.value;
+                
+                // Se o campo estiver vazio, limpa os outros dados
+                if (!valorAtual || valorAtual.trim() === "") {
+                    document.getElementById('enderecoCliente').value = "";
+                    document.getElementById('telCliente').value = "";
+                    return;
+                }
+
+                const encontrado = cacheDados.find(x => x.cli_nome === valorAtual);
                 if (encontrado) {
                     document.getElementById('enderecoCliente').value = encontrado.cli_end || "";
                     document.getElementById('telCliente').value = encontrado.cli_tel || "";
