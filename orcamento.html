@@ -34,11 +34,9 @@
         .dark-input:focus { border-color: #3b82f6 !important; background: rgba(255, 255, 255, 0.08) !important; outline: none; }
         .is-os .dark-input:focus { border-color: #10b981 !important; }
 
-        /* Estilo especial para o campo de observação que aceita datalist */
-        .input-obs { min-height: 100px; align-items: flex-start; padding-top: 15px !important; white-space: pre-wrap; }
-
         .service-card { background: rgba(255, 255, 255, 0.02); border-radius: 20px; padding: 15px; border: 1px solid rgba(255, 255, 255, 0.08); }
         .qty-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: #3b82f6; transition: 0.2s; border: 1px solid rgba(59, 130, 246, 0.2); }
+        .is-os .qty-btn { color: #10b981 !important; border-color: rgba(16, 185, 129, 0.2) !important; }
         
         .section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
         .section-header i { font-size: 14px; color: #3b82f6; }
@@ -49,6 +47,9 @@
 
         .btn-add-item { width: 100%; padding: 1rem; border: 2px dashed rgba(59, 130, 246, 0.5); border-radius: 1.25rem; color: white; font-weight: 700; font-size: 0.75rem; transition: all 0.3s; background: rgba(59, 130, 246, 0.05); }
         .is-os .btn-add-item { border-color: rgba(16, 185, 129, 0.5); background: rgba(16, 185, 129, 0.05); }
+
+        /* Estilo para Textarea que expande */
+        #obsGeral { overflow: hidden; resize: none; min-height: 80px; transition: min-height 0.2s ease; }
 
         .switch { position: relative; display: inline-block; width: 100%; height: 44px; background: rgba(255,255,255,0.05); border-radius: 15px; padding: 4px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; }
         .switch-bg { position: absolute; top: 4px; left: 4px; width: calc(50% - 4px); height: calc(100% - 8px); background: #1e40af; border-radius: 12px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1; }
@@ -135,9 +136,14 @@
                     <i id="btn-add-icon" class="fa-solid fa-circle-plus mr-2 text-blue-500"></i> ADICIONAR ITEM
                 </button>
 
-                <div class="relative pt-2">
-                    <input type="text" id="obsGeral" list="lista_obs" placeholder="Pesquisar ou escrever observação..." class="w-full p-4 rounded-2xl dark-input text-sm input-obs outline-none" onmousedown="forcarLista(this)">
-                    <i class="fa-solid fa-magnifying-glass absolute right-4 top-6 text-white/10 pointer-events-none"></i>
+                <div class="space-y-2 pt-2">
+                    <div class="relative">
+                        <input type="text" id="busca_obs" list="lista_obs" placeholder="Pesquisar observação salva..." class="w-full p-3 rounded-xl dark-input text-xs outline-none" onmousedown="forcarLista(this)">
+                        <i class="fa-solid fa-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-[10px]"></i>
+                    </div>
+                    <div class="relative">
+                        <textarea id="obsGeral" placeholder="Escreva os detalhes técnicos aqui..." class="w-full p-4 rounded-2xl dark-input text-sm outline-none" oninput="autoExpandir(this)"></textarea>
+                    </div>
                 </div>
             </div>
 
@@ -176,12 +182,18 @@
             setTimeout(() => { input.value = valOriginal; }, 1);
         }
 
+        // FUNÇÃO QUE FAZ O TEXTO EXPANDIR SOZINHO
+        function autoExpandir(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        }
+
         async function buscarDadosPlanilha() {
             try {
                 const resp = await fetch(URL_DATABASE);
                 cacheDados = await resp.json();
                 renderizarDatalists();
-                configurarAutoPreenchimento();
+                configurarListeners();
             } catch (e) { console.error("Erro na carga:", e); }
         }
 
@@ -196,18 +208,29 @@
             }
         }
 
-        function configurarAutoPreenchimento() {
+        function configurarListeners() {
+            // Cliente
             document.getElementById('nomeCliente').addEventListener('input', function() {
-                const valorAtual = this.value;
-                if (!valorAtual || valorAtual.trim() === "") {
+                if (!this.value) {
                     document.getElementById('enderecoCliente').value = "";
                     document.getElementById('telCliente').value = "";
                     return;
                 }
-                const encontrado = cacheDados.find(x => x.cli_nome === valorAtual);
+                const encontrado = cacheDados.find(x => x.cli_nome === this.value);
                 if (encontrado) {
                     document.getElementById('enderecoCliente').value = encontrado.cli_end || "";
                     document.getElementById('telCliente').value = encontrado.cli_tel || "";
+                }
+            });
+
+            // Busca Observação e joga pro Textarea expandindo ele
+            document.getElementById('busca_obs').addEventListener('input', function() {
+                const encontrado = cacheDados.find(x => x.txt_obs === this.value);
+                if (encontrado) {
+                    const txtArea = document.getElementById('obsGeral');
+                    txtArea.value = encontrado.txt_obs;
+                    autoExpandir(txtArea); // Expande na hora que carregar
+                    this.value = ""; // Limpa a barra de busca
                 }
             });
         }
