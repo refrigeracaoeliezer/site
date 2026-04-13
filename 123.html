@@ -43,6 +43,11 @@
         .btn-primary { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); transition: transform 0.2s; box-shadow: 0 10px 20px -5px rgba(30, 64, 175, 0.5); }
         .btn-primary:active { transform: scale(0.95); }
 
+        /* Estilo fixo do botão Adicionar Item */
+        .btn-add-item { width: 100%; padding: 1rem; border: 2px dashed rgba(59, 130, 246, 0.5); border-radius: 1.25rem; color: white; font-weight: 700; font-size: 0.75rem; transition: all 0.3s; background: rgba(59, 130, 246, 0.05); }
+        .btn-add-item:active { transform: scale(0.98); background: rgba(59, 130, 246, 0.1); }
+        .is-os .btn-add-item { border-color: rgba(16, 185, 129, 0.5); background: rgba(16, 185, 129, 0.05); }
+
         .switch { position: relative; display: inline-block; width: 100%; height: 44px; background: rgba(255,255,255,0.05); border-radius: 15px; padding: 4px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; }
         .switch-bg { position: absolute; top: 4px; left: 4px; width: calc(50% - 4px); height: calc(100% - 8px); background: #1e40af; border-radius: 12px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1; }
         .switch-labels { position: relative; display: flex; height: 100%; z-index: 2; align-items: center; font-size: 11px; font-weight: 800; text-transform: uppercase; }
@@ -125,8 +130,8 @@
                 <div id="services-container" class="space-y-4"></div>
                 <datalist id="lista_servicos"></datalist>
 
-                <button onclick="adicionarServico()" class="w-full py-4 border-2 border-dashed border-white/5 rounded-2xl text-white/20 font-bold text-xs hover:border-blue-500/50 hover:text-white transition-all">
-                    <i class="fa-solid fa-circle-plus mr-2"></i> ADICIONAR ITEM
+                <button onclick="adicionarServico()" class="btn-add-item">
+                    <i class="fa-solid fa-circle-plus mr-2 text-blue-500"></i> ADICIONAR ITEM
                 </button>
             </div>
 
@@ -186,14 +191,11 @@
         function configurarAutoPreenchimento() {
             document.getElementById('nomeCliente').addEventListener('input', function() {
                 const valorAtual = this.value;
-                
-                // Se o campo estiver vazio, limpa os outros dados
                 if (!valorAtual || valorAtual.trim() === "") {
                     document.getElementById('enderecoCliente').value = "";
                     document.getElementById('telCliente').value = "";
                     return;
                 }
-
                 const encontrado = cacheDados.find(x => x.cli_nome === valorAtual);
                 if (encontrado) {
                     document.getElementById('enderecoCliente').value = encontrado.cli_end || "";
@@ -274,6 +276,10 @@
             const subTitle = document.getElementById('sub-title');
             const btnAcao = document.getElementById('btn-acao');
             const lblDados = document.getElementById('label-dados');
+            
+            // Alterar ícone do botão adicionar conforme o modo
+            const btnAddIcon = document.querySelector('.btn-add-item i');
+
             if (modoOS) {
                 thumb.classList.add('mode-os'); card.classList.add('is-os');
                 subTitle.innerText = "Ordem de Serviço (OS)";
@@ -283,6 +289,7 @@
                 document.getElementById('lbl-orc').classList.remove('active-label');
                 document.getElementById('campo-termino').classList.remove('hidden');
                 document.getElementById('campo-hora').classList.add('hidden');
+                btnAddIcon.className = "fa-solid fa-circle-plus mr-2 text-green-500";
             } else {
                 thumb.classList.remove('mode-os'); card.classList.remove('is-os');
                 subTitle.innerText = "Sistema de Orçamento";
@@ -292,6 +299,7 @@
                 document.getElementById('lbl-os').classList.remove('active-label');
                 document.getElementById('campo-termino').classList.add('hidden');
                 document.getElementById('campo-hora').classList.remove('hidden');
+                btnAddIcon.className = "fa-solid fa-circle-plus mr-2 text-blue-500";
             }
         }
 
