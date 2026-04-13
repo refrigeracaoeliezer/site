@@ -75,6 +75,10 @@
 
         /* ESTILO PARA O PDF (INVISÍVEL NA TELA) */
         #pdf-template { color: #333; padding: 40px; font-family: Arial, sans-serif; display: none; }
+
+        /* Efeito de transição para o botão copiar */
+        .btn-copy-success { background-color: #3b82f6 !important; color: white !important; border-color: #60a5fa !important; }
+        .copy-btn-feedback { transition: all 0.3s ease; }
     </style>
 </head>
 <body class="p-4 pb-10">
@@ -190,7 +194,7 @@
                 </div>
                 <div id="txt-proposta" class="msg-text-box"></div>
                 <div class="grid grid-cols-3 gap-2">
-                    <button onclick="copiarTexto('txt-proposta')" class="py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[9px] uppercase">COPIAR</button>
+                    <button onclick="copiarTextoProfissional('txt-proposta', this)" class="copy-btn-feedback py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[9px] uppercase flex items-center justify-center gap-2"><i class="fa-solid fa-copy"></i> COPIAR</button>
                     <button onclick="baixarPDF()" class="py-3 bg-red-600/20 text-red-500 border border-red-500/30 rounded-xl font-bold text-[9px] uppercase">GERAR PDF</button>
                     <button onclick="enviarWpp('txt-proposta')" class="py-3 bg-blue-600 text-white rounded-xl font-bold text-[9px] uppercase">WHATSAPP</button>
                 </div>
@@ -203,7 +207,7 @@
                 </div>
                 <div id="txt-sinal" class="msg-text-box"></div>
                 <div class="grid grid-cols-2 gap-2">
-                    <button onclick="copiarTexto('txt-sinal')" class="py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[10px] uppercase">COPIAR</button>
+                    <button onclick="copiarTextoProfissional('txt-sinal', this)" class="copy-btn-feedback py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[10px] uppercase flex items-center justify-center gap-2"><i class="fa-solid fa-copy"></i> COPIAR</button>
                     <button onclick="enviarWpp('txt-sinal')" class="py-3 bg-orange-600 text-white rounded-xl font-bold text-[10px] uppercase">WHATSAPP</button>
                 </div>
             </div>
@@ -215,7 +219,7 @@
                 </div>
                 <div id="txt-conclusao" class="msg-text-box"></div>
                 <div class="grid grid-cols-2 gap-2">
-                    <button onclick="copiarTexto('txt-conclusao')" class="py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[10px] uppercase">COPIAR</button>
+                    <button onclick="copiarTextoProfissional('txt-conclusao', this)" class="copy-btn-feedback py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[10px] uppercase flex items-center justify-center gap-2"><i class="fa-solid fa-copy"></i> COPIAR</button>
                     <button onclick="enviarWpp('txt-conclusao')" class="py-3 bg-green-600 text-white rounded-xl font-bold text-[10px] uppercase">WHATSAPP</button>
                 </div>
             </div>
@@ -406,7 +410,6 @@
             document.body.style.overflow = 'hidden';
         }
 
-        /* FUNÇÃO PARA GERAR E BAIXAR O PDF */
         function baixarPDF() {
             const prestador = document.getElementById('nomePrestador').value || "ELIEZER";
             const cliente = document.getElementById('nomeCliente').value || "Cliente";
@@ -489,9 +492,22 @@
             document.body.style.overflow = 'auto';
         }
 
-        function copiarTexto(id) {
+        /* NOVA FUNÇÃO DE COPIAR COM EFEITO VISUAL */
+        function copiarTextoProfissional(id, elemento) {
             const texto = document.getElementById(id).innerText;
-            navigator.clipboard.writeText(texto).then(() => alert("Copiado!"));
+            const conteudoOriginal = elemento.innerHTML;
+
+            navigator.clipboard.writeText(texto).then(() => {
+                elemento.classList.add('btn-copy-success');
+                elemento.innerHTML = '<i class="fa-solid fa-check"></i> COPIADO!';
+
+                setTimeout(() => {
+                    elemento.classList.remove('btn-copy-success');
+                    elemento.innerHTML = conteudoOriginal;
+                }, 2000);
+            }).catch(err => {
+                console.error('Erro ao copiar: ', err);
+            });
         }
 
         function enviarWpp(id) {
