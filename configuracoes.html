@@ -266,21 +266,21 @@
     }
 
 
-
 function preencherDadosFixos() {
     if(cacheDados.length > 0) {
-        const dados = cacheDados[0]; // Pega os dados da primeira linha
+        const dados = cacheDados[0]; 
         
-        // Preenche o nome da empresa no topo
-        if(dados.emp_nome) {
-            document.getElementById('nomePrestador').value = dados.emp_nome;
-        }
+        // Preenche o nome da empresa
+        if(dados.emp_nome) document.getElementById('emp_nome').value = dados.emp_nome;
         
-        // Nota: Para o CPF/CNPJ e PIX aparecerem automaticamente em campos na tela, 
-        // os inputs precisam ter IDs (ex: id="cnpjEmpresa" e id="pixEmpresa").
+        // Preenche o CNPJ/CPF
+        if(dados.emp_doc) document.getElementById('emp_doc').value = dados.emp_doc;
+
+        // Preenche a Chave PIX (Pega da linha onde ela estiver salva)
+        const dadoPix = cacheDados.find(d => d.emp_pix); 
+        if(dadoPix) document.getElementById('emp_pix').value = dadoPix.emp_pix;
     }
 }
-
 
 
  
