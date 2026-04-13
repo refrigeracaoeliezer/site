@@ -25,12 +25,11 @@
 
         .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-top: 4px solid #1e40af; border-radius: 30px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); transition: all 0.5s ease; }
 
-        /* Estilo Ordem de Serviço */
         .is-os { border-top-color: #10b981 !important; }
         .is-os .text-blue-500, .is-os .text-blue-400, .is-os .section-header i, .is-os .section-header span { color: #10b981 !important; }
         .is-os .btn-primary { background: linear-gradient(135deg, #065f46 0%, #10b981 100%) !important; }
 
-        .dark-input { background: rgba(255, 255, 255, 0.05) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; color: white !important; transition: all 0.3s ease; }
+        .dark-input { background: rgba(255, 255, 255, 0.05) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; color: white !important; transition: all 0.3s ease; cursor: pointer; }
         .dark-input:focus { border-color: #3b82f6 !important; background: rgba(255, 255, 255, 0.08) !important; outline: none; }
         .is-os .dark-input:focus { border-color: #10b981 !important; }
 
@@ -90,7 +89,7 @@
                     <input type="text" id="nomePrestador" placeholder="Seu Nome / Sua Empresa" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
                     
                     <div class="relative">
-                        <input type="text" id="nomeCliente" list="lista_clientes" placeholder="Tocar para selecionar Cliente" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none" onclick="forcarLista(this)" readonly onfocus="this.removeAttribute('readonly');">
+                        <input type="text" id="nomeCliente" list="lista_clientes" placeholder="Selecionar Cliente" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none" onmousedown="forcarLista(this)">
                         <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-xs"></i>
                     </div>
 
@@ -157,17 +156,17 @@
         let cacheDados = [];
         let modoOS = false;
 
-        // FUNÇÃO MELHORADA PARA CELULAR
+        // FUNÇÃO PARA FORÇAR A LISTA A APARECER NO CLIQUE
         function forcarLista(input) {
-            // No mobile, alguns navegadores precisam que o valor seja resetado para disparar o datalist
-            const tempVal = input.value;
-            input.value = '';
+            input.setAttribute('autocomplete', 'off');
+            const valOriginal = input.value;
+            input.value = ''; // Limpa rápido para o datalist aparecer
             setTimeout(() => {
-                input.value = tempVal;
-            }, 50);
+                input.value = valOriginal;
+            }, 1);
         }
 
-        async function carregarBanco() {
+        async function buscarDadosPlanilha() {
             try {
                 const resp = await fetch(URL_DATABASE);
                 cacheDados = await resp.json();
@@ -202,7 +201,7 @@
             div.innerHTML = `
                 <div class="flex items-center gap-2">
                     <div class="relative flex-grow">
-                        <input type="text" list="lista_servicos" placeholder="Selecionar Serviço" class="w-full dark-input p-3 rounded-xl text-sm outline-none service-name" onclick="forcarLista(this)" readonly onfocus="this.removeAttribute('readonly');">
+                        <input type="text" list="lista_servicos" placeholder="Selecionar Serviço" class="w-full dark-input p-3 rounded-xl text-sm outline-none service-name" onmousedown="forcarLista(this)">
                         <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-[10px]"></i>
                     </div>
                     <button onclick="this.closest('.service-card').remove(); atualizarSoma();" class="text-white/10 hover:text-red-500 p-2"><i class="fa-solid fa-trash-can"></i></button>
