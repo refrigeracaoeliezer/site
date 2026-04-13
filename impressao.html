@@ -49,7 +49,17 @@
         .btn-add-item { width: 100%; padding: 1rem; border: 2px dashed rgba(59, 130, 246, 0.5); border-radius: 1.25rem; color: white; font-weight: 700; font-size: 0.75rem; transition: all 0.3s; background: rgba(59, 130, 246, 0.05); }
         .is-os .btn-add-item { border-color: rgba(16, 185, 129, 0.5); background: rgba(16, 185, 129, 0.05); }
 
-        #obsGeral { overflow: hidden; resize: none; min-height: 100px; transition: min-height 0.2s ease; }
+        /* Ajuste na caixa de Observação para não ultrapassar */
+        #obsGeral { 
+            overflow: hidden; 
+            resize: none; 
+            min-height: 100px; 
+            max-height: 250px; /* Limite para não quebrar a folha */
+            transition: min-height 0.2s ease; 
+            background: #fffbe6 !important; /* Amarelo claro tipo Post-it */
+            color: #856404 !important;
+            border: 1px solid #ffe58f !important;
+        }
 
         .switch { position: relative; display: inline-block; width: 100%; height: 44px; background: rgba(255,255,255,0.05); border-radius: 15px; padding: 4px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; }
         .switch-bg { position: absolute; top: 4px; left: 4px; width: calc(50% - 4px); height: calc(100% - 8px); background: #1e40af; border-radius: 12px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1; }
@@ -62,12 +72,39 @@
 
         #modal-mensagens { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.95); backdrop-filter: blur(10px); z-index: 100; overflow-y: auto; display: none; padding: 20px; }
         .btn-copy-success { background-color: #3b82f6 !important; color: white !important; }
+
+        /* BOTÃO FLUTUANTE PDF */
+        .btn-float-pdf {
+            position: fixed;
+            bottom: 30px;
+            right: 25px;
+            width: 60px;
+            height: 60px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.5);
+            z-index: 90;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+        .btn-float-pdf:hover { transform: scale(1.1); }
+        .btn-float-pdf:active { transform: scale(0.9); }
     </style>
 </head>
 <body class="p-4 pb-10">
 
     <div class="corner-ball ball-top-right"></div>
     <div class="corner-ball ball-bottom-left"></div>
+
+    <div class="btn-float-pdf" onclick="abrirPaginaImpressao()" title="Gerar PDF para Impressão">
+        <i class="fa-solid fa-file-pdf"></i>
+    </div>
 
     <div id="modal-mensagens">
         <div class="max-w-md mx-auto">
@@ -235,7 +272,7 @@
 
         function autoExpandir(textarea) {
             textarea.style.height = 'auto';
-            textarea.style.height = textarea.scrollHeight + 'px';
+            textarea.style.height = (textarea.scrollHeight > 250 ? 250 : textarea.scrollHeight) + 'px';
         }
 
         function calcularDataFinal() {
@@ -433,7 +470,6 @@
             gerarDocumento();
         }
 
-        // --- FUNÇÃO ATUALIZADA PARA ENVIAR DADOS COMPLETOS PARA IMPRESSÃO ---
         function abrirPaginaImpressao() {
             const dadosOrcamento = {
                 tipo: modoOS ? "ORDEM DE SERVIÇO" : "ORÇAMENTO TÉCNICO",
@@ -443,7 +479,7 @@
                 emissao: document.getElementById('dataInicio').value.split('-').reverse().join('/'),
                 validade: document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/'),
                 total: document.getElementById('totalFinal').value,
-                obs: document.getElementById('obsGeral').value, // ADICIONADO PARA ENVIAR OBSERVAÇÕES
+                obs: document.getElementById('obsGeral').value,
                 itens: []
             };
 
