@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=1024">  
-    <title>Orçamento Técnico Professional</title>
+    <title>Orçamento Técnico Profissional</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
@@ -50,9 +50,13 @@
         .total-section { text-align: right; padding: 15px 0; }
         .total-section h3 { font-size: 28px; color: #1a4388; }
 
+        /* AJUSTE PARA A OBSERVAÇÃO NÃO VAZAR */
         .obs-section { 
             background: #fffbe6; padding: 15px; border: 1px solid #ffe58f;
             border-radius: 5px; font-size: 13px; margin-bottom: 20px;
+            word-wrap: break-word;       /* Quebra palavras longas */
+            overflow-wrap: break-word;  /* Suporte para navegadores modernos */
+            white-space: normal;        /* Permite que o texto mude de linha */
         }
 
         footer { text-align: center; font-size: 11px; color: #777; border-top: 1px solid #eee; padding-top: 15px; width: 100%; }
@@ -75,7 +79,7 @@
                 <div class="empresa-info" id="empresa-dados">
                     <strong id="emp-nome">REFRIGERAÇÃO ELIEZER</strong><br>
                     <span id="emp-cnpj">CNPJ: ...</span><br>
-                    <span id="emp-end">...</span><br>
+                    <span>Endereço: <span id="emp-end">...</span></span><br>
                     <span id="emp-tel">Tel: ...</span>
                 </div>
             </div>
@@ -117,11 +121,11 @@
 
         <div class="obs-section">
             <strong style="color: #856404;">OBSERVAÇÕES TÉCNICAS:</strong>
-            <p id="view-obs" style="white-space: pre-wrap; margin-top: 5px; color: #856404;"></p>
+            <p id="view-obs" style="margin-top: 5px; color: #856404;"></p>
         </div>
 
         <footer>
-            <p><strong id="view-resp-tecnico">Responsável Técnico</strong></p>
+            <p><strong>Responsável Técnico: <span id="view-resp-tecnico">---</span></strong></p>
             <p>Garantia de <span id="view-dias-garantia">90</span> dias conforme legislação vigente.</p>
         </footer>
     </div>
@@ -130,18 +134,11 @@
         const URL_DATABASE = "https://script.google.com/macros/s/AKfycbxaC2mMUYEOakL4LzMKNhK6KaHDnLiPkRMdub3n63Cnt1crqNrv5jxrSHST4GxhRn95JQ/exec";
 
         async function carregarPagina() {
-            // 1. Número aleatório
             document.getElementById('num-random').innerText = Math.floor(100 + Math.random() * 899) + '/2026';
 
-            // 2. Pegar dados do LocalStorage
             const dadosLocal = JSON.parse(localStorage.getItem('dados_impressao'));
-            
-            if(!dadosLocal) {
-                console.error("LocalStorage está vazio!");
-                return;
-            }
+            if(!dadosLocal) return;
 
-            // Preencher campos básicos do LocalStorage
             document.getElementById('view-tipo').innerText = dadosLocal.tipo || "ORÇAMENTO";
             document.getElementById('view-cliente').innerText = dadosLocal.cliente || "---";
             document.getElementById('view-endereco').innerText = dadosLocal.endereco || "---";
@@ -163,31 +160,24 @@
                 });
             }
 
-            // 3. Buscar dados da Planilha
             try {
                 const resp = await fetch(URL_DATABASE);
                 const cacheDados = await resp.json();
                 
-                // Encontrar dados da empresa (estão em todas as linhas do JSON que criamos)
                 const emp = cacheDados.find(d => d.emp_nome) || cacheDados[0];
                 if(emp) {
                     document.getElementById('emp-nome').innerText = emp.emp_nome;
                     document.getElementById('emp-cnpj').innerText = "CNPJ: " + emp.emp_cnpj;
-                    document.getElementById('emp-end').innerText = emp.emp_end;
+                    document.getElementById('emp-end').innerText = emp.emp_end; // Puxa só a rua
                     document.getElementById('emp-tel').innerText = "Tel: " + emp.emp_tel;
-                    document.getElementById('view-resp-tecnico').innerText = emp.emp_resp;
+                    document.getElementById('view-resp-tecnico').innerText = emp.emp_resp; // Puxa só o nome do técnico
                 }
-// Dentro de carregarPagina() no seu impressao.html
-document.getElementById('emp-tel').innerText = "Tel: " + emp.emp_tel;
-                
-                // Buscar CPF do cliente atual
+
                 const cliInfo = cacheDados.find(d => d.cli_nome === dadosLocal.cliente);
                 if(cliInfo) {
                     document.getElementById('view-cpf-cli').innerText = cliInfo.cli_doc || "---";
                 }
-            } catch (e) {
-                console.error("Erro ao buscar dados remotos:", e);
-            }
+            } catch (e) { console.error("Erro ao buscar dados remotos:", e); }
         }
 
         function baixarPDF() {
