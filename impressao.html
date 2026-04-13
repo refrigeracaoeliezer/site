@@ -59,6 +59,34 @@
             white-space: normal;        /* Permite que o texto mude de linha */
         }
 
+
+.btn-flutuante {
+    position: fixed; 
+    bottom: 30px; 
+    right: 30px; 
+    z-index: 10000;
+    background-color: #e74c3c; 
+    color: white; 
+    
+    /* AQUI VOCÊ CONTROLA O TAMANHO DO CÍRCULO */
+    width: 150px;  /* Antes era 65px ou 80px */
+    height: 150px; /* Deve ser igual ao width para ser um círculo perfeito */
+    
+    border-radius: 50%; 
+    border: none; 
+    box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+    cursor: pointer; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    
+    /* AQUI VOCÊ CONTROLA O TAMANHO DO ÍCONE DO PDF */
+    font-size: 45px; /* Aumente aqui se o ícone parecer pequeno dentro do círculo */
+    
+    transition: 0.3s;
+}
+
+        
         footer { text-align: center; font-size: 11px; color: #777; border-top: 1px solid #eee; padding-top: 15px; width: 100%; }
 
         @media print { .no-print { display: none !important; } }
