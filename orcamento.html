@@ -493,7 +493,7 @@
             });
         }
 
-        // FUNÇÃO AJUSTADA PARA REDIRECIONAR PARA A PÁGINA DE IMPRESSÃO
+      // FUNÇÃO AJUSTADA PARA REDIRECIONAR PARA A PÁGINA CORRETA (ORC ou OS)
         function baixarPDF() {
             const cliente = document.getElementById('nomeCliente').value || "Cliente";
 
@@ -517,8 +517,14 @@
             // 2. Salva no LocalStorage
             localStorage.setItem('dados_impressao', JSON.stringify(dadosParaImpressao));
 
-            // 3. Redireciona para a página profissional (mude para o nome correto do seu arquivo)
-            window.location.href = "impressao.html"; 
+            // 3. LOGICA DE REDIRECIONAMENTO:
+            if (modoOS) {
+                // Se estiver no modo Ordem de Serviço, abre a página VERDE
+                window.location.href = "impressao_os.html";
+            } else {
+                // Se estiver no modo Orçamento, abre a página AZUL
+                window.location.href = "impressao.html";
+            }
         }
     </script>
 </body>
