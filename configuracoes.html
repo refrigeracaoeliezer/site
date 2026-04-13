@@ -507,571 +507,239 @@
 
 
 <script>
-
     const URL_LOGIN = "https://script.google.com/macros/s/AKfycbzTyd4eSh9ey8Ldk0foi7lkRvWLGxOqj40w7J9szxK4JmSduZmfadNBzEidDWNULeNHxQ/exec";
-
     const URL_DATABASE = "https://script.google.com/macros/s/AKfycbxaC2mMUYEOakL4LzMKNhK6KaHDnLiPkRMdub3n63Cnt1crqNrv5jxrSHST4GxhRn95JQ/exec"; 
-
-
 
     let cacheDados = []; 
 
-
-
-    (function iniciarCarga() { buscarDadosPlanilha(); verificarSeExisteDono(); })();
-
-
+    // Inicia o sistema
+    (function iniciarCarga() { 
+        buscarDadosPlanilha(); 
+        verificarSeExisteDono(); 
+    })();
 
     function showStatus(id, msg, type, cardId) {
-
         const el = document.getElementById(id);
-
         const card = document.getElementById(cardId);
-
         el.innerText = msg; el.className = 'status-msg status-' + type; el.style.display = 'block';
-
         if (type === 'error' && card) {
-
             card.classList.add('shake');
-
             setTimeout(() => card.classList.remove('shake'), 500);
-
         }
-
     }
-
-
 
     function toggleBtnLoading(btn, isLoading, originalHtml, loadingText = "Aguarde...") {
-
         if (isLoading) {
-
             btn.disabled = true;
-
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${loadingText}`;
-
         } else {
-
             btn.disabled = false;
-
             btn.innerHTML = originalHtml;
-
         }
-
     }
 
-
-
- function preencherDadosFixos() {
-
-        if(cacheDados.length > 0) {
-
-            const dadosEmpresa = cacheDados.find(d => d.emp_nome);
-
-            if(dadosEmpresa) {
-
-                document.getElementById('emp_nome').value = dadosEmpresa.emp_nome;
-
-                document.getElementById('emp_doc').value = dadosEmpresa.emp_doc || "";
-
-                
-
-                // Preenche os novos campos detalhados
-
-                document.getElementById('emp_pix').value = dadosEmpresa.emp_pix || "";
-
-                document.getElementById('emp_end').value = dadosEmpresa.emp_end || "";
-
-                document.getElementById('emp_resp').value = dadosEmpresa.emp_resp || "";
-
-                document.getElementById('emp_tel').value = dadosEmpresa.emp_tel || "";
-
-            }
-
-        }
-
-    }
-
-
-
-    function ajustarInterfaceRecuperacao() {
-
-        const tipo = document.getElementById('tipo_recuperacao').value;
-
-        const inputValidacao = document.getElementById('rec_dado_validacao');
-
-        document.getElementById('rec-result').style.display = "none";
-
-        document.getElementById('rec-status').style.display = "none";
-
-        inputValidacao.value = "";
-
-        document.getElementById('rec_resposta_seguranca').value = "";
-
-        if (tipo === 'email') {
-
-            inputValidacao.placeholder = "Confirme sua Senha";
-
-            inputValidacao.type = "password";
-
-        } else {
-
-            inputValidacao.placeholder = "Confirme seu E-mail";
-
-            inputValidacao.type = "text";
-
-        }
-
-    }
-
-
-
-    async function executarRecuperacao() {
-
-        const tipo = document.getElementById('tipo_recuperacao').value;
-
-        const dado1 = document.getElementById('rec_dado_validacao').value;
-
-        const resposta = document.getElementById('rec_resposta_seguranca').value;
-
-        const btn = document.getElementById('btn-recuperar');
-
-        const resultBox = document.getElementById('rec-result');
-
-        if (!dado1 || !resposta) return showStatus('rec-status', 'Preencha os dois campos.', 'error', 'card-recuperar');
-
-        resultBox.style.display = "none";
-
-        toggleBtnLoading(btn, true, 'Verificar Dados');
-
-        try {
-
-            const url = `${URL_LOGIN}?action=recuperar&tipo=${tipo}&dado1=${encodeURIComponent(dado1)}&resposta=${encodeURIComponent(resposta)}`;
-
-            const resp = await fetch(url);
-
-            const resText = await resp.text();
-
-            if (!resText.includes("ERRO") && (resText.includes("Seu E-mail:") || resText.includes("Sua Senha:"))) {
-
-                showStatus('rec-status', 'Dados localizados!', 'success', 'card-recuperar');
-
-                resultBox.innerText = resText;
-
-                resultBox.style.display = "block";
-
-            } else {
-
-                showStatus('rec-status', 'Dados incorretos ou resposta inválida.', 'error', 'card-recuperar');
-
-            }
-
-        } catch (e) { showStatus('rec-status', 'Erro de conexão.', 'error', 'card-recuperar'); }
-
-        finally { toggleBtnLoading(btn, false, 'Verificar Dados'); }
-
-    }
-
-
-
-    async function realizarLogin() {
-
-        const btn = document.getElementById('btn-entrar');
-
-        const email = document.getElementById('auth_u_mail').value;
-
-        const pass = document.getElementById('auth_u_pass').value;
-
-        if(!email || !pass) return showStatus('login-status', 'Acesso restrito. Por favor, crie uma conta.', 'error', 'card-login');
-
-        toggleBtnLoading(btn, true, 'Entrar');
-
-        try {
-
-            const resp = await fetch(`${URL_LOGIN}?action=login&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}`);
-
-            if((await resp.text()).trim() === "logado") {
-
-                document.getElementById('overlay-login').classList.add('hidden');
-
-                document.getElementById('main-content').classList.remove('hidden');
-
-                localStorage.setItem("inforos_logado", "true");
-
-            } else { showStatus('login-status', 'Dados incorretos.', 'error', 'card-login'); }
-
-        } catch (e) { showStatus('login-status', 'Erro de conexão.', 'error', 'card-login'); }
-
-        finally { toggleBtnLoading(btn, false, 'Entrar'); }
-
-    }
-
-
-
+    // --- BUSCAR DADOS (Puxa tudo das Linhas 3, 7, 10, 13 e 16) ---
     async function buscarDadosPlanilha() {
-
         try {
-
             const resp = await fetch(URL_DATABASE, { priority: 'high' }); 
-
             cacheDados = await resp.json();
-
             
-
             renderizarDatalists();
-
             configurarBuscaAutomatica();
-
             
-
-            // Chamada crucial para preencher os dados assim que carregar
-
-            preencherDadosFixos(); 
-
+            if(cacheDados.length > 0) {
+                const emp = cacheDados[0]; 
+                if(emp.emp_nome) document.getElementById('emp_nome').value = emp.emp_nome;
+                if(emp.emp_cnpj) document.getElementById('emp_doc').value = emp.emp_cnpj;
+                if(emp.emp_pix) document.getElementById('emp_pix').value = emp.emp_pix;
+                if(emp.emp_end) document.getElementById('emp_end').value = emp.emp_end;
+                if(emp.emp_resp) document.getElementById('emp_resp').value = emp.emp_resp;
+                if(emp.emp_tel) document.getElementById('emp_tel').value = emp.emp_tel;
+            }
             
-
         } catch (e) { console.error("Erro na carga:", e); }
-
     }
-
-
 
     function renderizarDatalists() {
-
-        // Filtra apenas as 5 primeiras linhas para a lista de empresas (ignora linha 6+)
-
         const criarOpcoesEmpresa = (campo) => [...new Set(cacheDados.slice(0, 5).map(d => d[campo]))].filter(Boolean).map(n => `<option value="${n}">`).join('');
-
         const criarOpcoesGeral = (campo) => [...new Set(cacheDados.map(d => d[campo]))].filter(Boolean).map(n => `<option value="${n}">`).join('');
 
-
-
         document.getElementById('lista_clientes').innerHTML = criarOpcoesGeral('cli_nome');
-
         document.getElementById('lista_servicos').innerHTML = criarOpcoesGeral('srv_nome');
-
         document.getElementById('lista_obs').innerHTML = criarOpcoesGeral('txt_obs');
-
         document.getElementById('lista_empresas').innerHTML = criarOpcoesEmpresa('emp_nome');
-
     }
-
-
 
     function configurarBuscaAutomatica() {
-
         const setupBusca = (idInput, idsDependentes, camposPlanilha) => {
-
             const el = document.getElementById(idInput);
-
             el.addEventListener('input', function() {
-
                 const valor = this.value;
-
                 if (!valor) { idsDependentes.forEach(id => document.getElementById(id).value = ""); return; }
-
                 const encontrado = cacheDados.find(x => x[camposPlanilha[0]] === valor);
-
                 if (encontrado) {
-
                     idsDependentes.forEach((id, i) => {
-
                         let valorFinal = encontrado[camposPlanilha[i+1]] || "";
-
                         if (id === "srv_valor" && valorFinal !== "") { valorFinal = "R$ " + valorFinal.toString().replace("R$", "").trim(); }
-
                         document.getElementById(id).value = valorFinal;
-
                     });
-
                 }
-
             });
-
         };
-
-        setupBusca('emp_nome', ['emp_doc'], ['emp_nome', 'emp_doc']);
-
+        setupBusca('emp_nome', ['emp_doc'], ['emp_nome', 'emp_cnpj']);
         setupBusca('srv_nome', ['srv_valor'], ['srv_nome', 'srv_valor']);
-
         setupBusca('cli_nome', ['cli_doc', 'cli_tel', 'cli_end'], ['cli_nome', 'cli_doc', 'cli_tel', 'cli_end']);
-
         
-
         const campoBuscaObs = document.getElementById('obs_busca');
-
         const areaTextoObs = document.getElementById('txt_obs');
-
         campoBuscaObs.addEventListener('input', function() {
-
             const encontrado = cacheDados.find(x => x.txt_obs === this.value);
-
             if (encontrado) {
-
                 areaTextoObs.value = encontrado.txt_obs;
-
                 areaTextoObs.dataset.original = encontrado.txt_obs; 
-
                 setTimeout(() => { this.value = ""; this.blur(); areaTextoObs.focus(); }, 10);
-
             }
-
         });
-
     }
 
-
-
+    // --- SALVAR DADOS (Envia tudo para as colunas certas) ---
     function saveData(sectionId, btn, originalText) {
-
         const container = document.getElementById(sectionId);
-
         const fields = container.querySelectorAll('input, textarea');
-
         let hasValue = false;
-
         fields.forEach(f => { if(f.value.trim() !== "") hasValue = true; });
 
-
-
         if(!hasValue) {
-
             container.classList.add('shake');
-
             setTimeout(() => container.classList.remove('shake'), 500);
-
             return;
-
         }
-
-
 
         toggleBtnLoading(btn, true, originalText, "Salvando...");
-
         
-
-        // Captura todos os valores, inclusive os novos
-
         const payload = {
-
             emp_pix: document.getElementById('emp_pix').value,
-
-            emp_end: document.getElementById('emp_end').value,   // NOVO
-
-            emp_resp: document.getElementById('emp_resp').value, // NOVO
-
-            emp_tel: document.getElementById('emp_tel').value,   // NOVO
-
+            emp_end: document.getElementById('emp_end').value,
+            emp_resp: document.getElementById('emp_resp').value,
+            emp_tel: document.getElementById('emp_tel').value,
             emp_nome: document.getElementById('emp_nome').value, 
-
-            emp_doc: document.getElementById('emp_doc').value,
-
+            emp_cnpj: document.getElementById('emp_doc').value,
             srv_nome: document.getElementById('srv_nome').value, 
-
             srv_valor: document.getElementById('srv_valor').value.replace("R$", "").trim(),
-
             cli_nome: document.getElementById('cli_nome').value, 
-
             cli_doc: document.getElementById('cli_doc').value,
-
             cli_tel: document.getElementById('cli_tel').value, 
-
             cli_end: document.getElementById('cli_end').value,
-
             txt_obs: document.getElementById('txt_obs').value, 
-
             txt_obs_original: document.getElementById('txt_obs').dataset.original || ""
-
         };
-
         
-
         fetch(URL_DATABASE, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
 
-
-
         setTimeout(() => {
-
             document.getElementById('toast-minimal').style.display = 'block';
-
-            // Se for a seção de empresa, não limpa os campos para facilitar visualização
-
             if(sectionId !== 'sec-empresa-detalhes' && sectionId !== 'sec-empresa') {
-
                 fields.forEach(el => el.value = '');
-
             }
-
             setTimeout(() => { 
-
                 document.getElementById('toast-minimal').style.display = 'none'; 
-
                 toggleBtnLoading(btn, false, originalText);
-
                 buscarDadosPlanilha(); 
-
             }, 2000);
-
         }, 800);
-
     }
 
-
+    // --- FUNÇÕES DE ACESSO E LOGIN ---
+    async function realizarLogin() {
+        const btn = document.getElementById('btn-entrar');
+        const email = document.getElementById('auth_u_mail').value;
+        const pass = document.getElementById('auth_u_pass').value;
+        if(!email || !pass) return showStatus('login-status', 'Acesso restrito.', 'error', 'card-login');
+        toggleBtnLoading(btn, true, 'Entrar');
+        try {
+            const resp = await fetch(`${URL_LOGIN}?action=login&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(pass)}`);
+            if((await resp.text()).trim() === "logado") {
+                document.getElementById('overlay-login').classList.add('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
+                localStorage.setItem("inforos_logado", "true");
+            } else { showStatus('login-status', 'Dados incorretos.', 'error', 'card-login'); }
+        } catch (e) { showStatus('login-status', 'Erro de conexão.', 'error', 'card-login'); }
+        finally { toggleBtnLoading(btn, false, 'Entrar'); }
+    }
 
     async function registrarUsuario() {
-
         const btn = document.getElementById('btn-registrar');
-
         const email = document.getElementById('reg_u_mail').value;
-
         const senha = document.getElementById('reg_u_pass').value;
-
         const resposta = document.getElementById('reg_u_resposta').value;
-
         if (!email || !senha || !resposta) return showStatus('reg-status', 'Preencha tudo.', 'error', 'card-registrar');
-
         toggleBtnLoading(btn, true, 'Salvar Conta');
-
         try {
-
             const url = `${URL_LOGIN}?action=registrar&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}&resposta=${encodeURIComponent(resposta)}`;
-
             const resp = await fetch(url);
-
             const res = await resp.text();
-
             if (res.trim() === "sucesso") {
-
                 showStatus('reg-status', 'Sucesso!', 'success', 'card-registrar');
-
                 setTimeout(() => alternarTela('login'), 2000);
-
                 verificarSeExisteDono();
-
             } else { showStatus('reg-status', 'Erro ao registrar.', 'error', 'card-registrar'); }
-
         } catch (e) { showStatus('reg-status', 'Erro de conexão.', 'error', 'card-registrar'); }
-
         finally { toggleBtnLoading(btn, false, 'Salvar Conta'); }
-
     }
-
-
 
     async function verificarSeExisteDono() {
-
         const btnReg = document.getElementById('btn-registrar');
-
         try {
-
             const resp = await fetch(`${URL_LOGIN}?action=checar_registro`);
-
             const res = await resp.text();
-
             if (res.trim() === "tem_dono") {
-
                 document.getElementById('link-registrar-container').classList.add('hidden');
-
                 btnReg.disabled = true;
-
                 btnReg.innerText = "Conta Administrador já existe";
-
-                btnReg.style.marginTop = "25px";
-
                 btnReg.style.opacity = "0.5";
-
             }
-
         } catch (e) {}
-
     }
-
-
 
     function alternarTela(tela) {
-
         document.querySelectorAll('.login-card').forEach(c => c.classList.add('hidden'));
-
         document.getElementById('card-' + tela).classList.remove('hidden');
-
         if(tela === 'recuperar') ajustarInterfaceRecuperacao();
-
     }
-
-
 
     function toggleSecurity() {
-
         const f = document.getElementById('security-fields');
-
         f.style.display = (f.style.display === 'flex') ? 'none' : 'flex';
-
     }
-
-
 
     async function atualizarAcesso(originalText) {
-
         const btn = document.getElementById('btn-update-acesso');
-
         const card = document.getElementById('sec-adm');
-
         const m = document.getElementById('new_u_mail').value;
-
         const s = document.getElementById('new_u_pass').value;
-
         const r = document.getElementById('new_u_resposta').value;
 
-
-
         if(!m && !s && !r) {
-
             card.classList.add('shake');
-
             setTimeout(() => card.classList.remove('shake'), 500);
-
             return;
-
         }
 
-
-
         toggleBtnLoading(btn, true, originalText, 'Salvando...');
-
         const url = `${URL_LOGIN}?action=atualizar_acesso&email=${encodeURIComponent(m)}&senha=${encodeURIComponent(s)}&resposta=${encodeURIComponent(r)}`;
-
-
-
         fetch(url, { mode: 'no-cors' });
 
-
-
         setTimeout(() => {
-
             document.getElementById('toast-minimal').style.display = 'block';
-
             document.getElementById('new_u_mail').value = "";
-
             document.getElementById('new_u_pass').value = "";
-
             document.getElementById('new_u_resposta').value = "";
-
-            document.getElementById('update-status').style.display = "none";
-
-            
-
             setTimeout(() => {
-
                 document.getElementById('toast-minimal').style.display = 'none';
-
                 toggleBtnLoading(btn, false, originalText);
-
             }, 2000);
-
         }, 800);
-
     }
-
 </script>
 
 </body>
