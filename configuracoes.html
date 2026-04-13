@@ -76,16 +76,28 @@
         .btn-save:hover { background: #2563eb; }
         .btn-save:disabled { background: #2d3748; color: #718096; cursor: not-allowed; }
 
-        #toast-minimal {
-            position: fixed; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            background: #27a9e3; color: white;
-            padding: 15px 30px; border-radius: 50px;
-            font-weight: 600; font-size: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            display: none; z-index: 10000;
-            animation: fadeInOut 2s ease forwards;
-        }
+      #toast-minimal {
+    position: fixed; 
+    top: 50%; 
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #27a9e3; 
+    color: white;
+    padding: 15px 30px; 
+    border-radius: 50px;
+    font-weight: 600; 
+    font-size: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    display: none; 
+    z-index: 10000;
+    animation: fadeInOut 2s ease forwards;
+    
+    /* ADICIONE ESTA LINHA ABAIXO PARA EVITAR A QUEBRA */
+    white-space: nowrap; 
+    
+    /* GARANTE QUE O TEXTO INTERNO FIQUE ALINHADO */
+    text-align: center; 
+}
 
         @keyframes fadeInOut {
             0% { opacity: 0; transform: translate(-50%, -60%); }
