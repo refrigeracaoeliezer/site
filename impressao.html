@@ -70,13 +70,13 @@
         <header>
             <div class="logo-area"> 
                 <div class="logo-container">
-                    <img id="logo-img" src="COLOQUE_SUA_LOGO_BASE64_AQUI" class="logo-img">
+                    <img id="logo-img" src="COLOQUE_AQUI_SEU_BASE64" class="logo-img">
                 </div>
                 <div class="empresa-info" id="empresa-dados">
-                    <strong id="emp-nome">REFRIGERAÇÃO ELIEZER</strong><br>
-                    <span id="emp-cnpj">CNPJ: 00.000.000/0001-00</span><br>
-                    <span id="emp-end">Endereço</span><br>
-                    <span id="emp-tel">Tel: (67) 99999-9999</span>
+                    <strong id="emp-nome">CARREGANDO...</strong><br>
+                    <span id="emp-cnpj">CNPJ: ...</span><br>
+                    <span id="emp-end">...</span><br>
+                    <span id="emp-tel">Tel: ...</span>
                 </div>
             </div>
             <div class="doc-info">
@@ -130,58 +130,70 @@
         const URL_DATABASE = "https://script.google.com/macros/s/AKfycbwXxgwoZ5Qov5xGUN9CMQnCOqsS4HL2gJdGtaPad9Df8ShuykbMUzq3_jKlb-0gLMju8Q/exec";
 
         async function carregarPagina() {
-            // 1. Número aleatório do documento
+            // 1. Número aleatório
             document.getElementById('num-random').innerText = Math.floor(100 + Math.random() * 899) + '/2026';
 
-            // 2. Buscar dados da planilha para o cabeçalho
+            // 2. Pegar dados do LocalStorage primeiro
+            const dadosLocal = JSON.parse(localStorage.getItem('dados_impressao'));
+            
+            if(!dadosLocal) {
+                alert("Nenhum dado encontrado para impressão.");
+                return;
+            }
+
+            // Preenche o que já temos do LocalStorage
+            document.getElementById('view-tipo').innerText = dadosLocal.tipo;
+            document.getElementById('view-cliente').innerText = dadosLocal.cliente;
+            document.getElementById('view-endereco').innerText = dadosLocal.endereco;
+            document.getElementById('view-data').innerText = dadosLocal.emissao;
+            document.getElementById('view-venc').innerText = dadosLocal.validade;
+            document.getElementById('view-total').innerText = 'R$ ' + dadosLocal.total;
+            document.getElementById('view-obs').innerText = dadosLocal.obs || "Nenhuma observação técnica.";
+            document.getElementById('view-dias-garantia').innerText = dadosLocal.garantia || "90";
+            
+            if(dadosLocal.tipo === "ORDEM DE SERVIÇO") {
+                document.getElementById('label-venc').innerText = "CONCLUSÃO:";
+            }
+
+            const corpo = document.getElementById('tabela-corpo');
+            corpo.innerHTML = ""; // Limpa antes de preencher
+            dadosLocal.itens.forEach(i => {
+                corpo.innerHTML += `<tr><td>${i.descricao}</td><td style="text-align:center">${i.qtd}</td><td style="text-align:right">R$ ${i.valor}</td></tr>`;
+            });
+
+            // 3. Agora busca dados da Planilha (CNPJ, Tel, etc)
             try {
                 const resp = await fetch(URL_DATABASE);
                 const cacheDados = await resp.json();
                 
-                // Mapeamento conforme sua solicitação de colunas/linhas
-                // Nota: Em JSON de planilha, acessamos pelo nome da chave definida no Apps Script
-                const emp = cacheDados.find(d => d.emp_nome) || cacheDados[0];
+                // Dados da Empresa
+                const emp = cacheDados.find(d => d.emp_nome);
+                if(emp) {
+                    document.getElementById('emp-nome').innerText = emp.emp_nome;
+                    document.getElementById('emp-cnpj').innerText = "CNPJ: " + (emp.emp_cnpj || "00.000.000/0001-00");
+                    document.getElementById('emp-tel').innerText = "Tel: " + (emp.emp_tel || "(67) 99999-9999");
+                    document.getElementById('emp-end').innerText = emp.emp_end || "Endereço não cadastrado";
+                    document.getElementById('view-resp-tecnico').innerText = emp.emp_resp || "Responsável Técnico";
+                }
+
+                // Busca CPF/CNPJ do Cliente específico
                 const cliInfo = cacheDados.find(d => d.cli_nome === dadosLocal.cliente);
-
-                document.getElementById('emp-nome').innerText = emp.emp_nome;
-                document.getElementById('emp-cnpj').innerText = "CNPJ: " + emp.emp_cnpj; // Coluna B
-                document.getElementById('emp-tel').innerText = "Tel: " + emp.emp_tel;   // Coluna A Linha 7 (Mapeado via Script)
-                document.getElementById('emp-end').innerText = emp.emp_end;             // Endereço Linha 11
-                document.getElementById('view-resp-tecnico').innerText = emp.emp_resp || "Responsável Técnico"; // Linha 13
-
                 if(cliInfo) {
                     document.getElementById('view-cpf-cli').innerText = cliInfo.cli_cpf || "---";
                 }
-            } catch (e) { console.error("Erro ao buscar dados da planilha", e); }
-
-            // 3. Pegar dados do orçamento (LocalStorage)
-            const dadosLocal = JSON.parse(localStorage.getItem('dados_impressao'));
-            if(dadosLocal) {
-                document.getElementById('view-tipo').innerText = dadosLocal.tipo;
-                document.getElementById('view-cliente').innerText = dadosLocal.cliente;
-                document.getElementById('view-endereco').innerText = dadosLocal.endereco;
-                document.getElementById('view-data').innerText = dadosLocal.emissao;
-                document.getElementById('view-venc').innerText = dadosLocal.validade;
-                document.getElementById('view-total').innerText = 'R$ ' + dadosLocal.total;
-                document.getElementById('view-obs').innerText = dadosLocal.obs;
-                document.getElementById('view-dias-garantia').innerText = dadosLocal.garantia;
-                
-                if(dadosLocal.tipo === "ORDEM DE SERVIÇO") {
-                    document.getElementById('label-venc').innerText = "CONCLUSÃO:";
-                }
-
-                const corpo = document.getElementById('tabela-corpo');
-                dadosLocal.itens.forEach(i => {
-                    corpo.innerHTML += `<tr><td>${i.descricao}</td><td style="text-align:center">${i.qtd}</td><td style="text-align:right">R$ ${i.valor}</td></tr>`;
-                });
+            } catch (e) { 
+                console.error("Erro ao carregar dados remotos:", e);
+                // Preenche valores padrão em caso de erro no fetch
+                document.getElementById('emp-nome').innerText = "REFRIGERAÇÃO ELIEZER";
             }
         }
 
         function baixarPDF() {
             const element = document.getElementById('conteudo-pdf');
+            const clienteNome = document.getElementById('view-cliente').innerText;
             const opt = {
                 margin: [10, 0, 10, 0],
-                filename: `Documento_${document.getElementById('view-cliente').innerText}.pdf`,
+                filename: `Documento_${clienteNome}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
