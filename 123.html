@@ -61,8 +61,6 @@
         input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
 
         #modal-mensagens { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.95); backdrop-filter: blur(10px); z-index: 100; overflow-y: auto; display: none; padding: 20px; }
-        
-        /* Centralização e efeito do Copiado */
         .btn-copy-success { background-color: #3b82f6 !important; color: white !important; }
     </style>
 </head>
@@ -121,8 +119,6 @@
             </div>
         </div>
     </div>
-
-    <div id="pdf-template" style="display:none;"></div>
 
     <div class="max-w-md mx-auto relative z-10" id="main-container">
         <div class="mb-6">
@@ -437,7 +433,7 @@
             gerarDocumento();
         }
 
-        // SALVA OS DADOS PARA A PÁGINA DE IMPRESSÃO
+        // --- FUNÇÃO ATUALIZADA PARA ENVIAR DADOS COMPLETOS PARA IMPRESSÃO ---
         function abrirPaginaImpressao() {
             const dadosOrcamento = {
                 tipo: modoOS ? "ORDEM DE SERVIÇO" : "ORÇAMENTO TÉCNICO",
@@ -447,19 +443,22 @@
                 emissao: document.getElementById('dataInicio').value.split('-').reverse().join('/'),
                 validade: document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/'),
                 total: document.getElementById('totalFinal').value,
+                obs: document.getElementById('obsGeral').value, // ADICIONADO PARA ENVIAR OBSERVAÇÕES
                 itens: []
             };
 
             document.querySelectorAll('.service-card').forEach(card => {
-                dadosOrcamento.itens.push({
-                    descricao: card.querySelector('.service-name').value,
-                    qtd: card.querySelector('.service-qty').innerText,
-                    valor: card.querySelector('.service-price').value
-                });
+                const desc = card.querySelector('.service-name').value;
+                if (desc) {
+                    dadosOrcamento.itens.push({
+                        descricao: desc,
+                        qtd: card.querySelector('.service-qty').innerText,
+                        valor: card.querySelector('.service-price').value
+                    });
+                }
             });
 
             localStorage.setItem('dados_impressao', JSON.stringify(dadosOrcamento));
-            // MUDE O NOME DO ARQUIVO ABAIXO SE NECESSÁRIO
             window.open('impressao.html', '_blank');
         }
 
