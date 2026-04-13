@@ -197,10 +197,22 @@
             </div>
         </div>
 
-        <div class="config-section" id="sec-pix">
-            <div class="section-title"><i class="fa-solid fa-wallet"></i> Pix da Empresa</div>
-            <input type="text" id="emp_pix" placeholder="Chave PIX atual">
-            <button class="btn-save" onclick="saveData('sec-pix', this, 'Salvar PIX')">Salvar PIX</button>
+       <div class="config-section" id="sec-empresa-detalhes">
+            <div class="section-title"><i class="fa-solid fa-briefcase"></i> Dados de Contato e Local</div>
+            
+            <label style="font-size: 11px; color: #27a9e3; margin-left: 5px;">Chave PIX (Linha 7)</label>
+            <input type="text" id="emp_pix" placeholder="Chave PIX">
+            
+            <label style="font-size: 11px; color: #27a9e3; margin-left: 5px;">Endereço / Rua (Linha 10)</label>
+            <input type="text" id="emp_end" placeholder="Ex: Rua Tal, 123">
+            
+            <label style="font-size: 11px; color: #27a9e3; margin-left: 5px;">Responsável Técnico (Linha 13)</label>
+            <input type="text" id="emp_resp" placeholder="Nome do Técnico">
+            
+            <label style="font-size: 11px; color: #27a9e3; margin-left: 5px;">Celular da Empresa (Linha 16)</label>
+            <input type="tel" id="emp_tel" placeholder="(67) 99999-9999">
+            
+            <button class="btn-save" onclick="saveData('sec-empresa-detalhes', this, 'Salvar Dados da Empresa')">Salvar Dados da Empresa</button>
         </div>
 
         <div class="config-section" id="sec-empresa">
@@ -268,19 +280,18 @@
         }
     }
 
-    function preencherDadosFixos() {
+ function preencherDadosFixos() {
         if(cacheDados.length > 0) {
-            // Busca o primeiro registro que tenha nome de empresa
             const dadosEmpresa = cacheDados.find(d => d.emp_nome);
             if(dadosEmpresa) {
                 document.getElementById('emp_nome').value = dadosEmpresa.emp_nome;
                 document.getElementById('emp_doc').value = dadosEmpresa.emp_doc || "";
-            }
-            
-            // Busca especificamente o registro que contém a chave PIX
-            const dadoPix = cacheDados.find(d => d.emp_pix); 
-            if(dadoPix) {
-                document.getElementById('emp_pix').value = dadoPix.emp_pix;
+                
+                // Preenche os novos campos detalhados
+                document.getElementById('emp_pix').value = dadosEmpresa.emp_pix || "";
+                document.getElementById('emp_end').value = dadosEmpresa.emp_end || "";
+                document.getElementById('emp_resp').value = dadosEmpresa.emp_resp || "";
+                document.getElementById('emp_tel').value = dadosEmpresa.emp_tel || "";
             }
         }
     }
@@ -412,8 +423,13 @@
         }
 
         toggleBtnLoading(btn, true, originalText, "Salvando...");
+        
+        // Captura todos os valores, inclusive os novos
         const payload = {
             emp_pix: document.getElementById('emp_pix').value,
+            emp_end: document.getElementById('emp_end').value,   // NOVO
+            emp_resp: document.getElementById('emp_resp').value, // NOVO
+            emp_tel: document.getElementById('emp_tel').value,   // NOVO
             emp_nome: document.getElementById('emp_nome').value, 
             emp_doc: document.getElementById('emp_doc').value,
             srv_nome: document.getElementById('srv_nome').value, 
@@ -430,7 +446,10 @@
 
         setTimeout(() => {
             document.getElementById('toast-minimal').style.display = 'block';
-            fields.forEach(el => el.value = '');
+            // Se for a seção de empresa, não limpa os campos para facilitar visualização
+            if(sectionId !== 'sec-empresa-detalhes' && sectionId !== 'sec-empresa') {
+                fields.forEach(el => el.value = '');
+            }
             setTimeout(() => { 
                 document.getElementById('toast-minimal').style.display = 'none'; 
                 toggleBtnLoading(btn, false, originalText);
