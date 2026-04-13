@@ -15,6 +15,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; min-height: 100vh; background: #0d1117; color: white; position: relative; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
@@ -59,6 +61,9 @@
         input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
 
         #modal-mensagens { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.95); backdrop-filter: blur(10px); z-index: 100; overflow-y: auto; display: none; padding: 20px; }
+        
+        /* Centralização e efeito do Copiado */
+        .btn-copy-success { background-color: #3b82f6 !important; color: white !important; }
     </style>
 </head>
 <body class="p-4 pb-10">
@@ -81,9 +86,10 @@
                     <span class="text-xs font-bold uppercase">Proposta</span>
                 </div>
                 <div id="txt-proposta" style="background: #000; border-radius: 15px; padding: 15px; font-family: monospace; font-size: 13px; color: #d1d1d1; white-space: pre-wrap; word-break: break-all; margin: 15px 0; border: 1px solid rgba(255,255,255,0.05);"></div>
-                <div class="grid grid-cols-2 gap-2">
-                    <button onclick="copiarTextoProfissional('txt-proposta', this)" class="py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[10px] uppercase">COPIAR</button>
-                    <button onclick="enviarWpp('txt-proposta')" class="py-3 bg-blue-600 text-white rounded-xl font-bold text-[10px] uppercase">WHATSAPP</button>
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="copiarTextoProfissional('txt-proposta', this)" class="py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[9px] uppercase">COPIAR</button>
+                    <button onclick="baixarPDF()" class="py-3 bg-red-600/20 text-red-500 border border-red-500/30 rounded-xl font-bold text-[9px] uppercase">GERAR PDF</button>
+                    <button onclick="enviarWpp('txt-proposta')" class="py-3 bg-blue-600 text-white rounded-xl font-bold text-[9px] uppercase">WHATSAPP</button>
                 </div>
             </div>
 
@@ -98,8 +104,22 @@
                     <button onclick="enviarWpp('txt-sinal')" class="py-3 bg-orange-600 text-white rounded-xl font-bold text-[10px] uppercase">WHATSAPP</button>
                 </div>
             </div>
+
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 25px; padding: 20px; margin-bottom: 20px;">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center text-[10px] font-bold">3</span>
+                    <span class="text-xs font-bold uppercase">Conclusão</span>
+                </div>
+                <div id="txt-conclusao" style="background: #000; border-radius: 15px; padding: 15px; font-family: monospace; font-size: 13px; color: #d1d1d1; white-space: pre-wrap; word-break: break-all; margin: 15px 0; border: 1px solid rgba(255,255,255,0.05);"></div>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="copiarTextoProfissional('txt-conclusao', this)" class="py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[10px] uppercase">COPIAR</button>
+                    <button onclick="enviarWpp('txt-conclusao')" class="py-3 bg-green-600 text-white rounded-xl font-bold text-[10px] uppercase">WHATSAPP</button>
+                </div>
+            </div>
         </div>
     </div>
+
+    <div id="pdf-template" style="display:none;"></div>
 
     <div class="max-w-md mx-auto relative z-10" id="main-container">
         <div class="mb-6">
@@ -248,8 +268,9 @@
             document.getElementById('lista_clientes').innerHTML = criarOpcoes('cli_nome');
             document.getElementById('lista_servicos').innerHTML = criarOpcoes('srv_nome');
             document.getElementById('lista_obs').innerHTML = criarOpcoes('txt_obs');
-            if(cacheDados.length > 0 && cacheDados[0].emp_nome) {
-                document.getElementById('nomePrestador').value = cacheDados[0].emp_nome;
+            if(cacheDados.length > 0) {
+                const dadosEmp = cacheDados.find(d => d.emp_nome);
+                if(dadosEmp) document.getElementById('nomePrestador').value = dadosEmp.emp_nome;
             }
         }
 
@@ -405,7 +426,9 @@
             const dias = document.getElementById('inputGarantia').value;
             const dataFim = document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/');
             
-            const chavePix = (cacheDados.length > 0 && cacheDados[0].emp_pix) ? cacheDados[0].emp_pix : "[CHAVE NÃO CADASTRADA]";
+            // Busca correta da Chave PIX
+            const dadosEmpresa = cacheDados.find(d => d.emp_pix);
+            const chavePix = dadosEmpresa ? dadosEmpresa.emp_pix : "[CHAVE NÃO ENCONTRADA]";
 
             let servicosTexto = "";
             document.querySelectorAll('.service-card').forEach(card => {
@@ -417,10 +440,16 @@
 
             const totalNum = parseFloat(total.replace(/\./g, "").replace(",", ".")) || 0;
             const sinalValor = (totalNum * 0.3).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            const saldoValor = (totalNum * 0.7).toLocaleString('pt-BR', {minimumFractionDigits: 2});
 
-            document.getElementById('txt-proposta').innerText = `*ORÇAMENTO TÉCNICO - ${prestador.toUpperCase()}*\n\nOlá ${cliente}! Segue o orçamento:\n\n*SERVIÇOS:*\n${servicosTexto}\n*OBS:*\n${obs}\n\n*INVESTIMENTO TOTAL:* R$ ${total}\n\n*${modoOS ? 'Garantia' : 'Vencimento'}:* ${dias} dias\n*Data Prevista:* ${dataFim}\n\nFico no aguardo.`;
+            // Preenche 1: Proposta
+            document.getElementById('txt-proposta').innerText = `*ORÇAMENTO TÉCNICO - ${prestador.toUpperCase()}*\n\nOlá ${cliente}! Segue o orçamento:\n\n*SERVIÇOS:*\n${servicosTexto}\n*OBS:*\n${obs}\n\n*INVESTIMENTO TOTAL:* R$ ${total}\n(Material + Mão de Obra incluso)\n\n*${modoOS ? 'Garantia' : 'Vencimento'}:* ${dias} dias\n*Data Prevista:* ${dataFim}\n\nFico no aguardo.`;
 
-            document.getElementById('txt-sinal').innerText = `Olá ${cliente}! 🤝\n\nPara agendarmos e comprarmos material, precisamos de um sinal.\n\n*Sinal (30%): R$ ${sinalValor}*\n\nChave PIX: ${chavePix}\n\nObrigado!`;
+            // Preenche 2: Sinal
+            document.getElementById('txt-sinal').innerText = `Olá ${cliente}! 🤝\n\nPara agendarmos e comprarmos material, precisamos de um sinal.\n\n*Sinal (30%): R$ ${sinalValor}*\n\nChave PIX: ${chavePix}\n\nPor favor, envie o comprovante. Obrigado!`;
+
+            // Preenche 3: Conclusão
+            document.getElementById('txt-conclusao').innerText = `*Serviço Concluído!* ✅\n\n${cliente}, equipamento pronto.\n\n*Saldo Restante:* R$ ${saldoValor}\n\nLembrando que você tem *${dias} dias* de garantia.\n\nObrigado pela preferência!\n${prestador}`;
 
             document.getElementById('modal-mensagens').style.display = 'block';
             document.body.style.overflow = 'hidden';
@@ -443,12 +472,52 @@
             const originalText = elemento.innerText;
             navigator.clipboard.writeText(texto).then(() => {
                 elemento.innerText = "COPIADO!";
-                elemento.style.background = "#3b82f6";
+                elemento.classList.add('btn-copy-success');
                 setTimeout(() => {
                     elemento.innerText = originalText;
-                    elemento.style.background = "";
+                    elemento.classList.remove('btn-copy-success');
                 }, 2000);
             });
+        }
+
+        function baixarPDF() {
+            const prestador = document.getElementById('nomePrestador').value || "ELIEZER";
+            const cliente = document.getElementById('nomeCliente').value || "Cliente";
+            const total = document.getElementById('totalFinal').value;
+            const obs = document.getElementById('obsGeral').value;
+            
+            let servicosHTML = "";
+            document.querySelectorAll('.service-card').forEach(card => {
+                const nome = card.querySelector('.service-name').value;
+                const preco = card.querySelector('.service-price').value;
+                const qtde = card.querySelector('.service-qty').innerText;
+                if(nome) {
+                    servicosHTML += `<tr><td style="padding:8px; border-bottom:1px solid #eee;">${qtde}x ${nome}</td><td style="padding:8px; border-bottom:1px solid #eee; text-align:right;">R$ ${preco}</td></tr>`;
+                }
+            });
+
+            const template = `<div style="font-family:Arial; padding:30px; color:#333;">
+                <h2 style="color:#1e40af; border-bottom:2px solid #1e40af; padding-bottom:10px;">ORÇAMENTO - ${prestador}</h2>
+                <p><strong>Cliente:</strong> ${cliente} | <strong>Data:</strong> ${new Date().toLocaleDateString('pt-BR')}</p>
+                <table style="width:100%; border-collapse:collapse; margin:20px 0;">
+                    <tr style="background:#1e40af; color:white;">
+                        <th style="padding:10px; text-align:left;">Descrição</th>
+                        <th style="padding:10px; text-align:right;">Valor</th>
+                    </tr>
+                    ${servicosHTML}
+                </table>
+                <div style="background:#f9f9f9; padding:15px; border-radius:10px; margin-bottom:20px;">
+                    <strong>Observações Técnicas:</strong><br>${obs.replace(/\n/g, '<br>')}
+                </div>
+                <h3 style="text-align:right;">Total: R$ ${total}</h3>
+            </div>`;
+
+            const element = document.getElementById('pdf-template');
+            element.innerHTML = template;
+            element.style.display = 'block';
+            
+            const opt = { margin: 10, filename: `Orcamento_${cliente}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
+            html2pdf().set(opt).from(element).save().then(() => { element.style.display = 'none'; });
         }
     </script>
 </body>
