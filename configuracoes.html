@@ -186,6 +186,20 @@
             </div>
         </div>
 
+
+
+
+
+<div class="config-section" id="sec-pix">
+    <div class="section-title"><i class="fa-solid fa-wallet"></i> Pix da Empresa</div>
+    <input type="text" id="emp_pix" placeholder="Chave PIX atual">
+    <button class="btn-save" onclick="saveData('sec-pix', this, 'Salvar PIX')">Salvar PIX</button>
+</div>
+
+
+
+
+     
         <div class="config-section" id="sec-empresa">
             <div class="section-title"><i class="fa-solid fa-building"></i> Identidade da Empresa</div>
             <input type="text" id="emp_nome" list="lista_empresas" placeholder="Selecione a Empresa...">
@@ -225,7 +239,7 @@
 
 <script>
     const URL_LOGIN = "https://script.google.com/macros/s/AKfycbzTyd4eSh9ey8Ldk0foi7lkRvWLGxOqj40w7J9szxK4JmSduZmfadNBzEidDWNULeNHxQ/exec";
-    const URL_DATABASE = "https://script.google.com/macros/s/AKfycbwXxgwoZ5Qov5xGUN9CMQnCOqsS4HL2gJdGtaPad9Df8ShuykbMUzq3_jKlb-0gLMju8Q/exec"; 
+    const URL_DATABASE = "https://script.google.com/macros/s/AKfycbyCKhSnKfnCk3uHr2fuBIv4sMLjtYpE8JzQv892PVtSZvaG1PraPm8jNDuyTjZZgP7dEw/exec"; 
 
     let cacheDados = []; 
 
@@ -325,6 +339,37 @@
         document.getElementById('lista_obs').innerHTML = criarOpcoes('txt_obs');
     }
 
+
+
+
+
+
+
+
+
+
+ 
+// Adicione esta lógica para carregar o valor fixo do PIX (que vem da Coluna A / Row 7 da planilha)
+if (cacheDados.length > 0) {
+    // Como o doGet mapeia os dados, o PIX aparecerá nos objetos. 
+    // Vamos garantir que o campo de input mostre o valor atual.
+    const dadoPix = cacheDados.find(d => d.emp_pix); 
+    if(dadoPix) document.getElementById('emp_pix').value = dadoPix.emp_pix;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
     function configurarBuscaAutomatica() {
         const setupBusca = (idInput, idsDependentes, camposPlanilha) => {
             const el = document.getElementById(idInput);
@@ -370,6 +415,8 @@
 
         toggleBtnLoading(btn, true, originalText, "Salvando...");
         const payload = {
+           emp_pix: document.getElementById('emp_pix').value, // Adicione esta linha
+  
             emp_nome: document.getElementById('emp_nome').value, emp_doc: document.getElementById('emp_doc').value,
             srv_nome: document.getElementById('srv_nome').value, srv_valor: document.getElementById('srv_valor').value.replace("R$", "").trim(),
             cli_nome: document.getElementById('cli_nome').value, cli_doc: document.getElementById('cli_doc').value,
