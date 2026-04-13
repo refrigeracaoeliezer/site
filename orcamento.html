@@ -28,7 +28,6 @@
         .is-os { border-top-color: #10b981 !important; }
         .is-os .text-blue-500, .is-os .text-blue-400, .is-os .section-header i, .is-os .section-header span { color: #10b981 !important; }
         .is-os .btn-primary { background: linear-gradient(135deg, #065f46 0%, #10b981 100%) !important; }
-        .is-os .bg-blue-600 { background-color: #059669 !important; }
 
         .dark-input { background: rgba(255, 255, 255, 0.05) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; color: white !important; transition: all 0.3s ease; cursor: pointer; }
         .dark-input:focus { border-color: #3b82f6 !important; background: rgba(255, 255, 255, 0.08) !important; outline: none; }
@@ -100,21 +99,21 @@
                     <input type="text" id="enderecoCliente" placeholder="Endereço Completo" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
                     <input type="tel" id="telCliente" placeholder="WhatsApp" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
                     
-                    <div class="space-y-1 pt-2">
-                        <label class="text-[9px] font-bold text-white/30 uppercase ml-2">Data de Início</label>
-                        <input type="date" id="dataInicio" class="w-full p-4 rounded-2xl dark-input text-sm font-bold text-center" onchange="calcularDataFinal()">
+                    <div class="grid grid-cols-2 gap-2 pt-2">
+                        <div class="space-y-1">
+                            <label class="text-[9px] font-bold text-white/30 uppercase ml-2">Início</label>
+                            <input type="date" id="dataInicio" class="w-full p-3 rounded-xl dark-input text-[11px] font-bold text-center" onchange="calcularDataFinal()">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[9px] font-bold text-white/30 uppercase ml-2">Venc./Final</label>
+                            <input type="date" id="dataPrazoFinal" class="w-full p-3 rounded-xl dark-input text-[11px] font-bold text-center" readonly>
+                        </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-2 relative pt-2">
-                        <div class="relative">
-                            <input type="number" id="inputGarantia" value="30" class="w-full p-4 rounded-2xl dark-input text-sm font-bold text-center" oninput="calcularDataFinal()">
-                            <span id="label-prazo" class="absolute -top-1 left-1/2 -translate-x-1/2 bg-blue-600 text-[8px] px-2 py-0.5 rounded text-white font-black tracking-widest uppercase shadow-lg">Vencimento</span>
-                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] text-white/20 font-black">DIAS</span>
-                        </div>
-                        <div class="relative">
-                            <input type="date" id="dataPrazoFinal" class="w-full p-4 rounded-2xl dark-input text-[11px] font-bold text-center" readonly>
-                            <span class="absolute -top-1 left-1/2 -translate-x-1/2 bg-white/10 text-[7px] px-2 py-0.5 rounded text-white/50 font-black tracking-widest uppercase">Data Final</span>
-                        </div>
+                    <div class="relative pt-4">
+                        <input type="number" id="inputGarantia" value="30" class="w-full p-4 rounded-2xl dark-input text-sm font-bold text-center" oninput="calcularDataFinal()">
+                        <span id="label-prazo" class="absolute -top-1 left-1/2 -translate-x-1/2 bg-blue-600 text-[8px] px-2 py-0.5 rounded text-white font-black tracking-widest uppercase shadow-lg">Vencimento</span>
+                        <span class="absolute right-4 top-1/2 -translate-y-1/2 mt-2 text-[10px] text-white/20 font-black">DIAS</span>
                     </div>
                 </div>
             </div>
@@ -186,7 +185,6 @@
             const dataInicioVal = document.getElementById('dataInicio').value;
             const diasPrazo = parseInt(document.getElementById('inputGarantia').value) || 0;
             const campoDataFinal = document.getElementById('dataPrazoFinal');
-
             if (dataInicioVal) {
                 let data = new Date(dataInicioVal + 'T00:00:00');
                 data.setDate(data.getDate() + diasPrazo);
