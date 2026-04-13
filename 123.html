@@ -62,27 +62,9 @@
 
         #modal-mensagens { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.95); backdrop-filter: blur(10px); z-index: 100; overflow-y: auto; display: none; padding: 20px; }
         
-        /* NOVO EFEITO DE TRANSIÇÃO SUAVE PARA O BOTÃO COPIAR */
-        .btn-copy-default {
-            transition: background-color 0.8s ease, color 0.8s ease, transform 0.2s ease;
-        }
-        .btn-copy-success { 
-            background-color: #3b82f6 !important; 
-            color: white !important; 
-            transition: background-color 0.1s ease !important; /* Muda rápido para azul */
-        }
-        
-        #pdf-offscreen { 
-            position: fixed; 
-            left: -5000px; 
-            top: 0; 
-            width: 210mm; 
-            background: white; 
-            color: black; 
-            z-index: -999; 
-            pointer-events: none; 
-            display: block !important;
-        }
+        /* Efeito de desbotamento do botão copiar */
+        .btn-copy-default { transition: background-color 0.8s ease, color 0.8s ease; }
+        .btn-copy-success { background-color: #3b82f6 !important; color: white !important; transition: background-color 0.1s ease !important; }
     </style>
 </head>
 <body class="p-4 pb-10">
@@ -106,9 +88,9 @@
                 </div>
                 <div id="txt-proposta" style="background: #000; border-radius: 15px; padding: 15px; font-family: monospace; font-size: 13px; color: #d1d1d1; white-space: pre-wrap; word-break: break-all; margin: 15px 0; border: 1px solid rgba(255,255,255,0.05);"></div>
                 <div class="grid grid-cols-3 gap-2">
-                    <button onclick="copiarTextoProfissional('txt-proposta', this)" class="btn-copy-default py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[10px] uppercase">COPIAR</button>
-                    <button onclick="baixarPDF()" class="py-3 bg-red-600 text-white rounded-xl font-bold text-[9px] uppercase shadow-lg shadow-red-600/20">GERAR PDF</button>
-                    <button onclick="enviarWpp('txt-proposta')" class="py-3 bg-blue-600 text-white rounded-xl font-bold text-[10px] uppercase">WHATSAPP</button>
+                    <button onclick="copiarTextoProfissional('txt-proposta', this)" class="btn-copy-default py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[9px] uppercase">COPIAR</button>
+                    <button onclick="baixarPDF()" class="py-3 bg-red-600 text-white rounded-xl font-bold text-[9px] uppercase shadow-lg">GERAR PDF</button>
+                    <button onclick="enviarWpp('txt-proposta')" class="py-3 bg-blue-600 text-white rounded-xl font-bold text-[9px] uppercase">WHATSAPP</button>
                 </div>
             </div>
 
@@ -140,8 +122,6 @@
             </div>
         </div>
     </div>
-
-    <div id="pdf-offscreen"></div>
 
     <div class="max-w-md mx-auto relative z-10" id="main-container">
         <div class="mb-6">
@@ -267,46 +247,45 @@
             try {
                 const resp = await fetch(URL_DATABASE);
                 cacheDados = await resp.json();
-                renderizarDatalists();
-                configurarListeners();
-                aplicarTextoPadrao();
+                renderDatalists();
+                configListeners();
+                setInitialObs();
                 calcularDataFinal();
-            } catch (e) { console.error("Erro na carga:", e); }
+            } catch (e) { console.error("Erro carga:", e); }
         }
 
-        function renderizarDatalists() {
+        function renderDatalists() {
             const criarOpcoes = (campo) => [...new Set(cacheDados.map(d => d[campo]))].filter(Boolean).map(n => `<option value="${n}">`).join('');
             document.getElementById('lista_clientes').innerHTML = criarOpcoes('cli_nome');
             document.getElementById('lista_servicos').innerHTML = criarOpcoes('srv_nome');
             document.getElementById('lista_obs').innerHTML = criarOpcoes('txt_obs');
             if(cacheDados.length > 0) {
-                const dadosEmp = cacheDados.find(d => d.emp_nome);
-                if(dadosEmp) document.getElementById('nomePrestador').value = dadosEmp.emp_nome;
+                const d = cacheDados.find(x => x.emp_nome);
+                if(d) document.getElementById('nomePrestador').value = d.emp_nome;
             }
         }
 
-        function aplicarTextoPadrao() {
+        function setInitialObs() {
             const txtArea = document.getElementById('obsGeral');
-            const listaObsValidas = cacheDados.map(d => d.txt_obs).filter(Boolean);
-            if (modoOS) { txtArea.value = listaObsValidas[1] || ""; } else { txtArea.value = listaObsValidas[0] || ""; }
+            const lista = cacheDados.map(d => d.txt_obs).filter(Boolean);
+            txtArea.value = modoOS ? (lista[1] || "") : (lista[0] || "");
             autoExpandir(txtArea);
         }
 
-        function configurarListeners() {
+        function configListeners() {
             document.getElementById('nomeCliente').addEventListener('input', function() {
-                if (!this.value) { document.getElementById('enderecoCliente').value = ""; document.getElementById('telCliente').value = ""; return; }
-                const encontrado = cacheDados.find(x => x.cli_nome === this.value);
-                if (encontrado) {
-                    document.getElementById('enderecoCliente').value = encontrado.cli_end || "";
-                    document.getElementById('telCliente').value = encontrado.cli_tel || "";
+                const d = cacheDados.find(x => x.cli_nome === this.value);
+                if (d) {
+                    document.getElementById('enderecoCliente').value = d.cli_end || "";
+                    document.getElementById('telCliente').value = d.cli_tel || "";
                 }
             });
             document.getElementById('busca_obs').addEventListener('input', function() {
-                const encontrado = cacheDados.find(x => x.txt_obs === this.value);
-                if (encontrado) {
-                    const txtArea = document.getElementById('obsGeral');
-                    txtArea.value = encontrado.txt_obs;
-                    autoExpandir(txtArea);
+                const d = cacheDados.find(x => x.txt_obs === this.value);
+                if (d) {
+                    const area = document.getElementById('obsGeral');
+                    area.value = d.txt_obs;
+                    autoExpandir(area);
                     this.value = "";
                 }
             });
@@ -318,30 +297,27 @@
             div.className = "service-card flex flex-col gap-3";
             div.innerHTML = `
                 <div class="flex items-center gap-2">
-                    <div class="relative flex-grow">
-                        <input type="text" list="lista_servicos" placeholder="Serviço" class="w-full dark-input p-3 rounded-xl text-sm service-name" onmousedown="forcarLista(this)">
-                    </div>
-                    <button onclick="this.closest('.service-card').remove(); atualizarSoma();" class="text-white/10 hover:text-red-500 p-2"><i class="fa-solid fa-trash-can"></i></button>
+                    <input type="text" list="lista_servicos" placeholder="Serviço" class="w-full dark-input p-3 rounded-xl text-sm service-name">
+                    <button onclick="this.closest('.service-card').remove(); atualizarSoma();" class="text-white/10 hover:text-red-500"><i class="fa-solid fa-trash-can"></i></button>
                 </div>
                 <div class="flex items-center gap-2">
                     <div class="flex-grow relative">
                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 font-bold text-xs">R$</span>
-                        <input type="text" placeholder="0,00" class="w-full dark-input pl-9 p-3 rounded-xl text-sm service-price" onkeyup="formatarMoeda(this)">
+                        <input type="text" placeholder="0,00" class="w-full dark-input pl-8 p-2 rounded-xl text-sm service-price" onkeyup="formatarMoeda(this)">
                     </div>
                     <div class="flex items-center bg-white/5 rounded-xl p-1 gap-3">
-                        <button onclick="alterarQtde(this, -1)" class="qty-btn"><i class="fa-solid fa-minus text-[10px]"></i></button>
-                        <span class="font-bold text-sm service-qty w-4 text-center">1</span>
-                        <button onclick="alterarQtde(this, 1)" class="qty-btn"><i class="fa-solid fa-plus text-[10px]"></i></button>
+                        <button onclick="alterarQtde(this, -1)" class="qty-btn">-</button>
+                        <span class="qty-val font-bold text-sm">1</span>
+                        <button onclick="alterarQtde(this, 1)" class="qty-btn">+</button>
                     </div>
                 </div>`;
             container.appendChild(div);
-            const inputSrv = div.querySelector('.service-name');
-            inputSrv.addEventListener('input', function() {
+            div.querySelector('.service-name').addEventListener('input', function() {
                 const item = cacheDados.find(x => x.srv_nome === this.value);
                 if (item) {
-                    const precoInput = div.querySelector('.service-price');
-                    let valor = item.srv_valor.toString().replace("R$", "").replace(".", "").replace(",", ".").trim();
-                    precoInput.value = (parseFloat(valor) || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                    const pInput = div.querySelector('.service-price');
+                    let val = item.srv_valor.toString().replace("R$", "").replace(".", "").replace(",", ".").trim();
+                    pInput.value = (parseFloat(val) || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2});
                     atualizarSoma();
                 }
             });
@@ -358,16 +334,15 @@
         function atualizarSoma() {
             let total = 0;
             document.querySelectorAll('.service-card').forEach(card => {
-                let precoStr = card.querySelector('.service-price').value.replace(/\./g, "").replace(",", ".");
-                let preco = parseFloat(precoStr) || 0;
-                let qtde = parseInt(card.querySelector('.service-qty').innerText) || 1;
+                let preco = parseFloat(card.querySelector('.service-price').value.replace(/\./g, "").replace(",", ".")) || 0;
+                let qtde = parseInt(card.querySelector('.qty-val').innerText) || 1;
                 total += (preco * qtde);
             });
             document.getElementById('totalFinal').value = total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
         }
 
         function alterarQtde(btn, delta) {
-            const span = btn.parentElement.querySelector('.service-qty');
+            const span = btn.parentElement.querySelector('.qty-val');
             let val = parseInt(span.innerText) + delta;
             if (val < 1) val = 1;
             span.innerText = val;
@@ -376,21 +351,21 @@
 
         function alternarModo() {
             modoOS = !modoOS;
+            const btn = document.getElementById('btn-acao');
+            const lbl = document.getElementById('label-prazo');
             const card = document.getElementById('card-principal');
             const thumb = document.getElementById('toggleMode');
-            const btnAcao = document.getElementById('btn-acao');
-            const lblPrazo = document.getElementById('label-prazo');
-            aplicarTextoPadrao();
+            setInitialObs();
             if (modoOS) {
                 thumb.classList.add('mode-os'); card.classList.add('is-os');
-                btnAcao.innerHTML = 'Finalizar O.S <i class="fa-solid fa-check"></i>';
-                lblPrazo.innerText = "Garantia";
-                lblPrazo.classList.replace('bg-blue-600', 'bg-green-600');
+                btn.innerHTML = 'Finalizar O.S <i class="fa-solid fa-check"></i>';
+                lbl.innerText = "Garantia";
+                lbl.classList.replace('bg-blue-600', 'bg-green-600');
             } else {
                 thumb.classList.remove('mode-os'); card.classList.remove('is-os');
-                btnAcao.innerHTML = 'Gerar Orçamento <i class="fa-solid fa-arrow-right"></i>';
-                lblPrazo.innerText = "Vencimento";
-                lblPrazo.classList.replace('bg-green-600', 'bg-blue-600');
+                btn.innerHTML = 'Gerar Orçamento <i class="fa-solid fa-arrow-right"></i>';
+                lbl.innerText = "Vencimento";
+                lbl.classList.replace('bg-green-600', 'bg-blue-600');
             }
             calcularDataFinal();
         }
@@ -416,28 +391,26 @@
             const dias = document.getElementById('inputGarantia').value;
             const dataFim = document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/');
             
-            const dadosEmpresa = cacheDados.find(d => d.emp_pix);
-            const chavePix = dadosEmpresa ? dadosEmpresa.emp_pix : "[CHAVE NÃO ENCONTRADA]";
+            const pixD = cacheDados.find(d => d.emp_pix);
+            const chave = pixD ? pixD.emp_pix : "[CHAVE NÃO ENCONTRADA]";
 
-            let servicosTexto = "";
-            document.querySelectorAll('.service-card').forEach(card => {
-                const nome = card.querySelector('.service-name').value;
-                const preco = card.querySelector('.service-price').value;
-                const qtde = card.querySelector('.service-qty').innerText;
-                if(nome) servicosTexto += `• ${qtde}x ${nome} - R$ ${preco}\n`;
+            let srvTxt = "";
+            document.querySelectorAll('.service-card').forEach(c => {
+                const n = c.querySelector('.service-name').value;
+                const p = c.querySelector('.service-price').value;
+                const q = c.querySelector('.qty-val').innerText;
+                if(n) srvTxt += `• ${q}x ${n} - R$ ${p}\n`;
             });
 
-            const totalNum = parseFloat(total.replace(/\./g, "").replace(",", ".")) || 0;
-            const sinalValor = (totalNum * 0.3).toLocaleString('pt-BR', {minimumFractionDigits: 2});
-            const saldoValor = (totalNum * 0.7).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            const tNum = parseFloat(total.replace(/\./g, "").replace(",", ".")) || 0;
+            const sVal = (tNum * 0.3).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            const rVal = (tNum * 0.7).toLocaleString('pt-BR', {minimumFractionDigits: 2});
 
-            const fraseSaldo = saldoQuitado ? "*Pagamento Confirmado:* R$ 0,00 (Total Pago)" : `*Saldo Restante:* R$ ${saldoValor}`;
+            const saldoTxt = saldoQuitado ? "*Pagamento Confirmado:* R$ 0,00 (Total Pago)" : `*Saldo Restante:* R$ ${rVal}`;
 
-            document.getElementById('txt-proposta').innerText = `*ORÇAMENTO TÉCNICO - ${prestador.toUpperCase()}*\n\nOlá ${cliente}! Segue o orçamento:\n\n*SERVIÇOS:*\n${servicosTexto}\n*OBS:*\n${obs}\n\n*INVESTIMENTO TOTAL:* R$ ${total}\n(Material + Mão de Obra incluso)\n\n*${modoOS ? 'Garantia' : 'Vencimento'}:* ${dias} dias\n*Data Prevista:* ${dataFim}\n\nFico no aguardo.`;
-
-            document.getElementById('txt-sinal').innerText = `Olá ${cliente}! 🤝\n\nPara agendarmos e comprarmos material, precisamos de um sinal.\n\n*Sinal (30%): R$ ${sinalValor}*\n\nChave PIX: ${chavePix}\n\nPor favor, envie o comprovante. Obrigado!`;
-
-            document.getElementById('txt-conclusao').innerText = `*Serviço Concluído!* ✅\n\n${cliente}, equipamento pronto.\n\n${fraseSaldo}\n\nLembrando que você tem *${dias} dias* de garantia.\n\nObrigado pela preferência!\n${prestador}`;
+            document.getElementById('txt-proposta').innerText = `*ORÇAMENTO TÉCNICO - ${prestador.toUpperCase()}*\n\nOlá ${cliente}! Segue o orçamento:\n\n*SERVIÇOS:*\n${srvTxt}\n*OBS:*\n${obs}\n\n*INVESTIMENTO TOTAL:* R$ ${total}\n\n*${modoOS ? 'Garantia' : 'Vencimento'}:* ${dias} dias\n*Data Prevista:* ${dataFim}`;
+            document.getElementById('txt-sinal').innerText = `Olá ${cliente}! 🤝\n\nPara agendarmos, precisamos de um sinal.\n\n*Sinal (30%): R$ ${sVal}*\n\nChave PIX: ${chave}`;
+            document.getElementById('txt-conclusao').innerText = `*Serviço Concluído!* ✅\n\n${cliente}, equipamento pronto.\n\n${saldoTxt}\n\n*Garantia:* ${dias} dias. Obrigado!\n${prestador}`;
 
             document.getElementById('modal-mensagens').style.display = 'block';
             document.body.style.overflow = 'hidden';
@@ -458,12 +431,9 @@
         function copiarTextoProfissional(id, elemento) {
             const texto = document.getElementById(id).innerText;
             const originalHTML = elemento.innerHTML;
-            
             navigator.clipboard.writeText(texto).then(() => {
                 elemento.classList.add('btn-copy-success');
                 elemento.innerHTML = '<i class="fa-solid fa-check"></i> COPIADO!';
-                
-                // O azul vai sumindo gradualmente por causa do CSS transition (0.8s)
                 setTimeout(() => {
                     elemento.classList.remove('btn-copy-success');
                     elemento.innerHTML = originalHTML;
@@ -472,77 +442,73 @@
         }
 
         async function baixarPDF() {
-            const prestador = document.getElementById('nomePrestador').value || "REFRIGERAÇÃO ELIEZER";
-            const cliente = document.getElementById('nomeCliente').value || "Cliente";
+            const prest = document.getElementById('nomePrestador').value || "REFRIGERAÇÃO ELIEZER";
+            const cli = document.getElementById('nomeCliente').value || "Cliente";
             const total = document.getElementById('totalFinal').value;
             const obs = document.getElementById('obsGeral').value;
-            const enderecoCli = document.getElementById('enderecoCliente').value || "Não informado";
-            const telCli = document.getElementById('telCliente').value || "Não informado";
-            const dataEmissao = new Date().toLocaleDateString('pt-BR');
-            const dataValidade = document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/');
+            const end = document.getElementById('enderecoCliente').value || "Não informado";
+            const tel = document.getElementById('telCliente').value || "Não informado";
+            const dVal = document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/');
 
-            const dadosEmp = cacheDados.find(d => d.emp_nome === prestador) || cacheDados[0];
-            const cnpjEmp = dadosEmp ? (dadosEmp.emp_doc || "") : "";
-            const dadosCli = cacheDados.find(c => c.cli_nome === cliente);
-            const docCli = dadosCli ? (dadosCli.cli_doc || "") : "";
+            const dEmp = cacheDados.find(d => d.emp_nome === prest) || cacheDados[0];
+            const cnpj = dEmp ? (dEmp.emp_doc || "") : "";
+            const dCli = cacheDados.find(c => c.cli_nome === cli);
+            const doc = dCli ? (dCli.cli_doc || "") : "";
 
-            let servicosHTML = "";
-            document.querySelectorAll('.service-card').forEach(card => {
-                const nome = card.querySelector('.service-name').value;
-                const preco = card.querySelector('.service-price').value;
-                const qtde = card.querySelector('.service-qty').innerText;
-                if(nome) {
-                    servicosHTML += `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 12px; text-align: left;">${nome.toUpperCase()}</td><td style="padding: 12px; text-align: center;">${qtde}</td><td style="padding: 12px; text-align: right; font-weight: 600;">R$ ${preco}</td></tr>`;
-                }
+            let srvH = "";
+            document.querySelectorAll('.service-card').forEach(c => {
+                const n = c.querySelector('.service-name').value;
+                const p = c.querySelector('.service-price').value;
+                const q = c.querySelector('.qty-val').innerText;
+                if(n) srvH += `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding:10px 0; text-align:left;">${n.toUpperCase()}</td><td style="padding:10px 0; text-align:center;">${q}</td><td style="padding:10px 0; text-align:right; font-weight: 600;">R$ ${p}</td></tr>`;
             });
 
             const template = `
-            <div style="font-family: Arial, sans-serif; color: #334155; padding: 40px; background: white; width: 210mm; min-height: 297mm; box-sizing: border-box;">
-                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #1e40af; padding-bottom: 20px; margin-bottom: 30px;">
-                    <div style="width: 60%;">
-                        <h1 style="margin: 0; color: #1e40af; font-size: 24px; font-weight: bold;">${prestador.toUpperCase()}</h1>
-                        <p style="font-size: 11px; color: #64748b; margin-top: 5px;">CNPJ/CPF: ${cnpjEmp}</p>
-                    </div>
-                    <div style="width: 35%; text-align: right;">
-                        <div style="font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase;">${modoOS ? 'Ordem de Serviço' : 'Orçamento'}</div>
-                        <div style="font-size: 16px; font-weight: 600; color: #0f172a;">${dataEmissao}</div>
-                    </div>
+            <html><head><style>
+                body { font-family: Arial, sans-serif; color: #334155; margin: 0; padding: 40px; background: white; }
+                .header { display: flex; justify-content: space-between; border-bottom: 3px solid #1e40af; padding-bottom: 20px; margin-bottom: 30px; }
+                .title { font-size: 22px; font-weight: 800; color: #0f172a; margin: 0; }
+                .info-box { background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #e2e8f0; font-size: 13px; }
+                table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+                th { border-bottom: 2px solid #0f172a; text-align: left; padding: 10px 0; font-size: 12px; text-transform: uppercase; color: #0f172a; }
+                td { padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+                .footer { margin-top: 50px; display: flex; justify-content: space-between; }
+                .obs { flex: 1; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; font-size: 11px; margin-right: 20px; }
+                .total-box { width: 200px; text-align: right; }
+                .signature { margin-top: 80px; text-align: center; border-top: 1px solid #333; width: 250px; margin-left: auto; margin-right: auto; padding-top: 5px; font-size: 11px; }
+            </style></head><body>
+                <div class="header">
+                    <div><h1 class="title">${prest.toUpperCase()}</h1><p style="font-size: 11px;">CNPJ/CPF: ${cnpj}</p></div>
+                    <div style="text-align: right;"><div style="font-size: 12px; font-weight: 700; color: #94a3b8;">${modoOS ? 'ORDEM DE SERVIÇO' : 'ORÇAMENTO'}</div><div style="font-size: 16px; font-weight: 600;">${new Date().toLocaleDateString('pt-BR')}</div></div>
                 </div>
-                <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #e2e8f0;">
-                    <p style="font-size: 13px; margin: 2px 0;"><strong>Cliente:</strong> ${cliente} | <strong>Doc:</strong> ${docCli}</p>
-                    <p style="font-size: 13px; margin: 2px 0;"><strong>Endereço:</strong> ${enderecoCli} | <strong>WhatsApp:</strong> ${telCli}</p>
+                <div class="info-box">
+                    <p><strong>Cliente:</strong> ${cli} | <strong>Doc:</strong> ${doc}</p>
+                    <p><strong>Endereço:</strong> ${end} | <strong>WhatsApp:</strong> ${tel}</p>
                 </div>
-                <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
-                    <thead><tr style="background: #1e40af; color: white;"><th style="padding:12px; text-align:left; font-size:12px;">Descrição</th><th style="padding:12px; text-align:center; font-size:12px;">Qtd</th><th style="padding:12px; text-align:right; font-size:12px;">Subtotal</th></tr></thead>
-                    <tbody style="font-size: 13px;">${servicosHTML}</tbody>
+                <table>
+                    <thead><tr><th>Descrição</th><th style="text-align:center;">Qtd</th><th style="text-align:right;">Subtotal</th></tr></thead>
+                    <tbody>${srvH}</tbody>
                 </table>
-                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                    <div style="flex: 1; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; font-size: 11px; margin-right: 20px;">
-                        <strong style="color: #1e40af;">Observações:</strong><br>
-                        <p style="margin-top: 5px; white-space: pre-wrap;">${obs}</p>
-                    </div>
-                    <div style="width: 200px; text-align: right;">
-                        <p style="font-size: 14px; font-weight: 800; color: #0f172a; text-transform: uppercase; border-top: 2px solid #e2e8f0; padding-top: 15px;">Total Geral</p>
-                        <h2 style="font-size: 24px; font-weight: 900; color: #1e40af; margin: 0;">R$ ${total}</h2>
-                        <p style="font-size: 10px; color: #94a3b8; margin-top: 5px;">Válido até: ${dataValidade}</p>
+                <div class="footer">
+                    <div class="obs"><strong>Observações Técnicas:</strong><br>${obs.replace(/\n/g, '<br>')}</div>
+                    <div class="total-box">
+                        <p style="font-size: 14px; font-weight: 800; text-transform: uppercase; border-top: 2px solid #e2e8f0; padding-top: 15px; margin:0;">Total Geral</p>
+                        <h2 style="font-size: 24px; color: #1e40af; margin:0;">R$ ${total}</h2>
+                        <p style="font-size: 10px; color: #94a3b8;">Validade: ${dVal}</p>
                     </div>
                 </div>
-                <div style="margin-top: 100px; text-align: center; font-size: 11px; border-top: 1px solid #333; width: 250px; margin: 0 auto; padding-top: 5px;">Assinatura do Responsável</div>
-            </div>`;
+                <div class="signature">Assinatura do Responsável</div>
+            </body></html>`;
 
-            const element = document.getElementById('pdf-offscreen');
-            element.innerHTML = template;
-
-            const opt = {
-                margin: 0,
-                filename: `${modoOS ? 'OS' : 'Orcamento'}_${cliente.replace(/\s+/g, '_')}.pdf`,
+            // MÉTODO DEFINITIVO: ABRE UMA JANELA E GERA DO CONTEÚDO PURO
+            const worker = html2pdf();
+            worker.from(template).set({
+                margin: 10,
+                filename: `${modoOS ? 'OS' : 'Orcamento'}_${cli}.pdf`,
                 image: { type: 'jpeg', quality: 1 },
                 html2canvas: { scale: 3, useCORS: true, backgroundColor: '#ffffff' },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            await html2pdf().set(opt).from(element).save();
-            element.innerHTML = "";
+            }).save();
         }
 
         window.onload = () => {
