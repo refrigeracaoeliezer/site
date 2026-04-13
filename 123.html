@@ -55,9 +55,22 @@
         .active-label { color: white !important; }
         .mode-os .switch-bg { left: 50%; background: #10b981; }
 
-        /* Estilos das Mensagens Prontas */
+        /* Estilos das Mensagens Prontas - CORREÇÃO DE QUEBRA DE TEXTO */
         .msg-ready { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; padding: 15px; margin-top: 10px; }
-        .msg-text-box { background: #0d1117; border-radius: 15px; padding: 12px; font-family: monospace; font-size: 12px; color: #a1a1aa; white-space: pre-wrap; margin: 10px 0; border: 1px solid rgba(255,255,255,0.05); }
+        .msg-text-box { 
+            background: #0d1117; 
+            border-radius: 15px; 
+            padding: 12px; 
+            font-family: monospace; 
+            font-size: 12px; 
+            color: #a1a1aa; 
+            white-space: pre-wrap; 
+            word-wrap: break-word; /* Força quebra de palavras longas */
+            word-break: break-word; 
+            margin: 10px 0; 
+            border: 1px solid rgba(255,255,255,0.05); 
+            overflow-wrap: break-word;
+        }
 
         input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
     </style>
@@ -100,7 +113,7 @@
                         <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-xs"></i>
                     </div>
                     <input type="text" id="enderecoCliente" placeholder="Endereço Completo" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
-                    <input type="tel" id="telCliente" placeholder="WhatsApp" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
+                    <input type="tel" id="telCliente" placeholder="(DD) 9XXXX-XXXX" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
                     
                     <div class="grid grid-cols-2 gap-2 pt-2">
                         <div class="space-y-1">
@@ -150,7 +163,7 @@
                 <div class="bg-blue-600/5 p-5 rounded-3xl border border-blue-500/10">
                     <div class="flex items-center gap-3">
                         <span class="text-xl font-black text-white/20">R$</span>
-                        <input type="text" id="totalFinal" value="0,00" class="w-full bg-transparent border-none text-2xl font-black text-white focus:outline-none" readonly>
+                        <input type="text" id="totalFinal" placeholder="0,00" class="w-full bg-transparent border-none text-2xl font-black text-white focus:outline-none" readonly>
                     </div>
                 </div>
             </div>
@@ -159,8 +172,8 @@
                 Gerar Orçamento <i class="fa-solid fa-arrow-right"></i>
             </button>
 
-            <div id="mensagens-prontas" class="hidden space-y-4">
-                <div class="text-center text-[10px] font-black uppercase text-white/30 tracking-[4px] mt-6">Mensagens Prontas</div>
+            <div id="mensagens-prontas" class="hidden space-y-4 border-t border-white/10 pt-8 mt-4">
+                <div class="text-center text-[10px] font-black uppercase text-white/30 tracking-[4px] mb-2">Mensagens Prontas</div>
                 
                 <div class="msg-ready">
                     <div class="flex items-center gap-3 mb-2">
@@ -168,9 +181,14 @@
                         <span class="text-xs font-bold uppercase tracking-widest">Proposta</span>
                     </div>
                     <div id="txt-proposta" class="msg-text-box"></div>
-                    <button onclick="copiarTexto('txt-proposta')" class="w-full py-3 bg-blue-600/20 text-blue-400 rounded-xl font-bold text-[10px] uppercase border border-blue-500/20 hover:bg-blue-600 hover:text-white transition-all">
-                        <i class="fa-solid fa-copy mr-2"></i> Copiar Texto
-                    </button>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="copiarTexto('txt-proposta')" class="py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[10px] uppercase border border-white/10">
+                            <i class="fa-solid fa-copy mr-2"></i> Copiar
+                        </button>
+                        <button onclick="enviarWpp('txt-proposta')" class="py-3 bg-blue-600/20 text-blue-400 rounded-xl font-bold text-[10px] uppercase border border-blue-500/20">
+                            <i class="fa-brands fa-whatsapp mr-2 text-base"></i> Enviar WPP
+                        </button>
+                    </div>
                 </div>
 
                 <div class="msg-ready">
@@ -179,9 +197,14 @@
                         <span class="text-xs font-bold uppercase tracking-widest">Sinal</span>
                     </div>
                     <div id="txt-sinal" class="msg-text-box"></div>
-                    <button onclick="copiarTexto('txt-sinal')" class="w-full py-3 bg-orange-600/20 text-orange-400 rounded-xl font-bold text-[10px] uppercase border border-orange-500/20 hover:bg-orange-600 hover:text-white transition-all">
-                        <i class="fa-solid fa-copy mr-2"></i> Copiar Texto
-                    </button>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="copiarTexto('txt-sinal')" class="py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[10px] uppercase border border-white/10">
+                            <i class="fa-solid fa-copy mr-2"></i> Copiar
+                        </button>
+                        <button onclick="enviarWpp('txt-sinal')" class="py-3 bg-orange-600/20 text-orange-400 rounded-xl font-bold text-[10px] uppercase border border-orange-500/20">
+                            <i class="fa-brands fa-whatsapp mr-2 text-base"></i> Enviar WPP
+                        </button>
+                    </div>
                 </div>
 
                 <div class="msg-ready">
@@ -190,9 +213,14 @@
                         <span class="text-xs font-bold uppercase tracking-widest">Conclusão</span>
                     </div>
                     <div id="txt-conclusao" class="msg-text-box"></div>
-                    <button onclick="copiarTexto('txt-conclusao')" class="w-full py-3 bg-green-600/20 text-green-400 rounded-xl font-bold text-[10px] uppercase border border-green-500/20 hover:bg-green-600 hover:text-white transition-all">
-                        <i class="fa-solid fa-copy mr-2"></i> Copiar Texto
-                    </button>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="copiarTexto('txt-conclusao')" class="py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[10px] uppercase border border-white/10">
+                            <i class="fa-solid fa-copy mr-2"></i> Copiar
+                        </button>
+                        <button onclick="enviarWpp('txt-conclusao')" class="py-3 bg-green-600/20 text-green-400 rounded-xl font-bold text-[10px] uppercase border border-green-500/20">
+                            <i class="fa-brands fa-whatsapp mr-2 text-base"></i> Enviar WPP
+                        </button>
+                    </div>
                 </div>
             </div>
         </main>
@@ -252,13 +280,6 @@
             if(cacheDados.length > 0 && cacheDados[0].emp_nome) {
                 document.getElementById('nomePrestador').value = cacheDados[0].emp_nome;
             }
-        }
-
-        function aplicarTextoPadrao() {
-            const txtArea = document.getElementById('obsGeral');
-            const listaObsValidas = cacheDados.map(d => d.txt_obs).filter(Boolean);
-            if (modoOS) { txtArea.value = ""; } else { txtArea.value = listaObsValidas[0] || ""; }
-            autoExpandir(txtArea);
         }
 
         function configurarListeners() {
@@ -357,13 +378,12 @@
             return `${d}/${m}/${y}`;
         }
 
-        // --- FUNÇÃO PARA GERAR OS TEXTOS ---
         function gerarDocumento() {
             const prestador = document.getElementById('nomePrestador').value || "REFRIGERAÇÃO ELIEZER";
             const cliente = document.getElementById('nomeCliente').value || "Cliente";
             const total = document.getElementById('totalFinal').value;
             const obs = document.getElementById('obsGeral').value;
-            const garantia = document.getElementById('inputGarantia').value;
+            const dias = document.getElementById('inputGarantia').value;
             const dataFim = formatarDataBR(document.getElementById('dataPrazoFinal').value);
             
             let servicosTexto = "";
@@ -374,10 +394,10 @@
                 if(nome) servicosTexto += `• ${qtde}x ${nome} - R$ ${preco}\n`;
             });
 
-            const sinalValor = (parseFloat(total.replace(/\./g, "").replace(",", ".")) * 0.3).toLocaleString('pt-BR', {minimumFractionDigits: 2});
-            const saldoValor = (parseFloat(total.replace(/\./g, "").replace(",", ".")) * 0.7).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            const totalNum = parseFloat(total.replace(/\./g, "").replace(",", ".")) || 0;
+            const sinalValor = (totalNum * 0.3).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            const saldoValor = (totalNum * 0.7).toLocaleString('pt-BR', {minimumFractionDigits: 2});
 
-            // Montagem Proposta
             document.getElementById('txt-proposta').innerText = 
 `*ORÇAMENTO TÉCNICO - ${prestador.toUpperCase()}*
 
@@ -391,12 +411,11 @@ ${obs}
 *INVESTIMENTO TOTAL:* R$ ${total}
 (Material + Mão de Obra incluso)
 
-*Vencimento:* ${garantia} dias
+*Vencimento:* ${dias} dias
 *Data Prevista:* ${dataFim}
 
 Fico no aguardo.`;
 
-            // Montagem Sinal
             document.getElementById('txt-sinal').innerText = 
 `Olá ${cliente}! 🤝
 
@@ -408,7 +427,6 @@ Chave PIX: [SUA CHAVE AQUI]
 
 Por favor, envie o comprovante. Obrigado!`;
 
-            // Montagem Conclusão
             document.getElementById('txt-conclusao').innerText = 
 `*Serviço Concluído!* ✅
 
@@ -416,20 +434,28 @@ ${cliente}, equipamento pronto.
 
 *Saldo Restante:* R$ ${saldoValor}
 
-Lembrando que você tem *${garantia} dias* de garantia.
+Lembrando que você tem *${dias} dias* de garantia.
 
 Obrigado pela preferência!
 ${prestador}`;
 
             document.getElementById('mensagens-prontas').classList.remove('hidden');
-            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            window.scrollTo({ top: document.getElementById('mensagens-prontas').offsetTop, behavior: 'smooth' });
         }
 
         function copiarTexto(id) {
             const texto = document.getElementById(id).innerText;
             navigator.clipboard.writeText(texto).then(() => {
-                alert("Texto copiado para o WhatsApp!");
+                alert("Texto copiado!");
             });
+        }
+
+        function enviarWpp(id) {
+            const texto = document.getElementById(id).innerText;
+            const telefone = document.getElementById('telCliente').value.replace(/\D/g, '');
+            if(!telefone) { alert("Por favor, preencha o WhatsApp do cliente."); return; }
+            const link = `https://api.whatsapp.com/send?phone=55${telefone}&text=${encodeURIComponent(texto)}`;
+            window.open(link, '_blank');
         }
 
         function alternarModo() {
@@ -448,18 +474,21 @@ ${prestador}`;
                 btnAcao.innerHTML = 'Finalizar O.S <i class="fa-solid fa-check"></i>';
                 lblPrazo.innerText = "Garantia";
                 lblPrazo.classList.replace('bg-blue-600', 'bg-green-600');
-                document.getElementById('lbl-os').classList.add('active-label');
-                document.getElementById('lbl-orc').classList.remove('active-label');
             } else {
                 thumb.classList.remove('mode-os'); card.classList.remove('is-os');
                 subTitle.innerText = "Sistema de Orçamento";
                 btnAcao.innerHTML = 'Gerar Orçamento <i class="fa-solid fa-arrow-right"></i>';
                 lblPrazo.innerText = "Vencimento";
                 lblPrazo.classList.replace('bg-green-600', 'bg-blue-600');
-                document.getElementById('lbl-orc').classList.add('active-label');
-                document.getElementById('lbl-os').classList.remove('active-label');
             }
             calcularDataFinal();
+        }
+
+        function aplicarTextoPadrao() {
+            const txtArea = document.getElementById('obsGeral');
+            const listaObsValidas = cacheDados.map(d => d.txt_obs).filter(Boolean);
+            if (modoOS) { txtArea.value = ""; } else { txtArea.value = listaObsValidas[0] || ""; }
+            autoExpandir(txtArea);
         }
 
         window.onload = () => {
