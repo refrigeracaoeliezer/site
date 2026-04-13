@@ -10,86 +10,104 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
         
-        body { background-color: #525659; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        body { background-color: #525659; display: flex; flex-direction: column; align-items: center; padding: 20px; position: relative; }
 
-        /* Barra de Ações Fixa */
-        .toolbar {
-            position: fixed; top: 0; left: 0; width: 100%; background: #333; 
-            padding: 10px; display: flex; justify-content: center; gap: 10px; z-index: 9999;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        /* Botão PDF Flutuante no canto inferior direito */
+        .btn-flutuante {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 10000;
+            background-color: #e74c3c;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            transition: transform 0.2s;
         }
-
-        .btn {
-            padding: 10px 15px; border: none; border-radius: 5px; color: white; 
-            font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 14px;
-        }
-        .btn-pdf { background: #e74c3c; }
-        .btn-wpp { background: #25d366; }
-        .btn-print { background: #3498db; }
+        .btn-flutuante:active { transform: scale(0.9); }
 
         /* Container do Papel */
         .paper-canvas {
             background-color: #fff;
-            width: 100%;
-            max-width: 800px; /* Largura A4 aproximada */
-            min-height: 1120px;
-            padding: 40px;
-            margin-top: 60px;
+            width: 210mm; /* Largura A4 Fixa para garantir proporção */
+            min-height: 297mm;
+            padding: 20mm;
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
             position: relative;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* Ajustes para Celular */
-        @media (max-width: 600px) {
+        /* Ajuste para Celular - Escala o documento para caber na tela sem quebrar o layout */
+        @media (max-width: 850px) {
             body { padding: 5px; }
-            .paper-canvas { padding: 15px; margin-top: 110px; }
-            .toolbar { flex-wrap: wrap; }
-            .btn { flex: 1; min-width: 120px; justify-content: center; font-size: 12px; }
+            .paper-canvas { 
+                zoom: 0.45; /* Ajusta visualmente no celular */
+                padding: 15mm;
+            }
         }
 
-        /* Estilo Interno do Orçamento */
+        /* Cabeçalho */
         header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #1a4388; padding-bottom: 15px; margin-bottom: 20px; }
-        .logo-img { max-width: 180px; height: auto; }
+        .logo-img { max-width: 220px; height: auto; }
         .doc-info { text-align: right; }
-        .doc-info h2 { color: #1a4388; font-size: 20px; margin-bottom: 5px; }
+        .doc-info h2 { color: #1a4388; font-size: 24px; margin-bottom: 5px; }
         
-        .client-box { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 20px; line-height: 1.6; }
+        .client-box { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 25px; line-height: 1.6; }
         
+        /* Tabela */
         table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        table th { background: #1a4388; color: white; padding: 10px; text-align: left; font-size: 12px; }
-        table td { border-bottom: 1px solid #ddd; padding: 10px; font-size: 13px; }
+        table th { background: #1a4388; color: white; padding: 12px; text-align: left; font-size: 13px; }
+        table td { border-bottom: 1px solid #ddd; padding: 12px; font-size: 14px; }
         .text-right { text-align: right; }
         .text-center { text-align: center; }
 
-        .total-section { text-align: right; margin: 20px 0; border-top: 2px solid #eee; padding-top: 10px; }
-        .total-section b { font-size: 20px; color: #1a4388; }
+        .total-section { text-align: right; margin: 20px 0; border-top: 2px solid #eee; padding-top: 15px; }
+        .total-section b { font-size: 24px; color: #1a4388; }
 
-        .obs-section { background: #f9f9f9; padding: 15px; border-radius: 5px; font-size: 12px; margin-bottom: 30px; border-left: 4px solid #1a4388; }
+        /* Container de Observação Corrigido */
+        .obs-section { 
+            background: #f9f9f9; 
+            padding: 15px; 
+            border-radius: 5px; 
+            font-size: 13px; 
+            margin-bottom: 30px; 
+            border-left: 5px solid #1a4388;
+            max-width: 100%; /* Não deixa passar da folha */
+            word-wrap: break-word; /* Força quebra de palavras longas */
+            overflow-wrap: break-word; 
+            word-break: break-all; /* Garante que strings longas sem espaço (como AAAAA) quebrem */
+        }
 
-        footer { text-align: center; font-size: 11px; color: #777; border-top: 1px solid #eee; padding-top: 20px; margin-top: auto; }
+        footer { text-align: center; font-size: 12px; color: #777; border-top: 1px solid #eee; padding-top: 20px; margin-top: auto; }
 
-        /* Configuração de Impressão Real */
         @media print {
             .no-print { display: none !important; }
             body { background: white; padding: 0; }
-            .paper-canvas { margin: 0; box-shadow: none; width: 100%; max-width: none; }
+            .paper-canvas { margin: 0; box-shadow: none; width: 100%; padding: 15mm; }
         }
     </style>
 </head>
 <body>
 
-    <div class="toolbar no-print">
-        <button class="btn btn-pdf" onclick="baixarPDF()"><i class="fa-solid fa-file-pdf"></i> Salvar PDF</button>
-        <button class="btn btn-wpp" onclick="enviarWhatsApp()"><i class="fa-brands fa-whatsapp"></i> Enviar Whats</button>
-        <button class="btn btn-print" onclick="window.print()"><i class="fa-solid fa-print"></i> Imprimir</button>
-    </div>
+    <button class="btn-flutuante no-print" onclick="baixarPDF()" title="Salvar PDF">
+        <i class="fa-solid fa-file-pdf"></i>
+    </button>
 
     <div class="paper-canvas" id="conteudo-orcamento">
         <header>
             <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgdGGsULMI69OabXBfFU3b8mTYfIWlJoqpwgc_q1UvSITQPj_VQYaW_1cLECh4rF7j5RfhJLsPgUXdvNv-ya494kAfeyZRbdTCn-VFesltpIkZp8Xid-MZwLKBLyC89MTSXf76nrCrBHncl86cYzjm1XuG34hvNrNVkZS8Gkq3FJEZHEb99HL26I52RUqc/w512-h237/TOPO%20POSTO%20RIO%20BRANCO.png" class="logo-img">
             <div class="doc-info">
                 <h2 id="tipo-doc">ORÇAMENTO</h2>
-                <p style="font-size: 12px; font-weight: bold;">Nº <span id="num-random"></span></p>
+                <p style="font-size: 14px; font-weight: bold;">Nº <span id="num-random"></span></p>
             </div>
         </header>
 
@@ -109,26 +127,26 @@
             <thead>
                 <tr>
                     <th>DESCRIÇÃO DOS SERVIÇOS / PEÇAS</th>
-                    <th class="text-center">QTD</th>
-                    <th class="text-right">SUBTOTAL</th>
+                    <th style="width: 80px;" class="text-center">QTD</th>
+                    <th style="width: 130px;" class="text-right">SUBTOTAL</th>
                 </tr>
             </thead>
             <tbody id="tabela-itens"></tbody>
         </table>
 
         <div class="total-section">
-            <p>VALOR TOTAL DO INVESTIMENTO</p>
+            <p style="font-size: 13px; color: #666; margin-bottom: 5px;">VALOR TOTAL DO INVESTIMENTO</p>
             <b id="valor-total">R$ 0,00</b>
         </div>
 
         <div class="obs-section">
-            <b>DETALHES TÉCNICOS / OBSERVAÇÕES:</b>
-            <p id="txt-obs" style="white-space: pre-wrap; margin-top: 10px;"></p>
+            <b style="color: #1a4388; display: block; margin-bottom: 8px;">DETALHES TÉCNICOS / OBSERVAÇÕES:</b>
+            <p id="txt-obs" style="white-space: pre-wrap; line-height: 1.5;"></p>
         </div>
 
         <footer>
-            <p><b>REFRIGERAÇÃO ELIEZER</b></p>
-            <p>Corumbá - MS | Garantia de 90 dias em serviços</p>
+            <p style="margin-bottom: 5px;"><b>REFRIGERAÇÃO ELIEZER</b></p>
+            <p>Corumbá - MS | Garantia de 90 dias em serviços técnicos</p>
         </footer>
     </div>
 
@@ -164,18 +182,12 @@
             const element = document.getElementById('conteudo-orcamento');
             const opt = {
                 margin: 0,
-                filename: `Orcamento_${dados.cliente}.pdf`,
+                filename: `Orcamento_${dados.cliente || 'Tecnico'}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
+                html2canvas: { scale: 2, useCORS: true, letterRendering: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             html2pdf().set(opt).from(element).save();
-        }
-
-        function enviarWhatsApp() {
-            const msg = `Olá ${dados.cliente}, segue o link do seu ${dados.tipo}.\n\n*Total: R$ ${dados.total}*`;
-            const tel = dados.whatsapp.replace(/\D/g, '');
-            window.open(`https://api.whatsapp.com/send?phone=55${tel}&text=${encodeURIComponent(msg)}`, '_blank');
         }
     </script>
 </body>
