@@ -2,17 +2,17 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualizar Orçamento</title>
+    <meta name="viewport" content="width=1024"> 
+    <title>Orçamento Técnico</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
         
-        body { background-color: #525659; display: flex; flex-direction: column; align-items: center; padding: 20px; position: relative; }
+        body { background-color: #525659; display: flex; justify-content: center; padding: 20px 0; }
 
-        /* Botão PDF Flutuante no canto inferior direito */
+        /* Botão PDF Flutuante */
         .btn-flutuante {
             position: fixed;
             bottom: 30px;
@@ -20,174 +20,186 @@
             z-index: 10000;
             background-color: #e74c3c;
             color: white;
-            width: 60px;
-            height: 60px;
+            width: 65px;
+            height: 65px;
             border-radius: 50%;
             border: none;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
-            transition: transform 0.2s;
+            font-size: 28px;
         }
-        .btn-flutuante:active { transform: scale(0.9); }
 
-        /* Container do Papel */
+        /* Container A4 */
         .paper-canvas {
             background-color: #fff;
-            width: 210mm; /* Largura A4 Fixa para garantir proporção */
-            min-height: 297mm;
-            padding: 20mm;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            position: relative;
+            width: 210mm;
+            height: 297mm;
+            padding: 15mm;
             display: flex;
             flex-direction: column;
+            position: relative;
+            box-shadow: 0 0 15px rgba(0,0,0,0.3);
+            overflow: hidden;
         }
 
-        /* Ajuste para Celular - Escala o documento para caber na tela sem quebrar o layout */
-        @media (max-width: 850px) {
-            body { padding: 5px; }
-            .paper-canvas { 
-                zoom: 0.45; /* Ajusta visualmente no celular */
-                padding: 15mm;
-            }
+        /* Força o cabeçalho a aparecer sempre */
+        header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-start;
+            border-bottom: 3px solid #1a4388;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            width: 100%;
         }
 
-        /* Cabeçalho */
-        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #1a4388; padding-bottom: 15px; margin-bottom: 20px; }
-        .logo-img { max-width: 220px; height: auto; }
+        .logo-area { width: 250px; min-height: 100px; }
+        .logo-img { width: 100%; height: auto; display: block; }
+        
+        .empresa-info { font-size: 12px; color: #333; line-height: 1.4; margin-top: 5px; }
         .doc-info { text-align: right; }
-        .doc-info h2 { color: #1a4388; font-size: 24px; margin-bottom: 5px; }
-        
-        .client-box { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 25px; line-height: 1.6; }
-        
-        /* Tabela */
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        table th { background: #1a4388; color: white; padding: 12px; text-align: left; font-size: 13px; }
-        table td { border-bottom: 1px solid #ddd; padding: 12px; font-size: 14px; }
-        .text-right { text-align: right; }
-        .text-center { text-align: center; }
+        .doc-info h2 { color: #1a4388; font-size: 24px; font-weight: 900; }
 
-        .total-section { text-align: right; margin: 20px 0; border-top: 2px solid #eee; padding-top: 15px; }
-        .total-section b { font-size: 24px; color: #1a4388; }
+        .client-box { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
 
-        /* Container de Observação Corrigido */
+        .tabela-container { flex-grow: 1; }
+        table { width: 100%; border-collapse: collapse; }
+        table th { background: #1a4388; color: white; padding: 10px; text-align: left; font-size: 12px; }
+        table td { border-bottom: 1px solid #eee; padding: 10px; font-size: 14px; }
+
+        .total-section { text-align: right; padding: 20px 0; }
+        .total-section h3 { font-size: 30px; color: #1a4388; }
+
+        /* Container de Observação (Amarelo e sem ultrapassar) */
         .obs-section { 
-            background: #f9f9f9; 
+            background: #fffbe6; 
             padding: 15px; 
+            border: 1px solid #ffe58f;
             border-radius: 5px; 
             font-size: 13px; 
-            margin-bottom: 30px; 
-            border-left: 5px solid #1a4388;
-            max-width: 100%; /* Não deixa passar da folha */
-            word-wrap: break-word; /* Força quebra de palavras longas */
-            overflow-wrap: break-word; 
-            word-break: break-all; /* Garante que strings longas sem espaço (como AAAAA) quebrem */
+            margin-bottom: 20px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            word-break: break-all;
+            max-width: 100%;
         }
 
-        footer { text-align: center; font-size: 12px; color: #777; border-top: 1px solid #eee; padding-top: 20px; margin-top: auto; }
+        footer { text-align: center; font-size: 11px; color: #777; border-top: 1px solid #eee; padding-top: 15px; }
 
-        @media print {
-            .no-print { display: none !important; }
-            body { background: white; padding: 0; }
-            .paper-canvas { margin: 0; box-shadow: none; width: 100%; padding: 15mm; }
-        }
+        @media print { .no-print { display: none !important; } }
     </style>
 </head>
 <body>
 
-    <button class="btn-flutuante no-print" onclick="baixarPDF()" title="Salvar PDF">
+    <button class="btn-flutuante no-print" onclick="baixarPDF()">
         <i class="fa-solid fa-file-pdf"></i>
     </button>
 
-    <div class="paper-canvas" id="conteudo-orcamento">
+    <div class="paper-canvas" id="conteudo-pdf">
         <header>
-            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgdGGsULMI69OabXBfFU3b8mTYfIWlJoqpwgc_q1UvSITQPj_VQYaW_1cLECh4rF7j5RfhJLsPgUXdvNv-ya494kAfeyZRbdTCn-VFesltpIkZp8Xid-MZwLKBLyC89MTSXf76nrCrBHncl86cYzjm1XuG34hvNrNVkZS8Gkq3FJEZHEb99HL26I52RUqc/w512-h237/TOPO%20POSTO%20RIO%20BRANCO.png" class="logo-img">
+            <div class="logo-area">
+                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgdGGsULMI69OabXBfFU3b8mTYfIWlJoqpwgc_q1UvSITQPj_VQYaW_1cLECh4rF7j5RfhJLsPgUXdvNv-ya494kAfeyZRbdTCn-VFesltpIkZp8Xid-MZwLKBLyC89MTSXf76nrCrBHncl86cYzjm1XuG34hvNrNVkZS8Gkq3FJEZHEb99HL26I52RUqc/w512-h237/TOPO%20POSTO%20RIO%20BRANCO.png" class="logo-img" crossorigin="anonymous">
+                <div class="empresa-info">
+                    <strong>REFRIGERAÇÃO ELIEZER</strong><br>
+                    CNPJ: 00.000.000/0001-00<br>
+                    Corumbá - MS | Tel: (67) 99999-9999
+                </div>
+            </div>
             <div class="doc-info">
-                <h2 id="tipo-doc">ORÇAMENTO</h2>
-                <p style="font-size: 14px; font-weight: bold;">Nº <span id="num-random"></span></p>
+                <h2 id="view-tipo">ORÇAMENTO</h2>
+                <p>Nº <span id="num-random"></span></p>
             </div>
         </header>
 
         <div class="client-box">
             <div>
-                <p><b>CLIENTE:</b> <span id="cli-nome"></span></p>
-                <p><b>ENDEREÇO:</b> <span id="cli-end"></span></p>
-                <p><b>WHATSAPP:</b> <span id="cli-tel"></span></p>
+                <strong>CLIENTE:</strong> <span id="view-cliente"></span><br>
+                <strong>ENDEREÇO:</strong> <span id="view-endereco"></span>
             </div>
             <div style="text-align: right;">
-                <p><b>EMISSÃO:</b> <span id="data-emi"></span></p>
-                <p><b>VALIDADE:</b> <span id="data-val"></span></p>
+                <strong>DATA:</strong> <span id="view-data"></span><br>
+                <strong>VENC.:</strong> <span id="view-venc"></span>
             </div>
         </div>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>DESCRIÇÃO DOS SERVIÇOS / PEÇAS</th>
-                    <th style="width: 80px;" class="text-center">QTD</th>
-                    <th style="width: 130px;" class="text-right">SUBTOTAL</th>
-                </tr>
-            </thead>
-            <tbody id="tabela-itens"></tbody>
-        </table>
+        <div class="tabela-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>DESCRIÇÃO DOS SERVIÇOS</th>
+                        <th style="text-align: center; width: 50px;">QTD</th>
+                        <th style="text-align: right; width: 120px;">TOTAL</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-corpo"></tbody>
+            </table>
+        </div>
 
         <div class="total-section">
-            <p style="font-size: 13px; color: #666; margin-bottom: 5px;">VALOR TOTAL DO INVESTIMENTO</p>
-            <b id="valor-total">R$ 0,00</b>
+            <p style="font-size: 12px; font-weight: bold; color: #666;">INVESTIMENTO TOTAL</p>
+            <h3 id="view-total"></h3>
         </div>
 
         <div class="obs-section">
-            <b style="color: #1a4388; display: block; margin-bottom: 8px;">DETALHES TÉCNICOS / OBSERVAÇÕES:</b>
-            <p id="txt-obs" style="white-space: pre-wrap; line-height: 1.5;"></p>
+            <strong style="color: #856404;">OBSERVAÇÕES TÉCNICAS:</strong>
+            <p id="view-obs" style="white-space: pre-wrap; margin-top: 5px; color: #856404;"></p>
         </div>
 
         <footer>
-            <p style="margin-bottom: 5px;"><b>REFRIGERAÇÃO ELIEZER</b></p>
-            <p>Corumbá - MS | Garantia de 90 dias em serviços técnicos</p>
+            <p><strong>REFRIGERAÇÃO ELIEZER | Responsável Técnico</strong></p>
+            <p>Garantia de 90 dias conforme legislação vigente.</p>
         </footer>
     </div>
 
     <script>
-        // Gera número aleatório para o orçamento
-        document.getElementById('num-random').innerText = Math.floor(1000 + Math.random() * 9000) + '/2026';
-
+        document.getElementById('num-random').innerText = Math.floor(100 + Math.random() * 899) + '/2026';
         const dados = JSON.parse(localStorage.getItem('dados_impressao'));
 
         if(dados) {
-            document.getElementById('tipo-doc').innerText = dados.tipo;
-            document.getElementById('cli-nome').innerText = dados.cliente;
-            document.getElementById('cli-end').innerText = dados.endereco;
-            document.getElementById('cli-tel').innerText = dados.whatsapp;
-            document.getElementById('data-emi').innerText = dados.emissao;
-            document.getElementById('data-val').innerText = dados.validade;
-            document.getElementById('valor-total').innerText = 'R$ ' + dados.total;
-            document.getElementById('txt-obs').innerText = dados.obs || "Nenhuma observação adicional.";
+            document.getElementById('view-tipo').innerText = dados.tipo;
+            document.getElementById('view-cliente').innerText = dados.cliente;
+            document.getElementById('view-endereco').innerText = dados.endereco;
+            document.getElementById('view-data').innerText = dados.emissao;
+            document.getElementById('view-venc').innerText = dados.validade;
+            document.getElementById('view-total').innerText = 'R$ ' + dados.total;
+            document.getElementById('view-obs').innerText = dados.obs || "Nenhuma observação técnica registrada.";
 
-            const tbody = document.getElementById('tabela-itens');
-            dados.itens.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${item.descricao}</td>
-                    <td class="text-center">${item.qtd}</td>
-                    <td class="text-right">R$ ${item.valor}</td>
-                `;
-                tbody.appendChild(tr);
+            const corpo = document.getElementById('tabela-corpo');
+            dados.itens.forEach(i => {
+                corpo.innerHTML += `<tr><td>${i.descricao}</td><td style="text-align:center">${i.qtd}</td><td style="text-align:right">R$ ${i.valor}</td></tr>`;
             });
         }
 
         function baixarPDF() {
-            const element = document.getElementById('conteudo-orcamento');
+            const element = document.getElementById('conteudo-pdf');
             const opt = {
                 margin: 0,
-                filename: `Orcamento_${dados.cliente || 'Tecnico'}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+                filename: `Orcamento_${dados.cliente}.pdf`,
+                image: { type: 'jpeg', quality: 1 },
+                html2canvas: { 
+                    scale: 3, 
+                    useCORS: true, 
+                    logging: false,
+                    allowTaint: true // Permite capturar imagens de outros domínios
+                },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
-            html2pdf().set(opt).from(element).save();
+            
+            // Pequeno delay para garantir que o navegador "desenhou" a logo antes de capturar
+            setTimeout(() => {
+                html2pdf().set(opt).from(element).save();
+            }, 500);
         }
     </script>
 </body>
