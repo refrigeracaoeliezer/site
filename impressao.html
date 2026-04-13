@@ -109,8 +109,7 @@
     <div class="paper-canvas" id="conteudo-pdf">
         <header>
             <div class="logo-area">
-                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgdGGsULMI69OabXBfFU3b8mTYfIWlJoqpwgc_q1UvSITQPj_VQYaW_1cLECh4rF7j5RfhJLsPgUXdvNv-ya494kAfeyZRbdTCn-VFesltpIkZp8Xid-MZwLKBLyC89MTSXf76nrCrBHncl86cYzjm1XuG34hvNrNVkZS8Gkq3FJEZHEb99HL26I52RUqc/w512-h237/TOPO%20POSTO%20RIO%20BRANCO.png" class="logo-img" crossorigin="anonymous">
-                <div class="empresa-info">
+                <img id="logo-img" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgdGGsULMI69OabXBfFU3b8mTYfIWlJoqpwgc_q1UvSITQPj_VQYaW_1cLECh4rF7j5RfhJLsPgUXdvNv-ya494kAfeyZRbdTCn-VFesltpIkZp8Xid-MZwLKBLyC89MTSXf76nrCrBHncl86cYzjm1XuG34hvNrNVkZS8Gkq3FJEZHEb99HL26I52RUqc/w512-h237/TOPO%20POSTO%20RIO%20BRANCO.png" class="logo-img" crossorigin="anonymous">
                     <strong>REFRIGERAÇÃO ELIEZER</strong><br>
                     CNPJ: 00.000.000/0001-00<br>
                     Corumbá - MS | Tel: (67) 99999-9999
@@ -162,45 +161,52 @@
         </footer>
     </div>
 
-    <script>
-        document.getElementById('num-random').innerText = Math.floor(100 + Math.random() * 899) + '/2026';
-        const dados = JSON.parse(localStorage.getItem('dados_impressao'));
+<script>
+    document.getElementById('num-random').innerText = Math.floor(100 + Math.random() * 899) + '/2026';
+    const dados = JSON.parse(localStorage.getItem('dados_impressao'));
 
-        if(dados) {
-            document.getElementById('view-tipo').innerText = dados.tipo;
-            document.getElementById('view-cliente').innerText = dados.cliente;
-            document.getElementById('view-endereco').innerText = dados.endereco;
-            document.getElementById('view-data').innerText = dados.emissao;
-            document.getElementById('view-venc').innerText = dados.validade;
-            document.getElementById('view-total').innerText = 'R$ ' + dados.total;
-            document.getElementById('view-obs').innerText = dados.obs || "Nenhuma observação técnica registrada.";
+    if(dados) {
+        document.getElementById('view-tipo').innerText = dados.tipo;
+        document.getElementById('view-cliente').innerText = dados.cliente;
+        document.getElementById('view-endereco').innerText = dados.endereco;
+        document.getElementById('view-data').innerText = dados.emissao;
+        document.getElementById('view-venc').innerText = dados.validade;
+        document.getElementById('view-total').innerText = 'R$ ' + dados.total;
+        document.getElementById('view-obs').innerText = dados.obs || "Nenhuma observação técnica registrada.";
 
-            const corpo = document.getElementById('tabela-corpo');
-            dados.itens.forEach(i => {
-                corpo.innerHTML += `<tr><td>${i.descricao}</td><td style="text-align:center">${i.qtd}</td><td style="text-align:right">R$ ${i.valor}</td></tr>`;
-            });
+        const corpo = document.getElementById('tabela-corpo');
+        dados.itens.forEach(i => {
+            corpo.innerHTML += `<tr><td>${i.descricao}</td><td style="text-align:center">${i.qtd}</td><td style="text-align:right">R$ ${i.valor}</td></tr>`;
+        });
+    }
+
+    function baixarPDF() {
+        const element = document.getElementById('conteudo-pdf');
+        
+        // Seleciona a logo para verificar se carregou
+        const img = document.getElementById('logo-img');
+        
+        const opt = {
+            margin: 0,
+            filename: `Orcamento_${dados ? dados.cliente : 'Cliente'}.pdf`,
+            image: { type: 'jpeg', quality: 1 },
+            html2canvas: { 
+                scale: 3, 
+                useCORS: true, // Crucial para imagens externas
+                logging: false,
+                allowTaint: false,
+                proxy: "https://cors-anywhere.herokuapp.com/" // Opcional: ajuda se o Blogger bloquear
+            },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        
+        // Garante que a imagem está no cache antes de gerar
+        if (img.complete) {
+            html2pdf().set(opt).from(element).save();
+        } else {
+            img.onload = () => html2pdf().set(opt).from(element).save();
         }
-
-        function baixarPDF() {
-            const element = document.getElementById('conteudo-pdf');
-            const opt = {
-                margin: 0,
-                filename: `Orcamento_${dados.cliente}.pdf`,
-                image: { type: 'jpeg', quality: 1 },
-                html2canvas: { 
-                    scale: 3, 
-                    useCORS: true, 
-                    logging: false,
-                    allowTaint: true // Permite capturar imagens de outros domínios
-                },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-            
-            // Pequeno delay para garantir que o navegador "desenhou" a logo antes de capturar
-            setTimeout(() => {
-                html2pdf().set(opt).from(element).save();
-            }, 500);
-        }
-    </script>
+    }
+</script>
 </body>
 </html>
