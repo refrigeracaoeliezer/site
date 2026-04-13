@@ -21,7 +21,11 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; min-height: 100vh; background: #0d1117; color: white; position: relative; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
 
-        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-top: 4px solid #1e40af; border-radius: 30px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); transition: all 0.5s ease; }
+        .corner-ball { position: fixed; background: rgba(30, 64, 175, 0.1); border-radius: 50%; z-index: 0; pointer-events: none; filter: blur(80px); }
+        .ball-top-right { width: 400px; height: 400px; top: -100px; right: -100px; }
+        .ball-bottom-left { width: 300px; height: 300px; bottom: -100px; left: -100px; }
+
+        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-top: 4px solid #1e40af; border-radius: 30px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); transition: all 0.5s ease; }
 
         .is-os { border-top-color: #10b981 !important; }
         .is-os .text-blue-500, .is-os .text-blue-400, .is-os .section-header i, .is-os .section-header span { color: #10b981 !important; }
@@ -29,16 +33,23 @@
 
         .dark-input { background: rgba(255, 255, 255, 0.05) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; color: white !important; transition: all 0.3s ease; cursor: pointer; }
         .dark-input:focus { border-color: #3b82f6 !important; background: rgba(255, 255, 255, 0.08) !important; outline: none; }
+        .is-os .dark-input:focus { border-color: #10b981 !important; }
 
         .service-card { background: rgba(255, 255, 255, 0.02); border-radius: 20px; padding: 15px; border: 1px solid rgba(255, 255, 255, 0.08); }
         .qty-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: #3b82f6; transition: 0.2s; border: 1px solid rgba(59, 130, 246, 0.2); }
+        .is-os .qty-btn { color: #10b981 !important; border-color: rgba(16, 185, 129, 0.2) !important; }
         
         .section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+        .section-header i { font-size: 14px; color: #3b82f6; }
         .section-header span { font-size: 11px; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.5px; }
 
         .btn-primary { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); transition: transform 0.2s; box-shadow: 0 10px 20px -5px rgba(30, 64, 175, 0.5); }
+        .btn-primary:active { transform: scale(0.95); }
 
         .btn-add-item { width: 100%; padding: 1rem; border: 2px dashed rgba(59, 130, 246, 0.5); border-radius: 1.25rem; color: white; font-weight: 700; font-size: 0.75rem; transition: all 0.3s; background: rgba(59, 130, 246, 0.05); }
+        .is-os .btn-add-item { border-color: rgba(16, 185, 129, 0.5); background: rgba(16, 185, 129, 0.05); }
+
+        #obsGeral { overflow: hidden; resize: none; min-height: 100px; transition: min-height 0.2s ease; }
 
         .switch { position: relative; display: inline-block; width: 100%; height: 44px; background: rgba(255,255,255,0.05); border-radius: 15px; padding: 4px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; }
         .switch-bg { position: absolute; top: 4px; left: 4px; width: calc(50% - 4px); height: calc(100% - 8px); background: #1e40af; border-radius: 12px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1; }
@@ -51,11 +62,14 @@
 
         #modal-mensagens { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.95); backdrop-filter: blur(10px); z-index: 100; overflow-y: auto; display: none; padding: 20px; }
         
-        .btn-copy-default { transition: background-color 0.8s ease, color 0.8s ease; }
-        .btn-copy-success { background-color: #3b82f6 !important; color: white !important; transition: background-color 0.1s ease !important; }
+        /* Centralização e efeito do Copiado */
+        .btn-copy-success { background-color: #3b82f6 !important; color: white !important; }
     </style>
 </head>
 <body class="p-4 pb-10">
+
+    <div class="corner-ball ball-top-right"></div>
+    <div class="corner-ball ball-bottom-left"></div>
 
     <div id="modal-mensagens">
         <div class="max-w-md mx-auto">
@@ -73,8 +87,8 @@
                 </div>
                 <div id="txt-proposta" style="background: #000; border-radius: 15px; padding: 15px; font-family: monospace; font-size: 13px; color: #d1d1d1; white-space: pre-wrap; word-break: break-all; margin: 15px 0; border: 1px solid rgba(255,255,255,0.05);"></div>
                 <div class="grid grid-cols-3 gap-2">
-                    <button onclick="copiarTextoProfissional('txt-proposta', this)" class="btn-copy-default py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[9px] uppercase">COPIAR</button>
-                    <button onclick="baixarPDF()" class="py-3 bg-red-600 text-white rounded-xl font-bold text-[9px] uppercase shadow-lg">GERAR PDF</button>
+                    <button onclick="copiarTextoProfissional('txt-proposta', this)" class="py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[9px] uppercase">COPIAR</button>
+                    <button onclick="abrirPaginaImpressao()" class="py-3 bg-red-600/20 text-red-500 border border-red-500/30 rounded-xl font-bold text-[9px] uppercase">IMPRIMIR A4</button>
                     <button onclick="enviarWpp('txt-proposta')" class="py-3 bg-blue-600 text-white rounded-xl font-bold text-[9px] uppercase">WHATSAPP</button>
                 </div>
             </div>
@@ -86,7 +100,7 @@
                 </div>
                 <div id="txt-sinal" style="background: #000; border-radius: 15px; padding: 15px; font-family: monospace; font-size: 13px; color: #d1d1d1; white-space: pre-wrap; word-break: break-all; margin: 15px 0; border: 1px solid rgba(255,255,255,0.05);"></div>
                 <div class="grid grid-cols-2 gap-2">
-                    <button onclick="copiarTextoProfissional('txt-sinal', this)" class="btn-copy-default py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[10px] uppercase">COPIAR</button>
+                    <button onclick="copiarTextoProfissional('txt-sinal', this)" class="py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[10px] uppercase">COPIAR</button>
                     <button onclick="enviarWpp('txt-sinal')" class="py-3 bg-orange-600 text-white rounded-xl font-bold text-[10px] uppercase">WHATSAPP</button>
                 </div>
             </div>
@@ -101,12 +115,14 @@
                 </div>
                 <div id="txt-conclusao" style="background: #000; border-radius: 15px; padding: 15px; font-family: monospace; font-size: 13px; color: #d1d1d1; white-space: pre-wrap; word-break: break-all; margin: 15px 0; border: 1px solid rgba(255,255,255,0.05);"></div>
                 <div class="grid grid-cols-2 gap-2">
-                    <button onclick="copiarTextoProfissional('txt-conclusao', this)" class="btn-copy-default py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[10px] uppercase">COPIAR</button>
+                    <button onclick="copiarTextoProfissional('txt-conclusao', this)" class="py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[10px] uppercase">COPIAR</button>
                     <button onclick="enviarWpp('txt-conclusao')" class="py-3 bg-green-600 text-white rounded-xl font-bold text-[10px] uppercase">WHATSAPP</button>
                 </div>
             </div>
         </div>
     </div>
+
+    <div id="pdf-template" style="display:none;"></div>
 
     <div class="max-w-md mx-auto relative z-10" id="main-container">
         <div class="mb-6">
@@ -131,14 +147,18 @@
         <main class="glass-card p-6 space-y-7" id="card-principal">
             <div id="sec-dados" class="space-y-4">
                 <div class="section-header">
-                    <i class="fa-solid fa-user-gear text-blue-500"></i>
+                    <i class="fa-solid fa-user-gear"></i>
                     <span id="label-dados">Dados do Orçamento</span>
                 </div>
                 <div class="space-y-3">
-                    <input type="text" id="nomePrestador" placeholder="Seu Nome / Sua Empresa" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
-                    <input type="text" id="nomeCliente" list="lista_clientes" placeholder="Selecionar Cliente" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
+                    <input type="text" id="nomePrestador" placeholder="Sua Empresa" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
+                    <div class="relative">
+                        <input type="text" id="nomeCliente" list="lista_clientes" placeholder="Selecionar Cliente" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none" onmousedown="forcarLista(this)">
+                        <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-xs"></i>
+                    </div>
                     <input type="text" id="enderecoCliente" placeholder="Endereço Completo" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
                     <input type="tel" id="telCliente" placeholder="WhatsApp" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
+                    
                     <div class="grid grid-cols-2 gap-2 pt-2">
                         <div class="space-y-1">
                             <label class="text-[9px] font-bold text-white/30 uppercase ml-2">Início</label>
@@ -149,6 +169,7 @@
                             <input type="date" id="dataPrazoFinal" class="w-full p-3 rounded-xl dark-input text-[11px] font-bold text-center" readonly>
                         </div>
                     </div>
+
                     <div class="relative pt-4">
                         <input type="number" id="inputGarantia" value="30" class="w-full p-4 rounded-2xl dark-input text-sm font-bold text-center" oninput="calcularDataFinal()">
                         <span id="label-prazo" class="absolute -top-1 left-1/2 -translate-x-1/2 bg-blue-600 text-[8px] px-2 py-0.5 rounded text-white font-black tracking-widest uppercase shadow-lg">Vencimento</span>
@@ -158,17 +179,38 @@
             </div>
 
             <div id="sec-servicos" class="space-y-4">
+                <div class="flex justify-between items-center mb-1">
+                    <div class="section-header !mb-0">
+                        <i class="fa-solid fa-screwdriver-wrench"></i>
+                        <span>Serviços Realizados</span>
+                    </div>
+                </div>
                 <div id="services-container" class="space-y-4"></div>
                 <button onclick="adicionarServico()" class="btn-add-item">
                     <i id="btn-add-icon" class="fa-solid fa-circle-plus mr-2 text-blue-500"></i> ADICIONAR ITEM
                 </button>
-                <textarea id="obsGeral" placeholder="Detalhes técnicos..." class="w-full p-4 rounded-2xl dark-input text-sm outline-none" oninput="autoExpandir(this)"></textarea>
+
+                <div class="space-y-2 pt-2">
+                    <div class="relative">
+                        <input type="text" id="busca_obs" list="lista_obs" placeholder="Pesquisar observação salva..." class="w-full p-3 rounded-xl dark-input text-xs outline-none" onmousedown="forcarLista(this)">
+                        <i class="fa-solid fa-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-[10px]"></i>
+                    </div>
+                    <div class="relative">
+                        <textarea id="obsGeral" placeholder="Escreva os detalhes técnicos aqui..." class="w-full p-4 rounded-2xl dark-input text-sm outline-none" oninput="autoExpandir(this)"></textarea>
+                    </div>
+                </div>
             </div>
 
             <div id="sec-custos" class="space-y-4">
-                <div class="bg-blue-600/5 p-5 rounded-3xl border border-blue-500/10 flex items-center gap-3">
-                    <span class="text-xl font-black text-white/20">R$</span>
-                    <input type="text" id="totalFinal" placeholder="0,00" class="w-full bg-transparent border-none text-2xl font-black text-white focus:outline-none" readonly>
+                <div class="section-header">
+                    <i class="fa-solid fa-calculator"></i>
+                    <span id="label-total">Total do Serviço</span>
+                </div>
+                <div class="bg-blue-600/5 p-5 rounded-3xl border border-blue-500/10">
+                    <div class="flex items-center gap-3">
+                        <span class="text-xl font-black text-white/20">R$</span>
+                        <input type="text" id="totalFinal" placeholder="0,00" class="w-full bg-transparent border-none text-2xl font-black text-white focus:outline-none" readonly>
+                    </div>
                 </div>
             </div>
 
@@ -188,33 +230,86 @@
         let modoOS = false;
         let saldoQuitado = false;
 
+        function forcarLista(input) {
+            input.setAttribute('autocomplete', 'off');
+            const valOriginal = input.value;
+            input.value = '';
+            setTimeout(() => { input.value = valOriginal; }, 1);
+        }
+
+        function autoExpandir(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        }
+
+        function calcularDataFinal() {
+            const dataInicioVal = document.getElementById('dataInicio').value;
+            const diasPrazo = parseInt(document.getElementById('inputGarantia').value) || 0;
+            const campoDataFinal = document.getElementById('dataPrazoFinal');
+            if (dataInicioVal) {
+                let data = new Date(dataInicioVal + 'T00:00:00');
+                data.setDate(data.getDate() + diasPrazo);
+                const y = data.getFullYear();
+                const m = String(data.getMonth() + 1).padStart(2, '0');
+                const d = String(data.getDate()).padStart(2, '0');
+                campoDataFinal.value = `${y}-${m}-${d}`;
+            }
+        }
+
         async function buscarDadosPlanilha() {
             try {
                 const resp = await fetch(URL_DATABASE);
                 cacheDados = await resp.json();
-                renderDatalists();
-                configListeners();
+                renderizarDatalists();
+                configurarListeners();
+                aplicarTextoPadrao();
                 calcularDataFinal();
-            } catch (e) { console.error(e); }
+            } catch (e) { console.error("Erro na carga:", e); }
         }
 
-        function renderDatalists() {
-            const criar = (c) => [...new Set(cacheDados.map(d => d[c]))].filter(Boolean).map(n => `<option value="${n}">`).join('');
-            document.getElementById('lista_clientes').innerHTML = criar('cli_nome');
-            document.getElementById('lista_servicos').innerHTML = criar('srv_nome');
-            document.getElementById('lista_obs').innerHTML = criar('txt_obs');
+        function renderizarDatalists() {
+            const criarOpcoes = (campo) => [...new Set(cacheDados.map(d => d[campo]))].filter(Boolean).map(n => `<option value="${n}">`).join('');
+            document.getElementById('lista_clientes').innerHTML = criarOpcoes('cli_nome');
+            document.getElementById('lista_servicos').innerHTML = criarOpcoes('srv_nome');
+            document.getElementById('lista_obs').innerHTML = criarOpcoes('txt_obs');
             if(cacheDados.length > 0) {
-                const d = cacheDados.find(x => x.emp_nome);
-                if(d) document.getElementById('nomePrestador').value = d.emp_nome;
+                const dadosEmp = cacheDados.find(d => d.emp_nome);
+                if(dadosEmp) document.getElementById('nomePrestador').value = dadosEmp.emp_nome;
             }
         }
 
-        function configListeners() {
+        function aplicarTextoPadrao() {
+            const txtArea = document.getElementById('obsGeral');
+            const listaObsValidas = cacheDados.map(d => d.txt_obs).filter(Boolean);
+            if (modoOS) {
+                txtArea.value = listaObsValidas[1] || "";
+            } else {
+                txtArea.value = listaObsValidas[0] || "";
+            }
+            autoExpandir(txtArea);
+        }
+
+        function configurarListeners() {
             document.getElementById('nomeCliente').addEventListener('input', function() {
-                const d = cacheDados.find(x => x.cli_nome === this.value);
-                if (d) {
-                    document.getElementById('enderecoCliente').value = d.cli_end || "";
-                    document.getElementById('telCliente').value = d.cli_tel || "";
+                if (!this.value) {
+                    document.getElementById('enderecoCliente').value = "";
+                    document.getElementById('telCliente').value = "";
+                    return;
+                }
+                const encontrado = cacheDados.find(x => x.cli_nome === this.value);
+                if (encontrado) {
+                    document.getElementById('enderecoCliente').value = encontrado.cli_end || "";
+                    document.getElementById('telCliente').value = encontrado.cli_tel || "";
+                }
+            });
+
+            document.getElementById('busca_obs').addEventListener('input', function() {
+                const encontrado = cacheDados.find(x => x.txt_obs === this.value);
+                if (encontrado) {
+                    const txtArea = document.getElementById('obsGeral');
+                    txtArea.value = encontrado.txt_obs;
+                    autoExpandir(txtArea);
+                    this.value = "";
                 }
             });
         }
@@ -225,20 +320,33 @@
             div.className = "service-card flex flex-col gap-3";
             div.innerHTML = `
                 <div class="flex items-center gap-2">
-                    <input type="text" list="lista_servicos" placeholder="Serviço" class="w-full dark-input p-3 rounded-xl text-sm service-name">
-                    <button onclick="this.closest('.service-card').remove(); atualizarSoma();" class="text-white/10 hover:text-red-500"><i class="fa-solid fa-trash-can"></i></button>
+                    <div class="relative flex-grow">
+                        <input type="text" list="lista_servicos" placeholder="Selecionar Serviço" class="w-full dark-input p-3 rounded-xl text-sm outline-none service-name" onmousedown="forcarLista(this)">
+                        <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-[10px]"></i>
+                    </div>
+                    <button onclick="this.closest('.service-card').remove(); atualizarSoma();" class="text-white/10 hover:text-red-500 p-2"><i class="fa-solid fa-trash-can"></i></button>
                 </div>
                 <div class="flex items-center gap-2">
-                    <div class="flex-grow relative"><span class="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 font-bold text-xs">R$</span><input type="text" placeholder="0,00" class="w-full dark-input pl-8 p-2 rounded-xl text-sm service-price" onkeyup="formatarMoeda(this)"></div>
-                    <div class="flex items-center bg-white/5 rounded-xl p-1 gap-3"><button onclick="alterarQtde(this, -1)" class="qty-btn">-</button><span class="qty-val font-bold text-sm">1</span><button onclick="alterarQtde(this, 1)" class="qty-btn">+</button></div>
-                </div>`;
+                    <div class="flex-grow relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 font-bold text-xs">R$</span>
+                        <input type="text" placeholder="0,00" class="w-full dark-input pl-9 p-3 rounded-xl text-sm service-price" onkeyup="formatarMoeda(this)">
+                    </div>
+                    <div class="flex items-center bg-white/5 border border-white/5 rounded-xl p-1 gap-3">
+                        <button onclick="alterarQtde(this, -1)" class="qty-btn"><i class="fa-solid fa-minus text-[10px]"></i></button>
+                        <span class="font-bold text-sm service-qty w-4 text-center">1</span>
+                        <button onclick="alterarQtde(this, 1)" class="qty-btn"><i class="fa-solid fa-plus text-[10px]"></i></button>
+                    </div>
+                </div>
+            `;
             container.appendChild(div);
-            div.querySelector('.service-name').addEventListener('input', function() {
+
+            const inputSrv = div.querySelector('.service-name');
+            inputSrv.addEventListener('input', function() {
                 const item = cacheDados.find(x => x.srv_nome === this.value);
                 if (item) {
-                    const pInput = div.querySelector('.service-price');
-                    let val = item.srv_valor.toString().replace("R$", "").replace(".", "").replace(",", ".").trim();
-                    pInput.value = (parseFloat(val) || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                    const precoInput = div.querySelector('.service-price');
+                    let valor = item.srv_valor.toString().replace("R$", "").replace(".", "").replace(",", ".").trim();
+                    precoInput.value = (parseFloat(valor) || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2});
                     atualizarSoma();
                 }
             });
@@ -255,15 +363,16 @@
         function atualizarSoma() {
             let total = 0;
             document.querySelectorAll('.service-card').forEach(card => {
-                let preco = parseFloat(card.querySelector('.service-price').value.replace(/\./g, "").replace(",", ".")) || 0;
-                let qtde = parseInt(card.querySelector('.qty-val').innerText) || 1;
+                let precoStr = card.querySelector('.service-price').value.replace(/\./g, "").replace(",", ".");
+                let preco = parseFloat(precoStr) || 0;
+                let qtde = parseInt(card.querySelector('.service-qty').innerText) || 1;
                 total += (preco * qtde);
             });
             document.getElementById('totalFinal').value = total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
         }
 
         function alterarQtde(btn, delta) {
-            const span = btn.parentElement.querySelector('.qty-val');
+            const span = btn.parentElement.querySelector('.service-qty');
             let val = parseInt(span.innerText) + delta;
             if (val < 1) val = 1;
             span.innerText = val;
@@ -272,156 +381,38 @@
 
         function alternarModo() {
             modoOS = !modoOS;
-            const btn = document.getElementById('btn-acao');
-            const lbl = document.getElementById('label-prazo');
+            const card = document.getElementById('card-principal');
+            const thumb = document.getElementById('toggleMode');
+            const subTitle = document.getElementById('sub-title');
+            const btnAcao = document.getElementById('btn-acao');
+            const lblDados = document.getElementById('label-dados');
+            const lblPrazo = document.getElementById('label-prazo');
+            const btnAddIcon = document.getElementById('btn-add-icon');
+
+            aplicarTextoPadrao();
+
             if (modoOS) {
-                btn.innerHTML = 'Finalizar O.S <i class="fa-solid fa-check"></i>';
-                lbl.innerText = "Garantia";
+                thumb.classList.add('mode-os'); card.classList.add('is-os');
+                subTitle.innerText = "Ordem de Serviço (OS)";
+                btnAcao.innerHTML = 'Finalizar O.S <i class="fa-solid fa-check"></i>';
+                lblDados.innerText = "Dados da Ordem de Serviço";
+                lblPrazo.innerText = "Garantia";
+                lblPrazo.classList.replace('bg-blue-600', 'bg-green-600');
+                document.getElementById('lbl-os').classList.add('active-label');
+                document.getElementById('lbl-orc').classList.remove('active-label');
+                btnAddIcon.className = "fa-solid fa-circle-plus mr-2 text-green-500";
             } else {
-                btn.innerHTML = 'Gerar Orçamento <i class="fa-solid fa-arrow-right"></i>';
-                lbl.innerText = "Vencimento";
+                thumb.classList.remove('mode-os'); card.classList.remove('is-os');
+                subTitle.innerText = "Sistema de Orçamento";
+                btnAcao.innerHTML = 'Gerar Orçamento <i class="fa-solid fa-arrow-right"></i>';
+                lblDados.innerText = "Dados do Orçamento";
+                lblPrazo.innerText = "Vencimento";
+                lblPrazo.classList.replace('bg-green-600', 'bg-blue-600');
+                document.getElementById('lbl-orc').classList.add('active-label');
+                document.getElementById('lbl-os').classList.remove('active-label');
+                btnAddIcon.className = "fa-solid fa-circle-plus mr-2 text-blue-500";
             }
-        }
-
-        function alternarQuitacao() {
-            saldoQuitado = !saldoQuitado;
-            const btn = document.getElementById('btn-quitar');
-            btn.innerText = saldoQuitado ? "PAGAMENTO CONFIRMADO" : "QUITAR SALDO";
-            btn.style.background = saldoQuitado ? "#059669" : "";
-            gerarDocumento();
-        }
-
-        function gerarDocumento() {
-            const prest = document.getElementById('nomePrestador').value || "ELIEZER";
-            const cli = document.getElementById('nomeCliente').value || "Cliente";
-            const total = document.getElementById('totalFinal').value;
-            const obs = document.getElementById('obsGeral').value;
-            const dVal = document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/');
-            const pixD = cacheDados.find(d => d.emp_pix);
-            const chave = pixD ? pixD.emp_pix : "[NÃO CADASTRADO]";
-
-            let srvTxt = "";
-            document.querySelectorAll('.service-card').forEach(c => {
-                const n = c.querySelector('.service-name').value;
-                const p = c.querySelector('.service-price').value;
-                const q = c.querySelector('.qty-val').innerText;
-                if(n) srvTxt += `• ${q}x ${n} - R$ ${p}\n`;
-            });
-
-            const tNum = parseFloat(total.replace(/\./g, "").replace(",", ".")) || 0;
-            const sinalV = (tNum * 0.3).toLocaleString('pt-BR', {minimumFractionDigits: 2});
-            const saldoTxt = saldoQuitado ? "*Pagamento Confirmado:* Total Pago" : `*Saldo Restante:* R$ ${(tNum * 0.7).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-
-            document.getElementById('txt-proposta').innerText = `*ORÇAMENTO - ${prest.toUpperCase()}*\n\nOlá ${cli}!\n\n*SERVIÇOS:*\n${srvTxt}\n*OBS:*\n${obs}\n\n*TOTAL:* R$ ${total}\n*Previsão:* ${dVal}`;
-            document.getElementById('txt-sinal').innerText = `Olá ${cli}! Para agendarmos, sinal de 30% (R$ ${sVal}).\n\nChave PIX: ${chave}`;
-            document.getElementById('txt-conclusao').innerText = `*Serviço Concluído!* ✅\n\n${cli}, equipamento pronto.\n\n${fraseSaldo}\n\nObrigado!`;
-
-            document.getElementById('modal-mensagens').style.display = 'block';
-        }
-
-        function fecharModal() { document.getElementById('modal-mensagens').style.display = 'none'; }
-        function enviarWpp(id) { window.open(`https://api.whatsapp.com/send?phone=55${document.getElementById('telCliente').value.replace(/\D/g, '')}&text=${encodeURIComponent(document.getElementById(id).innerText)}`, '_blank'); }
-
-        function copiarTextoProfissional(id, el) {
-            const t = document.getElementById(id).innerText;
-            const original = el.innerHTML;
-            navigator.clipboard.writeText(t).then(() => {
-                el.classList.add('btn-copy-success');
-                el.innerHTML = '<i class="fa-solid fa-check"></i> COPIADO!';
-                setTimeout(() => {
-                    el.classList.remove('btn-copy-success');
-                    el.innerHTML = original;
-                }, 2000);
-            });
-        }
-
-        async function baixarPDF() {
-            const prestador = document.getElementById('nomePrestador').value || "REFRIGERAÇÃO ELIEZER";
-            const cliente = document.getElementById('nomeCliente').value || "Cliente";
-            const total = document.getElementById('totalFinal').value;
-            const obs = document.getElementById('obsGeral').value;
-            const enderecoCli = document.getElementById('enderecoCliente').value || "Não informado";
-            const telCli = document.getElementById('telCliente').value || "Não informado";
-            const dataEmissao = new Date().toLocaleDateString('pt-BR');
-            const dataValidade = document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/');
-
-            // ✅ BUSCA LOGO (Linha 11 da planilha = Índice 10)
-            const linkLogo = (cacheDados[10] && cacheDados[10].emp_nome) ? cacheDados[10].emp_nome : ""; 
-
-            let servicosHTML = "";
-            document.querySelectorAll('.service-card').forEach(card => {
-                const nome = card.querySelector('.service-name').value;
-                const preco = card.querySelector('.service-price').value;
-                const qtde = card.querySelector('.qty-val').innerText;
-                if(nome) {
-                    servicosHTML += `
-                    <tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 12px 5px; text-align: left; width: 70%;">${nome.toUpperCase()}</td>
-                        <td style="padding: 12px 5px; text-align: center; width: 10%;">${qtde}</td>
-                        <td style="padding: 12px 5px; text-align: right; width: 20%; font-weight: bold;">R$ ${preco}</td>
-                    </tr>`;
-                }
-            });
-
-            // ✅ TEMPLATE ISOLADO COM ESTILOS FIXOS
-            const template = `
-            <html>
-            <head>
-                <style>
-                    body { font-family: Arial, sans-serif; color: #333; margin: 0; padding: 20px; background: white; }
-                    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #1e40af; padding-bottom: 15px; margin-bottom: 20px; }
-                    .logo img { max-height: 75px; max-width: 250px; object-fit: contain; }
-                    .client-box { background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #eee; margin-bottom: 20px; font-size: 13px; }
-                    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-                    th { text-align: left; padding: 10px 5px; font-size: 11px; text-transform: uppercase; color: #1e40af; border-bottom: 2px solid #1e40af; }
-                    .total-box { text-align: right; margin-top: 10px; }
-                    .thanks { margin-top: 40px; text-align: center; font-style: italic; color: #1e40af; font-weight: bold; font-size: 14px; }
-                </style>
-            </head>
-            <body>
-                <div class="header">
-                    <div class="logo">
-                        ${linkLogo ? `<img src="${linkLogo}" crossorigin="anonymous">` : `<h1 style="color:#1e40af; margin:0;">${prestador.toUpperCase()}</h1>`}
-                    </div>
-                    <div style="text-align: right;">
-                        <h2 style="color:#1e40af; margin:0; font-size: 18px;">${modoOS ? 'ORDEM DE SERVIÇO' : 'ORÇAMENTO TÉCNICO'}</h2>
-                        <p style="font-size: 12px; margin-top: 5px;">Data: ${dataEmissao}</p>
-                        <p style="font-size: 12px; color: red; font-weight: bold;">Validade: ${dataValidade}</p>
-                    </div>
-                </div>
-                <div class="client-box">
-                    <p><strong>CLIENTE:</strong> ${cliente}</p>
-                    <p><strong>ENDEREÇO:</strong> ${enderecoCli}</p>
-                    <p><strong>WHATSAPP:</strong> ${telCli}</p>
-                </div>
-                <table>
-                    <thead><tr><th>Descrição</th><th style="text-align:center;">Qtd</th><th style="text-align:right;">Subtotal</th></tr></thead>
-                    <tbody>${servicosHTML}</tbody>
-                </table>
-                <div style="display: flex; justify-content: space-between;">
-                    <div style="flex:1; border:1px solid #eee; padding:10px; border-radius:8px; font-size: 12px; margin-right: 20px;">
-                        <strong>OBSERVAÇÕES:</strong><br>${obs ? obs.replace(/\n/g, '<br>') : 'Nenhuma observação informada.'}
-                    </div>
-                    <div class="total-box">
-                        <p style="font-size: 14px; text-transform: uppercase; margin: 0;">Total do Investimento</p>
-                        <h2 style="font-size: 28px; color: #1e40af; margin: 0;">R$ ${total}</h2>
-                    </div>
-                </div>
-                <p class="thanks">"Agradecemos a preferência e a confiança em nossos serviços!"</p>
-                <div style="margin-top: 60px; text-align: center; border-top: 1px solid #333; width: 250px; margin-left: auto; margin-right: auto; padding-top: 5px; font-size: 12px; font-weight: bold;">
-                    ${prestador.toUpperCase()}<br>Responsável Técnico
-                </div>
-            </body>
-            </html>`;
-
-            // ✅ GERAÇÃO DIRETA DO HTML PURO
-            html2pdf().from(template).set({
-                margin: 0,
-                filename: `${modoOS ? 'OS' : 'Orcamento'}_${cliente}.pdf`,
-                image: { type: 'jpeg', quality: 1 },
-                html2canvas: { scale: 3, useCORS: true, backgroundColor: '#ffffff' },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            }).save();
+            calcularDataFinal();
         }
 
         window.onload = () => {
@@ -431,13 +422,104 @@
             adicionarServico();
         };
 
-        function setInitialObs() {
-            const txtArea = document.getElementById('obsGeral');
-            const lista = cacheDados.map(d => d.txt_obs).filter(Boolean);
-            txtArea.value = modoOS ? (lista[1] || "") : (lista[0] || "");
-            autoExpandir(txtArea);
+        function alternarQuitacao() {
+            saldoQuitado = !saldoQuitado;
+            const btn = document.getElementById('btn-quitar');
+            if(saldoQuitado) {
+                btn.innerText = "PAGAMENTO CONFIRMADO";
+                btn.classList.replace('bg-green-500/10', 'bg-green-600');
+                btn.classList.replace('text-green-500', 'text-white');
+            } else {
+                btn.innerText = "QUITAR SALDO";
+                btn.classList.replace('bg-green-600', 'bg-green-500/10');
+                btn.classList.replace('text-white', 'text-green-500');
+            }
+            gerarDocumento();
         }
-        function autoExpandir(t) { t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; }
+
+        // SALVA OS DADOS PARA A PÁGINA DE IMPRESSÃO
+        function abrirPaginaImpressao() {
+            const dadosOrcamento = {
+                tipo: modoOS ? "ORDEM DE SERVIÇO" : "ORÇAMENTO TÉCNICO",
+                cliente: document.getElementById('nomeCliente').value,
+                endereco: document.getElementById('enderecoCliente').value,
+                whatsapp: document.getElementById('telCliente').value,
+                emissao: document.getElementById('dataInicio').value.split('-').reverse().join('/'),
+                validade: document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/'),
+                total: document.getElementById('totalFinal').value,
+                itens: []
+            };
+
+            document.querySelectorAll('.service-card').forEach(card => {
+                dadosOrcamento.itens.push({
+                    descricao: card.querySelector('.service-name').value,
+                    qtd: card.querySelector('.service-qty').innerText,
+                    valor: card.querySelector('.service-price').value
+                });
+            });
+
+            localStorage.setItem('dados_impressao', JSON.stringify(dadosOrcamento));
+            // MUDE O NOME DO ARQUIVO ABAIXO SE NECESSÁRIO
+            window.open('impressao.html', '_blank');
+        }
+
+        function gerarDocumento() {
+            const prestador = document.getElementById('nomePrestador').value || "ELIEZER";
+            const cliente = document.getElementById('nomeCliente').value || "Cliente";
+            const total = document.getElementById('totalFinal').value;
+            const obs = document.getElementById('obsGeral').value;
+            const dias = document.getElementById('inputGarantia').value;
+            const dataFim = document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/');
+            
+            const dadosEmpresa = cacheDados.find(d => d.emp_pix);
+            const chavePix = dadosEmpresa ? dadosEmpresa.emp_pix : "[CHAVE NÃO ENCONTRADA]";
+
+            let servicosTexto = "";
+            document.querySelectorAll('.service-card').forEach(card => {
+                const nome = card.querySelector('.service-name').value;
+                const preco = card.querySelector('.service-price').value;
+                const qtde = card.querySelector('.service-qty').innerText;
+                if(nome) servicosTexto += `• ${qtde}x ${nome} - R$ ${preco}\n`;
+            });
+
+            const totalNum = parseFloat(total.replace(/\./g, "").replace(",", ".")) || 0;
+            const sinalValor = (totalNum * 0.3).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            const saldoValor = (totalNum * 0.7).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+
+            const fraseSaldo = saldoQuitado ? "*Pagamento Confirmado:* R$ 0,00 (Total Pago)" : `*Saldo Restante:* R$ ${saldoValor}`;
+
+            document.getElementById('txt-proposta').innerText = `*ORÇAMENTO TÉCNICO - ${prestador.toUpperCase()}*\n\nOlá ${cliente}! Segue o orçamento:\n\n*SERVIÇOS:*\n${servicosTexto}\n*OBS:*\n${obs}\n\n*INVESTIMENTO TOTAL:* R$ ${total}\n(Material + Mão de Obra incluso)\n\n*${modoOS ? 'Garantia' : 'Vencimento'}:* ${dias} dias\n*Data Prevista:* ${dataFim}\n\nFico no aguardo.`;
+            document.getElementById('txt-sinal').innerText = `Olá ${cliente}! 🤝\n\nPara agendarmos e comprarmos material, precisamos de um sinal.\n\n*Sinal (30%): R$ ${sinalValor}*\n\nChave PIX: ${chavePix}\n\nPor favor, envie o comprovante. Obrigado!`;
+            document.getElementById('txt-conclusao').innerText = `*Serviço Concluído!* ✅\n\n${cliente}, equipamento pronto.\n\n${fraseSaldo}\n\nLembrando que você tem *${dias} dias* de garantia.\n\nObrigado pela preferência!\n${prestador}`;
+
+            document.getElementById('modal-mensagens').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function fecharModal() {
+            document.getElementById('modal-mensagens').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function enviarWpp(id) {
+            const texto = document.getElementById(id).innerText;
+            const tel = document.getElementById('telCliente').value.replace(/\D/g, '');
+            if(!tel) { alert("Informe o WhatsApp!"); return; }
+            window.open(`https://api.whatsapp.com/send?phone=55${tel}&text=${encodeURIComponent(texto)}`, '_blank');
+        }
+
+        function copiarTextoProfissional(id, elemento) {
+            const texto = document.getElementById(id).innerText;
+            const originalText = elemento.innerText;
+            navigator.clipboard.writeText(texto).then(() => {
+                elemento.innerText = "COPIADO!";
+                elemento.classList.add('btn-copy-success');
+                setTimeout(() => {
+                    elemento.innerText = originalText;
+                    elemento.classList.remove('btn-copy-success');
+                }, 2000);
+            });
+        }
     </script>
 </body>
 </html>
