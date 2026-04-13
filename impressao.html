@@ -11,11 +11,13 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
         body { background-color: #525659; display: flex; justify-content: center; padding: 20px 0; }
 
+        /* Botão inicia escondido ou desabilitado até carregar tudo */
         .btn-flutuante {
             position: fixed; bottom: 30px; right: 30px; z-index: 10000;
             background-color: #e74c3c; color: white; width: 65px; height: 65px;
             border-radius: 50%; border: none; box-shadow: 0 5px 20px rgba(0,0,0,0.5);
-            cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 28px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; 
+            font-size: 28px; opacity: 0.5; pointer-events: none; transition: 0.3s;
         }
 
         .paper-canvas {
@@ -29,20 +31,11 @@
             border-bottom: 3px solid #1a4388; padding-bottom: 10px; margin-bottom: 20px; width: 100%;
         }
 
-        /* AJUSTE FIXO PARA A LOGO */
-        .logo-area { width: 250px; }
         .logo-container {
-            width: 250px;
-            height: 100px;
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
+            width: 250px; height: 100px;
+            display: flex; align-items: center; justify-content: flex-start;
         }
-        .logo-img { 
-            max-width: 100%; 
-            max-height: 100%; 
-            object-fit: contain;
-        }
+        .logo-img { max-width: 100%; max-height: 100%; object-fit: contain; }
         
         .empresa-info { font-size: 12px; color: #333; line-height: 1.4; margin-top: 5px; }
         .doc-info { text-align: right; }
@@ -64,7 +57,7 @@
         .obs-section { 
             background: #fffbe6; padding: 15px; border: 1px solid #ffe58f;
             border-radius: 5px; font-size: 13px; margin-bottom: 20px;
-            word-wrap: break-word; overflow-wrap: break-word; word-break: break-all;
+            word-wrap: break-word; overflow-wrap: break-word;
         }
 
         footer { text-align: center; font-size: 11px; color: #777; border-top: 1px solid #eee; padding-top: 15px; }
@@ -74,7 +67,7 @@
 </head>
 <body>
 
-    <button class="btn-flutuante no-print" onclick="baixarPDF()">
+    <button id="btn-pdf" class="btn-flutuante no-print" onclick="baixarPDF()">
         <i class="fa-solid fa-file-pdf"></i>
     </button>
 
@@ -82,7 +75,7 @@
         <header>
             <div class="logo-area"> 
                 <div class="logo-container">
-                    <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgdGGsULMI69OabXBfFU3b8mTYfIWlJoqpwgc_q1UvSITQPj_VQYaW_1cLECh4rF7j5RfhJLsPgUXdvNv-ya494kAfeyZRbdTCn-VFesltpIkZp8Xid-MZwLKBLyC89MTSXf76nrCrBHncl86cYzjm1XuG34hvNrNVkZS8Gkq3FJEZHEb99HL26I52RUqc/w512-h237/TOPO%20POSTO%20RIO%20BRANCO.png" class="logo-img">
+                    <img id="logo-img" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgdGGsULMI69OabXBfFU3b8mTYfIWlJoqpwgc_q1UvSITQPj_VQYaW_1cLECh4rF7j5RfhJLsPgUXdvNv-ya494kAfeyZRbdTCn-VFesltpIkZp8Xid-MZwLKBLyC89MTSXf76nrCrBHncl86cYzjm1XuG34hvNrNVkZS8Gkq3FJEZHEb99HL26I52RUqc/w512-h237/TOPO%20POSTO%20RIO%20BRANCO.png" class="logo-img" crossorigin="anonymous">
                 </div>
                 <div class="empresa-info">
                     <strong>REFRIGERAÇÃO ELIEZER</strong><br>
@@ -155,24 +148,49 @@
             });
         }
 
+        // --- A MÁGICA ACONTECE AQUI ---
+        const logoImg = document.getElementById('logo-img');
+        const btnPdf = document.getElementById('btn-pdf');
+
+        // Quando a imagem carregar totalmente, transformamos ela em Base64
+        logoImg.onload = function() {
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = logoImg.naturalWidth;
+                canvas.height = logoImg.naturalHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(logoImg, 0, 0);
+                
+                // Substitui o link externo pelos dados da imagem
+                logoImg.src = canvas.toDataURL('image/png');
+                
+                // Agora que a imagem é "interna", liberamos o botão
+                btnPdf.style.opacity = "1";
+                btnPdf.style.pointerEvents = "auto";
+                console.log("Sistema pronto para emissão.");
+            } catch (e) {
+                console.error("Erro no pré-carregamento da logo:", e);
+                // Mesmo com erro, liberamos o botão para não travar o usuário
+                btnPdf.style.opacity = "1";
+                btnPdf.style.pointerEvents = "auto";
+            }
+        };
+
         function baixarPDF() {
             const element = document.getElementById('conteudo-pdf');
             const opt = {
                 margin: 0,
                 filename: `Orcamento_${dados ? dados.cliente : 'Doc'}.pdf`,
-                image: { type: 'jpeg', quality: 1 },
+                image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { 
-                    scale: 3, 
-                    useCORS: true, // Mantemos true aqui para o html2pdf tentar processar
-                    logging: false
+                    scale: 2, 
+                    useCORS: true, 
+                    letterRendering: true 
                 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             
-            // Delay para garantir renderização
-            setTimeout(() => {
-                html2pdf().set(opt).from(element).save();
-            }, 2000);
+            html2pdf().set(opt).from(element).save();
         }
     </script>
 </body>
