@@ -254,10 +254,10 @@
         }
 
         function renderDatalists() {
-            const criarOpcoes = (campo) => [...new Set(cacheDados.map(d => d[campo]))].filter(Boolean).map(n => `<option value="${n}">`).join('');
-            document.getElementById('lista_clientes').innerHTML = criarOpcoes('cli_nome');
-            document.getElementById('lista_servicos').innerHTML = criarOpcoes('srv_nome');
-            document.getElementById('lista_obs').innerHTML = criarOpcoes('txt_obs');
+            const criar = (c) => [...new Set(cacheDados.map(d => d[c]))].filter(Boolean).map(n => `<option value="${n}">`).join('');
+            document.getElementById('lista_clientes').innerHTML = criar('cli_nome');
+            document.getElementById('lista_servicos').innerHTML = criar('srv_nome');
+            document.getElementById('lista_obs').innerHTML = criar('txt_obs');
             if(cacheDados.length > 0) {
                 const d = cacheDados.find(x => x.emp_nome);
                 if(d) document.getElementById('nomePrestador').value = d.emp_nome;
@@ -291,15 +291,8 @@
                     <button onclick="this.closest('.service-card').remove(); atualizarSoma();" class="text-white/10 hover:text-red-500"><i class="fa-solid fa-trash-can"></i></button>
                 </div>
                 <div class="flex items-center gap-2">
-                    <div class="flex-grow relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 font-bold text-xs">R$</span>
-                        <input type="text" placeholder="0,00" class="w-full dark-input pl-8 p-2 rounded-xl text-sm service-price" onkeyup="formatarMoeda(this)">
-                    </div>
-                    <div class="flex items-center bg-white/5 rounded-xl p-1 gap-3">
-                        <button onclick="alterarQtde(this, -1)" class="qty-btn">-</button>
-                        <span class="qty-val font-bold text-sm">1</span>
-                        <button onclick="alterarQtde(this, 1)" class="qty-btn">+</button>
-                    </div>
+                    <div class="flex-grow relative"><span class="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 font-bold text-xs">R$</span><input type="text" placeholder="0,00" class="w-full dark-input pl-8 p-2 rounded-xl text-sm service-price" onkeyup="formatarMoeda(this)"></div>
+                    <div class="flex items-center bg-white/5 rounded-xl p-1 gap-3"><button onclick="alterarQtde(this, -1)" class="qty-btn">-</button><span class="qty-val font-bold text-sm">1</span><button onclick="alterarQtde(this, 1)" class="qty-btn">+</button></div>
                 </div>`;
             container.appendChild(div);
             div.querySelector('.service-name').addEventListener('input', function() {
@@ -378,12 +371,11 @@
                 if(n) srvTxt += `• ${q}x ${n} - R$ ${p}\n`;
             });
 
-            const tNum = parseFloat(total.replace(/\./g, "").replace(",", ".")) || 0;
-            const sinalV = (tNum * 0.3).toLocaleString('pt-BR', {minimumFractionDigits: 2});
-            const fraseSaldo = saldoQuitado ? "*Pagamento Confirmado:* Total Pago" : `*Saldo Restante:* R$ ${(tNum * 0.7).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            const sinalV = (parseFloat(total.replace(/\./g, "").replace(",", ".")) * 0.3).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            const fraseSaldo = saldoQuitado ? "*Pagamento Confirmado:* Total Pago" : `*Saldo Restante:* R$ ${(parseFloat(total.replace(/\./g, "").replace(",", ".")) * 0.7).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
 
             document.getElementById('txt-proposta').innerText = `*ORÇAMENTO - ${prest.toUpperCase()}*\n\nOlá ${cli}!\n\n*SERVIÇOS:*\n${srvTxt}\n*OBS:*\n${obs}\n\n*TOTAL:* R$ ${total}\n*Previsão:* ${dVal}`;
-            document.getElementById('txt-sinal').innerText = `Olá ${cli}! Para agendarmos, sinal de 30% (R$ ${sVal}).\n\nChave PIX: ${chave}`;
+            document.getElementById('txt-sinal').innerText = `Olá ${cli}! Para agendarmos, sinal de 30% (R$ ${sinalV}).\n\nChave PIX: ${chave}`;
             document.getElementById('txt-conclusao').innerText = `*Serviço Concluído!* ✅\n\n${cli}, equipamento pronto.\n\n${fraseSaldo}\n\nObrigado!`;
 
             document.getElementById('modal-mensagens').style.display = 'block';
@@ -406,107 +398,71 @@
         }
 
         async function baixarPDF() {
-            const prestador = document.getElementById('nomePrestador').value || "REFRIGERAÇÃO ELIEZER";
-            const cliente = document.getElementById('nomeCliente').value || "Cliente";
+            const prest = document.getElementById('nomePrestador').value || "REFRIGERAÇÃO ELIEZER";
+            const cli = document.getElementById('nomeCliente').value || "Cliente";
             const total = document.getElementById('totalFinal').value;
             const obs = document.getElementById('obsGeral').value;
-            const enderecoCli = document.getElementById('enderecoCliente').value || "Não informado";
-            const telCli = document.getElementById('telCliente').value || "Não informado";
-            const dataEmissao = new Date().toLocaleDateString('pt-BR');
-            const dataValidade = document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/');
-
-            // Correção da busca da logo: Linha 11 da planilha é o índice 10
+            const end = document.getElementById('enderecoCliente').value || "N/A";
+            const tel = document.getElementById('telCliente').value || "N/A";
+            const dVal = document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/');
+            
+            // Link da logo na linha 11 (índice 10)
             const linkLogo = (cacheDados[10] && cacheDados[10].emp_nome) ? cacheDados[10].emp_nome : ""; 
 
-            let servicosHTML = "";
-            document.querySelectorAll('.service-card').forEach(card => {
-                const nome = card.querySelector('.service-name').value;
-                const preco = card.querySelector('.service-price').value;
-                const qtde = card.querySelector('.qty-val')?.innerText || "1";
-                if(nome) {
-                    servicosHTML += `
-                    <tr style="border-bottom: 1px solid #f1f5f9;">
-                        <td style="padding: 12px 5px; text-align: left; color: #334155;">${nome.toUpperCase()}</td>
-                        <td style="padding: 12px 5px; text-align: center; color: #334155;">${qtde}</td>
-                        <td style="padding: 12px 5px; text-align: right; font-weight: 600; color: #334155;">R$ ${preco}</td>
-                    </tr>`;
-                }
+            let srvH = "";
+            document.querySelectorAll('.service-card').forEach(c => {
+                const n = c.querySelector('.service-name').value;
+                const p = c.querySelector('.service-price').value;
+                const q = c.querySelector('.qty-val').innerText;
+                if(n) srvH += `<tr><td style="padding:10px 0; border-bottom:1px solid #eee;">${n.toUpperCase()}</td><td style="text-align:center; border-bottom:1px solid #eee;">${q}</td><td style="text-align:right; border-bottom:1px solid #eee; font-weight: 600;">R$ ${p}</td></tr>`;
             });
 
             const template = `
-            <html>
-            <head>
-                <style>
-                    body { font-family: 'Helvetica', Arial, sans-serif; color: #334155; margin: 0; padding: 40px; background: white; }
-                    .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #1e40af; padding-bottom: 15px; margin-bottom: 25px; }
-                    .logo-area img { max-height: 90px; max-width: 280px; object-fit: contain; }
-                    .doc-info { text-align: right; }
-                    .doc-title { font-size: 20px; font-weight: 900; color: #1e40af; margin: 0; }
-                    .client-box { background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #e2e8f0; font-size: 13px; line-height: 1.6; }
-                    table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-                    th { border-bottom: 2px solid #0f172a; text-align: left; padding: 10px 5px; font-size: 11px; text-transform: uppercase; color: #0f172a; font-weight: 800; }
-                    .footer-grid { display: flex; justify-content: space-between; align-items: flex-start; gap: 30px; }
-                    .obs-section { flex: 1; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; font-size: 12px; min-height: 80px; }
-                    .total-section { width: 220px; text-align: right; }
-                    .thanks { margin-top: 50px; text-align: center; font-style: italic; font-size: 14px; color: #1e40af; font-weight: 700; }
-                    .signature { margin-top: 60px; text-align: center; border-top: 1px solid #94a3b8; width: 250px; margin-left: auto; margin-right: auto; padding-top: 10px; font-size: 12px; font-weight: bold; }
-                </style>
-            </head>
-            <body>
+            <html><head><style>
+                body { font-family: Arial; color: #333; margin: 0; padding: 40px; background: white; }
+                .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #1e40af; padding-bottom: 20px; margin-bottom: 30px; }
+                .client-box { background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #eee; margin-bottom: 30px; font-size: 13px; }
+                table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+                th { text-align: left; padding: 10px 0; font-size: 12px; text-transform: uppercase; color: #1e40af; border-bottom: 2px solid #1e40af; }
+                .footer { display: flex; justify-content: space-between; margin-top: 20px; }
+                .total { text-align: right; min-width: 200px; }
+                .thanks { margin-top: 50px; text-align: center; font-style: italic; color: #1e40af; font-weight: bold; }
+            </style></head><body>
                 <div class="header">
-                    <div class="logo-area">
-                        ${linkLogo ? `<img src="${linkLogo}" crossorigin="anonymous">` : `<h1 style="color:#1e40af; margin:0;">${prestador.toUpperCase()}</h1>`}
+                    <div style="max-width:300px;">
+                        ${linkLogo ? `<img src="${linkLogo}" style="max-height:80px;" crossorigin="anonymous">` : `<h1 style="color:#1e40af; margin:0;">${prest.toUpperCase()}</h1>`}
                     </div>
-                    <div class="doc-info">
-                        <h2 class="doc-title">${modoOS ? 'ORDEM DE SERVIÇO' : 'ORÇAMENTO TÉCNICO'}</h2>
-                        <p style="margin: 5px 0 0 0; font-size: 12px;"><b>Emissão:</b> ${dataEmissao}</p>
-                        <p style="margin: 2px 0 0 0; font-size: 12px; color: #ef4444;"><b>Válido até:</b> ${dataValidade}</p>
+                    <div style="text-align: right;">
+                        <h2 style="color:#1e40af; margin:0;">${modoOS ? 'ORDEM DE SERVIÇO' : 'ORÇAMENTO'}</h2>
+                        <p style="font-size:12px; margin:5px 0;">Emissão: ${new Date().toLocaleDateString('pt-BR')}</p>
+                        <p style="font-size:12px; color:red; margin:0;">Vencimento: ${dVal}</p>
                     </div>
                 </div>
-
                 <div class="client-box">
-                    <p style="margin:0;"><b>CLIENTE:</b> ${cliente}</p>
-                    <p style="margin:4px 0;"><b>ENDEREÇO:</b> ${enderecoCli}</p>
-                    <p style="margin:0;"><b>WHATSAPP:</b> ${telCli}</p>
+                    <p><strong>CLIENTE:</strong> ${cli}</p>
+                    <p><strong>ENDEREÇO:</strong> ${end}</p>
+                    <p><strong>WHATSAPP:</strong> ${tel}</p>
                 </div>
-
                 <table>
-                    <thead>
-                        <tr>
-                            <th style="width: 65%;">DESCRIÇÃO DOS SERVIÇOS</th>
-                            <th style="width: 15%; text-align: center;">QTD</th>
-                            <th style="width: 20%; text-align: right;">SUBTOTAL</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${servicosHTML}
-                    </tbody>
+                    <thead><tr><th>Descrição</th><th style="text-align:center;">Qtd</th><th style="text-align:right;">Subtotal</th></tr></thead>
+                    <tbody>${srvH}</tbody>
                 </table>
-
-                <div class="footer-grid">
-                    <div class="obs-section">
-                        <b style="color: #1e40af;">OBSERVAÇÕES:</b><br>
-                        ${obs ? obs.replace(/\n/g, '<br>') : 'Nenhuma observação informada.'}
+                <div class="footer">
+                    <div style="flex:1; border:1px solid #eee; padding:15px; border-radius:8px; font-size:12px; margin-right:30px;">
+                        <strong>OBSERVAÇÕES:</strong><br>${obs ? obs.replace(/\n/g, '<br>') : 'Nenhuma.'}
                     </div>
-                    <div class="total-section">
-                        <p style="font-size: 13px; font-weight: 800; text-transform: uppercase; color: #64748b; margin-bottom: 5px;">Investimento Total</p>
-                        <h2 style="font-size: 28px; color: #1e40af; margin: 0; font-weight: 900;">R$ ${total}</h2>
+                    <div class="total">
+                        <p style="font-size:14px; text-transform:uppercase; margin:0;">Total do Serviço</p>
+                        <h2 style="font-size:28px; color:#1e40af; margin:0;">R$ ${total}</h2>
                     </div>
                 </div>
+                <p class="thanks">"Agradecemos a preferência e a confiança!"</p>
+                <div style="margin-top:70px; text-align:center; border-top:1px solid #333; width:250px; margin-left:auto; margin-right:auto; padding-top:5px; font-size:12px;">Assinatura do Técnico</div>
+            </body></html>`;
 
-                <p class="thanks">"Agradecemos a preferência e a confiança em nossos serviços!"</p>
-
-                <div class="signature">
-                    ${prestador.toUpperCase()}<br>
-                    <span style="font-weight:normal; color:#64748b;">Responsável Técnico</span>
-                </div>
-            </body>
-            </html>`;
-
-            // MÉTODO DE RENDERIZAÇÃO DIRETA (EVITA FOLHA BRANCA)
             html2pdf().from(template).set({
                 margin: 0,
-                filename: `${modoOS ? 'OS' : 'Orcamento'}_${cliente.replace(/\s+/g, '_')}.pdf`,
+                filename: `Orcamento_${cli}.pdf`,
                 image: { type: 'jpeg', quality: 1 },
                 html2canvas: { scale: 3, useCORS: true, backgroundColor: '#ffffff' },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
@@ -519,17 +475,6 @@
             buscarDadosPlanilha();
             adicionarServico();
         };
-
-        function autoExpandir(t) { t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; }
-        function calcularDataFinal() {
-            const ini = document.getElementById('dataInicio').value;
-            const dias = parseInt(document.getElementById('inputGarantia').value) || 0;
-            if (ini) {
-                let d = new Date(ini + 'T00:00:00');
-                d.setDate(d.getDate() + dias);
-                document.getElementById('dataPrazoFinal').value = d.toISOString().split('T')[0];
-            }
-        }
     </script>
 </body>
 </html>
