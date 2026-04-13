@@ -48,29 +48,26 @@
 
         #obsGeral { overflow: hidden; resize: none; min-height: 100px; transition: min-height 0.2s ease; }
 
+        /* MODAL POPUP */
+        #modal-mensagens { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(13, 17, 23, 0.95); backdrop-filter: blur(10px); 
+            z-index: 100; overflow-y: auto; display: none; padding: 20px;
+        }
+        .msg-ready { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 25px; padding: 20px; margin-bottom: 20px; }
+        .msg-text-box { 
+            background: #000; border-radius: 15px; padding: 15px; 
+            font-family: monospace; font-size: 13px; color: #d1d1d1; 
+            white-space: pre-wrap; word-break: break-all; margin: 15px 0;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
         .switch { position: relative; display: inline-block; width: 100%; height: 44px; background: rgba(255,255,255,0.05); border-radius: 15px; padding: 4px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; }
         .switch-bg { position: absolute; top: 4px; left: 4px; width: calc(50% - 4px); height: calc(100% - 8px); background: #1e40af; border-radius: 12px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1; }
         .switch-labels { position: relative; display: flex; height: 100%; z-index: 2; align-items: center; font-size: 11px; font-weight: 800; text-transform: uppercase; }
         .switch-labels div { flex: 1; text-align: center; color: rgba(255,255,255,0.4); }
         .active-label { color: white !important; }
         .mode-os .switch-bg { left: 50%; background: #10b981; }
-
-        /* Estilos das Mensagens Prontas - CORREÇÃO DE QUEBRA DE TEXTO */
-        .msg-ready { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; padding: 15px; margin-top: 10px; }
-        .msg-text-box { 
-            background: #0d1117; 
-            border-radius: 15px; 
-            padding: 12px; 
-            font-family: monospace; 
-            font-size: 12px; 
-            color: #a1a1aa; 
-            white-space: pre-wrap; 
-            word-wrap: break-word; /* Força quebra de palavras longas */
-            word-break: break-word; 
-            margin: 10px 0; 
-            border: 1px solid rgba(255,255,255,0.05); 
-            overflow-wrap: break-word;
-        }
 
         input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
     </style>
@@ -104,7 +101,7 @@
             <div id="sec-dados" class="space-y-4">
                 <div class="section-header">
                     <i class="fa-solid fa-user-gear"></i>
-                    <span id="label-dados">Dados do Orçamento</span>
+                    <span>Dados do Orçamento</span>
                 </div>
                 <div class="space-y-3">
                     <input type="text" id="nomePrestador" placeholder="Sua Empresa" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
@@ -121,7 +118,7 @@
                             <input type="date" id="dataInicio" class="w-full p-3 rounded-xl dark-input text-[11px] font-bold text-center" onchange="calcularDataFinal()">
                         </div>
                         <div class="space-y-1">
-                            <label class="text-[9px] font-bold text-white/30 uppercase ml-2">Venc./Final</label>
+                            <label class="text-[9px] font-bold text-white/30 uppercase ml-2">Final</label>
                             <input type="date" id="dataPrazoFinal" class="w-full p-3 rounded-xl dark-input text-[11px] font-bold text-center" readonly>
                         </div>
                     </div>
@@ -149,21 +146,19 @@
                         <input type="text" id="busca_obs" list="lista_obs" placeholder="Pesquisar observação salva..." class="w-full p-3 rounded-xl dark-input text-xs outline-none" onmousedown="forcarLista(this)">
                         <i class="fa-solid fa-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-[10px]"></i>
                     </div>
-                    <div class="relative">
-                        <textarea id="obsGeral" placeholder="Escreva os detalhes técnicos aqui..." class="w-full p-4 rounded-2xl dark-input text-sm outline-none" oninput="autoExpandir(this)"></textarea>
-                    </div>
+                    <textarea id="obsGeral" placeholder="Escreva os detalhes técnicos..." class="w-full p-4 rounded-2xl dark-input text-sm outline-none" oninput="autoExpandir(this)"></textarea>
                 </div>
             </div>
 
             <div id="sec-custos" class="space-y-4">
                 <div class="section-header">
                     <i class="fa-solid fa-calculator"></i>
-                    <span id="label-total">Total do Serviço</span>
+                    <span>Total do Serviço</span>
                 </div>
                 <div class="bg-blue-600/5 p-5 rounded-3xl border border-blue-500/10">
                     <div class="flex items-center gap-3">
                         <span class="text-xl font-black text-white/20">R$</span>
-                        <input type="text" id="totalFinal" placeholder="0,00" class="w-full bg-transparent border-none text-2xl font-black text-white focus:outline-none" readonly>
+                        <input type="text" id="totalFinal" value="0,00" class="w-full bg-transparent border-none text-2xl font-black text-white focus:outline-none" readonly>
                     </div>
                 </div>
             </div>
@@ -171,59 +166,56 @@
             <button onclick="gerarDocumento()" id="btn-acao" class="w-full btn-primary text-white py-5 rounded-2xl font-black text-base uppercase tracking-widest flex items-center justify-center gap-3">
                 Gerar Orçamento <i class="fa-solid fa-arrow-right"></i>
             </button>
+        </main>
+    </div>
 
-            <div id="mensagens-prontas" class="hidden space-y-4 border-t border-white/10 pt-8 mt-4">
-                <div class="text-center text-[10px] font-black uppercase text-white/30 tracking-[4px] mb-2">Mensagens Prontas</div>
-                
-                <div class="msg-ready">
-                    <div class="flex items-center gap-3 mb-2">
-                        <span class="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-[10px] font-bold">1</span>
-                        <span class="text-xs font-bold uppercase tracking-widest">Proposta</span>
-                    </div>
-                    <div id="txt-proposta" class="msg-text-box"></div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button onclick="copiarTexto('txt-proposta')" class="py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[10px] uppercase border border-white/10">
-                            <i class="fa-solid fa-copy mr-2"></i> Copiar
-                        </button>
-                        <button onclick="enviarWpp('txt-proposta')" class="py-3 bg-blue-600/20 text-blue-400 rounded-xl font-bold text-[10px] uppercase border border-blue-500/20">
-                            <i class="fa-brands fa-whatsapp mr-2 text-base"></i> Enviar WPP
-                        </button>
-                    </div>
+    <div id="modal-mensagens">
+        <div class="max-w-md mx-auto">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-xl font-black uppercase tracking-tighter">Mensagens <span class="text-blue-500">Prontas</span></h2>
+                <button onclick="fecharModal()" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="msg-ready">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-[10px] font-bold">1</span>
+                    <span class="text-xs font-bold uppercase">Proposta</span>
                 </div>
-
-                <div class="msg-ready">
-                    <div class="flex items-center gap-3 mb-2">
-                        <span class="w-6 h-6 rounded-full bg-orange-600 flex items-center justify-center text-[10px] font-bold">2</span>
-                        <span class="text-xs font-bold uppercase tracking-widest">Sinal</span>
-                    </div>
-                    <div id="txt-sinal" class="msg-text-box"></div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button onclick="copiarTexto('txt-sinal')" class="py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[10px] uppercase border border-white/10">
-                            <i class="fa-solid fa-copy mr-2"></i> Copiar
-                        </button>
-                        <button onclick="enviarWpp('txt-sinal')" class="py-3 bg-orange-600/20 text-orange-400 rounded-xl font-bold text-[10px] uppercase border border-orange-500/20">
-                            <i class="fa-brands fa-whatsapp mr-2 text-base"></i> Enviar WPP
-                        </button>
-                    </div>
-                </div>
-
-                <div class="msg-ready">
-                    <div class="flex items-center gap-3 mb-2">
-                        <span class="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center text-[10px] font-bold">3</span>
-                        <span class="text-xs font-bold uppercase tracking-widest">Conclusão</span>
-                    </div>
-                    <div id="txt-conclusao" class="msg-text-box"></div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button onclick="copiarTexto('txt-conclusao')" class="py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[10px] uppercase border border-white/10">
-                            <i class="fa-solid fa-copy mr-2"></i> Copiar
-                        </button>
-                        <button onclick="enviarWpp('txt-conclusao')" class="py-3 bg-green-600/20 text-green-400 rounded-xl font-bold text-[10px] uppercase border border-green-500/20">
-                            <i class="fa-brands fa-whatsapp mr-2 text-base"></i> Enviar WPP
-                        </button>
-                    </div>
+                <div id="txt-proposta" class="msg-text-box"></div>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="copiarTexto('txt-proposta')" class="py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[10px] uppercase">COPIAR</button>
+                    <button onclick="enviarWpp('txt-proposta')" class="py-3 bg-blue-600 text-white rounded-xl font-bold text-[10px] uppercase">WHATSAPP</button>
                 </div>
             </div>
-        </main>
+
+            <div class="msg-ready">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="w-6 h-6 rounded-full bg-orange-600 flex items-center justify-center text-[10px] font-bold">2</span>
+                    <span class="text-xs font-bold uppercase">Sinal</span>
+                </div>
+                <div id="txt-sinal" class="msg-text-box"></div>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="copiarTexto('txt-sinal')" class="py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[10px] uppercase">COPIAR</button>
+                    <button onclick="enviarWpp('txt-sinal')" class="py-3 bg-orange-600 text-white rounded-xl font-bold text-[10px] uppercase">WHATSAPP</button>
+                </div>
+            </div>
+
+            <div class="msg-ready">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center text-[10px] font-bold">3</span>
+                    <span class="text-xs font-bold uppercase">Conclusão</span>
+                </div>
+                <div id="txt-conclusao" class="msg-text-box"></div>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="copiarTexto('txt-conclusao')" class="py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[10px] uppercase">COPIAR</button>
+                    <button onclick="enviarWpp('txt-conclusao')" class="py-3 bg-green-600 text-white rounded-xl font-bold text-[10px] uppercase">WHATSAPP</button>
+                </div>
+            </div>
+            
+            <p class="text-center text-[9px] text-white/20 uppercase font-bold mt-10">Refrigeração Eliezer v3.0</p>
+        </div>
     </div>
 
     <datalist id="lista_clientes"></datalist>
@@ -295,7 +287,6 @@
                     document.getElementById('telCliente').value = encontrado.cli_tel || "";
                 }
             });
-
             document.getElementById('busca_obs').addEventListener('input', function() {
                 const encontrado = cacheDados.find(x => x.txt_obs === this.value);
                 if (encontrado) {
@@ -314,7 +305,7 @@
             div.innerHTML = `
                 <div class="flex items-center gap-2">
                     <div class="relative flex-grow">
-                        <input type="text" list="lista_servicos" placeholder="Selecionar Serviço" class="w-full dark-input p-3 rounded-xl text-sm outline-none service-name" onmousedown="forcarLista(this)">
+                        <input type="text" list="lista_servicos" placeholder="Serviço ou Peça" class="w-full dark-input p-3 rounded-xl text-sm outline-none service-name" onmousedown="forcarLista(this)">
                         <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-[10px]"></i>
                     </div>
                     <button onclick="this.closest('.service-card').remove(); atualizarSoma();" class="text-white/10 hover:text-red-500 p-2"><i class="fa-solid fa-trash-can"></i></button>
@@ -332,7 +323,6 @@
                 </div>
             `;
             container.appendChild(div);
-
             const inputSrv = div.querySelector('.service-name');
             inputSrv.addEventListener('input', function() {
                 const item = cacheDados.find(x => x.srv_nome === this.value);
@@ -378,8 +368,9 @@
             return `${d}/${m}/${y}`;
         }
 
+        // --- GERA O DOCUMENTO E ABRE O MODAL ---
         function gerarDocumento() {
-            const prestador = document.getElementById('nomePrestador').value || "REFRIGERAÇÃO ELIEZER";
+            const prestador = document.getElementById('nomePrestador').value || "ELIEZER";
             const cliente = document.getElementById('nomeCliente').value || "Cliente";
             const total = document.getElementById('totalFinal').value;
             const obs = document.getElementById('obsGeral').value;
@@ -398,64 +389,31 @@
             const sinalValor = (totalNum * 0.3).toLocaleString('pt-BR', {minimumFractionDigits: 2});
             const saldoValor = (totalNum * 0.7).toLocaleString('pt-BR', {minimumFractionDigits: 2});
 
-            document.getElementById('txt-proposta').innerText = 
-`*ORÇAMENTO TÉCNICO - ${prestador.toUpperCase()}*
+            document.getElementById('txt-proposta').innerText = `*ORÇAMENTO TÉCNICO - ${prestador.toUpperCase()}*\n\nOlá ${cliente}! Segue o orçamento:\n\n*SERVIÇOS:*\n${servicosTexto}\n*OBS:*\n${obs}\n\n*INVESTIMENTO TOTAL:* R$ ${total}\n(Material + Mão de Obra incluso)\n\n*${modoOS ? 'Garantia' : 'Vencimento'}:* ${dias} dias\n*Data Prevista:* ${dataFim}\n\nFico no aguardo.`;
 
-Olá ${cliente}! Segue o orçamento:
+            document.getElementById('txt-sinal').innerText = `Olá ${cliente}! 🤝\n\nPara agendarmos dia *${dataFim}* e comprarmos material, precisamos de um sinal.\n\n*Sinal (30%): R$ ${sinalValor}*\n\nChave PIX: [SUA CHAVE]\n\nPor favor, envie o comprovante. Obrigado!`;
 
-*SERVIÇOS:*
-${servicosTexto}
-*OBS:*
-${obs}
+            document.getElementById('txt-conclusao').innerText = `*Serviço Concluído!* ✅\n\n${cliente}, equipamento pronto.\n\n*Saldo Restante:* R$ ${saldoValor}\n\nLembrando que você tem *${dias} dias* de garantia.\n\nObrigado pela preferência!\n${prestador}`;
 
-*INVESTIMENTO TOTAL:* R$ ${total}
-(Material + Mão de Obra incluso)
+            document.getElementById('modal-mensagens').style.display = 'block';
+            document.body.style.overflow = 'hidden'; // Trava a rolagem de fundo
+        }
 
-*Vencimento:* ${dias} dias
-*Data Prevista:* ${dataFim}
-
-Fico no aguardo.`;
-
-            document.getElementById('txt-sinal').innerText = 
-`Olá ${cliente}! 🤝
-
-Para agendarmos dia *${dataFim}* e comprarmos material, precisamos de um sinal.
-
-*Sinal (30%): R$ ${sinalValor}*
-
-Chave PIX: [SUA CHAVE AQUI]
-
-Por favor, envie o comprovante. Obrigado!`;
-
-            document.getElementById('txt-conclusao').innerText = 
-`*Serviço Concluído!* ✅
-
-${cliente}, equipamento pronto.
-
-*Saldo Restante:* R$ ${saldoValor}
-
-Lembrando que você tem *${dias} dias* de garantia.
-
-Obrigado pela preferência!
-${prestador}`;
-
-            document.getElementById('mensagens-prontas').classList.remove('hidden');
-            window.scrollTo({ top: document.getElementById('mensagens-prontas').offsetTop, behavior: 'smooth' });
+        function fecharModal() {
+            document.getElementById('modal-mensagens').style.display = 'none';
+            document.body.style.overflow = 'auto';
         }
 
         function copiarTexto(id) {
             const texto = document.getElementById(id).innerText;
-            navigator.clipboard.writeText(texto).then(() => {
-                alert("Texto copiado!");
-            });
+            navigator.clipboard.writeText(texto).then(() => alert("Copiado!"));
         }
 
         function enviarWpp(id) {
             const texto = document.getElementById(id).innerText;
-            const telefone = document.getElementById('telCliente').value.replace(/\D/g, '');
-            if(!telefone) { alert("Por favor, preencha o WhatsApp do cliente."); return; }
-            const link = `https://api.whatsapp.com/send?phone=55${telefone}&text=${encodeURIComponent(texto)}`;
-            window.open(link, '_blank');
+            const tel = document.getElementById('telCliente').value.replace(/\D/g, '');
+            if(!tel) { alert("Informe o WhatsApp!"); return; }
+            window.open(`https://api.whatsapp.com/send?phone=55${tel}&text=${encodeURIComponent(texto)}`, '_blank');
         }
 
         function alternarModo() {
@@ -465,9 +423,7 @@ ${prestador}`;
             const subTitle = document.getElementById('sub-title');
             const btnAcao = document.getElementById('btn-acao');
             const lblPrazo = document.getElementById('label-prazo');
-
             aplicarTextoPadrao();
-
             if (modoOS) {
                 thumb.classList.add('mode-os'); card.classList.add('is-os');
                 subTitle.innerText = "Ordem de Serviço (OS)";
@@ -492,8 +448,7 @@ ${prestador}`;
         }
 
         window.onload = () => {
-            const agora = new Date();
-            document.getElementById('dataInicio').value = agora.toISOString().split('T')[0];
+            document.getElementById('dataInicio').value = new Date().toISOString().split('T')[0];
             buscarDadosPlanilha();
             adicionarServico();
         };
