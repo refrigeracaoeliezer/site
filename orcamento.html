@@ -34,9 +34,11 @@
         .dark-input:focus { border-color: #3b82f6 !important; background: rgba(255, 255, 255, 0.08) !important; outline: none; }
         .is-os .dark-input:focus { border-color: #10b981 !important; }
 
+        /* Estilo especial para o campo de observação que aceita datalist */
+        .input-obs { min-height: 100px; align-items: flex-start; padding-top: 15px !important; white-space: pre-wrap; }
+
         .service-card { background: rgba(255, 255, 255, 0.02); border-radius: 20px; padding: 15px; border: 1px solid rgba(255, 255, 255, 0.08); }
         .qty-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: #3b82f6; transition: 0.2s; border: 1px solid rgba(59, 130, 246, 0.2); }
-        .is-os .qty-btn { color: #10b981 !important; border-color: rgba(16, 185, 129, 0.2) !important; }
         
         .section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
         .section-header i { font-size: 14px; color: #3b82f6; }
@@ -91,13 +93,11 @@
                     <span id="label-dados">Dados do Orçamento</span>
                 </div>
                 <div class="space-y-3">
-                    <input type="text" id="nomePrestador" placeholder="Seu Nome / Sua Empresa" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
-                    
+                    <input type="text" id="nomePrestador" placeholder="Sua Empresa" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
                     <div class="relative">
                         <input type="text" id="nomeCliente" list="lista_clientes" placeholder="Selecionar Cliente" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none" onmousedown="forcarLista(this)">
                         <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-xs"></i>
                     </div>
-
                     <input type="text" id="enderecoCliente" placeholder="Endereço Completo" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
                     <input type="tel" id="telCliente" placeholder="WhatsApp" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
                     
@@ -131,10 +131,14 @@
                     </div>
                 </div>
                 <div id="services-container" class="space-y-4"></div>
-                <datalist id="lista_servicos"></datalist>
                 <button onclick="adicionarServico()" class="btn-add-item">
-                    <i class="fa-solid fa-circle-plus mr-2 text-blue-500"></i> ADICIONAR ITEM
+                    <i id="btn-add-icon" class="fa-solid fa-circle-plus mr-2 text-blue-500"></i> ADICIONAR ITEM
                 </button>
+
+                <div class="relative pt-2">
+                    <input type="text" id="obsGeral" list="lista_obs" placeholder="Pesquisar ou escrever observação..." class="w-full p-4 rounded-2xl dark-input text-sm input-obs outline-none" onmousedown="forcarLista(this)">
+                    <i class="fa-solid fa-magnifying-glass absolute right-4 top-6 text-white/10 pointer-events-none"></i>
+                </div>
             </div>
 
             <div id="sec-custos" class="space-y-4">
@@ -157,6 +161,8 @@
     </div>
 
     <datalist id="lista_clientes"></datalist>
+    <datalist id="lista_servicos"></datalist>
+    <datalist id="lista_obs"></datalist>
 
     <script>
         const URL_DATABASE = "https://script.google.com/macros/s/AKfycbwXxgwoZ5Qov5xGUN9CMQnCOqsS4HL2gJdGtaPad9Df8ShuykbMUzq3_jKlb-0gLMju8Q/exec";
@@ -183,6 +189,8 @@
             const criarOpcoes = (campo) => [...new Set(cacheDados.map(d => d[campo]))].filter(Boolean).map(n => `<option value="${n}">`).join('');
             document.getElementById('lista_clientes').innerHTML = criarOpcoes('cli_nome');
             document.getElementById('lista_servicos').innerHTML = criarOpcoes('srv_nome');
+            document.getElementById('lista_obs').innerHTML = criarOpcoes('txt_obs');
+            
             if(cacheDados.length > 0 && cacheDados[0].emp_nome) {
                 document.getElementById('nomePrestador').value = cacheDados[0].emp_nome;
             }
@@ -277,17 +285,15 @@
             const btnAcao = document.getElementById('btn-acao');
             const lblDados = document.getElementById('label-dados');
             const lblPrazo = document.getElementById('label-prazo');
-            const btnAddIcon = document.querySelector('.btn-add-item i');
+            const btnAddIcon = document.getElementById('btn-add-icon');
 
             if (modoOS) {
                 thumb.classList.add('mode-os'); card.classList.add('is-os');
                 subTitle.innerText = "Ordem de Serviço (OS)";
                 btnAcao.innerHTML = 'Finalizar Ordem de Serviço <i class="fa-solid fa-check-double"></i>';
                 lblDados.innerText = "Dados da Ordem de Serviço";
-                
                 lblPrazo.innerText = "Garantia";
                 lblPrazo.classList.replace('bg-blue-600', 'bg-green-600');
-                
                 document.getElementById('lbl-os').classList.add('active-label');
                 document.getElementById('lbl-orc').classList.remove('active-label');
                 document.getElementById('campo-termino').classList.remove('hidden');
@@ -298,10 +304,8 @@
                 subTitle.innerText = "Sistema de Orçamento";
                 btnAcao.innerHTML = 'Gerar Orçamento <i class="fa-solid fa-arrow-right"></i>';
                 lblDados.innerText = "Dados do Orçamento";
-                
                 lblPrazo.innerText = "Vencimento";
                 lblPrazo.classList.replace('bg-green-600', 'bg-blue-600');
-
                 document.getElementById('lbl-orc').classList.add('active-label');
                 document.getElementById('lbl-os').classList.remove('active-label');
                 document.getElementById('campo-termino').classList.add('hidden');
