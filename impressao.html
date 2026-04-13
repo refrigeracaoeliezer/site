@@ -9,66 +9,38 @@
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
-        
         body { background-color: #525659; display: flex; justify-content: center; padding: 20px 0; }
 
-        /* Botão PDF Flutuante */
         .btn-flutuante {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            z-index: 10000;
-            background-color: #e74c3c;
-            color: white;
-            width: 65px;
-            height: 65px;
-            border-radius: 50%;
-            border: none;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
+            position: fixed; bottom: 30px; right: 30px; z-index: 10000;
+            background-color: #e74c3c; color: white; width: 65px; height: 65px;
+            border-radius: 50%; border: none; box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 28px;
         }
 
-        /* Container A4 */
         .paper-canvas {
-            background-color: #fff;
-            width: 210mm;
-            height: 297mm;
-            padding: 15mm;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            box-shadow: 0 0 15px rgba(0,0,0,0.3);
-            overflow: hidden;
+            background-color: #fff; width: 210mm; height: 297mm; padding: 15mm;
+            display: flex; flex-direction: column; position: relative;
+            box-shadow: 0 0 15px rgba(0,0,0,0.3); overflow: hidden;
         }
 
         header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: flex-start;
-            border-bottom: 3px solid #1a4388;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-            width: 100%;
+            display: flex; justify-content: space-between; align-items: flex-start;
+            border-bottom: 3px solid #1a4388; padding-bottom: 10px; margin-bottom: 20px; width: 100%;
         }
 
-        /* AJUSTE NO CONTAINER DA LOGO */
+        /* AJUSTE FIXO PARA A LOGO */
         .logo-area { width: 250px; }
         .logo-container {
-            width: 100%;
+            width: 250px;
             height: 100px;
             display: flex;
             align-items: center;
             justify-content: flex-start;
-            overflow: hidden;
         }
         .logo-img { 
             max-width: 100%; 
             max-height: 100%; 
-            display: block; 
             object-fit: contain;
         }
         
@@ -77,13 +49,8 @@
         .doc-info h2 { color: #1a4388; font-size: 24px; font-weight: 900; }
 
         .client-box { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-            font-size: 13px;
-            margin-bottom: 20px;
+            display: grid; grid-template-columns: 1fr 1fr; background: #f8f9fa;
+            padding: 15px; border-radius: 5px; font-size: 13px; margin-bottom: 20px;
         }
 
         .tabela-container { flex-grow: 1; }
@@ -95,16 +62,9 @@
         .total-section h3 { font-size: 30px; color: #1a4388; }
 
         .obs-section { 
-            background: #fffbe6; 
-            padding: 15px; 
-            border: 1px solid #ffe58f;
-            border-radius: 5px; 
-            font-size: 13px; 
-            margin-bottom: 20px;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-            word-break: break-all;
-            max-width: 100%;
+            background: #fffbe6; padding: 15px; border: 1px solid #ffe58f;
+            border-radius: 5px; font-size: 13px; margin-bottom: 20px;
+            word-wrap: break-word; overflow-wrap: break-word; word-break: break-all;
         }
 
         footer { text-align: center; font-size: 11px; color: #777; border-top: 1px solid #eee; padding-top: 15px; }
@@ -122,7 +82,7 @@
         <header>
             <div class="logo-area"> 
                 <div class="logo-container">
-                    <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgdGGsULMI69OabXBfFU3b8mTYfIWlJoqpwgc_q1UvSITQPj_VQYaW_1cLECh4rF7j5RfhJLsPgUXdvNv-ya494kAfeyZRbdTCn-VFesltpIkZp8Xid-MZwLKBLyC89MTSXf76nrCrBHncl86cYzjm1XuG34hvNrNVkZS8Gkq3FJEZHEb99HL26I52RUqc/w512-h237/TOPO%20POSTO%20RIO%20BRANCO.png" class="logo-img" crossorigin="anonymous">
+                    <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgdGGsULMI69OabXBfFU3b8mTYfIWlJoqpwgc_q1UvSITQPj_VQYaW_1cLECh4rF7j5RfhJLsPgUXdvNv-ya494kAfeyZRbdTCn-VFesltpIkZp8Xid-MZwLKBLyC89MTSXf76nrCrBHncl86cYzjm1XuG34hvNrNVkZS8Gkq3FJEZHEb99HL26I52RUqc/w512-h237/TOPO%20POSTO%20RIO%20BRANCO.png" class="logo-img">
                 </div>
                 <div class="empresa-info">
                     <strong>REFRIGERAÇÃO ELIEZER</strong><br>
@@ -199,20 +159,20 @@
             const element = document.getElementById('conteudo-pdf');
             const opt = {
                 margin: 0,
-                filename: `Orcamento_${dados ? dados.cliente : 'Documento'}.pdf`,
+                filename: `Orcamento_${dados ? dados.cliente : 'Doc'}.pdf`,
                 image: { type: 'jpeg', quality: 1 },
                 html2canvas: { 
                     scale: 3, 
-                    useCORS: true, 
-                    logging: false,
-                    allowTaint: false 
+                    useCORS: true, // Mantemos true aqui para o html2pdf tentar processar
+                    logging: false
                 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             
+            // Delay para garantir renderização
             setTimeout(() => {
                 html2pdf().set(opt).from(element).save();
-            }, 500);
+            }, 800);
         }
     </script>
 </body>
