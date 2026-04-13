@@ -2,13 +2,13 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=1024"> 
     <title>Orçamento Técnico</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
     <style>
-        /* Reset e Base */
+        /* Configurações de Reset */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
         
         body { 
@@ -18,14 +18,14 @@
             padding: 20px 0;
         }
 
-        /* Botões Sobrepostos (Floating) */
+        /* Botões Flutuantes Sobrepostos */
         .acoes-flutuantes {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
+            bottom: 30px;
+            right: 30px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 15px;
             z-index: 9999;
         }
 
@@ -37,243 +37,190 @@
             color: white;
             font-size: 24px;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: transform 0.2s;
         }
 
-        .btn-float:active { transform: scale(0.9); }
         .bg-pdf { background: #e74c3c; }
         .bg-wpp { background: #25d366; }
-        .bg-print { background: #3498db; }
 
-        /* Folha A4 */
+        /* Estrutura da Folha A4 - Fixa para não desconfigurar no celular */
         .folha-a4 {
             background: white;
             width: 210mm;
-            height: 296mm; /* Altura fixa para evitar 2ª página */
+            min-height: 297mm;
+            max-height: 297mm;
             padding: 15mm;
-            position: relative;
-            box-shadow: 0 0 15px rgba(0,0,0,0.3);
-            overflow: hidden; /* Garante que nada escape para a 2ª folha */
             display: flex;
             flex-direction: column;
+            position: relative;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            overflow: hidden; /* Impede que o texto saia da folha */
         }
 
-        /* Ajuste para Celular (Visualização) */
-        @media (max-width: 210mm) {
-            body { padding: 0; background: #fff; }
-            .folha-a4 { 
-                width: 100vw; 
-                height: auto; 
-                min-height: 100vh;
-                box-shadow: none;
-                padding: 10mm;
-                zoom: 1; /* Ajustado via JS para caber na tela */
-            }
-        }
-
-        /* Conteúdo do Orçamento */
         header { 
             display: flex; 
             justify-content: space-between; 
-            align-items: flex-start;
             border-bottom: 3px solid #1a4388;
             padding-bottom: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
-        .logo-area img { width: 220px; height: auto; display: block; margin-bottom: 10px; }
-        .empresa-info { font-size: 12px; color: #333; line-height: 1.4; }
+        .logo-area img { width: 220px; height: auto; }
+        .empresa-info { font-size: 12px; margin-top: 5px; color: #333; }
         
-        .doc-titulo { text-align: right; }
-        .doc-titulo h2 { color: #1a4388; font-size: 24px; font-weight: 900; }
-        .doc-titulo p { font-size: 14px; font-weight: bold; }
+        .doc-info { text-align: right; }
+        .doc-info h2 { color: #1a4388; font-size: 26px; }
 
         .cliente-box { 
             display: grid; 
             grid-template-columns: 1fr 1fr; 
-            gap: 20px;
             background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            font-size: 13px;
-            margin-bottom: 20px;
-        }
-
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        table th { background: #1a4388; color: white; padding: 10px; font-size: 12px; text-transform: uppercase; }
-        table td { border-bottom: 1px solid #eee; padding: 12px 10px; font-size: 14px; }
-
-        .total-box { 
-            text-align: right; 
-            margin-top: auto; /* Empurra para o final antes das obs */
-            padding: 15px 0;
-        }
-        .total-box span { font-size: 14px; font-weight: bold; color: #666; }
-        .total-box h3 { font-size: 28px; color: #1a4388; }
-
-        .obs-box { 
-            background: #fffbe6; 
-            border: 1px solid #ffe58f; 
-            padding: 15px; 
-            font-size: 12px; 
+            padding: 12px;
             border-radius: 5px;
-            margin-bottom: 20px;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+
+        /* Tabela ajustada para ocupar o espaço central */
+        .tabela-container { flex-grow: 1; overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; }
+        table th { background: #1a4388; color: white; padding: 8px; font-size: 12px; text-align: left; }
+        table td { border-bottom: 1px solid #eee; padding: 10px 8px; font-size: 13px; }
+
+        .total-container { text-align: right; padding: 15px 0; }
+        .total-container h3 { font-size: 28px; color: #1a4388; }
+
+        /* Correção da Observação que ultrapassava a folha */
+        .obs-container { 
+            background: #fff; 
+            border: 1px solid #ccc; 
+            padding: 10px; 
+            border-radius: 4px;
+            margin-bottom: 10px;
+            max-height: 120px; /* Limite para não empurrar o rodapé */
+            overflow: hidden;
+        }
+        .obs-text { 
+            font-size: 11px; 
+            word-wrap: break-word; /* Força quebra de palavras longas */
+            white-space: pre-wrap; /* Mantém quebras de linha do formulário */
         }
 
         footer { 
-            text-align: center; 
-            font-size: 11px; 
-            padding-top: 10px; 
             border-top: 1px solid #eee;
-            color: #888;
+            padding-top: 10px;
+            text-align: center;
+            font-size: 10px;
+            color: #777;
         }
 
-        /* Regras de Impressão */
-        @media print {
-            .no-print { display: none !important; }
-            body { background: white; padding: 0; }
-            .folha-a4 { box-shadow: none; width: 210mm; height: 296mm; margin: 0; padding: 15mm; }
-        }
+        @media print { .no-print { display: none !important; } }
     </style>
 </head>
 <body>
 
     <div class="acoes-flutuantes no-print">
-        <button class="btn-float bg-print" onclick="window.print()" title="Imprimir">
-            <i class="fa-solid fa-print"></i>
-        </button>
-        <button class="btn-float bg-pdf" onclick="baixarPDF()" title="Gerar PDF">
+        <button class="btn-float bg-pdf" onclick="gerarPDF()" title="Gerar PDF">
             <i class="fa-solid fa-file-pdf"></i>
         </button>
-        <button class="btn-float bg-wpp" onclick="enviarWhatsApp()" title="Enviar no WhatsApp">
+        <button class="btn-float bg-wpp" onclick="enviarWpp()" title="Enviar WhatsApp">
             <i class="fa-brands fa-whatsapp"></i>
         </button>
     </div>
 
-    <div class="folha-a4" id="orcamento-folha">
+    <div class="folha-a4" id="conteudo-pdf">
         <header>
             <div class="logo-area">
-                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgdGGsULMI69OabXBfFU3b8mTYfIWlJoqpwgc_q1UvSITQPj_VQYaW_1cLECh4rF7j5RfhJLsPgUXdvNv-ya494kAfeyZRbdTCn-VFesltpIkZp8Xid-MZwLKBLyC89MTSXf76nrCrBHncl86cYzjm1XuG34hvNrNVkZS8Gkq3FJEZHEb99HL26I52RUqc/w512-h237/TOPO%20POSTO%20RIO%20BRANCO.png" alt="Logo">
+                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgdGGsULMI69OabXBfFU3b8mTYfIWlJoqpwgc_q1UvSITQPj_VQYaW_1cLECh4rF7j5RfhJLsPgUXdvNv-ya494kAfeyZRbdTCn-VFesltpIkZp8Xid-MZwLKBLyC89MTSXf76nrCrBHncl86cYzjm1XuG34hvNrNVkZS8Gkq3FJEZHEb99HL26I52RUqc/w512-h237/TOPO%20POSTO%20RIO%20BRANCO.png">
                 <div class="empresa-info">
-                    <p><strong>REFRIGERAÇÃO ELIEZER</strong></p>
-                    <p>CNPJ: 00.000.000/0001-00</p>
-                    <p>Corumbá - Mato Grosso do Sul</p>
+                    <strong>REFRIGERAÇÃO ELIEZER</strong><br>
+                    Corumbá - MS | (67) 99999-9999
                 </div>
             </div>
-            <div class="doc-titulo">
-                <h2 id="tipo-doc">ORÇAMENTO</h2>
-                <p>Nº <span id="num-doc">000/2026</span></p>
+            <div class="doc-info">
+                <h2 id="txt-tipo">ORÇAMENTO</h2>
+                <p>Nº <span id="txt-num"></span></p>
             </div>
         </header>
 
         <div class="cliente-box">
             <div>
-                <p><strong>CLIENTE:</strong> <span id="view-cliente">---</span></p>
-                <p><strong>ENDEREÇO:</strong> <span id="view-endereco">---</span></p>
-                <p><strong>WHATSAPP:</strong> <span id="view-whatsapp">---</span></p>
+                <strong>CLIENTE:</strong> <span id="txt-cliente"></span><br>
+                <strong>ENDEREÇO:</strong> <span id="txt-endereco"></span>
             </div>
             <div style="text-align: right;">
-                <p><strong>EMISSÃO:</strong> <span id="view-emissao">--/--/--</span></p>
-                <p><strong>VENCIMENTO:</strong> <span id="view-validade">--/--/--</span></p>
+                <strong>DATA:</strong> <span id="txt-data"></span><br>
+                <strong>VENC.:</strong> <span id="txt-venc"></span>
             </div>
         </div>
 
-        <table style="flex-grow: 1;">
-            <thead>
-                <tr>
-                    <th style="text-align: left;">Descrição dos Serviços / Peças</th>
-                    <th style="width: 50px;">Qtd</th>
-                    <th style="text-align: right; width: 120px;">Subtotal</th>
-                </tr>
-            </thead>
-            <tbody id="tabela-itens">
-                </tbody>
-        </table>
-
-        <div class="total-box">
-            <span>VALOR TOTAL DO INVESTIMENTO</span>
-            <h3 id="view-total">R$ 0,00</h3>
+        <div class="tabela-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>DESCRIÇÃO DOS SERVIÇOS</th>
+                        <th style="width: 40px; text-align: center;">QTD</th>
+                        <th style="width: 100px; text-align: right;">TOTAL</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-corpo"></tbody>
+            </table>
         </div>
 
-        <div class="obs-box">
-            <strong>OBSERVAÇÕES TÉCNICAS:</strong><br>
-            <p id="view-obs" style="white-space: pre-wrap; margin-top: 5px;"></p>
+        <div class="total-container">
+            <p style="font-size: 12px;">VALOR TOTAL</p>
+            <h3 id="txt-total">R$ 0,00</h3>
+        </div>
+
+        <div class="obs-container">
+            <strong>OBSERVAÇÕES:</strong>
+            <div class="obs-text" id="txt-obs"></div>
         </div>
 
         <footer>
-            <p><strong>REFRIGERAÇÃO ELIEZER | SOLUÇÕES TÉCNICAS</strong></p>
-            <p>Garantia legal de 90 dias conforme CDC.</p>
+            <p>Garantia de 90 dias para peças e mão de obra.</p>
+            <p>Obrigado pela preferência!</p>
         </footer>
     </div>
 
     <script>
-        // Carregar dados e forçar exibição
-        window.onload = function() {
-            const dados = JSON.parse(localStorage.getItem('dados_impressao'));
-            if (!dados) {
-                alert("Nenhum dado encontrado!");
-                return;
-            }
+        const dados = JSON.parse(localStorage.getItem('dados_impressao'));
+        document.getElementById('txt-num').innerText = Math.floor(Math.random() * 1000) + '/2026';
 
-            // Gerar número aleatório simples para o doc
-            document.getElementById('num-doc').innerText = Math.floor(Math.random() * 900) + 100 + '/2026';
+        if(dados) {
+            document.getElementById('txt-tipo').innerText = dados.tipo;
+            document.getElementById('txt-cliente').innerText = dados.cliente;
+            document.getElementById('txt-endereco').innerText = dados.endereco;
+            document.getElementById('txt-data').innerText = dados.emissao;
+            document.getElementById('txt-venc').innerText = dados.validade;
+            document.getElementById('txt-total').innerText = 'R$ ' + dados.total;
+            document.getElementById('txt-obs').innerText = dados.obs || "Nenhuma observação adicional.";
 
-            // Preencher campos
-            document.getElementById('tipo-doc').innerText = dados.tipo;
-            document.getElementById('view-cliente').innerText = dados.cliente;
-            document.getElementById('view-endereco').innerText = dados.endereco;
-            document.getElementById('view-whatsapp').innerText = dados.whatsapp;
-            document.getElementById('view-emissao').innerText = dados.emissao;
-            document.getElementById('view-validade').innerText = dados.validade;
-            document.getElementById('view-total').innerText = 'R$ ' + dados.total;
-            document.getElementById('view-obs').innerText = dados.obs || "Garantia de serviço conforme padrão.";
-
-            const tbody = document.getElementById('tabela-itens');
-            dados.itens.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${item.descricao}</td>
-                    <td style="text-align: center;">${item.qtd}</td>
-                    <td style="text-align: right;">R$ ${item.valor}</td>
-                `;
-                tbody.appendChild(tr);
+            const corpo = document.getElementById('tabela-corpo');
+            dados.itens.forEach(i => {
+                corpo.innerHTML += `<tr><td>${i.descricao}</td><td style="text-align:center">${i.qtd}</td><td style="text-align:right">R$ ${i.valor}</td></tr>`;
             });
+        }
 
-            // Ajuste de zoom para celular caber na tela
-            if (window.innerWidth < 800) {
-                const zoom = window.innerWidth / 800;
-                // document.body.style.zoom = zoom; // Zoom é problemático em alguns browsers
-            }
-        };
-
-        function baixarPDF() {
-            const element = document.getElementById('orcamento-folha');
-            const cliente = document.getElementById('view-cliente').innerText;
+        function gerarPDF() {
+            const element = document.getElementById('conteudo-pdf');
             const opt = {
                 margin: 0,
-                filename: `Orcamento_${cliente}.pdf`,
+                filename: `Orcamento_${dados.cliente}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+                html2canvas: { scale: 2, useCORS: true, width: 794 }, // Força largura de A4 em pixels
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
-
-            // Esconde botões antes de gerar
             html2pdf().set(opt).from(element).save();
         }
 
-        function enviarWhatsApp() {
-            const cliente = document.getElementById('view-cliente').innerText;
-            const total = document.getElementById('view-total').innerText;
-            const link = window.location.href; 
-            const tel = document.getElementById('view-whatsapp').innerText.replace(/\D/g, '');
-            
-            const texto = `Olá ${cliente}, estou enviando o seu orçamento no valor de ${total}. \n\n*Por favor, baixe o arquivo PDF que acabei de gerar para ver todos os detalhes.*`;
-            
-            window.open(`https://api.whatsapp.com/send?phone=55${tel}&text=${encodeURIComponent(texto)}`, '_blank');
+        function enviarWpp() {
+            const tel = dados.whatsapp.replace(/\D/g, '');
+            const msg = `Olá ${dados.cliente}, seu *${dados.tipo}* está pronto no valor de *R$ ${dados.total}*. Enviei o PDF em anexo abaixo:`;
+            window.open(`https://api.whatsapp.com/send?phone=55${tel}&text=${encodeURIComponent(msg)}`, '_blank');
         }
     </script>
 </body>
