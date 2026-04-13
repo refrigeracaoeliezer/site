@@ -62,9 +62,23 @@
 
         #modal-mensagens { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.95); backdrop-filter: blur(10px); z-index: 100; overflow-y: auto; display: none; padding: 20px; }
         
-        /* Efeito de desbotamento do botão copiar */
+        /* Efeito suave de desbotamento no botão copiar */
         .btn-copy-default { transition: background-color 0.8s ease, color 0.8s ease; }
         .btn-copy-success { background-color: #3b82f6 !important; color: white !important; transition: background-color 0.1s ease !important; }
+
+        /* ✅ CORREÇÃO DO CONTAINER PDF: DENTRO DA ÁREA RENDERIZÁVEL COM OPACITY 0 */
+        #pdf-offscreen { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 210mm; 
+            background: white; 
+            color: black; 
+            opacity: 0; 
+            pointer-events: none; 
+            z-index: 9999; 
+            display: block !important;
+        }
     </style>
 </head>
 <body class="p-4 pb-10">
@@ -123,17 +137,9 @@
         </div>
     </div>
 
-    <div class="max-w-md mx-auto relative z-10" id="main-container">
-        <div class="mb-6">
-            <div class="switch" id="toggleMode" onclick="alternarModo()">
-                <div class="switch-bg" id="switch-thumb"></div>
-                <div class="switch-labels">
-                    <div id="lbl-orc" class="active-label">Orçamento</div>
-                    <div id="lbl-os">Ordem de Serviço</div>
-                </div>
-            </div>
-        </div>
+    <div id="pdf-offscreen"></div>
 
+    <div class="max-w-md mx-auto relative z-10" id="main-container">
         <header class="flex justify-between items-center mb-8 pt-4">
             <div>
                 <h1 class="text-xl font-black tracking-tighter uppercase leading-none">
@@ -145,59 +151,39 @@
 
         <main class="glass-card p-6 space-y-7" id="card-principal">
             <div id="sec-dados" class="space-y-4">
-                <div class="section-header">
-                    <i class="fa-solid fa-user-gear"></i>
-                    <span id="label-dados">Dados do Orçamento</span>
-                </div>
+                <div class="section-header"><i class="fa-solid fa-user-gear"></i><span id="label-dados">Dados do Orçamento</span></div>
                 <div class="space-y-3">
                     <input type="text" id="nomePrestador" placeholder="Seu Nome / Sua Empresa" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
-                    <div class="relative">
-                        <input type="text" id="nomeCliente" list="lista_clientes" placeholder="Selecionar Cliente" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none" onmousedown="forcarLista(this)">
-                        <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-xs"></i>
-                    </div>
+                    <input type="text" id="nomeCliente" list="lista_clientes" placeholder="Selecionar Cliente" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
                     <input type="text" id="enderecoCliente" placeholder="Endereço Completo" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
                     <input type="tel" id="telCliente" placeholder="WhatsApp" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
-                    
                     <div class="grid grid-cols-2 gap-2 pt-2">
                         <div class="space-y-1">
-                            <label class="text-[9px] font-bold text-white/30 uppercase ml-2">Início</label>
-                            <input type="date" id="dataInicio" class="w-full p-3 rounded-xl dark-input text-[11px] font-bold text-center" onchange="calcularDataFinal()">
+                            <label class="text-[9px] font-bold text-white/30 ml-2">Início</label>
+                            <input type="date" id="dataInicio" class="w-full p-3 rounded-xl dark-input text-[11px] font-bold text-center">
                         </div>
                         <div class="space-y-1">
-                            <label class="text-[9px] font-bold text-white/30 uppercase ml-2">Venc./Final</label>
+                            <label class="text-[9px] font-bold text-white/30 ml-2">Venc./Final</label>
                             <input type="date" id="dataPrazoFinal" class="w-full p-3 rounded-xl dark-input text-[11px] font-bold text-center" readonly>
                         </div>
                     </div>
-
                     <div class="relative pt-4">
-                        <input type="number" id="inputGarantia" value="30" class="w-full p-4 rounded-2xl dark-input text-sm font-bold text-center" oninput="calcularDataFinal()">
-                        <span id="label-prazo" class="absolute -top-1 left-1/2 -translate-x-1/2 bg-blue-600 text-[8px] px-2 py-0.5 rounded text-white font-black tracking-widest uppercase shadow-lg">Vencimento</span>
-                        <span class="absolute right-4 top-1/2 -translate-y-1/2 mt-2 text-[10px] text-white/20 font-black">DIAS</span>
+                        <input type="number" id="inputGarantia" value="30" class="w-full p-4 rounded-2xl dark-input text-sm font-bold text-center">
+                        <span id="label-prazo" class="absolute -top-1 left-1/2 -translate-x-1/2 bg-blue-600 text-[8px] px-2 py-0.5 rounded text-white font-black uppercase shadow-lg">Vencimento</span>
                     </div>
                 </div>
             </div>
 
             <div id="sec-servicos" class="space-y-4">
                 <div id="services-container" class="space-y-4"></div>
-                <button onclick="adicionarServico()" class="btn-add-item">
-                    <i id="btn-add-icon" class="fa-solid fa-circle-plus mr-2 text-blue-500"></i> ADICIONAR ITEM
-                </button>
-
-                <div class="space-y-2 pt-2">
-                    <div class="relative">
-                        <input type="text" id="busca_obs" list="lista_obs" placeholder="Pesquisar observação salva..." class="w-full p-3 rounded-xl dark-input text-xs outline-none" onmousedown="forcarLista(this)">
-                        <i class="fa-solid fa-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-[10px]"></i>
-                    </div>
-                    <textarea id="obsGeral" placeholder="Detalhes técnicos..." class="w-full p-4 rounded-2xl dark-input text-sm outline-none" oninput="autoExpandir(this)"></textarea>
-                </div>
+                <button onclick="adicionarServico()" class="btn-add-item"><i id="btn-add-icon" class="fa-solid fa-circle-plus mr-2 text-blue-500"></i> ADICIONAR ITEM</button>
+                <textarea id="obsGeral" placeholder="Detalhes técnicos..." class="w-full p-4 rounded-2xl dark-input text-sm outline-none" oninput="autoExpandir(this)"></textarea>
             </div>
 
             <div id="sec-custos" class="space-y-4">
-                <div class="bg-blue-600/5 p-5 rounded-3xl border border-blue-500/10">
-                    <div class="flex items-center gap-3">
-                        <span class="text-xl font-black text-white/20">R$</span>
-                        <input type="text" id="totalFinal" placeholder="0,00" class="w-full bg-transparent border-none text-2xl font-black text-white focus:outline-none" readonly>
-                    </div>
+                <div class="bg-blue-600/5 p-5 rounded-3xl border border-blue-500/10 flex items-center gap-3">
+                    <span class="text-xl font-black text-white/20">R$</span>
+                    <input type="text" id="totalFinal" placeholder="0,00" class="w-full bg-transparent border-none text-2xl font-black text-white focus:outline-none" readonly>
                 </div>
             </div>
 
@@ -217,59 +203,25 @@
         let modoOS = false;
         let saldoQuitado = false;
 
-        function forcarLista(input) {
-            input.setAttribute('autocomplete', 'off');
-            const valOriginal = input.value;
-            input.value = '';
-            setTimeout(() => { input.value = valOriginal; }, 1);
-        }
-
-        function autoExpandir(textarea) {
-            textarea.style.height = 'auto';
-            textarea.style.height = textarea.scrollHeight + 'px';
-        }
-
-        function calcularDataFinal() {
-            const dataInicioVal = document.getElementById('dataInicio').value;
-            const diasPrazo = parseInt(document.getElementById('inputGarantia').value) || 0;
-            const campoDataFinal = document.getElementById('dataPrazoFinal');
-            if (dataInicioVal) {
-                let data = new Date(dataInicioVal + 'T00:00:00');
-                data.setDate(data.getDate() + diasPrazo);
-                const y = data.getFullYear();
-                const m = String(data.getMonth() + 1).padStart(2, '0');
-                const d = String(data.getDate()).padStart(2, '0');
-                campoDataFinal.value = `${y}-${m}-${d}`;
-            }
-        }
-
         async function buscarDadosPlanilha() {
             try {
                 const resp = await fetch(URL_DATABASE);
                 cacheDados = await resp.json();
                 renderDatalists();
                 configListeners();
-                setInitialObs();
                 calcularDataFinal();
-            } catch (e) { console.error("Erro carga:", e); }
+            } catch (e) { console.error(e); }
         }
 
         function renderDatalists() {
-            const criarOpcoes = (campo) => [...new Set(cacheDados.map(d => d[campo]))].filter(Boolean).map(n => `<option value="${n}">`).join('');
-            document.getElementById('lista_clientes').innerHTML = criarOpcoes('cli_nome');
-            document.getElementById('lista_servicos').innerHTML = criarOpcoes('srv_nome');
-            document.getElementById('lista_obs').innerHTML = criarOpcoes('txt_obs');
+            const criar = (c) => [...new Set(cacheDados.map(d => d[c]))].filter(Boolean).map(n => `<option value="${n}">`).join('');
+            document.getElementById('lista_clientes').innerHTML = criar('cli_nome');
+            document.getElementById('lista_servicos').innerHTML = criar('srv_nome');
+            document.getElementById('lista_obs').innerHTML = criar('txt_obs');
             if(cacheDados.length > 0) {
                 const d = cacheDados.find(x => x.emp_nome);
                 if(d) document.getElementById('nomePrestador').value = d.emp_nome;
             }
-        }
-
-        function setInitialObs() {
-            const txtArea = document.getElementById('obsGeral');
-            const lista = cacheDados.map(d => d.txt_obs).filter(Boolean);
-            txtArea.value = modoOS ? (lista[1] || "") : (lista[0] || "");
-            autoExpandir(txtArea);
         }
 
         function configListeners() {
@@ -278,15 +230,6 @@
                 if (d) {
                     document.getElementById('enderecoCliente').value = d.cli_end || "";
                     document.getElementById('telCliente').value = d.cli_tel || "";
-                }
-            });
-            document.getElementById('busca_obs').addEventListener('input', function() {
-                const d = cacheDados.find(x => x.txt_obs === this.value);
-                if (d) {
-                    const area = document.getElementById('obsGeral');
-                    area.value = d.txt_obs;
-                    autoExpandir(area);
-                    this.value = "";
                 }
             });
         }
@@ -301,26 +244,10 @@
                     <button onclick="this.closest('.service-card').remove(); atualizarSoma();" class="text-white/10 hover:text-red-500"><i class="fa-solid fa-trash-can"></i></button>
                 </div>
                 <div class="flex items-center gap-2">
-                    <div class="flex-grow relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 font-bold text-xs">R$</span>
-                        <input type="text" placeholder="0,00" class="w-full dark-input pl-8 p-2 rounded-xl text-sm service-price" onkeyup="formatarMoeda(this)">
-                    </div>
-                    <div class="flex items-center bg-white/5 rounded-xl p-1 gap-3">
-                        <button onclick="alterarQtde(this, -1)" class="qty-btn">-</button>
-                        <span class="qty-val font-bold text-sm">1</span>
-                        <button onclick="alterarQtde(this, 1)" class="qty-btn">+</button>
-                    </div>
+                    <div class="flex-grow relative"><span class="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 font-bold text-xs">R$</span><input type="text" placeholder="0,00" class="w-full dark-input pl-8 p-2 rounded-xl text-sm service-price" onkeyup="formatarMoeda(this)"></div>
+                    <div class="flex items-center bg-white/5 rounded-xl p-1 gap-3"><button onclick="alterarQtde(this, -1)" class="qty-btn">-</button><span class="qty-val font-bold text-sm">1</span><button onclick="alterarQtde(this, 1)" class="qty-btn">+</button></div>
                 </div>`;
             container.appendChild(div);
-            div.querySelector('.service-name').addEventListener('input', function() {
-                const item = cacheDados.find(x => x.srv_nome === this.value);
-                if (item) {
-                    const pInput = div.querySelector('.service-price');
-                    let val = item.srv_valor.toString().replace("R$", "").replace(".", "").replace(",", ".").trim();
-                    pInput.value = (parseFloat(val) || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2});
-                    atualizarSoma();
-                }
-            });
         }
 
         function formatarMoeda(i) {
@@ -353,46 +280,32 @@
             modoOS = !modoOS;
             const btn = document.getElementById('btn-acao');
             const lbl = document.getElementById('label-prazo');
-            const card = document.getElementById('card-principal');
             const thumb = document.getElementById('toggleMode');
-            setInitialObs();
             if (modoOS) {
-                thumb.classList.add('mode-os'); card.classList.add('is-os');
                 btn.innerHTML = 'Finalizar O.S <i class="fa-solid fa-check"></i>';
                 lbl.innerText = "Garantia";
-                lbl.classList.replace('bg-blue-600', 'bg-green-600');
             } else {
-                thumb.classList.remove('mode-os'); card.classList.remove('is-os');
                 btn.innerHTML = 'Gerar Orçamento <i class="fa-solid fa-arrow-right"></i>';
                 lbl.innerText = "Vencimento";
-                lbl.classList.replace('bg-green-600', 'bg-blue-600');
             }
-            calcularDataFinal();
         }
 
         function alternarQuitacao() {
             saldoQuitado = !saldoQuitado;
             const btn = document.getElementById('btn-quitar');
-            if(saldoQuitado) {
-                btn.innerText = "PAGAMENTO CONFIRMADO";
-                btn.style.background = "#059669"; btn.style.color = "white";
-            } else {
-                btn.innerText = "QUITAR SALDO";
-                btn.style.background = ""; btn.style.color = "";
-            }
+            btn.innerText = saldoQuitado ? "PAGAMENTO CONFIRMADO" : "QUITAR SALDO";
+            btn.style.background = saldoQuitado ? "#059669" : "";
             gerarDocumento();
         }
 
         function gerarDocumento() {
-            const prestador = document.getElementById('nomePrestador').value || "ELIEZER";
-            const cliente = document.getElementById('nomeCliente').value || "Cliente";
+            const prest = document.getElementById('nomePrestador').value || "ELIEZER";
+            const cli = document.getElementById('nomeCliente').value || "Cliente";
             const total = document.getElementById('totalFinal').value;
             const obs = document.getElementById('obsGeral').value;
-            const dias = document.getElementById('inputGarantia').value;
-            const dataFim = document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/');
-            
+            const dVal = document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/');
             const pixD = cacheDados.find(d => d.emp_pix);
-            const chave = pixD ? pixD.emp_pix : "[CHAVE NÃO ENCONTRADA]";
+            const chave = pixD ? pixD.emp_pix : "[NÃO CADASTRADO]";
 
             let srvTxt = "";
             document.querySelectorAll('.service-card').forEach(c => {
@@ -402,121 +315,104 @@
                 if(n) srvTxt += `• ${q}x ${n} - R$ ${p}\n`;
             });
 
-            const tNum = parseFloat(total.replace(/\./g, "").replace(",", ".")) || 0;
-            const sVal = (tNum * 0.3).toLocaleString('pt-BR', {minimumFractionDigits: 2});
-            const rVal = (tNum * 0.7).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            const sinalV = (parseFloat(total.replace(/\./g, "").replace(",", ".")) * 0.3).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            const fraseSaldo = saldoQuitado ? "*Pagamento Confirmado:* Total Pago" : `*Saldo Restante:* R$ ${(parseFloat(total.replace(/\./g, "").replace(",", ".")) * 0.7).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
 
-            const saldoTxt = saldoQuitado ? "*Pagamento Confirmado:* R$ 0,00 (Total Pago)" : `*Saldo Restante:* R$ ${rVal}`;
-
-            document.getElementById('txt-proposta').innerText = `*ORÇAMENTO TÉCNICO - ${prestador.toUpperCase()}*\n\nOlá ${cliente}! Segue o orçamento:\n\n*SERVIÇOS:*\n${srvTxt}\n*OBS:*\n${obs}\n\n*INVESTIMENTO TOTAL:* R$ ${total}\n\n*${modoOS ? 'Garantia' : 'Vencimento'}:* ${dias} dias\n*Data Prevista:* ${dataFim}`;
-            document.getElementById('txt-sinal').innerText = `Olá ${cliente}! 🤝\n\nPara agendarmos, precisamos de um sinal.\n\n*Sinal (30%): R$ ${sVal}*\n\nChave PIX: ${chave}`;
-            document.getElementById('txt-conclusao').innerText = `*Serviço Concluído!* ✅\n\n${cliente}, equipamento pronto.\n\n${saldoTxt}\n\n*Garantia:* ${dias} dias. Obrigado!\n${prestador}`;
+            document.getElementById('txt-proposta').innerText = `*ORÇAMENTO - ${prest.toUpperCase()}*\n\nOlá ${cli}!\n\n*SERVIÇOS:*\n${srvTxt}\n*OBS:*\n${obs}\n\n*TOTAL:* R$ ${total}\n*Previsão:* ${dVal}`;
+            document.getElementById('txt-sinal').innerText = `Olá ${cli}! Para agendarmos, sinal de 30% (R$ ${sinalV}).\n\nChave PIX: ${chave}`;
+            document.getElementById('txt-conclusao').innerText = `*Serviço Concluído!* ✅\n\n${cli}, equipamento pronto.\n\n${fraseSaldo}\n\nObrigado!`;
 
             document.getElementById('modal-mensagens').style.display = 'block';
-            document.body.style.overflow = 'hidden';
         }
 
-        function fecharModal() {
-            document.getElementById('modal-mensagens').style.display = 'none';
-            document.body.style.overflow = 'auto';
-        }
+        function fecharModal() { document.getElementById('modal-mensagens').style.display = 'none'; }
+        function enviarWpp(id) { window.open(`https://api.whatsapp.com/send?phone=55${document.getElementById('telCliente').value.replace(/\D/g, '')}&text=${encodeURIComponent(document.getElementById(id).innerText)}`, '_blank'); }
 
-        function enviarWpp(id) {
-            const texto = document.getElementById(id).innerText;
-            const tel = document.getElementById('telCliente').value.replace(/\D/g, '');
-            if(!tel) { alert("Informe o WhatsApp!"); return; }
-            window.open(`https://api.whatsapp.com/send?phone=55${tel}&text=${encodeURIComponent(texto)}`, '_blank');
-        }
-
-        function copiarTextoProfissional(id, elemento) {
-            const texto = document.getElementById(id).innerText;
-            const originalHTML = elemento.innerHTML;
-            navigator.clipboard.writeText(texto).then(() => {
-                elemento.classList.add('btn-copy-success');
-                elemento.innerHTML = '<i class="fa-solid fa-check"></i> COPIADO!';
+        function copiarTextoProfissional(id, el) {
+            const t = document.getElementById(id).innerText;
+            const original = el.innerHTML;
+            navigator.clipboard.writeText(t).then(() => {
+                el.classList.add('btn-copy-success');
+                el.innerHTML = '<i class="fa-solid fa-check"></i> COPIADO!';
                 setTimeout(() => {
-                    elemento.classList.remove('btn-copy-success');
-                    elemento.innerHTML = originalHTML;
+                    el.classList.remove('btn-copy-success');
+                    el.innerHTML = original;
                 }, 2000);
             });
         }
 
-        async function baixarPDF() {
+        /* ✅ FUNÇÃO PDF CORRIGIDA (TIMING E VISIBILIDADE) */
+        function baixarPDF() {
             const prest = document.getElementById('nomePrestador').value || "REFRIGERAÇÃO ELIEZER";
             const cli = document.getElementById('nomeCliente').value || "Cliente";
             const total = document.getElementById('totalFinal').value;
             const obs = document.getElementById('obsGeral').value;
-            const end = document.getElementById('enderecoCliente').value || "Não informado";
-            const tel = document.getElementById('telCliente').value || "Não informado";
+            const tel = document.getElementById('telCliente').value || "N/A";
+            const end = document.getElementById('enderecoCliente').value || "N/A";
             const dVal = document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/');
-
-            const dEmp = cacheDados.find(d => d.emp_nome === prest) || cacheDados[0];
-            const cnpj = dEmp ? (dEmp.emp_doc || "") : "";
-            const dCli = cacheDados.find(c => c.cli_nome === cli);
-            const doc = dCli ? (dCli.cli_doc || "") : "";
 
             let srvH = "";
             document.querySelectorAll('.service-card').forEach(c => {
                 const n = c.querySelector('.service-name').value;
                 const p = c.querySelector('.service-price').value;
                 const q = c.querySelector('.qty-val').innerText;
-                if(n) srvH += `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding:10px 0; text-align:left;">${n.toUpperCase()}</td><td style="padding:10px 0; text-align:center;">${q}</td><td style="padding:10px 0; text-align:right; font-weight: 600;">R$ ${p}</td></tr>`;
+                if(n) srvH += `<tr style="border-bottom: 1px solid #eee;"><td style="padding:10px;">${n.toUpperCase()}</td><td style="text-align:center;">${q}</td><td style="text-align:right;">R$ ${p}</td></tr>`;
             });
 
             const template = `
-            <html><head><style>
-                body { font-family: Arial, sans-serif; color: #334155; margin: 0; padding: 40px; background: white; }
-                .header { display: flex; justify-content: space-between; border-bottom: 3px solid #1e40af; padding-bottom: 20px; margin-bottom: 30px; }
-                .title { font-size: 22px; font-weight: 800; color: #0f172a; margin: 0; }
-                .info-box { background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #e2e8f0; font-size: 13px; }
-                table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-                th { border-bottom: 2px solid #0f172a; text-align: left; padding: 10px 0; font-size: 12px; text-transform: uppercase; color: #0f172a; }
-                td { padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
-                .footer { margin-top: 50px; display: flex; justify-content: space-between; }
-                .obs { flex: 1; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; font-size: 11px; margin-right: 20px; }
-                .total-box { width: 200px; text-align: right; }
-                .signature { margin-top: 80px; text-align: center; border-top: 1px solid #333; width: 250px; margin-left: auto; margin-right: auto; padding-top: 5px; font-size: 11px; }
-            </style></head><body>
-                <div class="header">
-                    <div><h1 class="title">${prest.toUpperCase()}</h1><p style="font-size: 11px;">CNPJ/CPF: ${cnpj}</p></div>
-                    <div style="text-align: right;"><div style="font-size: 12px; font-weight: 700; color: #94a3b8;">${modoOS ? 'ORDEM DE SERVIÇO' : 'ORÇAMENTO'}</div><div style="font-size: 16px; font-weight: 600;">${new Date().toLocaleDateString('pt-BR')}</div></div>
+            <div style="font-family: Arial; color: #333; padding: 40px; background: white; width: 210mm; min-height: 297mm;">
+                <div style="display: flex; justify-content: space-between; border-bottom: 3px solid #1e40af; padding-bottom: 20px; margin-bottom: 20px;">
+                    <div><h1 style="color: #1e40af; margin: 0;">${prest.toUpperCase()}</h1></div>
+                    <div style="text-align: right;"><h2>${modoOS ? 'ORDEM DE SERVIÇO' : 'ORÇAMENTO'}</h2><p>${new Date().toLocaleDateString('pt-BR')}</p></div>
                 </div>
-                <div class="info-box">
-                    <p><strong>Cliente:</strong> ${cli} | <strong>Doc:</strong> ${doc}</p>
-                    <p><strong>Endereço:</strong> ${end} | <strong>WhatsApp:</strong> ${tel}</p>
+                <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <p><strong>Cliente:</strong> ${cli} | <strong>WhatsApp:</strong> ${tel}</p>
+                    <p><strong>Endereço:</strong> ${end}</p>
                 </div>
-                <table>
-                    <thead><tr><th>Descrição</th><th style="text-align:center;">Qtd</th><th style="text-align:right;">Subtotal</th></tr></thead>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                    <thead><tr style="background: #1e40af; color: white;"><th>Descrição</th><th>Qtd</th><th>Subtotal</th></tr></thead>
                     <tbody>${srvH}</tbody>
                 </table>
-                <div class="footer">
-                    <div class="obs"><strong>Observações Técnicas:</strong><br>${obs.replace(/\n/g, '<br>')}</div>
-                    <div class="total-box">
-                        <p style="font-size: 14px; font-weight: 800; text-transform: uppercase; border-top: 2px solid #e2e8f0; padding-top: 15px; margin:0;">Total Geral</p>
-                        <h2 style="font-size: 24px; color: #1e40af; margin:0;">R$ ${total}</h2>
-                        <p style="font-size: 10px; color: #94a3b8;">Validade: ${dVal}</p>
-                    </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <div style="flex: 1; border: 1px solid #ddd; padding: 10px; border-radius: 8px; font-size: 11px;"><strong>Obs:</strong><br>${obs}</div>
+                    <div style="width: 200px; text-align: right;"><h3>Total Geral: R$ ${total}</h3><p>Vencimento: ${dVal}</p></div>
                 </div>
-                <div class="signature">Assinatura do Responsável</div>
-            </body></html>`;
+            </div>`;
 
-            // MÉTODO DEFINITIVO: ABRE UMA JANELA E GERA DO CONTEÚDO PURO
-            const worker = html2pdf();
-            worker.from(template).set({
-                margin: 10,
-                filename: `${modoOS ? 'OS' : 'Orcamento'}_${cli}.pdf`,
-                image: { type: 'jpeg', quality: 1 },
-                html2canvas: { scale: 3, useCORS: true, backgroundColor: '#ffffff' },
+            const off = document.getElementById('pdf-offscreen');
+            off.innerHTML = template;
+
+            const opt = {
+                margin: 0,
+                filename: `Orcamento_${cli}.pdf`,
+                html2canvas: { scale: 2, backgroundColor: '#ffffff', useCORS: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            }).save();
+            };
+
+            /* ✅ AJUSTE DE TIMING AQUI */
+            setTimeout(() => {
+                html2pdf().set(opt).from(off).save().then(() => {
+                    off.innerHTML = "";
+                });
+            }, 300);
         }
 
         window.onload = () => {
-            const agora = new Date();
-            document.getElementById('dataInicio').value = agora.toISOString().split('T')[0];
+            document.getElementById('dataInicio').value = new Date().toISOString().split('T')[0];
             buscarDadosPlanilha();
             adicionarServico();
         };
+
+        function autoExpandir(t) { t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; }
+        function calcularDataFinal() {
+            const ini = document.getElementById('dataInicio').value;
+            const dias = parseInt(document.getElementById('inputGarantia').value) || 0;
+            if (ini) {
+                let d = new Date(ini + 'T00:00:00');
+                d.setDate(d.getDate() + dias);
+                document.getElementById('dataPrazoFinal').value = d.toISOString().split('T')[0];
+            }
+        }
     </script>
 </body>
 </html>
