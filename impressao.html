@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=1024"> 
-    <title>Orçamento Técnico</title>
+    <title>Orçamento Técnico Professional</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
@@ -70,10 +70,10 @@
         <header>
             <div class="logo-area"> 
                 <div class="logo-container">
-                    <img id="logo-img" src="COLOQUE_AQUI_SEU_BASE64" class="logo-img">
+                    <img id="logo-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAADsCAYAAAACYR4qAAAABHNCSVQICAgIfAhkiAAAAF96VFh0UmF3IHByb2ZpbGUgdHlwZSBBUFAxAAAImeNKT81LLcpMVigoyk/LzEnlUgADYxMuE0sTS6NEAwMDCwMIMDQwMDYEkkZAtjlUKNEABZiYm6UBoblZspkpiM8FAE+6FWgbwqosSC0+mmOsBR6SItpv6wAAARtJREFUICWewGVAWY/ZtlKUtF9nvueH0Md31sy1rx4LqOuAj8ahCBfVo6SqfEP5ttfdm770xDcKJTOYwQz2g+3tD3TbrwGwt7nTDGYwg+8kiP0Ynj17VebmI6kccf7iqtx+8xG+/80/II8dP8vjxxflgJ9gvl8Q6kDRlFsuxemHSqIqWhVUVjAKJT2BPiJjN1JKbsQXlwWw9ez/QYnuleNeoUHNLNQDWfEb5y/JkblxXC9fN8sMmMEMZjCBd/7SnfLxX/nVsLet8wxmMIOvBdcfG3D3Paf8c3/2hL/ue475z/2XH/Wbbn85991/lhPHL2EJl2LOXaNLUXjS5GKVh7H69lisltr6XptWblgw3LyX3ArvWdEf+PxCtP8PulzOjlLIC94AAAAASUVORK5CYII=" class="logo-img">
                 </div>
                 <div class="empresa-info" id="empresa-dados">
-                    <strong id="emp-nome">CARREGANDO...</strong><br>
+                    <strong id="emp-nome">REFRIGERAÇÃO ELIEZER</strong><br>
                     <span id="emp-cnpj">CNPJ: ...</span><br>
                     <span id="emp-end">...</span><br>
                     <span id="emp-tel">Tel: ...</span>
@@ -130,79 +130,70 @@
         const URL_DATABASE = "https://script.google.com/macros/s/AKfycbyqi-CDy83ZEM9VADEpEhS5u53lRIElQz8SNbHnitBOv-n84oCDQjd6pIA6n4YbIr2Ygg/exec";
 
         async function carregarPagina() {
-
-
-            // No seu impressao.html, dentro de carregarPagina()
-const cliInfo = cacheDados.find(d => d.cli_nome === dadosLocal.cliente);
-if(cliInfo) {
-    // Note que usamos 'cli_doc' porque foi esse o nome que você deu na linha 102 da imagem do Script
-    document.getElementById('view-cpf-cli').innerText = cliInfo.cli_doc || "---"; 
-}
-            
             // 1. Número aleatório
             document.getElementById('num-random').innerText = Math.floor(100 + Math.random() * 899) + '/2026';
 
-            // 2. Pegar dados do LocalStorage primeiro
+            // 2. Pegar dados do LocalStorage
             const dadosLocal = JSON.parse(localStorage.getItem('dados_impressao'));
             
             if(!dadosLocal) {
-                alert("Nenhum dado encontrado para impressão.");
+                console.error("LocalStorage está vazio!");
                 return;
             }
 
-            // Preenche o que já temos do LocalStorage
-            document.getElementById('view-tipo').innerText = dadosLocal.tipo;
-            document.getElementById('view-cliente').innerText = dadosLocal.cliente;
-            document.getElementById('view-endereco').innerText = dadosLocal.endereco;
-            document.getElementById('view-data').innerText = dadosLocal.emissao;
-            document.getElementById('view-venc').innerText = dadosLocal.validade;
-            document.getElementById('view-total').innerText = 'R$ ' + dadosLocal.total;
-            document.getElementById('view-obs').innerText = dadosLocal.obs || "Nenhuma observação técnica.";
+            // Preencher campos básicos do LocalStorage
+            document.getElementById('view-tipo').innerText = dadosLocal.tipo || "ORÇAMENTO";
+            document.getElementById('view-cliente').innerText = dadosLocal.cliente || "---";
+            document.getElementById('view-endereco').innerText = dadosLocal.endereco || "---";
+            document.getElementById('view-data').innerText = dadosLocal.emissao || "---";
+            document.getElementById('view-venc').innerText = dadosLocal.validade || "---";
+            document.getElementById('view-total').innerText = 'R$ ' + (dadosLocal.total || "0,00");
+            document.getElementById('view-obs').innerText = dadosLocal.obs || "Nenhuma observação registrada.";
             document.getElementById('view-dias-garantia').innerText = dadosLocal.garantia || "90";
-            
+
             if(dadosLocal.tipo === "ORDEM DE SERVIÇO") {
                 document.getElementById('label-venc').innerText = "CONCLUSÃO:";
             }
 
             const corpo = document.getElementById('tabela-corpo');
-            corpo.innerHTML = ""; // Limpa antes de preencher
-            dadosLocal.itens.forEach(i => {
-                corpo.innerHTML += `<tr><td>${i.descricao}</td><td style="text-align:center">${i.qtd}</td><td style="text-align:right">R$ ${i.valor}</td></tr>`;
-            });
+            corpo.innerHTML = "";
+            if(dadosLocal.itens) {
+                dadosLocal.itens.forEach(i => {
+                    corpo.innerHTML += `<tr><td>${i.descricao}</td><td style="text-align:center">${i.qtd}</td><td style="text-align:right">R$ ${i.valor}</td></tr>`;
+                });
+            }
 
-            // 3. Agora busca dados da Planilha (CNPJ, Tel, etc)
+            // 3. Buscar dados da Planilha
             try {
                 const resp = await fetch(URL_DATABASE);
                 const cacheDados = await resp.json();
                 
-                // Dados da Empresa
-                const emp = cacheDados.find(d => d.emp_nome);
+                // Encontrar dados da empresa (estão em todas as linhas do JSON que criamos)
+                const emp = cacheDados.find(d => d.emp_nome) || cacheDados[0];
                 if(emp) {
                     document.getElementById('emp-nome').innerText = emp.emp_nome;
-                    document.getElementById('emp-cnpj').innerText = "CNPJ: " + (emp.emp_cnpj || "00.000.000/0001-00");
-                    document.getElementById('emp-tel').innerText = "Tel: " + (emp.emp_tel || "(67) 99999-9999");
-                    document.getElementById('emp-end').innerText = emp.emp_end || "Endereço não cadastrado";
-                    document.getElementById('view-resp-tecnico').innerText = emp.emp_resp || "Responsável Técnico";
+                    document.getElementById('emp-cnpj').innerText = "CNPJ: " + emp.emp_cnpj;
+                    document.getElementById('emp-end').innerText = emp.emp_end;
+                    document.getElementById('emp-tel').innerText = "Tel: " + emp.emp_tel;
+                    document.getElementById('view-resp-tecnico').innerText = emp.emp_resp;
                 }
 
-                // Busca CPF/CNPJ do Cliente específico
+                // Buscar CPF do cliente atual
                 const cliInfo = cacheDados.find(d => d.cli_nome === dadosLocal.cliente);
                 if(cliInfo) {
-                    document.getElementById('view-cpf-cli').innerText = cliInfo.cli_cpf || "---";
+                    document.getElementById('view-cpf-cli').innerText = cliInfo.cli_doc || "---";
                 }
-            } catch (e) { 
-                console.error("Erro ao carregar dados remotos:", e);
-                // Preenche valores padrão em caso de erro no fetch
-                document.getElementById('emp-nome').innerText = "REFRIGERAÇÃO ELIEZER";
+            } catch (e) {
+                console.error("Erro ao buscar dados remotos:", e);
             }
         }
 
         function baixarPDF() {
             const element = document.getElementById('conteudo-pdf');
-            const clienteNome = document.getElementById('view-cliente').innerText;
+            const cliente = document.getElementById('view-cliente').innerText;
             const opt = {
                 margin: [10, 0, 10, 0],
-                filename: `Documento_${clienteNome}.pdf`,
+                filename: `Orcamento_${cliente}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
