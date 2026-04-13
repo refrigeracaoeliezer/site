@@ -360,7 +360,50 @@
             adicionarServico();
         };
 
-        function gerarDocumento() { alert("Processando..."); }
+   function gerarDocumento() {
+    const prestador = document.getElementById('nomePrestador').value || "ELIEZER";
+    const cliente = document.getElementById('nomeCliente').value || "Cliente";
+    const endereco = document.getElementById('enderecoCliente').value;
+    const telefone = document.getElementById('telCliente').value;
+    const dataInicio = document.getElementById('dataInicio').value;
+    const dataFim = document.getElementById('dataPrazoFinal').value;
+    const obs = document.getElementById('obsGeral').value;
+    const total = document.getElementById('totalFinal').value;
+
+    // A linha que você adicionou está perfeita:
+    const chavePix = (cacheDados.length > 0 && cacheDados[0].emp_pix) ? cacheDados[0].emp_pix : "[CHAVE NÃO CADASTRADA]";
+    
+    // Captura os serviços da lista
+    let itens = [];
+    document.querySelectorAll('.service-card').forEach(card => {
+        itens.push({
+            nome: card.querySelector('.service-name').value,
+            preco: card.querySelector('.service-price').value,
+            qtd: card.querySelector('.service-qty').innerText
+        });
+    });
+
+    // Aqui você deve decidir o que fazer com os dados. 
+    // Exemplo: Salvar no localStorage para abrir a página de impressão
+    const dadosParaImpressao = {
+        tipo: modoOS ? "ORDEM DE SERVIÇO" : "ORÇAMENTO",
+        prestador,
+        cliente,
+        endereco,
+        telefone,
+        dataInicio,
+        dataFim,
+        itens,
+        total,
+        obs,
+        pix: chavePix // Passando a chave PIX capturada
+    };
+
+    localStorage.setItem("dados_documento", JSON.stringify(dadosParaImpressao));
+    
+    // Abre a sua página de visualização/impressão (ajuste o nome do arquivo se necessário)
+    window.location.href = "visualizar.html"; 
+}
     </script>
 </body>
 </html>
