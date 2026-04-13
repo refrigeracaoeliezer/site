@@ -192,9 +192,11 @@
             </div>
 
             <div id="sec-custos" class="space-y-4">
-                <div class="bg-blue-600/5 p-5 rounded-3xl border border-blue-500/10 flex items-center gap-3">
-                    <span class="text-xl font-black text-white/20">R$</span>
-                    <input type="text" id="totalFinal" placeholder="0,00" class="w-full bg-transparent border-none text-2xl font-black text-white focus:outline-none" readonly>
+                <div class="bg-blue-600/5 p-5 rounded-3xl border border-blue-500/10">
+                    <div class="flex items-center gap-3">
+                        <span class="text-xl font-black text-white/20">R$</span>
+                        <input type="text" id="totalFinal" placeholder="0,00" class="w-full bg-transparent border-none text-2xl font-black text-white focus:outline-none" readonly>
+                    </div>
                 </div>
             </div>
 
@@ -214,6 +216,32 @@
         let modoOS = false;
         let saldoQuitado = false;
 
+        function forcarLista(input) {
+            input.setAttribute('autocomplete', 'off');
+            const valOriginal = input.value;
+            input.value = '';
+            setTimeout(() => { input.value = valOriginal; }, 1);
+        }
+
+        function autoExpandir(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        }
+
+        function calcularDataFinal() {
+            const dataInicioVal = document.getElementById('dataInicio').value;
+            const diasPrazo = parseInt(document.getElementById('inputGarantia').value) || 0;
+            const campoDataFinal = document.getElementById('dataPrazoFinal');
+            if (dataInicioVal) {
+                let data = new Date(dataInicioVal + 'T00:00:00');
+                data.setDate(data.getDate() + diasPrazo);
+                const y = data.getFullYear();
+                const m = String(data.getMonth() + 1).padStart(2, '0');
+                const d = String(data.getDate()).padStart(2, '0');
+                campoDataFinal.value = `${y}-${m}-${d}`;
+            }
+        }
+
         async function buscarDadosPlanilha() {
             try {
                 const resp = await fetch(URL_DATABASE);
@@ -226,10 +254,10 @@
         }
 
         function renderDatalists() {
-            const criar = (c) => [...new Set(cacheDados.map(d => d[c]))].filter(Boolean).map(n => `<option value="${n}">`).join('');
-            document.getElementById('lista_clientes').innerHTML = criar('cli_nome');
-            document.getElementById('lista_servicos').innerHTML = criar('srv_nome');
-            document.getElementById('lista_obs').innerHTML = criar('txt_obs');
+            const criarOpcoes = (campo) => [...new Set(cacheDados.map(d => d[campo]))].filter(Boolean).map(n => `<option value="${n}">`).join('');
+            document.getElementById('lista_clientes').innerHTML = criarOpcoes('cli_nome');
+            document.getElementById('lista_servicos').innerHTML = criarOpcoes('srv_nome');
+            document.getElementById('lista_obs').innerHTML = criarOpcoes('txt_obs');
             if(cacheDados.length > 0) {
                 const d = cacheDados.find(x => x.emp_nome);
                 if(d) document.getElementById('nomePrestador').value = d.emp_nome;
@@ -263,8 +291,15 @@
                     <button onclick="this.closest('.service-card').remove(); atualizarSoma();" class="text-white/10 hover:text-red-500"><i class="fa-solid fa-trash-can"></i></button>
                 </div>
                 <div class="flex items-center gap-2">
-                    <div class="flex-grow relative"><span class="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 font-bold text-xs">R$</span><input type="text" placeholder="0,00" class="w-full dark-input pl-8 p-2 rounded-xl text-sm service-price" onkeyup="formatarMoeda(this)"></div>
-                    <div class="flex items-center bg-white/5 rounded-xl p-1 gap-3"><button onclick="alterarQtde(this, -1)" class="qty-btn">-</button><span class="qty-val font-bold text-sm">1</span><button onclick="alterarQtde(this, 1)" class="qty-btn">+</button></div>
+                    <div class="flex-grow relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 font-bold text-xs">R$</span>
+                        <input type="text" placeholder="0,00" class="w-full dark-input pl-8 p-2 rounded-xl text-sm service-price" onkeyup="formatarMoeda(this)">
+                    </div>
+                    <div class="flex items-center bg-white/5 rounded-xl p-1 gap-3">
+                        <button onclick="alterarQtde(this, -1)" class="qty-btn">-</button>
+                        <span class="qty-val font-bold text-sm">1</span>
+                        <button onclick="alterarQtde(this, 1)" class="qty-btn">+</button>
+                    </div>
                 </div>`;
             container.appendChild(div);
             div.querySelector('.service-name').addEventListener('input', function() {
@@ -348,7 +383,7 @@
             const fraseSaldo = saldoQuitado ? "*Pagamento Confirmado:* Total Pago" : `*Saldo Restante:* R$ ${(tNum * 0.7).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
 
             document.getElementById('txt-proposta').innerText = `*ORÇAMENTO - ${prest.toUpperCase()}*\n\nOlá ${cli}!\n\n*SERVIÇOS:*\n${srvTxt}\n*OBS:*\n${obs}\n\n*TOTAL:* R$ ${total}\n*Previsão:* ${dVal}`;
-            document.getElementById('txt-sinal').innerText = `Olá ${cli}! Para agendarmos, sinal de 30% (R$ ${sinalV}).\n\nChave PIX: ${chave}`;
+            document.getElementById('txt-sinal').innerText = `Olá ${cli}! Para agendarmos, sinal de 30% (R$ ${sVal}).\n\nChave PIX: ${chave}`;
             document.getElementById('txt-conclusao').innerText = `*Serviço Concluído!* ✅\n\n${cli}, equipamento pronto.\n\n${fraseSaldo}\n\nObrigado!`;
 
             document.getElementById('modal-mensagens').style.display = 'block';
@@ -380,7 +415,8 @@
             const dataEmissao = new Date().toLocaleDateString('pt-BR');
             const dataValidade = document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/');
 
-            const linkLogo = (cacheDados.length >= 11) ? cacheDados[10].emp_nome : ""; 
+            // Correção da busca da logo: Linha 11 da planilha é o índice 10
+            const linkLogo = (cacheDados[10] && cacheDados[10].emp_nome) ? cacheDados[10].emp_nome : ""; 
 
             let servicosHTML = "";
             document.querySelectorAll('.service-card').forEach(card => {
@@ -390,9 +426,9 @@
                 if(nome) {
                     servicosHTML += `
                     <tr style="border-bottom: 1px solid #f1f5f9;">
-                        <td style="padding: 10px 5px; text-align: left;">${nome.toUpperCase()}</td>
-                        <td style="padding: 10px 5px; text-align: center;">${qtde}</td>
-                        <td style="padding: 10px 5px; text-align: right; font-weight: 600;">R$ ${preco}</td>
+                        <td style="padding: 12px 5px; text-align: left; color: #334155;">${nome.toUpperCase()}</td>
+                        <td style="padding: 12px 5px; text-align: center; color: #334155;">${qtde}</td>
+                        <td style="padding: 12px 5px; text-align: right; font-weight: 600; color: #334155;">R$ ${preco}</td>
                     </tr>`;
                 }
             });
@@ -401,89 +437,78 @@
             <html>
             <head>
                 <style>
-                    @page { margin: 0; }
-                    body { font-family: 'Helvetica', Arial, sans-serif; color: #334155; margin: 0; padding: 0; background: white; }
-                    .wrapper { padding: 30px; }
-                    .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #1e40af; padding-bottom: 15px; margin-bottom: 20px; }
-                    .logo-area img { max-height: 80px; max-width: 250px; object-fit: contain; }
+                    body { font-family: 'Helvetica', Arial, sans-serif; color: #334155; margin: 0; padding: 40px; background: white; }
+                    .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #1e40af; padding-bottom: 15px; margin-bottom: 25px; }
+                    .logo-area img { max-height: 90px; max-width: 280px; object-fit: contain; }
                     .doc-info { text-align: right; }
-                    .doc-title { font-size: 18px; font-weight: 900; color: #1e40af; margin: 0; }
-                    .client-box { background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e2e8f0; font-size: 12px; line-height: 1.5; }
-                    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; table-layout: fixed; }
-                    th { border-bottom: 2px solid #0f172a; text-align: left; padding: 8px 5px; font-size: 11px; text-transform: uppercase; color: #0f172a; }
-                    td { font-size: 12px; word-wrap: break-word; }
-                    .footer-grid { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-top: 10px; }
-                    .obs-section { flex: 1; background: #fff; border: 1px solid #e2e8f0; padding: 10px; border-radius: 8px; font-size: 11px; min-height: 60px; }
+                    .doc-title { font-size: 20px; font-weight: 900; color: #1e40af; margin: 0; }
+                    .client-box { background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #e2e8f0; font-size: 13px; line-height: 1.6; }
+                    table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+                    th { border-bottom: 2px solid #0f172a; text-align: left; padding: 10px 5px; font-size: 11px; text-transform: uppercase; color: #0f172a; font-weight: 800; }
+                    .footer-grid { display: flex; justify-content: space-between; align-items: flex-start; gap: 30px; }
+                    .obs-section { flex: 1; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; font-size: 12px; min-height: 80px; }
                     .total-section { width: 220px; text-align: right; }
-                    .thanks { margin-top: 40px; text-align: center; font-style: italic; font-size: 13px; color: #1e40af; font-weight: 600; }
-                    .signature { margin-top: 60px; text-align: center; border-top: 1px solid #94a3b8; width: 200px; margin-left: auto; margin-right: auto; padding-top: 5px; font-size: 11px; font-weight: bold; }
+                    .thanks { margin-top: 50px; text-align: center; font-style: italic; font-size: 14px; color: #1e40af; font-weight: 700; }
+                    .signature { margin-top: 60px; text-align: center; border-top: 1px solid #94a3b8; width: 250px; margin-left: auto; margin-right: auto; padding-top: 10px; font-size: 12px; font-weight: bold; }
                 </style>
             </head>
             <body>
-                <div class="wrapper">
-                    <div class="header">
-                        <div class="logo-area">
-                            ${linkLogo ? `<img src="${linkLogo}" onerror="this.style.display='none'">` : `<h1 style="color:#1e40af; margin:0;">${prestador.toUpperCase()}</h1>`}
-                        </div>
-                        <div class="doc-info">
-                            <h2 class="doc-title">${modoOS ? 'ORDEM DE SERVIÇO' : 'ORÇAMENTO TÉCNICO'}</h2>
-                            <p style="margin: 5px 0 0 0; font-size: 11px;"><b>Emissão:</b> ${dataEmissao}</p>
-                            <p style="margin: 2px 0 0 0; font-size: 11px; color: #ef4444;"><b>Válido até:</b> ${dataValidade}</p>
-                        </div>
+                <div class="header">
+                    <div class="logo-area">
+                        ${linkLogo ? `<img src="${linkLogo}" crossorigin="anonymous">` : `<h1 style="color:#1e40af; margin:0;">${prestador.toUpperCase()}</h1>`}
                     </div>
-
-                    <div class="client-box">
-                        <p style="margin:0;"><b>CLIENTE:</b> ${cliente}</p>
-                        <p style="margin:3px 0;"><b>ENDEREÇO:</b> ${enderecoCli}</p>
-                        <p style="margin:0;"><b>WHATSAPP:</b> ${telCli}</p>
+                    <div class="doc-info">
+                        <h2 class="doc-title">${modoOS ? 'ORDEM DE SERVIÇO' : 'ORÇAMENTO TÉCNICO'}</h2>
+                        <p style="margin: 5px 0 0 0; font-size: 12px;"><b>Emissão:</b> ${dataEmissao}</p>
+                        <p style="margin: 2px 0 0 0; font-size: 12px; color: #ef4444;"><b>Válido até:</b> ${dataValidade}</p>
                     </div>
+                </div>
 
-                    <table>
-                        <thead>
-                            <tr>
-                                <th style="width: 65%;">DESCRIÇÃO DOS SERVIÇOS / PEÇAS</th>
-                                <th style="width: 10%; text-align: center;">QTD</th>
-                                <th style="width: 25%; text-align: right;">SUBTOTAL</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${servicosHTML}
-                        </tbody>
-                    </table>
+                <div class="client-box">
+                    <p style="margin:0;"><b>CLIENTE:</b> ${cliente}</p>
+                    <p style="margin:4px 0;"><b>ENDEREÇO:</b> ${enderecoCli}</p>
+                    <p style="margin:0;"><b>WHATSAPP:</b> ${telCli}</p>
+                </div>
 
-                    <div class="footer-grid">
-                        <div class="obs-section">
-                            <b>OBSERVAÇÕES TÉCNICAS:</b><br>
-                            ${obs ? obs.replace(/\n/g, '<br>') : 'Nenhuma observação adicional.'}
-                        </div>
-                        <div class="total-section">
-                            <p style="font-size: 12px; font-weight: 800; text-transform: uppercase; color: #64748b; margin-bottom: 5px;">Investimento Total</p>
-                            <h2 style="font-size: 26px; color: #1e40af; margin: 0;">R$ ${total}</h2>
-                            <p style="font-size: 9px; color: #94a3b8; margin-top: 4px;">Material e Mão de Obra inclusos.</p>
-                        </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 65%;">DESCRIÇÃO DOS SERVIÇOS</th>
+                            <th style="width: 15%; text-align: center;">QTD</th>
+                            <th style="width: 20%; text-align: right;">SUBTOTAL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${servicosHTML}
+                    </tbody>
+                </table>
+
+                <div class="footer-grid">
+                    <div class="obs-section">
+                        <b style="color: #1e40af;">OBSERVAÇÕES:</b><br>
+                        ${obs ? obs.replace(/\n/g, '<br>') : 'Nenhuma observação informada.'}
                     </div>
-
-                    <p class="thanks">"Agradecemos a preferência e a confiança em nossos serviços!"</p>
-
-                    <div class="signature">
-                        ${prestador.toUpperCase()}<br>
-                        <span style="font-weight:normal; color:#64748b;">Responsável Técnico</span>
+                    <div class="total-section">
+                        <p style="font-size: 13px; font-weight: 800; text-transform: uppercase; color: #64748b; margin-bottom: 5px;">Investimento Total</p>
+                        <h2 style="font-size: 28px; color: #1e40af; margin: 0; font-weight: 900;">R$ ${total}</h2>
                     </div>
+                </div>
+
+                <p class="thanks">"Agradecemos a preferência e a confiança em nossos serviços!"</p>
+
+                <div class="signature">
+                    ${prestador.toUpperCase()}<br>
+                    <span style="font-weight:normal; color:#64748b;">Responsável Técnico</span>
                 </div>
             </body>
             </html>`;
 
-            const worker = html2pdf();
-            worker.from(template).set({
+            // MÉTODO DE RENDERIZAÇÃO DIRETA (EVITA FOLHA BRANCA)
+            html2pdf().from(template).set({
                 margin: 0,
                 filename: `${modoOS ? 'OS' : 'Orcamento'}_${cliente.replace(/\s+/g, '_')}.pdf`,
                 image: { type: 'jpeg', quality: 1 },
-                html2canvas: { 
-                    scale: 3, 
-                    useCORS: true, 
-                    backgroundColor: '#ffffff',
-                    letterRendering: true 
-                },
+                html2canvas: { scale: 3, useCORS: true, backgroundColor: '#ffffff' },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             }).save();
         }
