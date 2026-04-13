@@ -182,30 +182,24 @@
 
     function baixarPDF() {
         const element = document.getElementById('conteudo-pdf');
-        
-        // Seleciona a logo para verificar se carregou
-        const img = document.getElementById('logo-img');
-        
         const opt = {
             margin: 0,
             filename: `Orcamento_${dados ? dados.cliente : 'Cliente'}.pdf`,
             image: { type: 'jpeg', quality: 1 },
             html2canvas: { 
                 scale: 3, 
-                useCORS: true, // Crucial para imagens externas
-                logging: false,
-                allowTaint: false,
-                proxy: "https://cors-anywhere.herokuapp.com/" // Opcional: ajuda se o Blogger bloquear
+                useCORS: true, // Permite carregar a logo de link externo
+                allowTaint: false, // Evita que o canvas seja "sujo" e bloqueado
+                letterRendering: true,
+                logging: true // Ajuda o navegador a processar a imagem
             },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
         
-        // Garante que a imagem está no cache antes de gerar
-        if (img.complete) {
+        // O delay é essencial para o celular ter tempo de processar a imagem antes de "tirar a foto" do PDF
+        setTimeout(() => {
             html2pdf().set(opt).from(element).save();
-        } else {
-            img.onload = () => html2pdf().set(opt).from(element).save();
-        }
+        }, 800); 
     }
 </script>
 </body>
