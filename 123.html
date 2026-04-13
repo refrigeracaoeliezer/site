@@ -61,8 +61,10 @@
         input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
 
         #modal-mensagens { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.95); backdrop-filter: blur(10px); z-index: 100; overflow-y: auto; display: none; padding: 20px; }
-        
         .btn-copy-success { background-color: #3b82f6 !important; color: white !important; }
+        
+        /* Container invisível para processamento do PDF */
+        #pdf-offscreen { position: absolute; left: -9999px; top: -9999px; width: 210mm; background: white; color: black; }
     </style>
 </head>
 <body class="p-4 pb-10">
@@ -121,7 +123,7 @@
         </div>
     </div>
 
-    <div id="pdf-template" style="display:none;"></div>
+    <div id="pdf-offscreen"></div>
 
     <div class="max-w-md mx-auto relative z-10" id="main-container">
         <div class="mb-6">
@@ -193,6 +195,10 @@
             </div>
 
             <div id="sec-custos" class="space-y-4">
+                <div class="section-header">
+                    <i class="fa-solid fa-calculator"></i>
+                    <span id="label-total">Total do Serviço</span>
+                </div>
                 <div class="bg-blue-600/5 p-5 rounded-3xl border border-blue-500/10">
                     <div class="flex items-center gap-3">
                         <span class="text-xl font-black text-white/20">R$</span>
@@ -346,14 +352,6 @@
             document.getElementById('totalFinal').value = total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
         }
 
-        function alterarQtde(btn, delta) {
-            const span = btn.parentElement.querySelector('.service-qty');
-            let val = parseInt(span.innerText) + delta;
-            if (val < 1) val = 1;
-            span.innerText = val;
-            atualizarSoma();
-        }
-
         function alternarModo() {
             modoOS = !modoOS;
             const card = document.getElementById('card-principal');
@@ -449,7 +447,7 @@
         }
 
         function baixarPDF() {
-            const prestador = document.getElementById('nomePrestador').value || "ELIEZER";
+            const prestador = document.getElementById('nomePrestador').value || "REFRIGERAÇÃO ELIEZER";
             const cliente = document.getElementById('nomeCliente').value || "Cliente";
             const total = document.getElementById('totalFinal').value;
             const obs = document.getElementById('obsGeral').value;
@@ -460,7 +458,6 @@
 
             const dadosEmp = cacheDados.find(d => d.emp_nome === prestador) || cacheDados[0];
             const cnpjEmp = dadosEmp ? (dadosEmp.emp_doc || "") : "";
-            
             const dadosCli = cacheDados.find(c => c.cli_nome === cliente);
             const docCli = dadosCli ? (dadosCli.cli_doc || "") : "";
 
@@ -470,36 +467,47 @@
                 const preco = card.querySelector('.service-price').value;
                 const qtde = card.querySelector('.service-qty').innerText;
                 if(nome) {
-                    servicosHTML += `<tr style="border-bottom: 1px solid #eee;"><td style="padding: 12px;">${nome.toUpperCase()}</td><td style="padding: 12px; text-align:center;">${qtde}</td><td style="padding: 12px; text-align:right;">R$ ${preco}</td></tr>`;
+                    servicosHTML += `<tr style="border-bottom: 1px solid #eee;"><td style="padding: 12px; text-align: left;">${nome.toUpperCase()}</td><td style="padding: 12px; text-align: center;">${qtde}</td><td style="padding: 12px; text-align: right;">R$ ${preco}</td></tr>`;
                 }
             });
 
             const template = `
-                <div style="padding: 40px; font-family: Helvetica, sans-serif; color: #333;">
+                <div style="padding: 40px; font-family: Arial, sans-serif; color: #333; background: #fff; width: 100%;">
                     <div style="display: flex; justify-content: space-between; border-bottom: 3px solid #1e40af; padding-bottom: 20px; margin-bottom: 30px;">
-                        <div><h1 style="margin: 0; color: #1e40af;">${prestador.toUpperCase()}</h1><p style="font-size:10px;">CNPJ/CPF: ${cnpjEmp}</p></div>
-                        <div style="text-align: right;"><h2 style="color: #1e40af;">${modoOS ? 'ORDEM DE SERVIÇO' : 'ORÇAMENTO'}</h2><p>Data: ${dataEmissao}</p></div>
+                        <div><h1 style="margin: 0; color: #1e40af; font-size: 24px;">${prestador.toUpperCase()}</h1><p style="font-size: 10px; margin-top: 5px;">CNPJ/CPF: ${cnpjEmp}</p></div>
+                        <div style="text-align: right;"><h2 style="margin: 0; font-size: 18px; color: #1e40af;">${modoOS ? 'ORDEM DE SERVIÇO' : 'ORÇAMENTO TÉCNICO'}</h2><p style="font-size: 11px; margin-top: 5px;">Data: ${dataEmissao}<br>Vencimento: ${dataValidade}</p></div>
                     </div>
                     <div style="background: #f4f7ff; padding: 15px; border-radius: 8px; margin-bottom: 30px; border-left: 5px solid #1e40af;">
-                        <p><strong>Cliente:</strong> ${cliente} | <strong>CPF/CNPJ:</strong> ${docCli}</p>
-                        <p><strong>Endereço:</strong> ${enderecoCli} | <strong>Tel:</strong> ${telCli}</p>
+                        <p style="font-size: 12px; margin: 2px 0;"><strong>Cliente:</strong> ${cliente} | <strong>Doc:</strong> ${docCli}</p>
+                        <p style="font-size: 12px; margin: 2px 0;"><strong>Endereço:</strong> ${enderecoCli} | <strong>WhatsApp:</strong> ${telCli}</p>
                     </div>
                     <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
-                        <tr style="background: #1e40af; color: white;"><th style="padding:12px; text-align:left;">Descrição</th><th style="padding:12px;">Qtd</th><th style="padding:12px; text-align:right;">Subtotal</th></tr>
-                        ${servicosHTML}
+                        <thead><tr style="background: #1e40af; color: white;"><th style="padding: 12px; text-align: left;">Descrição</th><th style="padding: 12px; text-align: center;">Qtd</th><th style="padding: 12px; text-align: right;">Subtotal</th></tr></thead>
+                        <tbody>${servicosHTML}</tbody>
                     </table>
-                    <div style="display: flex; justify-content: space-between;">
-                        <div style="flex:1; border:1px solid #ddd; padding:10px; border-radius:8px;"><strong>Obs:</strong><br>${obs}</div>
-                        <div style="text-align:right; min-width:180px;"><h2 style="color:#1e40af;">Total: R$ ${total}</h2></div>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div style="flex: 1; border: 1px solid #ddd; padding: 10px; border-radius: 8px; font-size: 11px; margin-right: 20px;"><strong>Observações:</strong><br>${obs.replace(/\n/g, '<br>')}</div>
+                        <div style="text-align: right; min-width: 180px;"><p style="font-size: 12px; color: #666;">Valor Total:</p><h2 style="color: #1e40af; margin: 0; font-size: 22px;">R$ ${total}</h2></div>
                     </div>
-                    <div style="margin-top:60px; text-align:center; border-top:1px solid #333; width:200px; margin-left:auto; margin-right:auto;"><p>Assinatura</p></div>
+                    <div style="margin-top: 80px; text-align: center; font-size: 11px; border-top: 1px solid #333; width: 250px; margin-left: auto; margin-right: auto; padding-top: 5px;"><strong>Assinatura do Técnico</strong></div>
                 </div>`;
 
-            const element = document.getElementById('pdf-template');
+            const element = document.getElementById('pdf-offscreen');
             element.innerHTML = template;
-            element.style.display = 'block';
-            const opt = { margin: 0, filename: `Orcamento_${cliente}.pdf`, image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 3 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
-            html2pdf().set(opt).from(element).save().then(() => { element.style.display = 'none'; });
+            
+            // CONFIGURAÇÕES DO PDF
+            const opt = {
+                margin: 10,
+                filename: `${modoOS ? 'OS' : 'Orcamento'}_${cliente}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 3, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            // GERAÇÃO DO PDF
+            html2pdf().set(opt).from(element).save().then(() => {
+                element.innerHTML = ""; // Limpa após gerar
+            });
         }
 
         window.onload = () => {
