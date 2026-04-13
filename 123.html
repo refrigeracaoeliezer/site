@@ -29,7 +29,7 @@
         .is-os .text-blue-500, .is-os .text-blue-400, .is-os .section-header i, .is-os .section-header span { color: #10b981 !important; }
         .is-os .btn-primary { background: linear-gradient(135deg, #065f46 0%, #10b981 100%) !important; }
 
-        .dark-input { background: rgba(255, 255, 255, 0.05) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; color: white !important; transition: all 0.3s ease; }
+        .dark-input { background: rgba(255, 255, 255, 0.05) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; color: white !important; transition: all 0.3s ease; cursor: pointer; }
         .dark-input:focus { border-color: #3b82f6 !important; background: rgba(255, 255, 255, 0.08) !important; outline: none; }
         .is-os .dark-input:focus { border-color: #10b981 !important; }
 
@@ -89,7 +89,7 @@
                     <input type="text" id="nomePrestador" placeholder="Seu Nome / Sua Empresa" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
                     
                     <div class="relative">
-                        <input type="text" id="nomeCliente" list="lista_clientes" placeholder="Nome do Cliente" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
+                        <input type="text" id="nomeCliente" list="lista_clientes" placeholder="Selecionar Cliente" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none" onmousedown="forcarLista(this)">
                         <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-xs"></i>
                     </div>
 
@@ -156,7 +156,16 @@
         let cacheDados = [];
         let modoOS = false;
 
-        // --- LÓGICA DE BUSCA IGUAL À PÁGINA CONFIGURAÇÕES ---
+        // FUNÇÃO PARA FORÇAR A LISTA A APARECER NO CLIQUE
+        function forcarLista(input) {
+            input.setAttribute('autocomplete', 'off');
+            const valOriginal = input.value;
+            input.value = ''; // Limpa rápido para o datalist aparecer
+            setTimeout(() => {
+                input.value = valOriginal;
+            }, 1);
+        }
+
         async function buscarDadosPlanilha() {
             try {
                 const resp = await fetch(URL_DATABASE);
@@ -167,13 +176,9 @@
         }
 
         function renderizarDatalists() {
-            // Usa exatamente a mesma lógica do seu código que funciona
             const criarOpcoes = (campo) => [...new Set(cacheDados.map(d => d[campo]))].filter(Boolean).map(n => `<option value="${n}">`).join('');
-            
             document.getElementById('lista_clientes').innerHTML = criarOpcoes('cli_nome');
             document.getElementById('lista_servicos').innerHTML = criarOpcoes('srv_nome');
-            
-            // Preenche nome do prestador automaticamente da linha 3
             if(cacheDados.length > 0 && cacheDados[0].emp_nome) {
                 document.getElementById('nomePrestador').value = cacheDados[0].emp_nome;
             }
@@ -196,7 +201,7 @@
             div.innerHTML = `
                 <div class="flex items-center gap-2">
                     <div class="relative flex-grow">
-                        <input type="text" list="lista_servicos" placeholder="Nome do Serviço ou Peça..." class="w-full dark-input p-3 rounded-xl text-sm outline-none service-name">
+                        <input type="text" list="lista_servicos" placeholder="Selecionar Serviço" class="w-full dark-input p-3 rounded-xl text-sm outline-none service-name" onmousedown="forcarLista(this)">
                         <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-[10px]"></i>
                     </div>
                     <button onclick="this.closest('.service-card').remove(); atualizarSoma();" class="text-white/10 hover:text-red-500 p-2"><i class="fa-solid fa-trash-can"></i></button>
