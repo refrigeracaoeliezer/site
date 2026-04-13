@@ -86,18 +86,29 @@ footer {
 }
         @media print { .no-print { display: none !important; } }
 
-/* Ajustes específicos para Celular */
+/* Ajuste Turbinado para Celular */
 @media screen and (max-width: 768px) {
     .btn-flutuante {
-        width: 85px;         /* Aumentou de 65px para 85px */
-        height: 85px;        /* Aumentou de 65px para 85px */
-        bottom: 40px;        /* Sobe um pouco mais para não atrapalhar a navegação do sistema */
-        right: 40px;         /* Afasta um pouco mais da borda */
-        font-size: 38px;     /* Aumenta o ícone do PDF dentro do botão */
-        box-shadow: 0 8px 25px rgba(0,0,0,0.6); /* Sombra mais forte para destacar */
+        width: 100px !important;    /* Bem largo */
+        height: 100px !important;   /* Bem alto */
+        bottom: 30px !important;   /* Distância do fundo */
+        right: 30px !important;    /* Distância da direita */
+        font-size: 45px !important; /* Ícone do PDF bem grande */
+        box-shadow: 0 10px 30px rgba(0,0,0,0.7) !important; /* Sombra forte para destaque */
+        background-color: #e74c3c !important;
+        opacity: 1 !important;     /* Garante que ele apareça bem */
+    }
+    
+    /* Ajuste extra para o ícone centralizar perfeitamente */
+    .btn-flutuante i {
+        line-height: 90px;
     }
 }
-        
+      @media screen and (max-width: 768px) {
+    .paper-canvas {
+        height: 296mm; /* 1mm a menos que o padrão costuma matar a folha fantasma */
+    }
+}  
     </style>
 </head>
 <body>
