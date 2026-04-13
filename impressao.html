@@ -130,6 +130,15 @@
         const URL_DATABASE = "https://script.google.com/macros/s/AKfycbwXxgwoZ5Qov5xGUN9CMQnCOqsS4HL2gJdGtaPad9Df8ShuykbMUzq3_jKlb-0gLMju8Q/exec";
 
         async function carregarPagina() {
+
+
+            // No seu impressao.html, dentro de carregarPagina()
+const cliInfo = cacheDados.find(d => d.cli_nome === dadosLocal.cliente);
+if(cliInfo) {
+    // Note que usamos 'cli_doc' porque foi esse o nome que você deu na linha 102 da imagem do Script
+    document.getElementById('view-cpf-cli').innerText = cliInfo.cli_doc || "---"; 
+}
+            
             // 1. Número aleatório
             document.getElementById('num-random').innerText = Math.floor(100 + Math.random() * 899) + '/2026';
 
