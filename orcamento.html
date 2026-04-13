@@ -514,7 +514,23 @@
                     servicosHTML += `<tr><td style="padding:8px; border-bottom:1px solid #eee;">${qtde}x ${nome}</td><td style="padding:8px; border-bottom:1px solid #eee; text-align:right;">R$ ${preco}</td></tr>`;
                 }
             });
-
+// Dentro da lógica de geração do documento ou envio para impressão
+const dadosParaImpressao = {
+    tipo: modoOS ? "ORDEM DE SERVIÇO" : "ORÇAMENTO",
+    cliente: document.getElementById('nomeCliente').value,
+    endereco: document.getElementById('enderecoCliente').value,
+    emissao: document.getElementById('dataInicio').value.split('-').reverse().join('/'),
+    validade: document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/'),
+    total: document.getElementById('totalFinal').value,
+    obs: document.getElementById('obsGeral').value,
+    garantia: document.getElementById('inputGarantia').value, // Pega os dias selecionados
+    itens: Array.from(document.querySelectorAll('.service-card')).map(card => ({
+        descricao: card.querySelector('.service-name').value,
+        qtd: card.querySelector('.service-qty').innerText,
+        valor: card.querySelector('.service-price').value
+    }))
+};
+localStorage.setItem('dados_impressao', JSON.stringify(dadosParaImpressao));
             const template = `<div style="font-family:Arial; padding:30px; color:#333;">
                 <h2 style="color:#1e40af; border-bottom:2px solid #1e40af; padding-bottom:10px;">ORÇAMENTO - ${prestador}</h2>
                 <p><strong>Cliente:</strong> ${cliente} | <strong>Data:</strong> ${new Date().toLocaleDateString('pt-BR')}</p>
