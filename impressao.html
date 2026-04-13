@@ -63,6 +63,19 @@
         footer { text-align: center; font-size: 11px; color: #777; border-top: 1px solid #eee; padding-top: 15px; }
 
         @media print { .no-print { display: none !important; } }
+
+/* Ajustes específicos para Celular */
+@media screen and (max-width: 768px) {
+    .btn-flutuante {
+        width: 85px;         /* Aumentou de 65px para 85px */
+        height: 85px;        /* Aumentou de 65px para 85px */
+        bottom: 40px;        /* Sobe um pouco mais para não atrapalhar a navegação do sistema */
+        right: 40px;         /* Afasta um pouco mais da borda */
+        font-size: 38px;     /* Aumenta o ícone do PDF dentro do botão */
+        box-shadow: 0 8px 25px rgba(0,0,0,0.6); /* Sombra mais forte para destacar */
+    }
+}
+        
     </style>
 </head>
 <body>
