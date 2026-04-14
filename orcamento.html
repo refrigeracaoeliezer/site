@@ -287,30 +287,43 @@
             autoExpandir(txtArea);
         }
 
-        function configurarListeners() {
-            document.getElementById('nomeCliente').addEventListener('input', function() {
-                if (!this.value) {
-                    document.getElementById('enderecoCliente').value = "";
-                    document.getElementById('telCliente').value = "";
-                    return;
-                }
-                const encontrado = cacheDados.find(x => x.cli_nome === this.value);
-                if (encontrado) {
-                    document.getElementById('enderecoCliente').value = encontrado.cli_end || "";
-                    document.getElementById('telCliente').value = encontrado.cli_tel || "";
-                }
-            });
+      /* --- COMENTÁRIO: CONFIGURAÇÃO DE LISTENERS PARA PUXAR DADOS AO SELECIONAR --- */
+function configurarListeners() {
+    // Escuta tanto a digitação (input) quanto a seleção na lista (change)
+    ['input', 'change'].forEach(evento => {
+        
+        // Listener para o Nome do Cliente
+        document.getElementById('nomeCliente').addEventListener(evento, function() {
+            if (!this.value) {
+                document.getElementById('enderecoCliente').value = "";
+                document.getElementById('telCliente').value = "";
+                return;
+            }
+            const encontrado = cacheDados.find(x => x.cli_nome === this.value);
+            if (encontrado) {
+                document.getElementById('enderecoCliente').value = encontrado.cli_end || "";
+                document.getElementById('telCliente').value = encontrado.cli_tel || "";
+            }
+        });
 
-            document.getElementById('busca_obs').addEventListener('input', function() {
-                const encontrado = cacheDados.find(x => x.txt_obs === this.value);
-                if (encontrado) {
-                    const txtArea = document.getElementById('obsGeral');
-                    txtArea.value = encontrado.txt_obs;
-                    autoExpandir(txtArea);
-                    this.value = "";
-                }
-            });
-        }
+        // Listener para a Pesquisa de Observações
+        document.getElementById('busca_obs').addEventListener(evento, function() {
+            const encontrado = cacheDados.find(x => x.txt_obs === this.value);
+            if (encontrado) {
+                const txtArea = document.getElementById('obsGeral');
+                txtArea.value = encontrado.txt_obs;
+                autoExpandir(txtArea);
+                
+                // Limpa o campo de busca após selecionar para não poluir o visual
+                setTimeout(() => { 
+                    this.value = ""; 
+                    this.blur(); // Tira o foco para esconder o teclado no celular
+                }, 100);
+            }
+        });
+    });
+}
+/* --- COMENTÁRIO: FIM DOS LISTENERS --- */
 
         function adicionarServico() {
             const container = document.getElementById('services-container');
