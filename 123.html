@@ -105,13 +105,12 @@
         .btn-copy-custom { background: rgba(128,128,128,0.15); color: var(--text-main); border: 1px solid var(--glass-border); }
 
         .total-container { background: var(--total-container-bg) !important; border: 1px solid rgba(255,255,255,0.1) !important; transition: all 0.4s ease; }
-        #totalFinal { color: #ffffff !important; }
 
-        /* --- ESTILOS DROPDOWN CUSTOMIZADO --- */
+        /* --- ESTILOS DROPDOWN CUSTOMIZADO COM PESQUISA --- */
         .dropdown-list {
             position: absolute; left: 0; right: 0; top: 110%;
             background: var(--dropdown-bg); border: 1px solid var(--glass-border);
-            border-radius: 20px; z-index: 50; max-height: 200px; overflow-y: auto;
+            border-radius: 20px; z-index: 50; max-height: 250px; overflow-y: auto;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: none;
         }
         .dropdown-item { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--glass-border); transition: 0.2s; }
@@ -119,6 +118,11 @@
         .dropdown-item:hover { background: #1e40af; color: white; cursor: pointer; }
         .is-os .dropdown-item:hover { background: #10b981; }
         .rotate-icon { transform: translateY(-50%) rotate(180deg) !important; }
+        
+        /* Oculta o texto selecionado quando estiver digitando */
+        .is-searching .selected-text { display: none; }
+        .search-input { background: transparent; border: none; color: inherit; width: 100%; outline: none; display: none; }
+        .is-searching .search-input { display: block; }
     </style>
 </head>
 <body class="p-4 pb-10">
@@ -212,6 +216,7 @@
                     <div class="relative custom-dropdown" id="dropdown-cliente">
                         <div class="w-full p-4 rounded-2xl dark-input text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
                             <span class="selected-text truncate text-white/40">Selecionar Cliente</span>
+                            <input type="text" class="search-input" placeholder="Pesquisar cliente..." oninput="filtrarDropdown(this, 'cliente')" onclick="event.stopPropagation()">
                             <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-xs transition-transform duration-300"></i>
                         </div>
                         <ul id="lista-clientes-custom" class="dropdown-list"></ul>
@@ -313,23 +318,52 @@
                 renderizarDatalists();
                 aplicarTextoPadrao();
                 calcularDataFinal();
+                
+                // GARANTE QUE O PRIMEIRO SERVIÇO TENHA DADOS APÓS O FETCH
+                const container = document.getElementById('services-container');
+                if (container.children.length === 0) {
+                    adicionarServico();
+                } else {
+                    // Atualiza dropdowns já criados se necessário
+                    document.querySelectorAll('.dropdown-list').forEach(list => {
+                        if (list.id !== 'lista-clientes-custom') {
+                            list.innerHTML = gerarHtmlServicos();
+                        }
+                    });
+                }
             } catch (e) { console.error("Erro na carga:", e); }
         }
 
-        /* --- LÓGICA DE DROPDOWN CUSTOMIZADO --- */
         function toggleDropdown(el) {
+            const wrapper = el.parentElement;
             const list = el.nextElementSibling;
             const icon = el.querySelector('i');
+            const searchInput = el.querySelector('.search-input');
             const isVisible = list.style.display === 'block';
             
-            // Fecha outros dropdowns
             document.querySelectorAll('.dropdown-list').forEach(l => l.style.display = 'none');
             document.querySelectorAll('.custom-dropdown i').forEach(i => i.classList.remove('rotate-icon'));
+            document.querySelectorAll('.custom-dropdown').forEach(d => d.classList.remove('is-searching'));
 
             if (!isVisible) {
                 list.style.display = 'block';
                 icon.classList.add('rotate-icon');
+                wrapper.classList.add('is-searching');
+                searchInput.focus();
+                searchInput.value = ''; 
+                filtrarDropdown(searchInput, wrapper.id === 'dropdown-cliente' ? 'cliente' : 'servico');
             }
+        }
+
+        function filtrarDropdown(input, tipo) {
+            const termo = input.value.toLowerCase();
+            const list = input.closest('.custom-dropdown').querySelector('.dropdown-list');
+            const items = list.querySelectorAll('.dropdown-item');
+            
+            items.forEach(item => {
+                const texto = item.textContent.toLowerCase();
+                item.style.display = texto.includes(termo) ? 'block' : 'none';
+            });
         }
 
         function selecionarItemDropdown(li, nome, valorExtra, tipo) {
@@ -354,8 +388,13 @@
                     document.getElementById('telCliente').value = cliente.cli_tel || "";
                 }
             }
-            li.parentElement.style.display = 'none';
-            wrapper.querySelector('i').classList.remove('rotate-icon');
+            fecharTodosDropdowns();
+        }
+
+        function fecharTodosDropdowns() {
+            document.querySelectorAll('.dropdown-list').forEach(l => l.style.display = 'none');
+            document.querySelectorAll('.custom-dropdown i').forEach(i => i.classList.remove('rotate-icon'));
+            document.querySelectorAll('.custom-dropdown').forEach(d => d.classList.remove('is-searching'));
         }
 
         function renderizarDatalists() {
@@ -367,23 +406,28 @@
             if(dadosEmp) document.getElementById('nomePrestador').value = dadosEmp.emp_nome;
         }
 
+        function gerarHtmlServicos() {
+            const servicos = [...new Set(cacheDados.map(d => d.srv_nome))].filter(Boolean);
+            return servicos.map(n => {
+                const item = cacheDados.find(d => d.srv_nome === n);
+                return `<li class="dropdown-item" onclick="selecionarItemDropdown(this, '${n}', '${item.srv_valor}', 'servico')">${n}</li>`;
+            }).join('');
+        }
+
         function adicionarServico() {
             const container = document.getElementById('services-container');
             const div = document.createElement('div');
             div.className = "service-card flex flex-col gap-3 relative";
             
-            const servicos = [...new Set(cacheDados.map(d => d.srv_nome))].filter(Boolean);
-            const opcoes = servicos.map(n => {
-                const item = cacheDados.find(d => d.srv_nome === n);
-                return `<li class="dropdown-item" onclick="selecionarItemDropdown(this, '${n}', '${item.srv_valor}', 'servico')">${n}</li>`;
-            }).join('');
+            const opcoes = gerarHtmlServicos();
 
             div.innerHTML = `
                 <div class="flex items-center gap-2">
                     <div class="relative flex-grow custom-dropdown">
                         <div class="w-full dark-input p-4 rounded-2xl text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
                             <span class="selected-text truncate text-white/40">Selecionar Serviço</span>
-                            <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-white/20 text-[10px] transition-transform duration-300"></i>
+                            <input type="text" class="search-input" placeholder="Pesquisar serviço..." oninput="filtrarDropdown(this, 'servico')" onclick="event.stopPropagation()">
+                            <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-[10px] transition-transform duration-300"></i>
                         </div>
                         <ul class="dropdown-list">${opcoes}</ul>
                         <input type="hidden" class="service-name">
@@ -535,14 +579,12 @@
             if(localStorage.getItem('theme') === 'light') toggleTheme();
             document.getElementById('dataInicio').value = new Date().toISOString().split('T')[0];
             buscarDadosPlanilha();
-            adicionarServico();
+            // REMOVIDO DAQUI O adicionarServico() PARA SER CHAMADO DENTRO DO buscarDadosPlanilha()
         };
 
-        // Fecha dropdown ao clicar fora
         window.addEventListener('click', e => {
             if (!e.target.closest('.custom-dropdown')) {
-                document.querySelectorAll('.dropdown-list').forEach(l => l.style.display = 'none');
-                document.querySelectorAll('.custom-dropdown i').forEach(i => i.classList.remove('rotate-icon'));
+                fecharTodosDropdowns();
             }
         });
     </script>
