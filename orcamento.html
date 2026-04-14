@@ -287,42 +287,48 @@
             autoExpandir(txtArea);
         }
 
-      /* --- COMENTÁRIO: CONFIGURAÇÃO DE LISTENERS PARA PUXAR DADOS AO SELECIONAR --- */
+/* --- COMENTÁRIO: NOVA LÓGICA DE CAPTURA GARANTIDA (PC E CELULAR) --- */
 function configurarListeners() {
-    // Escuta tanto a digitação (input) quanto a seleção na lista (change)
-    ['input', 'change'].forEach(evento => {
-        
-        // Listener para o Nome do Cliente
-        document.getElementById('nomeCliente').addEventListener(evento, function() {
-            if (!this.value) {
-                document.getElementById('enderecoCliente').value = "";
-                document.getElementById('telCliente').value = "";
-                return;
-            }
-            const encontrado = cacheDados.find(x => x.cli_nome === this.value);
+    const aplicarDados = (idInput) => {
+        const el = document.getElementById(idInput);
+        const valor = el.value;
+        if (!valor) return;
+
+        // Tenta encontrar o registro exato no cache
+        if (idInput === 'nomeCliente') {
+            const encontrado = cacheDados.find(x => x.cli_nome === valor);
             if (encontrado) {
                 document.getElementById('enderecoCliente').value = encontrado.cli_end || "";
                 document.getElementById('telCliente').value = encontrado.cli_tel || "";
             }
-        });
-
-        // Listener para a Pesquisa de Observações
-        document.getElementById('busca_obs').addEventListener(evento, function() {
-            const encontrado = cacheDados.find(x => x.txt_obs === this.value);
+        } else if (idInput === 'busca_obs') {
+            const encontrado = cacheDados.find(x => x.txt_obs === valor);
             if (encontrado) {
                 const txtArea = document.getElementById('obsGeral');
                 txtArea.value = encontrado.txt_obs;
                 autoExpandir(txtArea);
-                
-                // Limpa o campo de busca após selecionar para não poluir o visual
-                setTimeout(() => { 
-                    this.value = ""; 
-                    this.blur(); // Tira o foco para esconder o teclado no celular
-                }, 100);
+                // Limpa o campo de busca imediatamente
+                el.value = "";
+                el.blur(); 
             }
-        });
+        }
+    };
+
+    // Aplica nos dois campos principais
+    ['nomeCliente', 'busca_obs'].forEach(id => {
+        const elemento = document.getElementById(id);
+        
+        // 'input' para quando ele termina de digitar ou clica
+        elemento.addEventListener('input', () => aplicarDados(id));
+        
+        // 'change' é o gatilho principal de datalists no computador
+        elemento.addEventListener('change', () => aplicarDados(id));
+        
+        // 'blur' garante que se ele selecionou e clicou fora, os dados carreguem
+        elemento.addEventListener('blur', () => aplicarDados(id));
     });
 }
+/* --- COMENTÁRIO: FIM DA LÓGICA DE CAPTURA --- */
 /* --- COMENTÁRIO: FIM DOS LISTENERS --- */
 
         function adicionarServico() {
