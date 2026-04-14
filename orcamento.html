@@ -301,6 +301,9 @@
         }
 
         function calcularDataFinal() {
+            // Se estiver no modo OS, não sobrescreve o campo automaticamente
+            if (modoOS) return;
+
             const dataInicioVal = document.getElementById('dataInicio').value;
             const diasPrazo = parseInt(document.getElementById('inputGarantia').value) || 0;
             const campoDataFinal = document.getElementById('dataPrazoFinal');
@@ -479,6 +482,7 @@
             const subTitle = document.getElementById('sub-title');
             const btnAcao = document.getElementById('btn-acao');
             const lblPrazo = document.getElementById('label-prazo');
+            const campoDataFinal = document.getElementById('dataPrazoFinal');
 
             document.getElementById('toggleMode').classList.toggle('mode-os');
             card.classList.toggle('is-os');
@@ -493,7 +497,16 @@
             document.getElementById('lbl-os').classList.toggle('active-label', modoOS);
             document.getElementById('lbl-orc').classList.toggle('active-label', !modoOS);
             document.getElementById('btn-add-icon').className = modoOS ? "fa-solid fa-circle-plus mr-2 text-green-500" : "fa-solid fa-circle-plus mr-2 text-blue-500";
-            calcularDataFinal();
+            
+            if (modoOS) {
+                // No modo OS: campo editável e inicia com data atual
+                campoDataFinal.readOnly = false;
+                campoDataFinal.value = new Date().toISOString().split('T')[0];
+            } else {
+                // No modo Orçamento: campo apenas leitura e recalcula baseado no prazo
+                campoDataFinal.readOnly = true;
+                calcularDataFinal();
+            }
         }
 
         function aplicarTextoPadrao() {
@@ -577,9 +590,10 @@
 
         window.onload = () => {
             if(localStorage.getItem('theme') === 'light') toggleTheme();
-            document.getElementById('dataInicio').value = new Date().toISOString().split('T')[0];
+            const dataHoje = new Date().toISOString().split('T')[0];
+            document.getElementById('dataInicio').value = dataHoje;
+            document.getElementById('dataPrazoFinal').value = dataHoje;
             buscarDadosPlanilha();
-            // REMOVIDO DAQUI O adicionarServico() PARA SER CHAMADO DENTRO DO buscarDadosPlanilha()
         };
 
         window.addEventListener('click', e => {
