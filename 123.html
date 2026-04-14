@@ -27,6 +27,8 @@
             --input-bg: rgba(255, 255, 255, 0.05);
             --input-text: white;
             --card-sub: rgba(255, 255, 255, 0.02);
+            --modal-text-box: #f3f4f6;
+            --modal-text-color: #1a1f26;
         }
 
         body.light-mode {
@@ -84,12 +86,17 @@
         body:not(.light-mode) input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
 
         #modal-mensagens { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.95); backdrop-filter: blur(10px); z-index: 100; overflow-y: auto; display: none; padding: 20px; }
-        body.light-mode #modal-mensagens { background: rgba(255, 255, 255, 0.95); color: #1a1f26; }
+        body.light-mode #modal-mensagens { background: rgba(240, 242, 245, 0.98); color: #1a1f26; }
         
         .btn-copy-success { background-color: #3b82f6 !important; color: white !important; }
 
         /* Estilo do Botão de Tema */
-        .theme-toggle { background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .theme-toggle { background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+        /* Estilos do Modal de Mensagem */
+        .modal-glass-container { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 25px; padding: 20px; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .text-preview-box { background: var(--modal-text-box); border-radius: 15px; padding: 15px; font-family: monospace; font-size: 13px; color: var(--modal-text-color); white-space: pre-wrap; word-break: break-all; margin: 15px 0; border: 1px solid rgba(0,0,0,0.05); }
+        .btn-copy-custom { background: rgba(128,128,128,0.15); color: var(--text-main); border: 1px solid var(--glass-border); }
     </style>
 </head>
 <body class="p-4 pb-10">
@@ -106,42 +113,42 @@
                 </button>
             </div>
 
-            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 25px; padding: 20px; margin-bottom: 20px;">
+            <div class="modal-glass-container">
                 <div class="flex items-center gap-3 mb-2">
-                    <span class="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-[10px] font-bold">1</span>
+                    <span class="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-[10px] font-bold text-white">1</span>
                     <span class="text-xs font-bold uppercase">Proposta</span>
                 </div>
-                <div id="txt-proposta" style="background: #000; border-radius: 15px; padding: 15px; font-family: monospace; font-size: 13px; color: #d1d1d1; white-space: pre-wrap; word-break: break-all; margin: 15px 0; border: 1px solid rgba(255,255,255,0.05);"></div>
+                <div id="txt-proposta" class="text-preview-box"></div>
                 <div class="grid grid-cols-3 gap-2">
-                    <button onclick="copiarTextoProfissional('txt-proposta', this)" class="py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[9px] uppercase">COPIAR</button>
+                    <button onclick="copiarTextoProfissional('txt-proposta', this)" class="py-3 btn-copy-custom rounded-xl font-bold text-[9px] uppercase">COPIAR</button>
                     <button onclick="baixarPDF()" class="py-3 bg-red-600/20 text-red-500 border border-red-500/30 rounded-xl font-bold text-[9px] uppercase">GERAR PDF</button>
                     <button onclick="enviarWpp('txt-proposta')" class="py-3 bg-blue-600 text-white rounded-xl font-bold text-[9px] uppercase">WHATSAPP</button>
                 </div>
             </div>
 
-            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 25px; padding: 20px; margin-bottom: 20px;">
+            <div class="modal-glass-container">
                 <div class="flex items-center gap-3 mb-2">
-                    <span class="w-6 h-6 rounded-full bg-orange-600 flex items-center justify-center text-[10px] font-bold">2</span>
+                    <span class="w-6 h-6 rounded-full bg-orange-600 flex items-center justify-center text-[10px] font-bold text-white">2</span>
                     <span class="text-xs font-bold uppercase">Sinal</span>
                 </div>
-                <div id="txt-sinal" style="background: #000; border-radius: 15px; padding: 15px; font-family: monospace; font-size: 13px; color: #d1d1d1; white-space: pre-wrap; word-break: break-all; margin: 15px 0; border: 1px solid rgba(255,255,255,0.05);"></div>
+                <div id="txt-sinal" class="text-preview-box"></div>
                 <div class="grid grid-cols-2 gap-2">
-                    <button onclick="copiarTextoProfissional('txt-sinal', this)" class="py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[10px] uppercase">COPIAR</button>
+                    <button onclick="copiarTextoProfissional('txt-sinal', this)" class="py-3 btn-copy-custom rounded-xl font-bold text-[10px] uppercase">COPIAR</button>
                     <button onclick="enviarWpp('txt-sinal')" class="py-3 bg-orange-600 text-white rounded-xl font-bold text-[10px] uppercase">WHATSAPP</button>
                 </div>
             </div>
 
-            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 25px; padding: 20px; margin-bottom: 20px;">
+            <div class="modal-glass-container">
                 <div class="flex justify-between items-center mb-2">
                     <div class="flex items-center gap-3">
-                        <span class="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center text-[10px] font-bold">3</span>
+                        <span class="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center text-[10px] font-bold text-white">3</span>
                         <span class="text-xs font-bold uppercase">Conclusão</span>
                     </div>
                     <button id="btn-quitar" onclick="alternarQuitacao()" class="text-[9px] font-black px-3 py-1 rounded-lg border border-green-500/30 text-green-500 bg-green-500/10">QUITAR SALDO</button>
                 </div>
-                <div id="txt-conclusao" style="background: #000; border-radius: 15px; padding: 15px; font-family: monospace; font-size: 13px; color: #d1d1d1; white-space: pre-wrap; word-break: break-all; margin: 15px 0; border: 1px solid rgba(255,255,255,0.05);"></div>
+                <div id="txt-conclusao" class="text-preview-box"></div>
                 <div class="grid grid-cols-2 gap-2">
-                    <button onclick="copiarTextoProfissional('txt-conclusao', this)" class="py-3 bg-white/5 text-white/70 rounded-xl font-bold text-[10px] uppercase">COPIAR</button>
+                    <button onclick="copiarTextoProfissional('txt-conclusao', this)" class="py-3 btn-copy-custom rounded-xl font-bold text-[10px] uppercase">COPIAR</button>
                     <button onclick="enviarWpp('txt-conclusao')" class="py-3 bg-green-600 text-white rounded-xl font-bold text-[10px] uppercase">WHATSAPP</button>
                 </div>
             </div>
@@ -149,12 +156,6 @@
     </div>
 
     <div class="max-w-md mx-auto relative z-10" id="main-container">
-        
-        <div class="flex justify-end mb-2">
-            <button onclick="toggleTheme()" class="theme-toggle">
-                <i id="theme-icon" class="fa-solid fa-sun"></i>
-            </button>
-        </div>
         <div class="mb-6">
             <div class="switch" id="toggleMode" onclick="alternarModo()">
                 <div class="switch-bg" id="switch-thumb"></div>
@@ -172,6 +173,9 @@
                 </h1>
                 <span class="text-[10px] text-blue-400 font-bold uppercase tracking-widest" id="sub-title">Sistema de Orçamento</span>
             </div>
+            <button onclick="toggleTheme()" class="theme-toggle">
+                <i id="theme-icon" class="fa-solid fa-sun"></i>
+            </button>
         </header>
 
         <main class="glass-card p-6 space-y-7" id="card-principal">
@@ -448,9 +452,7 @@ function configurarListeners() {
         }
 
         window.onload = () => {
-            // Verifica tema salvo
             if(localStorage.getItem('theme') === 'light') toggleTheme();
-
             const agora = new Date();
             document.getElementById('dataInicio').value = agora.toISOString().split('T')[0];
             buscarDadosPlanilha();
