@@ -278,42 +278,24 @@
                 if(dadosEmp) document.getElementById('nomePrestador').value = dadosEmp.emp_nome;
             }
         }
-
-        function aplicarTextoPadrao() {
-            const txtArea = document.getElementById('obsGeral');
-            const listaObsValidas = cacheDados.map(d => d.txt_obs).filter(Boolean);
-            if (modoOS) {
-                txtArea.value = listaObsValidas[1] || "";
-            } else {
-                txtArea.value = listaObsValidas[0] || "";
-            }
-            autoExpandir(txtArea);
-        }
-/* --- COMENTÁRIO: SISTEMA DE TRANSFERÊNCIA CORRIGIDO E ATIVADO --- */
+function aplicarTextoPadrao() {
+    const txtArea = document.getElementById('obsGeral');
+    // Filtra apenas os textos de observação da planilha
+    const listaObsValidas = cacheDados.map(d => d.txt_obs).filter(Boolean);
+    
+    if (modoOS) {
+        // Pega o segundo texto da planilha para OS
+        txtArea.value = listaObsValidas[1] || "";
+    } else {
+        // Pega o primeiro texto da planilha para Orçamento
+        txtArea.value = listaObsValidas[0] || "";
+    }
+    autoExpandir(txtArea);
+}
+/* --- COMENTÁRIO: LISTENERS APENAS PARA DADOS DO CLIENTE --- */
 function configurarListeners() {
-    const campoBusca = document.getElementById('busca_obs');
-    const campoEdicao = document.getElementById('obsGeral');
     const campoCliente = document.getElementById('nomeCliente');
-
-    if (!campoBusca || !campoEdicao) return;
-
-    const executarTrocaObs = () => {
-        const valorAtual = campoBusca.value.trim();
-        if (!valorAtual) return;
-
-        // Procura no cache ignorando espaços vazios
-        const itemEncontrado = cacheDados.find(x => 
-            x.txt_obs && x.txt_obs.trim() === valorAtual
-        );
-
-        if (itemEncontrado) {
-            campoEdicao.value = itemEncontrado.txt_obs; 
-            campoBusca.value = ""; // Limpa a busca
-            autoExpandir(campoEdicao); 
-            campoBusca.blur(); 
-            campoEdicao.focus(); 
-        }
-    };
+    if (!campoCliente) return;
 
     const carregarCliente = () => {
         const valorC = campoCliente.value.trim();
@@ -324,15 +306,9 @@ function configurarListeners() {
         }
     };
 
-    // Listeners para Observação
-    campoBusca.addEventListener('input', executarTrocaObs);
-    campoBusca.addEventListener('change', executarTrocaObs);
-
-    // Listeners para Cliente
     campoCliente.addEventListener('input', carregarCliente);
     campoCliente.addEventListener('change', carregarCliente);
 }
-/* --- COMENTÁRIO: FIM DOS LISTENERS --- */
 
         function adicionarServico() {
             const container = document.getElementById('services-container');
