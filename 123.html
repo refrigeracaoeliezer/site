@@ -186,9 +186,13 @@
             border-radius: 12px; z-index: 50; max-height: 200px; overflow-y: auto;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: none;
         }
-        .dropdown-item { padding: 12px; font-size: 14px; border-bottom: 1px solid var(--glass-border); transition: 0.2s; color: var(--text-main); cursor: pointer; }
+        .dropdown-item { padding: 12px; font-size: 14px; border-bottom: 1px solid var(--glass-border); transition: 0.2s; color: var(--text-main); cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .dropdown-item:hover { background: #1e40af; color: white; }
         .dropdown-item:last-child { border-bottom: none; }
+        
+        /* --- ESTILO BOTÃO EXCLUIR --- */
+        .btn-del-item { color: #ff4b4b; padding: 5px 8px; border-radius: 5px; transition: 0.2s; cursor: pointer; }
+        .btn-del-item:hover { background: rgba(255, 75, 75, 0.2); transform: scale(1.1); }
         
         .search-input { 
             background: var(--input-bg) !important; 
@@ -326,7 +330,7 @@
 
 <script>
     const URL_LOGIN = "https://script.google.com/macros/s/AKfycbzTyd4eSh9ey8Ldk0foi7lkRvWLGxOqj40w7J9szxK4JmSduZmfadNBzEidDWNULeNHxQ/exec";
-    const URL_DATABASE = "https://script.google.com/macros/s/AKfycbwsX8xUWHgb9PE9Nv6IvQbjB7VGQPfUQSbn6fZT1WQRk5IoQJMFAhleLHHpHSU9zHw49A/exec";
+    const URL_DATABASE = "https://script.google.com/macros/s/AKfycbzPWxtSkYn_gvE8p5ae6Pz1ne8w1mJpzMbr6vblQTRsWIaVa-5SdUKdY2eFv6Y2IIvRkA/exec";
 
     let cacheDados = []; 
 
@@ -448,6 +452,7 @@
 
     window.addEventListener('click', e => { if (!e.target.closest('.custom-dropdown')) fecharTodosDropdowns(); });
 
+    /* --- INICIO LOGICA DE RENDERIZAÇÃO COM LIXEIRA --- */
     function renderizarDatalists() {
         const criarOpcoesEmpresa = (campo) => [...new Set(cacheDados.slice(0, 5).map(d => d[campo]))].filter(Boolean).map(n => `<option value="${n}">`).join('');
         document.getElementById('lista_empresas').innerHTML = criarOpcoesEmpresa('emp_nome');
@@ -456,11 +461,50 @@
         const servicos = [...new Set(cacheDados.map(d => d.srv_nome))].filter(Boolean);
 
         document.getElementById('lista_clientes_custom').innerHTML = clientes.map(n => 
-            `<li class="dropdown-item" onclick="selecionarItemCustom(this, '${n}', 'cliente')">${n}</li>`).join('');
+            `<li class="dropdown-item" onclick="selecionarItemCustom(this, '${n}', 'cliente')">
+                <span>${n}</span>
+                <i class="fa-solid fa-trash-can btn-del-item" onclick="excluirItem(event, '${n}', 'cliente')"></i>
+            </li>`).join('');
         
         document.getElementById('lista_servicos_custom').innerHTML = servicos.map(n => 
-            `<li class="dropdown-item" onclick="selecionarItemCustom(this, '${n}', 'servico')">${n}</li>`).join('');
+            `<li class="dropdown-item" onclick="selecionarItemCustom(this, '${n}', 'servico')">
+                <span>${n}</span>
+                <i class="fa-solid fa-trash-can btn-del-item" onclick="excluirItem(event, '${n}', 'servico')"></i>
+            </li>`).join('');
     }
+    /* --- FIM LOGICA DE RENDERIZAÇÃO COM LIXEIRA --- */
+
+    /* --- INICIO FUNÇÃO DE EXCLUSÃO --- */
+    async function excluirItem(event, valor, tipo) {
+        event.stopPropagation();
+        if (!confirm(`Deseja realmente excluir "${valor}" da base de dados?`)) return;
+
+        const toast = document.getElementById('toast-minimal');
+        try {
+            const resp = await fetch(`${URL_DATABASE}?action=deletar&tipo=${tipo}&valor=${encodeURIComponent(valor)}`);
+            const result = await resp.text();
+
+            if (result.trim() === "sucesso") {
+                toast.innerText = "Excluído com sucesso!";
+                toast.style.display = 'block';
+                
+                if (tipo === 'cliente') {
+                    document.getElementById('cli_nome').value = "";
+                    document.querySelector('#dropdown-cliente .search-input').value = "";
+                } else {
+                    document.getElementById('srv_nome').value = "";
+                    document.querySelector('#dropdown-servico .search-input').value = "";
+                }
+
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                    toast.innerText = "Salvo com sucesso!";
+                    buscarDadosPlanilha();
+                }, 2000);
+            } else { alert("Erro ao excluir."); }
+        } catch (e) { console.error("Erro na exclusão:", e); }
+    }
+    /* --- FIM FUNÇÃO DE EXCLUSÃO --- */
 
     function saveData(sectionId, btn, originalText) {
         const container = document.getElementById(sectionId);
