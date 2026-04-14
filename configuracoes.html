@@ -264,8 +264,34 @@
 
         .result-box { margin-top: 20px; padding: 15px; border-radius: 12px; background: rgba(39, 169, 227, 0.1); border: 1px dashed #27a9e3; color: #44ff44; font-weight: bold; font-size: 15px; display: none; word-break: break-all; }
 
-        .security-content { display: none; flex-direction: column; gap: 10px; padding-top: 10px; }
+       /* --- COMENTÁRIO: INÍCIO DO ESTILO DE SEGURANÇA E AJUSTES DE ESTRUTURA --- */
+#sec-adm {
+    border: 2px solid #1e40af; /* Contorno azul destacado */
+    background: rgba(30, 64, 175, 0.05);
+}
 
+/* --- COMENTÁRIO: AJUSTE PARA OS CAMPOS FICAREM EM COLUNA --- */
+.security-content {
+    display: none; /* Começa fechado */
+    flex-direction: column; /* Força um embaixo do outro */
+    gap: 15px; /* Espaço entre os campos */
+    padding-top: 15px;
+    width: 100%;
+}
+
+/* Garante que o botão de salvar dentro da segurança não tenha margem exagerada */
+#btn-update-acesso {
+    margin-top: 10px;
+}
+label {
+    font-size: 11px;
+    color: #27a9e3;
+    margin-left: 5px;
+    margin-bottom: -10px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+/* --- COMENTÁRIO: FIM DO ESTILO DE SEGURANÇA --- */
         .btn-toggle-security { background: none; border: 1px solid rgba(255,255,255,0.1); color: #27a9e3; padding: 8px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; }
 
     </style>
@@ -372,131 +398,81 @@
 
 
 
-        <div class="config-section" id="sec-adm">
 
-            <div class="section-title"><i class="fa-solid fa-user-shield"></i> Segurança do Painel</div>
 
-            <button class="btn-toggle-security" onclick="toggleSecurity()">Expandir Opções de Acesso</button>
 
-            <div id="security-fields" class="security-content">
 
-                <input type="text" id="new_u_mail" placeholder="Novo E-mail">
-
-                <input type="password" id="new_u_pass" placeholder="Nova Senha">
-
-                <input type="text" id="new_u_resposta" placeholder="Nova Resposta Secreta">
-
-                <div id="update-status" class="status-msg"></div>
-
-                <button class="btn-save" id="btn-update-acesso" onclick="atualizarAcesso('Atualizar Acesso')">Atualizar Acesso</button>
-
-            </div>
-
-        </div>
-
-
-
-       <div class="config-section" id="sec-empresa-detalhes">
-
-            <div class="section-title"><i class="fa-solid fa-briefcase"></i> Dados da Empresa</div>
-
-            
-
-            <label style="font-size: 12px; color: #27a9e3; margin-left: 5px;">Chave PIX</label>
-
-            <input type="text" id="emp_pix" placeholder="Chave PIX">
-
-            
-
-            <label style="font-size: 12px; color: #27a9e3; margin-left: 5px;">Endereço</label>
-
-            <input type="text" id="emp_end" placeholder="Ex: Rua Tal, 123">
-
-            
-
-            <label style="font-size: 12px; color: #27a9e3; margin-left: 5px;">Responsável Técnico</label>
-
-            <input type="text" id="emp_resp" placeholder="Nome do Técnico">
-
-            
-
-            <label style="font-size: 12px; color: #27a9e3; margin-left: 5px;">Celular da Empresa</label>
-
-            <input type="tel" id="emp_tel" placeholder="(67) 99999-9999">
-
-            
-
-            <button class="btn-save" onclick="saveData('sec-empresa-detalhes', this, 'Salvar Dados da Empresa')">Salvar Dados da Empresa</button>
-
-        </div>
-
-
-
-        <div class="config-section" id="sec-empresa">
-
-            <div class="section-title"><i class="fa-solid fa-building"></i> Identidade da Empresa</div>
-
-            <input type="text" id="emp_nome" list="lista_empresas" placeholder="Selecione a Empresa...">
-
-            <datalist id="lista_empresas"></datalist>
-
-            <input type="text" id="emp_doc" placeholder="CNPJ / CPF">
-
-            <button class="btn-save" onclick="saveData('sec-empresa', this, 'Salvar Empresa')">Salvar Empresa</button>
-
-        </div>
-
-
-
-        <div class="config-section" id="sec-servico">
-
-            <div class="section-title"><i class="fa-solid fa-gears"></i> Detalhes do Serviço</div>
-
-            <input type="text" id="srv_nome" list="lista_servicos" placeholder="Selecione o Serviço...">
-
-            <datalist id="lista_servicos"></datalist>
-
-            <input type="text" id="srv_valor" placeholder="Valor R$">
-
-            <button class="btn-save" onclick="saveData('sec-servico', this, 'Salvar Serviço')">Salvar Serviço</button>
-
-        </div>
-
-
-
-        <div class="config-section" id="sec-cliente">
-
-            <div class="section-title"><i class="fa-solid fa-user"></i> Dados do Cliente</div>
-
-            <input type="text" id="cli_nome" list="lista_clientes" placeholder="Selecione o Cliente...">
-
-            <datalist id="lista_clientes"></datalist>
-
-            <input type="text" id="cli_doc" placeholder="CPF / CNPJ">
-
-            <input type="tel" id="cli_tel" placeholder="WhatsApp">
-
-            <input type="text" id="cli_end" placeholder="Endereço Completo">
-
-            <button class="btn-save" onclick="saveData('sec-cliente', this, 'Salvar Cliente')">Salvar Cliente</button>
-
-        </div>
-
-
-
-        <div class="config-section" id="sec-obs">
-
-            <div class="section-title"><i class="fa-solid fa-clipboard-list"></i> Observações Técnicas</div>
-
-            <input type="text" id="obs_busca" list="lista_obs" placeholder="Pesquisar observação salva...">
-
-            <datalist id="lista_obs"></datalist>
-
-            <textarea id="txt_obs" rows="5" placeholder="Edite o texto aqui..."></textarea>
-
-            <button class="btn-save" onclick="saveData('sec-obs', this, 'Salvar Observações')">Salvar Observações</button>
-
-        </div>
+        
+<div class="config-section" id="sec-adm">
+    <div class="section-title"><i class="fa-solid fa-user-shield"></i> Segurança do Painel</div>
+    
+    <button class="btn-toggle-security" onclick="toggleSecurity()">Expandir Opções de Acesso</button>
+    
+    <div id="security-fields" class="security-content">
+        <input type="text" id="new_u_mail" placeholder="Novo E-mail">
+        <input type="password" id="new_u_pass" placeholder="Nova Senha">
+        <input type="text" id="new_u_resposta" placeholder="Nova Resposta Secreta">
+        
+        <div id="update-status" class="status-msg"></div>
+        
+        <button class="btn-save" id="btn-update-acesso" onclick="atualizarAcesso('Atualizar Acesso')">Atualizar Acesso</button>
+    </div>
+</div>
+
+
+
+     
+
+<div class="config-section" id="sec-empresa-master">
+    <div class="section-title"><i class="fa-solid fa-building"></i> Dados da Empresa</div>
+    
+    <label>Nome da Empresa</label>
+    <input type="text" id="emp_nome" list="lista_empresas" placeholder="Nome Comercial">
+    <datalist id="lista_empresas"></datalist>
+
+    <label>CNPJ</label>
+    <input type="text" id="emp_doc" placeholder="00.000.000/0000-00" oninput="mascaraDocumento(this)">
+
+    <label>Endereço</label>
+    <input type="text" id="emp_end" placeholder="Rua, Número, Bairro, Cidade">
+
+    <label>Telefone da Empresa</label>
+    <input type="tel" id="emp_tel" placeholder="(00) 0.0000-0000" oninput="mascaraTelefone(this)">
+
+    <label>Chave PIX da Empresa</label>
+    <input type="text" id="emp_pix" placeholder="E-mail, CPF, CNPJ ou Celular">
+
+    <label>Técnico Responsável</label>
+    <input type="text" id="emp_resp" placeholder="Nome para o Orçamento">
+
+    <button class="btn-save" onclick="saveData('sec-empresa-master', this, 'Salvar Dados da Empresa')">Salvar Dados da Empresa</button>
+</div>
+
+<div class="config-section" id="sec-servico">
+    <div class="section-title"><i class="fa-solid fa-gears"></i> Detalhes do Serviço</div>
+    <input type="text" id="srv_nome" list="lista_servicos" placeholder="Selecione o Serviço...">
+    <datalist id="lista_servicos"></datalist>
+    <input type="text" id="srv_valor" placeholder="Valor R$">
+    <button class="btn-save" onclick="saveData('sec-servico', this, 'Salvar Serviço')">Salvar Serviço</button>
+</div>
+
+<div class="config-section" id="sec-cliente">
+    <div class="section-title"><i class="fa-solid fa-user"></i> Dados do Cliente</div>
+    <input type="text" id="cli_nome" list="lista_clientes" placeholder="Selecione o Cliente...">
+    <datalist id="lista_clientes"></datalist>
+    <input type="text" id="cli_doc" placeholder="CPF / CNPJ" oninput="mascaraDocumento(this)">
+    <input type="tel" id="cli_tel" placeholder="WhatsApp" oninput="mascaraTelefone(this)">
+    <input type="text" id="cli_end" placeholder="Endereço Completo">
+    <button class="btn-save" onclick="saveData('sec-cliente', this, 'Salvar Cliente')">Salvar Cliente</button>
+</div>
+
+<div class="config-section" id="sec-obs">
+    <div class="section-title"><i class="fa-solid fa-clipboard-list"></i> Observações Técnicas</div>
+    <input type="text" id="obs_busca" list="lista_obs" placeholder="Pesquisar observação salva...">
+    <datalist id="lista_obs"></datalist>
+    <textarea id="txt_obs" rows="5" placeholder="Edite o texto aqui..."></textarea>
+    <button class="btn-save" onclick="saveData('sec-obs', this, 'Salvar Observações')">Salvar Observações</button>
+</div>
 
         
 
@@ -649,6 +625,36 @@
         }, 800);
     }
 
+    // --- COMENTÁRIO: INÍCIO DAS FUNÇÕES DE MÁSCARA AUTOMÁTICA ---
+
+function mascaraTelefone(i) {
+    let v = i.value.replace(/\D/g, "");
+    v = v.replace(/^(\d{2})(\d)/g, "($1) $2");
+    v = v.replace(/(\d)(\d{4})$/, "$1-$2");
+    // Adiciona o ponto após o nono dígito para o formato (67) 9.0000-0000
+    if (v.length > 9) {
+        v = v.replace(/(\(\d{2}\)\s\d)(\d)/, "$1.$2");
+    }
+    i.value = v;
+}
+
+function mascaraDocumento(i) {
+    let v = i.value.replace(/\D/g, "");
+    
+    if (v.length <= 11) { // CPF
+        v = v.replace(/(\d{3})(\d)/, "$1.$2");
+        v = v.replace(/(\d{3})(\d)/, "$1.$2");
+        v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+    } else { // CNPJ
+        v = v.replace(/^(\d{2})(\d)/, "$1.$2");
+        v = v.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
+        v = v.replace(/\.(\d{3})(\d)/, ".$1/$2");
+        v = v.replace(/(\d{4})(\d)/, "$1-$2");
+    }
+    i.value = v;
+}
+
+// --- COMENTÁRIO: FIM DAS FUNÇÕES DE MÁSCARA ---
     // --- FUNÇÕES DE ACESSO E LOGIN ---
     async function realizarLogin() {
         const btn = document.getElementById('btn-entrar');
