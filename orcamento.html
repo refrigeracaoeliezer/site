@@ -254,16 +254,19 @@
             }
         }
 
-        async function buscarDadosPlanilha() {
-            try {
-                const resp = await fetch(URL_DATABASE);
-                cacheDados = await resp.json();
-                renderizarDatalists();
-                configurarListeners();
-                aplicarTextoPadrao();
-                calcularDataFinal();
-            } catch (e) { console.error("Erro na carga:", e); }
-        }
+     async function buscarDadosPlanilha() {
+    try {
+        const resp = await fetch(URL_DATABASE);
+        cacheDados = await resp.json();
+        renderizarDatalists();
+        
+        // --- ADICIONE/CERTIFIQUE-SE QUE ESTA LINHA ESTÁ AQUI ---
+        configurarListeners(); 
+        
+        aplicarTextoPadrao();
+        calcularDataFinal();
+    } catch (e) { console.error("Erro na carga:", e); }
+}
 
         function renderizarDatalists() {
             const criarOpcoes = (campo) => [...new Set(cacheDados.map(d => d[campo]))].filter(Boolean).map(n => `<option value="${n}">`).join('');
@@ -286,41 +289,42 @@
             }
             autoExpandir(txtArea);
         }
-/* --- COMENTÁRIO: SISTEMA DE TRANSFERÊNCIA CORRIGIDO POR GEMINI --- */
+/* --- COMENTÁRIO: SISTEMA DE TRANSFERÊNCIA CORRIGIDO E ATIVADO --- */
 function configurarListeners() {
     const campoBusca = document.getElementById('busca_obs');
     const campoEdicao = document.getElementById('obsGeral');
     const campoCliente = document.getElementById('nomeCliente');
 
-    // Função para transferir a observação
+    if (!campoBusca || !campoEdicao) return;
+
     const executarTrocaObs = () => {
         const valorAtual = campoBusca.value.trim();
         if (!valorAtual) return;
 
-        // Procura no cache. Usamos trim() para ignorar espaços vazios no início/fim
+        // Procura no cache ignorando espaços vazios
         const itemEncontrado = cacheDados.find(x => 
             x.txt_obs && x.txt_obs.trim() === valorAtual
         );
 
         if (itemEncontrado) {
-            campoEdicao.value = itemEncontrado.txt_obs; // Manda para a edição
-            campoBusca.value = ""; // LIMPA A BARRA DE BUSCA (Faz sumir de cima)
-            autoExpandir(campoEdicao); // Ajusta o tamanho
-            campoBusca.blur(); // Fecha o teclado/lista
-            campoEdicao.focus(); // Joga o cursor para o texto
+            campoEdicao.value = itemEncontrado.txt_obs; 
+            campoBusca.value = ""; // Limpa a busca
+            autoExpandir(campoEdicao); 
+            campoBusca.blur(); 
+            campoEdicao.focus(); 
         }
     };
 
-    // Função para carregar dados do cliente
     const carregarCliente = () => {
-        const cliente = cacheDados.find(x => x.cli_nome === campoCliente.value.trim());
+        const valorC = campoCliente.value.trim();
+        const cliente = cacheDados.find(x => x.cli_nome === valorC);
         if (cliente) {
             document.getElementById('enderecoCliente').value = cliente.cli_end || "";
             document.getElementById('telCliente').value = cliente.cli_tel || "";
         }
     };
 
-    // Listeners para Observação (Input e Change para garantir PC e Celular)
+    // Listeners para Observação
     campoBusca.addEventListener('input', executarTrocaObs);
     campoBusca.addEventListener('change', executarTrocaObs);
 
@@ -328,7 +332,6 @@ function configurarListeners() {
     campoCliente.addEventListener('input', carregarCliente);
     campoCliente.addEventListener('change', carregarCliente);
 }
-/* --- COMENTÁRIO: FIM DA CORREÇÃO --- */
 /* --- COMENTÁRIO: FIM DOS LISTENERS --- */
 
         function adicionarServico() {
