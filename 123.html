@@ -178,7 +178,7 @@
         }
         .btn-toggle-security { background: none; border: 1px solid var(--glass-border); color: #27a9e3; padding: 8px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; }
 
-        /* --- ESTILOS DO DROPDOWN PESQUISÁVEL --- */
+        /* --- ESTILOS DO DROPDOWN PESQUISÁVEL ATUALIZADOS --- */
         .custom-dropdown { position: relative; width: 100%; }
         .dropdown-list {
             position: absolute; left: 0; right: 0; top: 110%;
@@ -189,9 +189,20 @@
         .dropdown-item { padding: 12px; font-size: 14px; border-bottom: 1px solid var(--glass-border); transition: 0.2s; color: var(--text-main); cursor: pointer; }
         .dropdown-item:hover { background: #1e40af; color: white; }
         .dropdown-item:last-child { border-bottom: none; }
-        .is-searching .selected-text { display: none; }
-        .search-input { background: transparent !important; border: none !important; color: inherit !important; width: 100% !important; outline: none !important; display: none; padding: 0 !important; }
-        .is-searching .search-input { display: block; }
+        
+        .search-input { 
+            background: var(--input-bg) !important; 
+            border: 1px solid var(--glass-border) !important; 
+            color: inherit !important; 
+            width: 100% !important; 
+            outline: none !important; 
+            display: block !important; 
+            padding: 12px !important; 
+            padding-right: 35px !important; /* Espaço para a seta */
+            border-radius: 10px !important; 
+            cursor: text;
+        }
+        
         .rotate-icon { transform: translateY(-50%) rotate(180deg) !important; }
     </style>
 </head>
@@ -283,10 +294,9 @@
         <div class="config-section" id="sec-servico">
             <div class="section-title"><i class="fa-solid fa-gears"></i> Detalhes do Serviço</div>
             <div class="custom-dropdown" id="dropdown-servico">
-                <div class="w-full p-3 rounded-xl dark-input flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
-                    <span class="selected-text truncate text-white/40">Selecionar Serviço...</span>
-                    <input type="text" class="search-input" placeholder="Pesquisar serviço..." oninput="filtrarDropdown(this)" onblur="syncInput(this)" onclick="event.stopPropagation()">
-                    <i class="fa-solid fa-chevron-down text-white/20 text-[10px] transition-transform duration-300"></i>
+                <div style="position: relative; width: 100%;">
+                    <input type="text" class="search-input" placeholder="Selecionar Serviço..." oninput="filtrarDropdown(this)" onclick="toggleDropdown(this); event.stopPropagation()">
+                    <i class="fa-solid fa-chevron-down text-white/20 text-[10px] transition-transform duration-300" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i>
                 </div>
                 <ul id="lista_servicos_custom" class="dropdown-list"></ul>
                 <input type="hidden" id="srv_nome">
@@ -298,10 +308,9 @@
         <div class="config-section" id="sec-cliente">
             <div class="section-title"><i class="fa-solid fa-user"></i> Dados do Cliente</div>
             <div class="custom-dropdown" id="dropdown-cliente">
-                <div class="w-full p-3 rounded-xl dark-input flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
-                    <span class="selected-text truncate text-white/40">Selecionar Cliente...</span>
-                    <input type="text" class="search-input" placeholder="Pesquisar cliente..." oninput="filtrarDropdown(this)" onblur="syncInput(this)" onclick="event.stopPropagation()">
-                    <i class="fa-solid fa-chevron-down text-white/20 text-[10px] transition-transform duration-300"></i>
+                <div style="position: relative; width: 100%;">
+                    <input type="text" class="search-input" placeholder="Selecionar Cliente..." oninput="filtrarDropdown(this)" onclick="toggleDropdown(this); event.stopPropagation()">
+                    <i class="fa-solid fa-chevron-down text-white/20 text-[10px] transition-transform duration-300" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i>
                 </div>
                 <ul id="lista_clientes_custom" class="dropdown-list"></ul>
                 <input type="hidden" id="cli_nome">
@@ -321,7 +330,6 @@
 
     let cacheDados = []; 
 
-    // --- FUNÇÕES DE TEMA ---
     function toggleTheme() {
         const body = document.body;
         const icon = document.getElementById('theme-icon');
@@ -382,59 +390,40 @@
         } catch (e) { console.error("Erro na carga:", e); }
     }
 
-    // --- LÓGICA DO DROPDOWN COM EDIÇÃO/ADIÇÃO ---
-    function toggleDropdown(el) {
-        const wrapper = el.parentElement;
+    function toggleDropdown(inputEl) {
+        const wrapper = inputEl.closest('.custom-dropdown');
         const list = wrapper.querySelector('.dropdown-list');
-        const icon = el.querySelector('i');
-        const searchInput = el.querySelector('.search-input');
-        const selectedSpan = el.querySelector('.selected-text');
+        const icon = wrapper.querySelector('.fa-chevron-down');
         const isVisible = list.style.display === 'block';
         
         fecharTodosDropdowns();
         if (!isVisible) {
             list.style.display = 'block';
             icon.classList.add('rotate-icon');
-            wrapper.classList.add('is-searching');
-            // Se já tiver algo selecionado, coloca no input para editar
-            if (!selectedSpan.classList.contains('text-white/40')) {
-                searchInput.value = selectedSpan.innerText;
-            }
-            searchInput.focus();
-            filtrarDropdown(searchInput);
+            inputEl.focus();
+            filtrarDropdown(inputEl);
         }
     }
 
     function filtrarDropdown(input) {
         const termo = input.value.toLowerCase();
-        const list = input.closest('.custom-dropdown').querySelector('.dropdown-list');
+        const wrapper = input.closest('.custom-dropdown');
+        const list = wrapper.querySelector('.dropdown-list');
         const items = list.querySelectorAll('.dropdown-item');
+        
         items.forEach(item => {
             item.style.display = item.textContent.toLowerCase().includes(termo) ? 'block' : 'none';
         });
-        // Sincroniza o valor digitado com o input hidden para permitir novos nomes
-        const hiddenInput = input.closest('.custom-dropdown').querySelector('input[type="hidden"]');
-        hiddenInput.value = input.value;
-    }
 
-    // Sincroniza o visual quando perde o foco, permitindo novos nomes
-    function syncInput(input) {
-        const wrapper = input.closest('.custom-dropdown');
-        const selectedSpan = wrapper.querySelector('.selected-text');
-        if (input.value.trim() !== "") {
-            selectedSpan.innerText = input.value;
-            selectedSpan.classList.remove('text-white/40');
-        }
+        const hiddenInput = wrapper.querySelector('input[type="hidden"]');
+        hiddenInput.value = input.value;
     }
 
     function selecionarItemCustom(li, valor, tipo) {
         const wrapper = li.closest('.custom-dropdown');
-        const display = wrapper.querySelector('.selected-text');
         const hiddenInput = wrapper.querySelector('input[type="hidden"]');
         const searchInput = wrapper.querySelector('.search-input');
         
-        display.innerText = valor;
-        display.classList.remove('text-white/40');
         hiddenInput.value = valor;
         searchInput.value = valor;
         
@@ -454,7 +443,6 @@
 
     function fecharTodosDropdowns() {
         document.querySelectorAll('.dropdown-list').forEach(l => l.style.display = 'none');
-        document.querySelectorAll('.custom-dropdown').forEach(d => d.classList.remove('is-searching'));
         document.querySelectorAll('.fa-chevron-down').forEach(i => i.classList.remove('rotate-icon'));
     }
 
@@ -506,13 +494,6 @@
                 fields.forEach(el => {
                    if(el.type !== 'hidden') el.value = '';
                 });
-                // Reseta visual dos dropdowns custom
-                container.querySelectorAll('.selected-text').forEach(t => {
-                   const isCli = t.parentElement.parentElement.id.includes('cliente');
-                   t.innerText = isCli ? 'Selecionar Cliente...' : 'Selecionar Serviço...';
-                   t.classList.add('text-white/40');
-                });
-                container.querySelectorAll('.search-input').forEach(i => i.value = '');
             }
             setTimeout(() => { 
                 document.getElementById('toast-minimal').style.display = 'none'; 
