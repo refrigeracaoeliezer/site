@@ -30,7 +30,7 @@
             --modal-text-box: rgba(255, 255, 255, 0.05);
             --modal-text-color: #ffffff;
             --total-container-bg: rgba(30, 64, 175, 0.3);
-            --total-text-final: #ffffff;
+            --total-text-color: #ffffff;
         }
 
         body.light-mode {
@@ -43,8 +43,7 @@
             --card-sub: rgba(0, 0, 0, 0.02);
             --modal-text-box: #f3f4f6;
             --modal-text-color: #1a1f26;
-            --total-container-bg: #1e40af; /* Azul fixo para Orçamento Modo Claro */
-            --total-text-final: #ffffff;
+            --total-container-bg: #1e40af; /* Azul nítido no orçamento */
         }
         /* --- FIM VARIÁVEIS DE TEMA --- */
 
@@ -61,17 +60,11 @@
         .is-os .text-blue-500, .is-os .text-blue-400, .is-os .section-header i, .is-os .section-header span { color: #10b981 !important; }
         .is-os .btn-primary { background: linear-gradient(135deg, #065f46 0%, #10b981 100%) !important; }
         
-        /* AJUSTE CIRÚRGICO: CORES SÓLIDAS MODO CLARO */
-        body.light-mode.is-os .total-container { 
-            background: #10b981 !important; /* Verde Esmeralda Sólido */
-            backdrop-filter: none !important;
-            -webkit-backdrop-filter: none !important;
-        }
-        body.light-mode:not(.is-os) .total-container { 
-            background: #1e40af !important; /* Azul Sólido */
-            backdrop-filter: none !important;
-            -webkit-backdrop-filter: none !important;
-        }
+        /* Ajuste do botão de total para O.S. - Removida sobreposição esbranquiçada */
+        .is-os .total-container { background: #065f46 !important; border-color: rgba(16, 185, 129, 0.3) !important; }
+        
+        /* ALTERAÇÃO SOLICITADA: O.S. com mesmo azul do Orçamento no Modo Claro */
+        body.light-mode.is-os .total-container { background: #1e40af !important; border-color: rgba(255,255,255,0.1) !important; }
 
         .dark-input { background: var(--input-bg) !important; border: 1px solid var(--glass-border) !important; color: var(--input-text) !important; transition: all 0.3s ease; cursor: pointer; }
         .dark-input:focus { border-color: #3b82f6 !important; background: rgba(255, 255, 255, 0.08) !important; outline: none; }
@@ -100,6 +93,9 @@
         .active-label { color: white !important; }
         .mode-os .switch-bg { left: 50%; background: #10b981; }
 
+        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.5); }
+        body:not(.light-mode) input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
+
         #modal-mensagens { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.95); backdrop-filter: blur(10px); z-index: 100; overflow-y: auto; display: none; padding: 20px; }
         body.light-mode #modal-mensagens { background: rgba(240, 242, 245, 0.98); color: #1a1f26; }
         
@@ -114,11 +110,12 @@
         .total-container { 
             background: var(--total-container-bg) !important; 
             border: 1px solid rgba(255,255,255,0.1) !important;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
             transition: all 0.4s ease; 
         }
-        .total-container input { color: var(--total-text-final) !important; }
+
+        /* Cor branca pura para o total, mesmo quando estiver 0,00 */
+        #totalFinal { color: #ffffff !important; }
+        #totalFinal::placeholder { color: rgba(255, 255, 255, 0.5) !important; }
     </style>
 </head>
 <body class="p-4 pb-10">
@@ -260,7 +257,7 @@
                 <div class="total-container p-6 rounded-3xl">
                     <div class="flex items-center gap-3">
                         <span class="text-xl font-black text-white/40">R$</span>
-                        <input type="text" id="totalFinal" placeholder="0,00" class="w-full bg-transparent border-none text-3xl font-black text-white focus:outline-none" readonly>
+                        <input type="text" id="totalFinal" placeholder="0,00" class="w-full bg-transparent border-none text-3xl font-black text-[#ffffff] focus:outline-none" readonly>
                     </div>
                 </div>
             </div>
@@ -468,7 +465,7 @@ function configurarListeners() {
                 document.getElementById('lbl-os').classList.remove('active-label');
                 btnAddIcon.className = "fa-solid fa-circle-plus mr-2 text-blue-500";
             }
-            calcularDataFinal();
+            if (typeof calcularDataFinal === "function") calcularDataFinal();
         }
 
         window.onload = () => {
