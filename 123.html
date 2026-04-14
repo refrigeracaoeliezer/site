@@ -18,25 +18,47 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
+        /* --- INICIO VARIÁVEIS DE TEMA --- */
+        :root {
+            --bg-body: #0d1117;
+            --text-main: white;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --input-bg: rgba(255, 255, 255, 0.05);
+            --input-text: white;
+            --card-sub: rgba(255, 255, 255, 0.02);
+        }
+
+        body.light-mode {
+            --bg-body: #f0f2f5;
+            --text-main: #1a1f26;
+            --glass-bg: rgba(255, 255, 255, 0.8);
+            --glass-border: rgba(0, 0, 0, 0.1);
+            --input-bg: rgba(0, 0, 0, 0.05);
+            --input-text: #1a1f26;
+            --card-sub: rgba(0, 0, 0, 0.02);
+        }
+        /* --- FIM VARIÁVEIS DE TEMA --- */
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; min-height: 100vh; background: #0d1117; color: white; position: relative; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+        body { font-family: 'Inter', sans-serif; min-height: 100vh; background: var(--bg-body); color: var(--text-main); position: relative; overflow-x: hidden; -webkit-font-smoothing: antialiased; transition: background 0.3s, color 0.3s; }
 
         .corner-ball { position: fixed; background: rgba(30, 64, 175, 0.1); border-radius: 50%; z-index: 0; pointer-events: none; filter: blur(80px); }
         .ball-top-right { width: 400px; height: 400px; top: -100px; right: -100px; }
         .ball-bottom-left { width: 300px; height: 300px; bottom: -100px; left: -100px; }
 
-        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-top: 4px solid #1e40af; border-radius: 30px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); transition: all 0.5s ease; }
+        .glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-top: 4px solid #1e40af; border-radius: 30px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); transition: all 0.5s ease; }
 
         .is-os { border-top-color: #10b981 !important; }
         .is-os .text-blue-500, .is-os .text-blue-400, .is-os .section-header i, .is-os .section-header span { color: #10b981 !important; }
         .is-os .btn-primary { background: linear-gradient(135deg, #065f46 0%, #10b981 100%) !important; }
 
-        .dark-input { background: rgba(255, 255, 255, 0.05) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; color: white !important; transition: all 0.3s ease; cursor: pointer; }
+        .dark-input { background: var(--input-bg) !important; border: 1px solid var(--glass-border) !important; color: var(--input-text) !important; transition: all 0.3s ease; cursor: pointer; }
         .dark-input:focus { border-color: #3b82f6 !important; background: rgba(255, 255, 255, 0.08) !important; outline: none; }
         .is-os .dark-input:focus { border-color: #10b981 !important; }
 
-        .service-card { background: rgba(255, 255, 255, 0.02); border-radius: 20px; padding: 15px; border: 1px solid rgba(255, 255, 255, 0.08); }
-        .qty-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: #3b82f6; transition: 0.2s; border: 1px solid rgba(59, 130, 246, 0.2); }
+        .service-card { background: var(--card-sub); border-radius: 20px; padding: 15px; border: 1px solid var(--glass-border); }
+        .qty-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: var(--input-bg); color: #3b82f6; transition: 0.2s; border: 1px solid rgba(59, 130, 246, 0.2); }
         .is-os .qty-btn { color: #10b981 !important; border-color: rgba(16, 185, 129, 0.2) !important; }
         
         .section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
@@ -46,24 +68,28 @@
         .btn-primary { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); transition: transform 0.2s; box-shadow: 0 10px 20px -5px rgba(30, 64, 175, 0.5); }
         .btn-primary:active { transform: scale(0.95); }
 
-        .btn-add-item { width: 100%; padding: 1rem; border: 2px dashed rgba(59, 130, 246, 0.5); border-radius: 1.25rem; color: white; font-weight: 700; font-size: 0.75rem; transition: all 0.3s; background: rgba(59, 130, 246, 0.05); }
+        .btn-add-item { width: 100%; padding: 1rem; border: 2px dashed rgba(59, 130, 246, 0.5); border-radius: 1.25rem; color: var(--text-main); font-weight: 700; font-size: 0.75rem; transition: all 0.3s; background: rgba(59, 130, 246, 0.05); }
         .is-os .btn-add-item { border-color: rgba(16, 185, 129, 0.5); background: rgba(16, 185, 129, 0.05); }
 
         #obsGeral { overflow: hidden; resize: none; min-height: 100px; transition: min-height 0.2s ease; }
 
-        .switch { position: relative; display: inline-block; width: 100%; height: 44px; background: rgba(255,255,255,0.05); border-radius: 15px; padding: 4px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; }
+        .switch { position: relative; display: inline-block; width: 100%; height: 44px; background: var(--input-bg); border-radius: 15px; padding: 4px; border: 1px solid var(--glass-border); cursor: pointer; }
         .switch-bg { position: absolute; top: 4px; left: 4px; width: calc(50% - 4px); height: calc(100% - 8px); background: #1e40af; border-radius: 12px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1; }
         .switch-labels { position: relative; display: flex; height: 100%; z-index: 2; align-items: center; font-size: 11px; font-weight: 800; text-transform: uppercase; }
-        .switch-labels div { flex: 1; text-align: center; color: rgba(255,255,255,0.4); }
+        .switch-labels div { flex: 1; text-align: center; color: rgba(128,128,128,0.6); }
         .active-label { color: white !important; }
         .mode-os .switch-bg { left: 50%; background: #10b981; }
 
-        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
+        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.5); }
+        body:not(.light-mode) input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
 
         #modal-mensagens { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.95); backdrop-filter: blur(10px); z-index: 100; overflow-y: auto; display: none; padding: 20px; }
+        body.light-mode #modal-mensagens { background: rgba(255, 255, 255, 0.95); color: #1a1f26; }
         
-        /* Centralização e efeito do Copiado */
         .btn-copy-success { background-color: #3b82f6 !important; color: white !important; }
+
+        /* Estilo do Botão de Tema */
+        .theme-toggle { background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
     </style>
 </head>
 <body class="p-4 pb-10">
@@ -123,6 +149,12 @@
     </div>
 
     <div class="max-w-md mx-auto relative z-10" id="main-container">
+        
+        <div class="flex justify-end mb-2">
+            <button onclick="toggleTheme()" class="theme-toggle">
+                <i id="theme-icon" class="fa-solid fa-sun"></i>
+            </button>
+        </div>
         <div class="mb-6">
             <div class="switch" id="toggleMode" onclick="alternarModo()">
                 <div class="switch-bg" id="switch-thumb"></div>
@@ -223,6 +255,22 @@
         let modoOS = false;
         let saldoQuitado = false;
 
+        /* --- INICIO LOGICA TEMA --- */
+        function toggleTheme() {
+            const body = document.body;
+            const icon = document.getElementById('theme-icon');
+            body.classList.toggle('light-mode');
+            
+            if (body.classList.contains('light-mode')) {
+                icon.classList.replace('fa-sun', 'fa-moon');
+                localStorage.setItem('theme', 'light');
+            } else {
+                icon.classList.replace('fa-moon', 'fa-sun');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+        /* --- FIM LOGICA TEMA --- */
+
         function forcarLista(input) {
             input.setAttribute('autocomplete', 'off');
             const valOriginal = input.value;
@@ -254,10 +302,7 @@
         const resp = await fetch(URL_DATABASE);
         cacheDados = await resp.json();
         renderizarDatalists();
-        
-        // --- ADICIONE/CERTIFIQUE-SE QUE ESTA LINHA ESTÁ AQUI ---
         configurarListeners(); 
-        
         aplicarTextoPadrao();
         calcularDataFinal();
     } catch (e) { console.error("Erro na carga:", e); }
@@ -275,29 +320,22 @@
         }
 function aplicarTextoPadrao() {
     const txtArea = document.getElementById('obsGeral');
-    // Filtra apenas os textos de observação da planilha
     const listaObsValidas = cacheDados.map(d => d.txt_obs).filter(Boolean);
     
     if (modoOS) {
-        // Pega o segundo texto da planilha para OS
         txtArea.value = listaObsValidas[1] || "";
     } else {
-        // Pega o primeiro texto da planilha para Orçamento
         txtArea.value = listaObsValidas[0] || "";
     }
     autoExpandir(txtArea);
 }
-/* --- COMENTÁRIO: LISTENERS APENAS PARA CLIENTES (BUSCA REMOVIDA) --- */
 function configurarListeners() {
     const campoCliente = document.getElementById('nomeCliente');
     if (!campoCliente) return;
 
    const carregarCliente = () => {
     const valorC = campoCliente.value.trim();
-    console.log("Buscando cliente:", valorC); // Debug
-    console.log("Dados no Cache:", cacheDados); // Veja se todos os clientes estão aqui
     const cliente = cacheDados.find(x => x.cli_nome && x.cli_nome.toString().trim() === valorC);
-    // ... resto do código
         if (cliente) {
             document.getElementById('enderecoCliente').value = cliente.cli_end || "";
             document.getElementById('telCliente').value = cliente.cli_tel || "";
@@ -306,23 +344,6 @@ function configurarListeners() {
 
     campoCliente.addEventListener('input', carregarCliente);
     campoCliente.addEventListener('change', carregarCliente);
-}
-
-/* --- COMENTÁRIO: GARANTE QUE O TEXTO APAREÇA ASSIM QUE OS DADOS CHEGAREM --- */
-async function buscarDadosPlanilha() {
-    try {
-        const resp = await fetch(URL_DATABASE);
-        cacheDados = await resp.json();
-        renderizarDatalists();
-        
-        // Ativa os sensores do cliente
-        configurarListeners(); 
-        
-        // Joga o texto da planilha direto na caixa de edição
-        aplicarTextoPadrao();
-        
-        calcularDataFinal();
-    } catch (e) { console.error("Erro na carga:", e); }
 }
 
         function adicionarServico() {
@@ -427,6 +448,9 @@ async function buscarDadosPlanilha() {
         }
 
         window.onload = () => {
+            // Verifica tema salvo
+            if(localStorage.getItem('theme') === 'light') toggleTheme();
+
             const agora = new Date();
             document.getElementById('dataInicio').value = agora.toISOString().split('T')[0];
             buscarDadosPlanilha();
@@ -506,11 +530,8 @@ async function buscarDadosPlanilha() {
             });
         }
 
-      // FUNÇÃO AJUSTADA PARA REDIRECIONAR PARA A PÁGINA CORRETA (ORC ou OS)
         function baixarPDF() {
             const cliente = document.getElementById('nomeCliente').value || "Cliente";
-
-            // 1. Captura os dados para o LocalStorage
             const dadosParaImpressao = {
                 tipo: modoOS ? "ORDEM DE SERVIÇO" : "ORÇAMENTO",
                 cliente: cliente,
@@ -526,19 +547,13 @@ async function buscarDadosPlanilha() {
                     valor: card.querySelector('.service-price').value
                 }))
             };
-
-            // 2. Salva no LocalStorage
             localStorage.setItem('dados_impressao', JSON.stringify(dadosParaImpressao));
-
-            // 3. LOGICA DE REDIRECIONAMENTO:
             if (modoOS) {
-                // Se estiver no modo Ordem de Serviço, abre a página VERDE
                 window.location.href = "impressao_os.html";
             } else {
-                // Se estiver no modo Orçamento, abre a página AZUL
                 window.location.href = "impressao.html";
             }
         }
     </script>
 </body>
-</html> 
+</html>
