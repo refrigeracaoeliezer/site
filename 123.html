@@ -292,9 +292,12 @@ function configurarListeners() {
     const campoCliente = document.getElementById('nomeCliente');
     if (!campoCliente) return;
 
-    const carregarCliente = () => {
-        const valorC = campoCliente.value.trim();
-        const cliente = cacheDados.find(x => x.cli_nome === valorC);
+   const carregarCliente = () => {
+    const valorC = campoCliente.value.trim();
+    console.log("Buscando cliente:", valorC); // Debug
+    console.log("Dados no Cache:", cacheDados); // Veja se todos os clientes estão aqui
+    const cliente = cacheDados.find(x => x.cli_nome && x.cli_nome.toString().trim() === valorC);
+    // ... resto do código
         if (cliente) {
             document.getElementById('enderecoCliente').value = cliente.cli_end || "";
             document.getElementById('telCliente').value = cliente.cli_tel || "";
