@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=1024">  
     <title>Orçamento Técnico Profissional</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
     <style>
@@ -225,19 +225,47 @@
             } catch (e) { console.error("Erro ao buscar dados remotos:", e); }
         }
 
-        function baixarPDF() {
-            const element = document.getElementById('conteudo-pdf');
-            const cliente = document.getElementById('view-cliente').innerText;
-            const opt = {
-                margin: [10, 0, 10, 0],
-                filename: `Orcamento_${cliente}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                pagebreak: { mode: 'avoid-all' }
-            };
-            html2pdf().set(opt).from(element).save();
-        }
+     // Adicione no topo do <script>
+const URL_SALVAR = "https://script.google.com/macros/s/AKfycbz547p8PXrxnReFBFjNs77pXZ1hBxEGrgJpRas6NXEnPIakIvL0RrjjITvGmtylVoMC/exec";
+
+async function carregarPagina() {
+    // Busca o próximo ID disponível na planilha
+    const resp = await fetch(URL_SALVAR + "?action=orc");
+    const proximoID = await resp.text();
+    document.getElementById('num-random').innerText = proximoID + '/2026';
+    
+    // ... restante do seu código de carregarPagina ...
+}
+
+async function baixarPDF() {
+    const btn = document.getElementById('btn-pdf');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+    const dadosLocal = JSON.parse(localStorage.getItem('dados_impressao'));
+    const nDoc = document.getElementById('num-random').innerText.split('/')[0];
+
+    // Enviar dados para a planilha antes de gerar o PDF
+    const payload = {
+        action: "registrar_orcamento",
+        cliente: dadosLocal.cliente,
+        validade: dadosLocal.validade,
+        itens: dadosLocal.itens
+    };
+
+    await fetch(URL_SALVAR, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+
+    // Lógica do PDF
+    const element = document.getElementById('conteudo-pdf');
+    const opt = {
+        margin: [10, 0, 10, 0],
+        filename: `Orcamento_${nDoc}_${dadosLocal.cliente}.pdf`,
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    
+    html2pdf().set(opt).from(element).save();
+    setTimeout(() => { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-file-pdf"></i>'; }, 2000);
+}
 
         window.onload = carregarPagina;
     </script>
