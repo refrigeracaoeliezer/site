@@ -536,7 +536,7 @@ label {
 
         document.getElementById('lista_clientes').innerHTML = criarOpcoesGeral('cli_nome');
         document.getElementById('lista_servicos').innerHTML = criarOpcoesGeral('srv_nome');
-        document.getElementById('lista_obs').innerHTML = criarOpcoesGeral('txt_obs');
+
         document.getElementById('lista_empresas').innerHTML = criarOpcoesEmpresa('emp_nome');
     }
 
@@ -560,17 +560,7 @@ label {
         setupBusca('srv_nome', ['srv_valor'], ['srv_nome', 'srv_valor']);
         setupBusca('cli_nome', ['cli_doc', 'cli_tel', 'cli_end'], ['cli_nome', 'cli_doc', 'cli_tel', 'cli_end']);
         
-        const campoBuscaObs = document.getElementById('obs_busca');
-        const areaTextoObs = document.getElementById('txt_obs');
-        campoBuscaObs.addEventListener('input', function() {
-            const encontrado = cacheDados.find(x => x.txt_obs === this.value);
-            if (encontrado) {
-                areaTextoObs.value = encontrado.txt_obs;
-                areaTextoObs.dataset.original = encontrado.txt_obs; 
-                setTimeout(() => { this.value = ""; this.blur(); areaTextoObs.focus(); }, 10);
-            }
-        });
-    }
+   
 
     // --- SALVAR DADOS (Envia tudo para as colunas certas) ---
     function saveData(sectionId, btn, originalText) {
@@ -600,8 +590,8 @@ label {
             cli_doc: document.getElementById('cli_doc').value,
             cli_tel: document.getElementById('cli_tel').value, 
             cli_end: document.getElementById('cli_end').value,
-            txt_obs: document.getElementById('txt_obs').value, 
-            txt_obs_original: document.getElementById('txt_obs').dataset.original || ""
+        
+       
         };
         
         fetch(URL_DATABASE, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
