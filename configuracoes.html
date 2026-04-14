@@ -130,6 +130,14 @@
             100% { opacity: 0; transform: translate(-50%, -40%); }
         }
 
+        /* --- MODAL DE CONFIRMAÇÃO PERSONALIZADO --- */
+        #modal-confirm { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 20000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal-content { background: var(--bg-body); border: 1px solid #1e40af; padding: 30px; border-radius: 25px; text-align: center; max-width: 90%; width: 350px; box-shadow: 0 0 30px rgba(30, 64, 175, 0.4); }
+        .modal-btns { display: flex; gap: 15px; margin-top: 25px; }
+        .btn-modal { flex: 1; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; border: none; transition: 0.3s; }
+        .btn-sim { background: #ff4b4b; color: white; }
+        .btn-nao { background: var(--glass-bg); color: var(--text-main); border: 1px solid var(--glass-border); }
+
         #overlay-login { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-body); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; transition: background 0.3s; }
         
         .login-card { 
@@ -186,9 +194,24 @@
             border-radius: 12px; z-index: 50; max-height: 200px; overflow-y: auto;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: none;
         }
-        .dropdown-item { padding: 12px; font-size: 14px; border-bottom: 1px solid var(--glass-border); transition: 0.2s; color: var(--text-main); cursor: pointer; }
+        /* Ajuste para alinhar lixeira à direita sempre */
+        .dropdown-item { 
+            padding: 12px; 
+            font-size: 14px; 
+            border-bottom: 1px solid var(--glass-border); 
+            transition: 0.2s; 
+            color: var(--text-main); 
+            cursor: pointer; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
         .dropdown-item:hover { background: #1e40af; color: white; }
         .dropdown-item:last-child { border-bottom: none; }
+        
+        /* --- ESTILO BOTÃO EXCLUIR --- */
+        .btn-del-item { color: #ff4b4b; padding: 5px 8px; border-radius: 5px; transition: 0.2s; cursor: pointer; }
+        .btn-del-item:hover { background: rgba(255, 75, 75, 0.2); transform: scale(1.1); }
         
         .search-input { 
             background: var(--input-bg) !important; 
@@ -217,6 +240,17 @@
     <div class="corner-ball ball-bottom-left"></div>
 
     <div id="toast-minimal">Salvo com sucesso!</div>
+
+    <div id="modal-confirm">
+        <div class="modal-content">
+            <i class="fa-solid fa-triangle-exclamation" style="font-size: 40px; color: #ff4b4b; margin-bottom: 15px;"></i>
+            <h3 id="modal-msg">Deseja realmente excluir?</h3>
+            <div class="modal-btns">
+                <button class="btn-modal btn-nao" onclick="fecharModalConfirm(false)">NÃO</button>
+                <button class="btn-modal btn-sim" onclick="fecharModalConfirm(true)">SIM</button>
+            </div>
+        </div>
+    </div>
 
     <div id="overlay-login">
         <div class="login-card" id="card-login">
@@ -326,7 +360,7 @@
 
 <script>
     const URL_LOGIN = "https://script.google.com/macros/s/AKfycbzTyd4eSh9ey8Ldk0foi7lkRvWLGxOqj40w7J9szxK4JmSduZmfadNBzEidDWNULeNHxQ/exec";
-    const URL_DATABASE = "https://script.google.com/macros/s/AKfycbwsX8xUWHgb9PE9Nv6IvQbjB7VGQPfUQSbn6fZT1WQRk5IoQJMFAhleLHHpHSU9zHw49A/exec";
+    const URL_DATABASE = "https://script.google.com/macros/s/AKfycbzPWxtSkYn_gvE8p5ae6Pz1ne8w1mJpzMbr6vblQTRsWIaVa-5SdUKdY2eFv6Y2IIvRkA/exec";
 
     let cacheDados = []; 
 
@@ -412,7 +446,8 @@
         const items = list.querySelectorAll('.dropdown-item');
         
         items.forEach(item => {
-            item.style.display = item.textContent.toLowerCase().includes(termo) ? 'block' : 'none';
+            const spanText = item.querySelector('span').textContent.toLowerCase();
+            item.style.display = spanText.includes(termo) ? 'flex' : 'none';
         });
 
         const hiddenInput = wrapper.querySelector('input[type="hidden"]');
@@ -448,6 +483,7 @@
 
     window.addEventListener('click', e => { if (!e.target.closest('.custom-dropdown')) fecharTodosDropdowns(); });
 
+    /* --- INICIO LOGICA DE RENDERIZAÇÃO COM LIXEIRA --- */
     function renderizarDatalists() {
         const criarOpcoesEmpresa = (campo) => [...new Set(cacheDados.slice(0, 5).map(d => d[campo]))].filter(Boolean).map(n => `<option value="${n}">`).join('');
         document.getElementById('lista_empresas').innerHTML = criarOpcoesEmpresa('emp_nome');
@@ -456,11 +492,64 @@
         const servicos = [...new Set(cacheDados.map(d => d.srv_nome))].filter(Boolean);
 
         document.getElementById('lista_clientes_custom').innerHTML = clientes.map(n => 
-            `<li class="dropdown-item" onclick="selecionarItemCustom(this, '${n}', 'cliente')">${n}</li>`).join('');
+            `<li class="dropdown-item" onclick="selecionarItemCustom(this, '${n}', 'cliente')">
+                <span>${n}</span>
+                <i class="fa-solid fa-trash-can btn-del-item" onclick="solicitarExclusao(event, '${n}', 'cliente')"></i>
+            </li>`).join('');
         
         document.getElementById('lista_servicos_custom').innerHTML = servicos.map(n => 
-            `<li class="dropdown-item" onclick="selecionarItemCustom(this, '${n}', 'servico')">${n}</li>`).join('');
+            `<li class="dropdown-item" onclick="selecionarItemCustom(this, '${n}', 'servico')">
+                <span>${n}</span>
+                <i class="fa-solid fa-trash-can btn-del-item" onclick="solicitarExclusao(event, '${n}', 'servico')"></i>
+            </li>`).join('');
     }
+    /* --- FIM LOGICA DE RENDERIZAÇÃO COM LIXEIRA --- */
+
+    /* --- INICIO FUNÇÃO DE EXCLUSÃO PERSONALIZADA --- */
+    let itemParaExcluir = null;
+
+    function solicitarExclusao(event, valor, tipo) {
+        event.stopPropagation();
+        itemParaExcluir = { valor, tipo };
+        document.getElementById('modal-msg').innerText = `Deseja realmente excluir "${valor}"?`;
+        document.getElementById('modal-confirm').style.display = 'flex';
+    }
+
+    function fecharModalConfirm(confirmado) {
+        document.getElementById('modal-confirm').style.display = 'none';
+        if (confirmado && itemParaExcluir) {
+            executarExclusao(itemParaExcluir.valor, itemParaExcluir.tipo);
+        }
+        itemParaExcluir = null;
+    }
+
+    async function executarExclusao(valor, tipo) {
+        const toast = document.getElementById('toast-minimal');
+        try {
+            const resp = await fetch(`${URL_DATABASE}?action=deletar&tipo=${tipo}&valor=${encodeURIComponent(valor)}`);
+            const result = await resp.text();
+
+            if (result.trim() === "sucesso") {
+                toast.innerText = "Excluído com sucesso!";
+                toast.style.display = 'block';
+                
+                if (tipo === 'cliente') {
+                    document.getElementById('cli_nome').value = "";
+                    document.querySelector('#dropdown-cliente .search-input').value = "";
+                } else {
+                    document.getElementById('srv_nome').value = "";
+                    document.querySelector('#dropdown-servico .search-input').value = "";
+                }
+
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                    toast.innerText = "Salvo com sucesso!";
+                    buscarDadosPlanilha();
+                }, 2000);
+            } else { alert("Erro ao excluir."); }
+        } catch (e) { console.error("Erro na exclusão:", e); }
+    }
+    /* --- FIM FUNÇÃO DE EXCLUSÃO PERSONALIZADA --- */
 
     function saveData(sectionId, btn, originalText) {
         const container = document.getElementById(sectionId);
