@@ -27,8 +27,8 @@
             --input-bg: rgba(255, 255, 255, 0.05);
             --input-text: white;
             --card-sub: rgba(255, 255, 255, 0.02);
-            --modal-text-box: #f3f4f6;
-            --modal-text-color: #1a1f26;
+            --modal-text-box: rgba(255, 255, 255, 0.05); /* Mesma cor do textarea técnico */
+            --modal-text-color: #ffffff;
             --total-container-bg: rgba(30, 64, 175, 0.3);
             --total-text-color: #ffffff;
         }
@@ -41,6 +41,8 @@
             --input-bg: rgba(0, 0, 0, 0.05);
             --input-text: #1a1f26;
             --card-sub: rgba(0, 0, 0, 0.02);
+            --modal-text-box: #f3f4f6; /* Fundo claro para modo claro */
+            --modal-text-color: #1a1f26;
             --total-container-bg: rgba(30, 64, 175, 0.9);
         }
         /* --- FIM VARIÁVEIS DE TEMA --- */
@@ -98,10 +100,9 @@
         .theme-toggle { background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
         .modal-glass-container { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 25px; padding: 20px; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-        .text-preview-box { background: var(--modal-text-box); border-radius: 15px; padding: 15px; font-family: monospace; font-size: 13px; color: var(--modal-text-color); white-space: pre-wrap; word-break: break-all; margin: 15px 0; border: 1px solid rgba(0,0,0,0.05); }
+        .text-preview-box { background: var(--modal-text-box); border-radius: 20px; padding: 15px; font-family: monospace; font-size: 13px; color: var(--modal-text-color); white-space: pre-wrap; word-break: break-all; margin: 15px 0; border: 1px solid var(--glass-border); }
         .btn-copy-custom { background: rgba(128,128,128,0.15); color: var(--text-main); border: 1px solid var(--glass-border); }
 
-        /* Estilo Elegante do Total do Serviço */
         .total-container { 
             background: var(--total-container-bg) !important; 
             border: 1px solid rgba(255,255,255,0.1) !important;
