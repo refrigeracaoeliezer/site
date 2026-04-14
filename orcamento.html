@@ -188,16 +188,11 @@
                     <i id="btn-add-icon" class="fa-solid fa-circle-plus mr-2 text-blue-500"></i> ADICIONAR ITEM
                 </button>
 
-                <div class="space-y-2 pt-2">
-                    <div class="relative">
-                        <input type="text" id="busca_obs" list="lista_obs" placeholder="Pesquisar observação salva..." class="w-full p-3 rounded-xl dark-input text-xs outline-none" onmousedown="forcarLista(this)">
-                        <i class="fa-solid fa-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-[10px]"></i>
-                    </div>
-                    <div class="relative">
-                        <textarea id="obsGeral" placeholder="Escreva os detalhes técnicos aqui..." class="w-full p-4 rounded-2xl dark-input text-sm outline-none" oninput="autoExpandir(this)"></textarea>
-                    </div>
-                </div>
-            </div>
+            <div class="space-y-2 pt-2">
+    <div class="relative">
+        <textarea id="obsGeral" placeholder="Escreva os detalhes técnicos aqui..." class="w-full p-4 rounded-2xl dark-input text-sm outline-none" oninput="autoExpandir(this)"></textarea>
+    </div>
+</div>
 
             <div id="sec-custos" class="space-y-4">
                 <div class="section-header">
@@ -292,7 +287,7 @@ function aplicarTextoPadrao() {
     }
     autoExpandir(txtArea);
 }
-/* --- COMENTÁRIO: LISTENERS APENAS PARA DADOS DO CLIENTE --- */
+/* --- COMENTÁRIO: LISTENERS APENAS PARA CLIENTES (BUSCA REMOVIDA) --- */
 function configurarListeners() {
     const campoCliente = document.getElementById('nomeCliente');
     if (!campoCliente) return;
@@ -308,6 +303,23 @@ function configurarListeners() {
 
     campoCliente.addEventListener('input', carregarCliente);
     campoCliente.addEventListener('change', carregarCliente);
+}
+
+/* --- COMENTÁRIO: GARANTE QUE O TEXTO APAREÇA ASSIM QUE OS DADOS CHEGAREM --- */
+async function buscarDadosPlanilha() {
+    try {
+        const resp = await fetch(URL_DATABASE);
+        cacheDados = await resp.json();
+        renderizarDatalists();
+        
+        // Ativa os sensores do cliente
+        configurarListeners(); 
+        
+        // Joga o texto da planilha direto na caixa de edição
+        aplicarTextoPadrao();
+        
+        calcularDataFinal();
+    } catch (e) { console.error("Erro na carga:", e); }
 }
 
         function adicionarServico() {
