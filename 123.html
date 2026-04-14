@@ -29,7 +29,8 @@
             --card-sub: rgba(255, 255, 255, 0.02);
             --modal-text-box: #f3f4f6;
             --modal-text-color: #1a1f26;
-            --total-bg: rgba(30, 64, 175, 0.1); /* Fundo sutil para o total */
+            --total-container-bg: rgba(30, 64, 175, 0.3);
+            --total-text-color: #ffffff;
         }
 
         body.light-mode {
@@ -40,7 +41,7 @@
             --input-bg: rgba(0, 0, 0, 0.05);
             --input-text: #1a1f26;
             --card-sub: rgba(0, 0, 0, 0.02);
-            --total-bg: #1e40af; /* Azul sólido no modo claro para leitura do valor branco */
+            --total-container-bg: rgba(30, 64, 175, 0.9);
         }
         /* --- FIM VARIÁVEIS DE TEMA --- */
 
@@ -56,7 +57,8 @@
         .is-os { border-top-color: #10b981 !important; }
         .is-os .text-blue-500, .is-os .text-blue-400, .is-os .section-header i, .is-os .section-header span { color: #10b981 !important; }
         .is-os .btn-primary { background: linear-gradient(135deg, #065f46 0%, #10b981 100%) !important; }
-        .is-os .total-container { background: #065f46 !important; }
+        .is-os .total-container { background: rgba(6, 95, 70, 0.4) !important; border-color: rgba(16, 185, 129, 0.2) !important; }
+        body.light-mode.is-os .total-container { background: rgba(6, 95, 70, 0.9) !important; }
 
         .dark-input { background: var(--input-bg) !important; border: 1px solid var(--glass-border) !important; color: var(--input-text) !important; transition: all 0.3s ease; cursor: pointer; }
         .dark-input:focus { border-color: #3b82f6 !important; background: rgba(255, 255, 255, 0.08) !important; outline: none; }
@@ -99,8 +101,14 @@
         .text-preview-box { background: var(--modal-text-box); border-radius: 15px; padding: 15px; font-family: monospace; font-size: 13px; color: var(--modal-text-color); white-space: pre-wrap; word-break: break-all; margin: 15px 0; border: 1px solid rgba(0,0,0,0.05); }
         .btn-copy-custom { background: rgba(128,128,128,0.15); color: var(--text-main); border: 1px solid var(--glass-border); }
 
-        /* Ajuste do Container de Total */
-        .total-container { background: var(--total-bg) !important; transition: background 0.3s ease; }
+        /* Estilo Elegante do Total do Serviço */
+        .total-container { 
+            background: var(--total-container-bg) !important; 
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: all 0.4s ease; 
+        }
     </style>
 </head>
 <body class="p-4 pb-10">
@@ -239,10 +247,10 @@
                     <i class="fa-solid fa-calculator"></i>
                     <span id="label-total">Total do Serviço</span>
                 </div>
-                <div class="total-container p-5 rounded-3xl border border-blue-500/10">
+                <div class="total-container p-6 rounded-3xl">
                     <div class="flex items-center gap-3">
                         <span class="text-xl font-black text-white/40">R$</span>
-                        <input type="text" id="totalFinal" placeholder="0,00" class="w-full bg-transparent border-none text-2xl font-black text-white focus:outline-none" readonly>
+                        <input type="text" id="totalFinal" placeholder="0,00" class="w-full bg-transparent border-none text-3xl font-black text-white focus:outline-none" readonly>
                     </div>
                 </div>
             </div>
