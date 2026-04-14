@@ -286,56 +286,49 @@
             }
             autoExpandir(txtArea);
         }
-/* --- COMENTÁRIO: TRANSFERÊNCIA GARANTIDA DE TEXTO (BUSCA -> EDIÇÃO) --- */
+/* --- COMENTÁRIO: SISTEMA DE TRANSFERÊNCIA CORRIGIDO POR GEMINI --- */
 function configurarListeners() {
     const campoBusca = document.getElementById('busca_obs');
     const campoEdicao = document.getElementById('obsGeral');
+    const campoCliente = document.getElementById('nomeCliente');
 
-    // Função que faz a mágica de mover o texto
-    const processarSelecao = () => {
-        const valorDigitado = campoBusca.value;
-        if (!valorDigitado) return;
+    // Função para transferir a observação
+    const executarTrocaObs = () => {
+        const valorAtual = campoBusca.value.trim();
+        if (!valorAtual) return;
 
-        // Procura o texto exato dentro do cache que veio da planilha
-        const encontrado = cacheDados.find(x => x.txt_obs === valorDigitado);
+        // Procura no cache. Usamos trim() para ignorar espaços vazios no início/fim
+        const itemEncontrado = cacheDados.find(x => 
+            x.txt_obs && x.txt_obs.trim() === valorAtual
+        );
 
-        if (encontrado) {
-            // 1. Envia para a área de edição
-            campoEdicao.value = encontrado.txt_obs;
-            
-            // 2. Limpa a barra de busca imediatamente
-            campoBusca.value = "";
-            
-            // 3. Ajusta a altura da caixa de texto
-            autoExpandir(campoEdicao);
-            
-            // 4. Fecha o teclado e tira o foco da busca
-            campoBusca.blur();
-            
-            // 5. Opcional: foca na edição para você já começar a mudar o texto
-            campoEdicao.focus();
+        if (itemEncontrado) {
+            campoEdicao.value = itemEncontrado.txt_obs; // Manda para a edição
+            campoBusca.value = ""; // LIMPA A BARRA DE BUSCA (Faz sumir de cima)
+            autoExpandir(campoEdicao); // Ajusta o tamanho
+            campoBusca.blur(); // Fecha o teclado/lista
+            campoEdicao.focus(); // Joga o cursor para o texto
         }
     };
 
-    // 'input' serve para quando você termina de digitar ou cola
-    campoBusca.addEventListener('input', processarSelecao);
-    
-    // 'change' é o principal para quando você CLICA na sugestão do datalist
-    campoBusca.addEventListener('change', processarSelecao);
-
-    // Listener para o Nome do Cliente (Puxar endereço e tel)
-    const campoCliente = document.getElementById('nomeCliente');
+    // Função para carregar dados do cliente
     const carregarCliente = () => {
-        const cliente = cacheDados.find(x => x.cli_nome === campoCliente.value);
+        const cliente = cacheDados.find(x => x.cli_nome === campoCliente.value.trim());
         if (cliente) {
             document.getElementById('enderecoCliente').value = cliente.cli_end || "";
             document.getElementById('telCliente').value = cliente.cli_tel || "";
         }
     };
+
+    // Listeners para Observação (Input e Change para garantir PC e Celular)
+    campoBusca.addEventListener('input', executarTrocaObs);
+    campoBusca.addEventListener('change', executarTrocaObs);
+
+    // Listeners para Cliente
     campoCliente.addEventListener('input', carregarCliente);
     campoCliente.addEventListener('change', carregarCliente);
 }
-/* --- COMENTÁRIO: FIM DA CONFIGURAÇÃO DOS LISTENERS --- */
+/* --- COMENTÁRIO: FIM DA CORREÇÃO --- */
 /* --- COMENTÁRIO: FIM DOS LISTENERS --- */
 
         function adicionarServico() {
