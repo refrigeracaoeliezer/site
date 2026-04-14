@@ -148,15 +148,29 @@
             document.getElementById('view-total').innerText = 'R$ ' + (dadosLocal.total || "0,00");
             document.getElementById('view-obs').innerText = dadosLocal.obs || "Serviço realizado conforme padrões técnicos.";
             document.getElementById('view-dias-garantia').innerText = dadosLocal.garantia || "90";
-
-            const corpo = document.getElementById('tabela-corpo');
+const corpo = document.getElementById('tabela-corpo');
             corpo.innerHTML = "";
+            
+            // INÍCIO DA MODIFICAÇÃO: CÁLCULO DE VALOR TOTAL POR ITEM (QTD x VALOR UNITÁRIO)
             if(dadosLocal.itens) {
                 dadosLocal.itens.forEach(i => {
-                    corpo.innerHTML += `<tr><td>${i.descricao}</td><td style="text-align:center">${i.qtd}</td><td style="text-align:right">R$ ${i.valor}</td></tr>`;
+                    // Trata a string de valor para garantir que o cálculo seja feito corretamente
+                    // Remove o ponto de milhar e substitui a vírgula decimal por ponto
+                    const valorUnitarioLimpo = parseFloat(i.valor.replace(/\./g, '').replace(',', '.'));
+                    const quantidade = parseInt(i.qtd);
+                    const valorTotalItem = valorUnitarioLimpo * quantidade;
+                    
+                    // Formata o resultado de volta para o padrão de moeda brasileiro (0.000,00)
+                    const valorTotalFormatado = valorTotalItem.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+                    corpo.innerHTML += `<tr>
+                        <td>${i.descricao}</td>
+                        <td style="text-align:center">${i.qtd}</td>
+                        <td style="text-align:right">R$ ${valorTotalFormatado}</td>
+                    </tr>`;
                 });
             }
-
+            // FIM DA MODIFICAÇÃO
             try {
                 const resp = await fetch(URL_DATABASE);
                 const cacheDados = await resp.json();
