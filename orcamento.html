@@ -287,48 +287,50 @@
             autoExpandir(txtArea);
         }
 
-/* --- COMENTÁRIO: NOVA LÓGICA DE CAPTURA GARANTIDA (PC E CELULAR) --- */
+/* --- COMENTÁRIO: TRANSFERÊNCIA AUTOMÁTICA DE TEXTO DA BUSCA PARA EDIÇÃO --- */
 function configurarListeners() {
-    const aplicarDados = (idInput) => {
-        const el = document.getElementById(idInput);
-        const valor = el.value;
+    const campoBusca = document.getElementById('busca_obs');
+    const campoEdicao = document.getElementById('obsGeral');
+
+    const transferirTexto = () => {
+        const valor = campoBusca.value;
         if (!valor) return;
 
-        // Tenta encontrar o registro exato no cache
-        if (idInput === 'nomeCliente') {
-            const encontrado = cacheDados.find(x => x.cli_nome === valor);
-            if (encontrado) {
-                document.getElementById('enderecoCliente').value = encontrado.cli_end || "";
-                document.getElementById('telCliente').value = encontrado.cli_tel || "";
-            }
-        } else if (idInput === 'busca_obs') {
-            const encontrado = cacheDados.find(x => x.txt_obs === valor);
-            if (encontrado) {
-                const txtArea = document.getElementById('obsGeral');
-                txtArea.value = encontrado.txt_obs;
-                autoExpandir(txtArea);
-                // Limpa o campo de busca imediatamente
-                el.value = "";
-                el.blur(); 
-            }
+        // Procura no banco de dados se o que está escrito na busca existe como observação
+        const encontrado = cacheDados.find(x => x.txt_obs === valor);
+
+        if (encontrado) {
+            // 1. Joga o texto para a caixa de edição
+            campoEdicao.value = encontrado.txt_obs;
+            
+            // 2. Ajusta o tamanho da caixa de edição automaticamente
+            autoExpandir(campoEdicao);
+            
+            // 3. Limpa o campo de busca imediatamente para ele sumir de lá
+            campoBusca.value = "";
+            
+            // 4. Tira o foco para fechar a lista de sugestões e o teclado
+            campoBusca.blur();
+            
+            // 5. Opcional: Coloca o cursor direto na edição para você já começar a escrever
+            campoEdicao.focus();
         }
     };
 
-    // Aplica nos dois campos principais
-    ['nomeCliente', 'busca_obs'].forEach(id => {
-        const elemento = document.getElementById(id);
-        
-        // 'input' para quando ele termina de digitar ou clica
-        elemento.addEventListener('input', () => aplicarDados(id));
-        
-        // 'change' é o gatilho principal de datalists no computador
-        elemento.addEventListener('change', () => aplicarDados(id));
-        
-        // 'blur' garante que se ele selecionou e clicou fora, os dados carreguem
-        elemento.addEventListener('blur', () => aplicarDados(id));
+    // Escuta todos os tipos de interação possíveis
+    campoBusca.addEventListener('input', transferirTexto);
+    campoBusca.addEventListener('change', transferirTexto);
+    
+    // Listener para o Nome do Cliente (mantendo a funcionalidade anterior)
+    document.getElementById('nomeCliente').addEventListener('change', function() {
+        const cliente = cacheDados.find(x => x.cli_nome === this.value);
+        if (cliente) {
+            document.getElementById('enderecoCliente').value = cliente.cli_end || "";
+            document.getElementById('telCliente').value = cliente.cli_tel || "";
+        }
     });
 }
-/* --- COMENTÁRIO: FIM DA LÓGICA DE CAPTURA --- */
+/* --- COMENTÁRIO: FIM DA CONFIGURAÇÃO DE TRANSFERÊNCIA --- */
 /* --- COMENTÁRIO: FIM DOS LISTENERS --- */
 
         function adicionarServico() {
