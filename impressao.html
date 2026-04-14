@@ -3,17 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=1024">  
-    <title>Orçamento Técnico Profissional</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script> 
+    <title>Orçamento Profissional</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
     <style>
+        /* COMENTÁRIO: ESTILO GERAL ADAPTADO PARA ORÇAMENTO (AZUL) */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
         body { background-color: #525659; display: flex; justify-content: center; padding: 20px 0; }
 
         .btn-flutuante {
             position: fixed; bottom: 30px; right: 30px; z-index: 10000;
-            background-color: #e74c3c; color: white; width: 150px; height: 150px;
+            background-color: #1e40af; color: white; width: 150px; height: 150px;
             border-radius: 50%; border: none; box-shadow: 0 5px 20px rgba(0,0,0,0.5);
             cursor: pointer; display: flex; align-items: center; justify-content: center; 
             font-size: 80px; transition: 0.3s;
@@ -27,7 +28,7 @@
 
         header { 
             display: flex; justify-content: space-between; align-items: flex-start;
-            border-bottom: 3px solid #1a4388; padding-bottom: 10px; margin-bottom: 20px; width: 100%;
+            border-bottom: 3px solid #1e40af; padding-bottom: 10px; margin-bottom: 20px; width: 100%;
         }
 
         .logo-container { width: 250px; height: 100px; display: flex; align-items: center; justify-content: flex-start; }
@@ -35,25 +36,27 @@
         
         .empresa-info { font-size: 12px; color: #333; line-height: 1.5; margin-top: 5px; }
         .doc-info { text-align: right; }
-        .doc-info h2 { color: #1a4388; font-size: 24px; font-weight: 900; }
+        .doc-info h2 { color: #1e40af; font-size: 24px; font-weight: 900; }
+        /* Badge Azul para Orçamento */
+        .status-badge { background: #3b82f6; color: white; padding: 5px 10px; border-radius: 5px; font-size: 10px; font-weight: 800; display: inline-block; margin-top: 5px; text-transform: uppercase; }
 
         .client-box { 
-            background: #f8f9fa; padding: 15px; border-radius: 5px; font-size: 13px; margin-bottom: 20px;
-            display: flex; justify-content: space-between;
+            background: #f1f5f9; padding: 15px; border-radius: 5px; font-size: 13px; margin-bottom: 20px;
+            display: flex; justify-content: space-between; border-left: 4px solid #1e40af;
         }
 
         .tabela-container { width: 100%; margin-bottom: 20px; }
         table { width: 100%; border-collapse: collapse; }
-        table th { background: #1a4388; color: white; padding: 10px; text-align: left; font-size: 12px; }
-        table td { border-bottom: 1px solid #eee; padding: 10px; font-size: 14px; }
+        table th { background: #1e40af; color: white; padding: 10px; text-align: left; font-size: 12px; }
+        table td { border-bottom: 1px solid #e2e8f0; padding: 10px; font-size: 14px; }
 
         .total-section { text-align: right; padding: 15px 0; }
-        .total-section h3 { font-size: 28px; color: #1a4388; }
+        .total-section h3 { font-size: 28px; color: #1e40af; }
 
         .obs-section { 
-            background: #fffbe6; padding: 15px; border: 1px solid #ffe58f;
+            background: #eff6ff; padding: 15px; border: 1px solid #bfdbfe;
             border-radius: 5px; font-size: 13px; margin-bottom: 20px;
-            word-wrap: break-word; overflow-wrap: break-word; white-space: normal;
+            width: 100%;
         }
 
         footer { text-align: center; font-size: 11px; color: #777; border-top: 1px solid #eee; padding-top: 15px; width: 100%; }
@@ -71,7 +74,7 @@
         <header>
             <div class="logo-area"> 
                 <div class="logo-container">
-                    <img id="logo-img" src="" class="logo-img">
+                    <img id="logo-img" src="SUA_LOGO_AQUI" class="logo-img">
                 </div>
                 <div class="empresa-info" id="empresa-dados">
                     <strong id="emp-nome">REFRIGERAÇÃO ELIEZER</strong><br>
@@ -82,7 +85,8 @@
             </div>
             <div class="doc-info">
                 <h2 id="view-tipo">ORÇAMENTO</h2>
-                <p>Nº <span id="num-random">...</span></p>
+                <div class="status-badge">AGUARDANDO APROVAÇÃO</div>
+                <p style="margin-top: 5px;">Nº <span id="num-random"></span></p>
             </div>
         </header>
 
@@ -93,8 +97,8 @@
                 <strong>CNPJ/CPF:</strong> <span id="view-cpf-cli">---</span>
             </div>
             <div style="text-align: right;">
-                <strong>EMISSÃO:</strong> <span id="view-data"></span><br>
-                <strong id="label-venc">VENCIMENTO:</strong> <span id="view-venc"></span>
+                <strong>DATA DE EMISSÃO:</strong> <span id="view-data"></span><br>
+                <strong>VALIDADE DA PROPOSTA:</strong> <span id="view-venc"></span>
             </div>
         </div>
 
@@ -102,7 +106,7 @@
             <table>
                 <thead>
                     <tr>
-                        <th>DESCRIÇÃO DOS SERVIÇOS</th>
+                        <th>DESCRIÇÃO DOS PRODUTOS / SERVIÇOS PROPOSTOS</th>
                         <th style="text-align: center; width: 50px;">QTD</th>
                         <th style="text-align: right; width: 120px;">TOTAL</th>
                     </tr>
@@ -112,55 +116,46 @@
         </div>
 
         <div class="total-section">
-            <p style="font-size: 12px; font-weight: bold; color: #666;">INVESTIMENTO TOTAL</p>
+            <p style="font-size: 12px; font-weight: bold; color: #666;">VALOR TOTAL DO INVESTIMENTO</p>
             <h3 id="view-total"></h3>
         </div>
 
         <div class="obs-section">
-            <strong style="color: #856404;">OBSERVAÇÕES TÉCNICAS:</strong>
-            <p id="view-obs" style="margin-top: 5px; color: #856404;"></p>
+            <strong style="color: #1e40af;">OBSERVAÇÕES E TERMOS:</strong>
+            <p id="view-obs" style="margin-top: 5px; color: #1e3a8a; white-space: pre-wrap;"></p>
         </div>
 
         <footer>
             <p><strong>Responsável Técnico: <span id="view-resp-tecnico">---</span></strong></p>
-            <p>Garantia de <span id="view-dias-garantia">90</span> dias conforme legislação vigente.</p>
+            <p>Este orçamento é válido por <span id="view-dias-garantia">---</span> dias a partir da data de emissão.</p>
+            <p>Após a aprovação, o prazo de execução será combinado conforme disponibilidade de peças e agenda.</p>
         </footer>
     </div>
 
     <script>
-        // SUBSTITUA PELA URL DO SEU APPS SCRIPT
-        const URL_SISTEMA = "https://script.google.com/macros/s/AKfycbxaC2mMUYEOakL4LzMKNhK6KaHDnLiPkRMdub3n63Cnt1crqNrv5jxrSHST4GxhRn95JQ/exec";
+        const URL_DATABASE = "https://script.google.com/macros/s/AKfycbxaC2mMUYEOakL4LzMKNhK6KaHDnLiPkRMdub3n63Cnt1crqNrv5jxrSHST4GxhRn95JQ/exec";
 
         async function carregarPagina() {
-            // 1. Busca o próximo ID inteligente da planilha
-            try {
-                const respId = await fetch(URL_SISTEMA + "?action=orc");
-                const proximoID = await respId.text();
-                document.getElementById('num-random').innerText = proximoID + '/2026';
-            } catch (e) { 
-                console.error("Erro ao buscar ID:", e);
-                document.getElementById('num-random').innerText = "Erro/2026";
-            }
+            // Gera número de orçamento baseado no ano atual
+            const ano = new Date().getFullYear();
+            document.getElementById('num-random').innerText = Math.floor(1000 + Math.random() * 8999) + '/' + ano;
 
-            // 2. Recupera dados salvos no navegador (LocalStorage)
             const dadosLocal = JSON.parse(localStorage.getItem('dados_impressao'));
-            if(!dadosLocal) {
-                alert("Nenhum dado encontrado para impressão.");
-                return;
-            }
+            if(!dadosLocal) return;
 
-            // Preenche dados básicos
+            // Preenchimento dos dados do LocalStorage
             document.getElementById('view-cliente').innerText = dadosLocal.cliente || "---";
             document.getElementById('view-endereco').innerText = dadosLocal.endereco || "---";
             document.getElementById('view-data').innerText = dadosLocal.emissao || "---";
             document.getElementById('view-venc').innerText = dadosLocal.validade || "---";
             document.getElementById('view-total').innerText = 'R$ ' + (dadosLocal.total || "0,00");
-            document.getElementById('view-obs').innerText = dadosLocal.obs || "Nenhuma observação técnica registrada.";
-            document.getElementById('view-dias-garantia').innerText = dadosLocal.garantia || "90";
+            document.getElementById('view-obs').innerText = dadosLocal.obs || "Proposta sujeita a alteração após análise física presencial.";
+            document.getElementById('view-dias-garantia').innerText = dadosLocal.garantia || "7";
 
-            // 3. Preenche a tabela de itens
             const corpo = document.getElementById('tabela-corpo');
             corpo.innerHTML = "";
+            
+            // Cálculo de Valor Total por Item
             if(dadosLocal.itens) {
                 dadosLocal.itens.forEach(i => {
                     const valorUnitarioLimpo = parseFloat(i.valor.replace(/\./g, '').replace(',', '.'));
@@ -176,72 +171,40 @@
                 });
             }
 
-            // 4. Busca dados da Empresa e CPF do Cliente no banco de dados
+            // Busca dados da Empresa na Planilha
             try {
-                const respDb = await fetch(URL_SISTEMA);
-                const cacheDados = await respDb.json();
+                const resp = await fetch(URL_DATABASE);
+                const cacheDados = await resp.json();
                 
-                // Dados da empresa (sempre na primeira linha ou objeto com nome da empresa)
                 const emp = cacheDados.find(d => d.emp_nome) || cacheDados[0];
                 if(emp) {
                     document.getElementById('emp-nome').innerText = emp.emp_nome;
                     document.getElementById('emp-cnpj').innerText = "CNPJ: " + emp.emp_cnpj;
-                    document.getElementById('emp-end').innerText = emp.emp_end;
+                    document.getElementById('emp-end').innerText = emp.emp_end; 
                     document.getElementById('emp-tel').innerText = "Tel: " + emp.emp_tel;
-                    document.getElementById('view-resp-tecnico').innerText = emp.emp_resp;
+                    document.getElementById('view-resp-tecnico').innerText = emp.emp_resp; 
                 }
 
-                // CPF/CNPJ do cliente atual
+                // Busca CPF/CNPJ do cliente no banco de dados
                 const cliInfo = cacheDados.find(d => d.cli_nome === dadosLocal.cliente);
                 if(cliInfo) {
                     document.getElementById('view-cpf-cli').innerText = cliInfo.cli_doc || "---";
                 }
-            } catch (e) { 
-                console.error("Erro ao carregar dados da empresa/cliente:", e); 
-            }
+            } catch (e) { console.error("Erro ao buscar dados remotos:", e); }
         }
 
-        async function baixarPDF() {
-            const btn = document.getElementById('btn-pdf');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-
-            const dadosLocal = JSON.parse(localStorage.getItem('dados_impressao'));
-            const nDoc = document.getElementById('num-random').innerText.split('/')[0];
-
-            // 1. Enviar registro para a planilha de Orçamentos
-            const payload = {
-                action: "registrar_orcamento",
-                cliente: dadosLocal.cliente,
-                validade: dadosLocal.validade,
-                itens: dadosLocal.itens
-            };
-
-            try {
-                await fetch(URL_SISTEMA, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-            } catch (e) {
-                console.error("Erro ao registrar na planilha:", e);
-            }
-
-            // 2. Gerar o arquivo PDF
+        function baixarPDF() {
             const element = document.getElementById('conteudo-pdf');
-            const clienteNome = document.getElementById('view-cliente').innerText;
+            const cliente = document.getElementById('view-cliente').innerText;
             const opt = {
                 margin: [10, 0, 10, 0],
-                filename: `Orcamento_${nDoc}_${clienteNome}.pdf`,
+                filename: `Orcamento_${cliente}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
                 pagebreak: { mode: 'avoid-all' }
             };
-            
             html2pdf().set(opt).from(element).save();
-
-            // Reabilita o botão após um tempo
-            setTimeout(() => {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fa-solid fa-file-pdf"></i>';
-            }, 3000);
         }
 
         window.onload = carregarPagina;
