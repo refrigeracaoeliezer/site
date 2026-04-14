@@ -270,15 +270,19 @@
     background: rgba(30, 64, 175, 0.05);
 }
 
+/* --- COMENTÁRIO: AJUSTE PARA OS CAMPOS FICAREM EM COLUNA --- */
 .security-content {
-    order: 2; /* Garante que as opções fiquem abaixo do botão se necessário */
+    display: none; /* Começa fechado */
+    flex-direction: column; /* Força um embaixo do outro */
+    gap: 15px; /* Espaço entre os campos */
+    padding-top: 15px;
+    width: 100%;
+}
+
+/* Garante que o botão de salvar dentro da segurança não tenha margem exagerada */
+#btn-update-acesso {
     margin-top: 10px;
 }
-
-#btn-update-acesso {
-    order: 1;
-}
-
 label {
     font-size: 11px;
     color: #27a9e3;
@@ -399,19 +403,25 @@ label {
 
 
         
-
 <div class="config-section" id="sec-adm">
     <div class="section-title"><i class="fa-solid fa-user-shield"></i> Segurança do Painel</div>
+    
     <button class="btn-toggle-security" onclick="toggleSecurity()">Expandir Opções de Acesso</button>
     
-    <div id="security-fields" class="security-content" style="display: none;">
+    <div id="security-fields" class="security-content">
         <input type="text" id="new_u_mail" placeholder="Novo E-mail">
         <input type="password" id="new_u_pass" placeholder="Nova Senha">
         <input type="text" id="new_u_resposta" placeholder="Nova Resposta Secreta">
+        
         <div id="update-status" class="status-msg"></div>
+        
         <button class="btn-save" id="btn-update-acesso" onclick="atualizarAcesso('Atualizar Acesso')">Atualizar Acesso</button>
     </div>
 </div>
+
+
+
+     
 
 <div class="config-section" id="sec-empresa-master">
     <div class="section-title"><i class="fa-solid fa-building"></i> Dados da Empresa</div>
