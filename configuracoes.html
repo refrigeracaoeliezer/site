@@ -13,34 +13,61 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
+        /* --- INICIO VARIÁVEIS DE TEMA --- */
+        :root {
+            --bg-body: #0d1117;
+            --text-main: white;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --input-bg: rgba(0, 0, 0, 0.3);
+            --input-text: white;
+            --card-adm-bg: rgba(30, 64, 175, 0.05);
+        }
+
+        body.light-mode {
+            --bg-body: #f0f2f5;
+            --text-main: #1a1f26;
+            --glass-bg: rgba(255, 255, 255, 0.8);
+            --glass-border: rgba(0, 0, 0, 0.1);
+            --input-bg: rgba(0, 0, 0, 0.05);
+            --input-text: #1a1f26;
+            --card-adm-bg: rgba(30, 64, 175, 0.1);
+        }
+        /* --- FIM VARIÁVEIS DE TEMA --- */
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body { 
             font-family: 'Inter', sans-serif; 
             min-height: 100vh; 
-            background: #0d1117; 
-            color: white; 
+            background: var(--bg-body); 
+            color: var(--text-main); 
             padding: 20px; 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
             position: relative;
             overflow-x: hidden;
+            transition: background 0.3s, color 0.3s;
         }
+
+        /* Botão de Troca de Tema */
+        .theme-toggle { position: fixed; top: 20px; right: 20px; background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10001; }
 
         .corner-ball {
             position: fixed;
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(30, 64, 175, 0.05);
             border-radius: 50%;
             z-index: 1;
             pointer-events: none;
+            filter: blur(80px);
         }
         .ball-top-right { width: 550px; height: 550px; top: -200px; right: -150px; }
         .ball-bottom-left { width: 450px; height: 450px; bottom: -150px; left: -150px; }
 
         .hidden { display: none !important; }
         .container { width: 100%; max-width: 600px; position: relative; z-index: 10; }
-        h1 { font-size: 28px; font-weight: 700; margin-bottom: 30px; text-align: center; color: #fff; }
+        h1 { font-size: 28px; font-weight: 700; margin-bottom: 30px; text-align: center; color: var(--text-main); }
 
         @keyframes shake {
             10%, 90% { transform: translate3d(-1px, 0, 0); }
@@ -54,22 +81,22 @@
         }
 
         .config-section {
-            background: rgba(255, 255, 255, 0.03);
+            background: var(--glass-bg);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
             border-radius: 20px;
             padding: 20px;
             margin-bottom: 25px;
             display: flex;
             flex-direction: column; gap: 15px;
-            transition: border-color 0.3s ease;
+            transition: all 0.3s ease;
         }
 
-        .section-title { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 10px; color: #27a9e3; }
-        input, textarea, select { background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 12px; color: white; font-size: 14px; width: 100%; outline: none; transition: 0.3s; }
+        .section-title { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px; color: #27a9e3; }
+        input, textarea, select { background: var(--input-bg); border: 1px solid var(--glass-border); border-radius: 10px; padding: 12px; color: var(--input-text); font-size: 14px; width: 100%; outline: none; transition: 0.3s; }
         input:focus, select:focus { border-color: #27a9e3; }
-        input::placeholder { color: rgba(255,255,255,0.3); }
+        input::placeholder { color: var(--text-main); opacity: 0.3; }
 
         .btn-save { border: none; padding: 14px; border-radius: 12px; font-weight: 700; background: #1e40af; color: white; cursor: pointer; width: 100%; display: flex; justify-content: center; align-items: center; gap: 10px; transition: 0.3s; margin-top: 25px; }
         .btn-save:hover { background: #2563eb; }
@@ -101,10 +128,10 @@
             100% { opacity: 0; transform: translate(-50%, -40%); }
         }
 
-        #overlay-login { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0d1117; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        #overlay-login { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-body); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; transition: background 0.3s; }
         
         .login-card { 
-            background: rgba(255, 255, 255, 0.02); 
+            background: var(--glass-bg); 
             backdrop-filter: blur(20px); 
             -webkit-backdrop-filter: blur(20px); 
             padding: 40px 30px; 
@@ -116,6 +143,7 @@
             transition: 0.3s; 
             z-index: 10;
             box-shadow: 0 0 50px rgba(30, 64, 175, 0.3), 0 20px 40px rgba(0, 0, 0, 0.6);
+            color: var(--text-main);
         }
         
         .link-auth { color: #27a9e3; cursor: pointer; font-size: 13px; }
@@ -126,7 +154,7 @@
         
         #sec-adm {
             border: 2px solid #1e40af;
-            background: rgba(30, 64, 175, 0.05);
+            background: var(--card-adm-bg);
         }
 
         .security-content {
@@ -146,11 +174,15 @@
             font-weight: 600;
             text-transform: uppercase;
         }
-        .btn-toggle-security { background: none; border: 1px solid rgba(255,255,255,0.1); color: #27a9e3; padding: 8px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; }
+        .btn-toggle-security { background: none; border: 1px solid var(--glass-border); color: #27a9e3; padding: 8px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; }
     </style>
 </head>
 
 <body>
+
+    <button onclick="toggleTheme()" class="theme-toggle">
+        <i id="theme-icon" class="fa-solid fa-sun"></i>
+    </button>
 
     <div class="corner-ball ball-top-right"></div>
     <div class="corner-ball ball-bottom-left"></div>
@@ -256,6 +288,25 @@
     const URL_DATABASE = "https://script.google.com/macros/s/AKfycbwsX8xUWHgb9PE9Nv6IvQbjB7VGQPfUQSbn6fZT1WQRk5IoQJMFAhleLHHpHSU9zHw49A/exec";
 
     let cacheDados = []; 
+
+    // --- FUNÇÕES DE TEMA ---
+    function toggleTheme() {
+        const body = document.body;
+        const icon = document.getElementById('theme-icon');
+        body.classList.toggle('light-mode');
+        
+        if (body.classList.contains('light-mode')) {
+            icon.classList.replace('fa-sun', 'fa-moon');
+            localStorage.setItem('theme', 'light');
+        } else {
+            icon.classList.replace('fa-moon', 'fa-sun');
+            localStorage.setItem('theme', 'dark');
+        }
+    }
+
+    window.onload = () => {
+        if(localStorage.getItem('theme') === 'light') toggleTheme();
+    };
 
     (function iniciarCarga() { 
         buscarDadosPlanilha(); 
