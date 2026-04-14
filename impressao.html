@@ -160,29 +160,23 @@
         </footer>
     </div>
 
-    <script>
+  <script>
         const URL_DATABASE = "https://script.google.com/macros/s/AKfycbxaC2mMUYEOakL4LzMKNhK6KaHDnLiPkRMdub3n63Cnt1crqNrv5jxrSHST4GxhRn95JQ/exec";
 
         async function carregarPagina() {
-            document.getElementById('num-random').innerText = Math.floor(100 + Math.random() * 899) + '/2026';
+            document.getElementById('num-random').innerText = Math.floor(100 + Math.random() * 899) + '/2026-OS';
 
             const dadosLocal = JSON.parse(localStorage.getItem('dados_impressao'));
             if(!dadosLocal) return;
 
-            document.getElementById('view-tipo').innerText = dadosLocal.tipo || "ORÇAMENTO";
             document.getElementById('view-cliente').innerText = dadosLocal.cliente || "---";
             document.getElementById('view-endereco').innerText = dadosLocal.endereco || "---";
             document.getElementById('view-data').innerText = dadosLocal.emissao || "---";
             document.getElementById('view-venc').innerText = dadosLocal.validade || "---";
             document.getElementById('view-total').innerText = 'R$ ' + (dadosLocal.total || "0,00");
-            document.getElementById('view-obs').innerText = dadosLocal.obs || "Nenhuma observação registrada.";
+            document.getElementById('view-obs').innerText = dadosLocal.obs || "Serviço realizado conforme padrões técnicos.";
             document.getElementById('view-dias-garantia').innerText = dadosLocal.garantia || "90";
-
-            if(dadosLocal.tipo === "ORDEM DE SERVIÇO") {
-                document.getElementById('label-venc').innerText = "CONCLUSÃO:";
-            }
-
-         const corpo = document.getElementById('tabela-corpo');
+const corpo = document.getElementById('tabela-corpo');
             corpo.innerHTML = "";
             
             // INÍCIO DA MODIFICAÇÃO: CÁLCULO DE VALOR TOTAL POR ITEM (QTD x VALOR UNITÁRIO)
@@ -213,9 +207,9 @@
                 if(emp) {
                     document.getElementById('emp-nome').innerText = emp.emp_nome;
                     document.getElementById('emp-cnpj').innerText = "CNPJ: " + emp.emp_cnpj;
-                    document.getElementById('emp-end').innerText = emp.emp_end; // Puxa só a rua
+                    document.getElementById('emp-end').innerText = emp.emp_end; 
                     document.getElementById('emp-tel').innerText = "Tel: " + emp.emp_tel;
-                    document.getElementById('view-resp-tecnico').innerText = emp.emp_resp; // Puxa só o nome do técnico
+                    document.getElementById('view-resp-tecnico').innerText = emp.emp_resp; 
                 }
 
                 const cliInfo = cacheDados.find(d => d.cli_nome === dadosLocal.cliente);
@@ -230,7 +224,7 @@
             const cliente = document.getElementById('view-cliente').innerText;
             const opt = {
                 margin: [10, 0, 10, 0],
-                filename: `Orcamento_${cliente}.pdf`,
+                filename: `Ordem_de_Servico_${cliente}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
