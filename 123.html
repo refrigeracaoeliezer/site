@@ -53,6 +53,7 @@
             transition: background 0.3s, color 0.3s;
         }
 
+        /* Botão de Troca de Tema */
         .theme-toggle { position: fixed; top: 20px; right: 20px; background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10001; }
 
         .corner-ball {
@@ -177,21 +178,21 @@
         }
         .btn-toggle-security { background: none; border: 1px solid var(--glass-border); color: #27a9e3; padding: 8px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; }
 
-        /* --- ESTILOS DROPDOWN --- */
+        /* --- ESTILOS DO DROPDOWN PESQUISÁVEL --- */
+        .custom-dropdown { position: relative; width: 100%; }
         .dropdown-list {
             position: absolute; left: 0; right: 0; top: 110%;
             background: var(--dropdown-bg); border: 1px solid var(--glass-border);
-            border-radius: 15px; z-index: 100; max-height: 200px; overflow-y: auto;
+            border-radius: 12px; z-index: 50; max-height: 200px; overflow-y: auto;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: none;
         }
-        .dropdown-item { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--glass-border); transition: 0.2s; color: var(--text-main); }
+        .dropdown-item { padding: 12px; font-size: 14px; border-bottom: 1px solid var(--glass-border); transition: 0.2s; color: var(--text-main); cursor: pointer; }
+        .dropdown-item:hover { background: #1e40af; color: white; }
         .dropdown-item:last-child { border-bottom: none; }
-        .dropdown-item:hover { background: #1e40af; color: white; cursor: pointer; }
-        .rotate-icon { transform: translateY(-50%) rotate(180deg) !important; }
-        .custom-dropdown .selected-text.placeholder { opacity: 0.3; }
-        .search-input { background: transparent; border: none; color: inherit; width: 100%; outline: none; display: none; padding: 0; }
         .is-searching .selected-text { display: none; }
+        .search-input { background: transparent !important; border: none !important; color: inherit !important; width: 100% !important; outline: none !important; display: none; padding: 0 !important; }
         .is-searching .search-input { display: block; }
+        .rotate-icon { transform: translateY(-50%) rotate(180deg) !important; }
     </style>
 </head>
 
@@ -264,16 +265,8 @@
         <div class="config-section" id="sec-empresa-master">
             <div class="section-title"><i class="fa-solid fa-building"></i> Dados da Empresa</div>
             <label>Nome da Empresa</label>
-            <div class="relative custom-dropdown" id="dropdown-empresa">
-                <div class="w-full p-3 bg-[var(--input-bg)] border border-[var(--glass-border)] rounded-xl flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
-                    <span class="selected-text truncate placeholder">Nome Comercial</span>
-                    <input type="text" class="search-input" placeholder="Pesquisar empresa..." oninput="filtrarDropdown(this)" onclick="event.stopPropagation()">
-                    <i class="fa-solid fa-chevron-down text-white/20 text-xs transition-all"></i>
-                </div>
-                <ul id="lista-empresas-custom" class="dropdown-list"></ul>
-                <input type="hidden" id="emp_nome">
-            </div>
-
+            <input type="text" id="emp_nome" list="lista_empresas" placeholder="Nome Comercial">
+            <datalist id="lista_empresas"></datalist>
             <label>CNPJ</label>
             <input type="text" id="emp_doc" placeholder="00.000.000/0000-00" oninput="mascaraDocumento(this)">
             <label>Endereço</label>
@@ -289,13 +282,13 @@
 
         <div class="config-section" id="sec-servico">
             <div class="section-title"><i class="fa-solid fa-gears"></i> Detalhes do Serviço</div>
-            <div class="relative custom-dropdown" id="dropdown-servico">
-                <div class="w-full p-3 bg-[var(--input-bg)] border border-[var(--glass-border)] rounded-xl flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
-                    <span class="selected-text truncate placeholder">Selecione o Serviço...</span>
+            <div class="custom-dropdown" id="dropdown-servico">
+                <div class="w-full p-3 rounded-xl dark-input flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
+                    <span class="selected-text truncate text-white/40">Selecionar Serviço...</span>
                     <input type="text" class="search-input" placeholder="Pesquisar serviço..." oninput="filtrarDropdown(this)" onclick="event.stopPropagation()">
-                    <i class="fa-solid fa-chevron-down text-white/20 text-xs transition-all"></i>
+                    <i class="fa-solid fa-chevron-down text-white/20 text-[10px] transition-transform duration-300"></i>
                 </div>
-                <ul id="lista-servicos-custom" class="dropdown-list"></ul>
+                <ul id="lista_servicos_custom" class="dropdown-list"></ul>
                 <input type="hidden" id="srv_nome">
             </div>
             <input type="text" id="srv_valor" placeholder="Valor R$">
@@ -304,13 +297,13 @@
 
         <div class="config-section" id="sec-cliente">
             <div class="section-title"><i class="fa-solid fa-user"></i> Dados do Cliente</div>
-            <div class="relative custom-dropdown" id="dropdown-cliente">
-                <div class="w-full p-3 bg-[var(--input-bg)] border border-[var(--glass-border)] rounded-xl flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
-                    <span class="selected-text truncate placeholder">Selecione o Cliente...</span>
+            <div class="custom-dropdown" id="dropdown-cliente">
+                <div class="w-full p-3 rounded-xl dark-input flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
+                    <span class="selected-text truncate text-white/40">Selecionar Cliente...</span>
                     <input type="text" class="search-input" placeholder="Pesquisar cliente..." oninput="filtrarDropdown(this)" onclick="event.stopPropagation()">
-                    <i class="fa-solid fa-chevron-down text-white/20 text-xs transition-all"></i>
+                    <i class="fa-solid fa-chevron-down text-white/20 text-[10px] transition-transform duration-300"></i>
                 </div>
-                <ul id="lista-clientes-custom" class="dropdown-list"></ul>
+                <ul id="lista_clientes_custom" class="dropdown-list"></ul>
                 <input type="hidden" id="cli_nome">
             </div>
             <input type="text" id="cli_doc" placeholder="CPF / CNPJ" oninput="mascaraDocumento(this)">
@@ -328,23 +321,29 @@
 
     let cacheDados = []; 
 
+    // --- FUNÇÕES DE TEMA ---
     function toggleTheme() {
         const body = document.body;
         const icon = document.getElementById('theme-icon');
         body.classList.toggle('light-mode');
-        localStorage.setItem('theme', body.classList.contains('light-mode') ? 'light' : 'dark');
-        icon.className = body.classList.contains('light-mode') ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+        
+        if (body.classList.contains('light-mode')) {
+            icon.classList.replace('fa-sun', 'fa-moon');
+            localStorage.setItem('theme', 'light');
+        } else {
+            icon.classList.replace('fa-moon', 'fa-sun');
+            localStorage.setItem('theme', 'dark');
+        }
     }
 
     window.onload = () => {
         if(localStorage.getItem('theme') === 'light') toggleTheme();
-        iniciarCarga();
     };
 
-    function iniciarCarga() { 
+    (function iniciarCarga() { 
         buscarDadosPlanilha(); 
         verificarSeExisteDono(); 
-    }
+    })();
 
     function showStatus(id, msg, type, cardId) {
         const el = document.getElementById(id);
@@ -370,7 +369,7 @@
         try {
             const resp = await fetch(URL_DATABASE, { priority: 'high' }); 
             cacheDados = await resp.json();
-            renderizarDropdowns();
+            renderizarDatalists();
             if(cacheDados.length > 0) {
                 const emp = cacheDados[0]; 
                 if(emp.emp_nome) document.getElementById('emp_nome').value = emp.emp_nome;
@@ -383,18 +382,15 @@
         } catch (e) { console.error("Erro na carga:", e); }
     }
 
-    /* --- LÓGICA DE DROPDOWN CUSTOMIZADO --- */
+    // --- LÓGICA DO NOVO DROPDOWN ---
     function toggleDropdown(el) {
         const wrapper = el.parentElement;
-        const list = el.nextElementSibling;
+        const list = wrapper.querySelector('.dropdown-list');
         const icon = el.querySelector('i');
         const searchInput = el.querySelector('.search-input');
         const isVisible = list.style.display === 'block';
         
-        document.querySelectorAll('.dropdown-list').forEach(l => l.style.display = 'none');
-        document.querySelectorAll('.custom-dropdown i').forEach(i => i.classList.remove('rotate-icon'));
-        document.querySelectorAll('.custom-dropdown').forEach(d => d.classList.remove('is-searching'));
-
+        fecharTodosDropdowns();
         if (!isVisible) {
             list.style.display = 'block';
             icon.classList.add('rotate-icon');
@@ -414,51 +410,49 @@
         });
     }
 
-    function selecionarItemDropdown(li, nome, tipo) {
+    function selecionarItemCustom(li, valor, tipo) {
         const wrapper = li.closest('.custom-dropdown');
         const display = wrapper.querySelector('.selected-text');
         const hiddenInput = wrapper.querySelector('input[type="hidden"]');
         
-        display.innerText = nome;
-        display.classList.remove('placeholder');
-        hiddenInput.value = nome;
-
-        const encontrado = cacheDados.find(x => {
-            if(tipo === 'empresa') return x.emp_nome === nome;
-            if(tipo === 'servico') return x.srv_nome === nome;
-            if(tipo === 'cliente') return x.cli_nome === nome;
-        });
-
+        display.innerText = valor;
+        display.classList.remove('text-white/40');
+        hiddenInput.value = valor;
+        
+        const encontrado = cacheDados.find(x => x[tipo === 'cliente' ? 'cli_nome' : 'srv_nome'] === valor);
         if (encontrado) {
-            if (tipo === 'empresa') document.getElementById('emp_doc').value = encontrado.emp_cnpj || "";
-            if (tipo === 'servico') {
-                let v = encontrado.srv_valor || "";
-                document.getElementById('srv_valor').value = v ? "R$ " + v.toString().replace("R$", "").trim() : "";
-            }
             if (tipo === 'cliente') {
                 document.getElementById('cli_doc').value = encontrado.cli_doc || "";
                 document.getElementById('cli_tel').value = encontrado.cli_tel || "";
                 document.getElementById('cli_end').value = encontrado.cli_end || "";
+            } else {
+                let v = encontrado.srv_valor || "";
+                document.getElementById('srv_valor').value = v !== "" ? "R$ " + v.toString().replace("R$", "").trim() : "";
             }
         }
-        fecharDropdowns();
+        fecharTodosDropdowns();
     }
 
-    function fecharDropdowns() {
+    function fecharTodosDropdowns() {
         document.querySelectorAll('.dropdown-list').forEach(l => l.style.display = 'none');
-        document.querySelectorAll('.custom-dropdown i').forEach(i => i.classList.remove('rotate-icon'));
         document.querySelectorAll('.custom-dropdown').forEach(d => d.classList.remove('is-searching'));
+        document.querySelectorAll('.fa-chevron-down').forEach(i => i.classList.remove('rotate-icon'));
     }
 
-    function renderizarDropdowns() {
-        const genHtml = (campo, tipo) => [...new Set(cacheDados.map(d => d[campo]))]
-            .filter(Boolean)
-            .map(n => `<li class="dropdown-item" onclick="selecionarItemDropdown(this, '${n}', '${tipo}')">${n}</li>`)
-            .join('');
+    window.addEventListener('click', e => { if (!e.target.closest('.custom-dropdown')) fecharTodosDropdowns(); });
 
-        document.getElementById('lista-empresas-custom').innerHTML = genHtml('emp_nome', 'empresa');
-        document.getElementById('lista-servicos-custom').innerHTML = genHtml('srv_nome', 'servico');
-        document.getElementById('lista-clientes-custom').innerHTML = genHtml('cli_nome', 'cliente');
+    function renderizarDatalists() {
+        const criarOpcoesEmpresa = (campo) => [...new Set(cacheDados.slice(0, 5).map(d => d[campo]))].filter(Boolean).map(n => `<option value="${n}">`).join('');
+        document.getElementById('lista_empresas').innerHTML = criarOpcoesEmpresa('emp_nome');
+
+        const clientes = [...new Set(cacheDados.map(d => d.cli_nome))].filter(Boolean);
+        const servicos = [...new Set(cacheDados.map(d => d.srv_nome))].filter(Boolean);
+
+        document.getElementById('lista_clientes_custom').innerHTML = clientes.map(n => 
+            `<li class="dropdown-item" onclick="selecionarItemCustom(this, '${n}', 'cliente')">${n}</li>`).join('');
+        
+        document.getElementById('lista_servicos_custom').innerHTML = servicos.map(n => 
+            `<li class="dropdown-item" onclick="selecionarItemCustom(this, '${n}', 'servico')">${n}</li>`).join('');
     }
 
     function saveData(sectionId, btn, originalText) {
@@ -491,15 +485,12 @@
             document.getElementById('toast-minimal').style.display = 'block';
             if(sectionId !== 'sec-empresa-master') {
                 fields.forEach(el => {
-                    if(el.type === "hidden") {
-                        const wrapper = el.closest('.custom-dropdown');
-                        if(wrapper) {
-                            const disp = wrapper.querySelector('.selected-text');
-                            disp.innerText = disp.getAttribute('data-placeholder') || "Selecione...";
-                            disp.classList.add('placeholder');
-                        }
-                    }
-                    el.value = '';
+                   if(el.type !== 'hidden') el.value = '';
+                });
+                // Reseta visual dos dropdowns custom
+                container.querySelectorAll('.selected-text').forEach(t => {
+                   t.innerText = t.parentElement.parentElement.id.includes('cliente') ? 'Selecionar Cliente...' : 'Selecionar Serviço...';
+                   t.classList.add('text-white/40');
                 });
             }
             setTimeout(() => { 
@@ -572,12 +563,12 @@
     }
 
     async function verificarSeExisteDono() {
+        const btnReg = document.getElementById('btn-registrar');
         try {
             const resp = await fetch(`${URL_LOGIN}?action=checar_registro`);
             const res = await resp.text();
             if (res.trim() === "tem_dono") {
                 document.getElementById('link-registrar-container').classList.add('hidden');
-                const btnReg = document.getElementById('btn-registrar');
                 btnReg.disabled = true;
                 btnReg.innerText = "Conta Administrador já existe";
                 btnReg.style.opacity = "0.5";
@@ -620,10 +611,6 @@
             }, 2000);
         }, 800);
     }
-
-    window.addEventListener('click', e => {
-        if (!e.target.closest('.custom-dropdown')) fecharDropdowns();
-    });
 </script>
 </body>
 </html>
