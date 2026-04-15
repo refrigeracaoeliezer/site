@@ -304,57 +304,33 @@
             </div>
         </main>
     </div>
+    
+ <script src="api.js">
 
+     
     <script>
-        const URL_DATABASE = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec"; 
-        let cacheDados = [];
-        let modoOS = false;
-        let saldoQuitado = false;
+   
 
-        function toggleTheme() {
-            const body = document.body;
-            const icon = document.getElementById('theme-icon');
-            body.classList.toggle('light-mode');
-            localStorage.setItem('theme', body.classList.contains('light-mode') ? 'light' : 'dark');
-            icon.className = body.classList.contains('light-mode') ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
-        }
-
-        function autoExpandir(textarea) {
-            textarea.style.height = 'auto';
-            textarea.style.height = textarea.scrollHeight + 'px';
-        }
-
-        function calcularDataFinal() {
-            if (modoOS) return;
-            const dataInicioVal = document.getElementById('dataInicio').value;
-            const diasPrazo = parseInt(document.getElementById('inputGarantia').value) || 0;
-            const campoDataFinal = document.getElementById('dataPrazoFinal');
-            if (dataInicioVal) {
-                let data = new Date(dataInicioVal + 'T00:00:00');
-                data.setDate(data.getDate() + diasPrazo);
-                campoDataFinal.value = data.toISOString().split('T')[0];
-            }
-        }
-
-        async function buscarDadosPlanilha() {
-            try {
-                const resp = await fetch(URL_DATABASE);
-                cacheDados = await resp.json();
-                renderizarDatalists();
-                aplicarTextoPadrao();
-                calcularDataFinal();
-                const container = document.getElementById('services-container');
-                if (container.children.length === 0) {
-                    adicionarServico();
-                } else {
-                    document.querySelectorAll('.dropdown-list').forEach(list => {
-                        if (list.id !== 'lista-clientes-custom') {
-                            list.innerHTML = gerarHtmlServicos();
-                        }
-                    });
+async function buscarDadosPlanilha() {
+    const dados = await fetchData(); // Chama a função central do api.js
+    if (dados) {
+        cacheDados = dados;
+        renderizarDatalists();
+        aplicarTextoPadrao();
+        calcularDataFinal();
+        
+        const container = document.getElementById('services-container');
+        if (container.children.length === 0) {
+            adicionarServico();
+        } else {
+            document.querySelectorAll('.dropdown-list').forEach(list => {
+                if (list.id !== 'lista-clientes-custom') {
+                    list.innerHTML = gerarHtmlServicos();
                 }
-            } catch (e) { console.error("Erro na carga:", e); }
+            });
         }
+    }
+}
 
         function toggleDropdown(el) {
             const wrapper = el.parentElement;
@@ -610,6 +586,13 @@
                 fecharTodosDropdowns();
             }
         });
+
+
+
+
+
+      
+        // O código da página vem abaixo 
     </script>
 </body>
 </html>
