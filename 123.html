@@ -52,26 +52,28 @@
     </div>
 
     <script>
-        // COLE AQUI A NOVA URL QUE VOCÊ GEROU AO IMPLANTAR O SCRIPT
-        const URL_DATABASE = "https://script.google.com/macros/s/AKfycbyNTf1_jivrCDuGhY6g-VKQkzo_mZqzgjj29vYEkJU0hh2lzRBgd2vjL5HBr9BS5qqC2w/exec";
+        // LEMBRE-SE: Use a URL da "Nova Implantação" do Google Apps Script
+        const URL_DATABASE = "Shttps://script.google.com/macros/s/AKfycbyNTf1_jivrCDuGhY6g-VKQkzo_mZqzgjj29vYEkJU0hh2lzRBgd2vjL5HBr9BS5qqC2w/exec";
 
         async function carregarDados() {
             try {
-                // Adicionado redirect follow para lidar com o redirecionamento do Google
                 const response = await fetch(URL_DATABASE, { redirect: "follow" });
                 const dados = await response.json();
                 renderizarCards(dados);
             } catch (error) {
-                console.error(error);
-                document.getElementById('container-historico').innerHTML = "Erro ao carregar dados. Verifique a URL e a conexão.";
+                console.error("Erro na requisição:", error);
+                document.getElementById('container-historico').innerHTML = "Erro ao conectar com a planilha.";
             }
         }
 
         function verificarGarantia(dataFimGarantia) {
-            if (!dataFimGarantia) return false;
+            if (!dataFimGarantia || dataFimGarantia === "---") return false;
+            
             const hoje = new Date();
+            // Tenta converter DD/MM/YYYY
             const partes = dataFimGarantia.toString().split('/');
             if (partes.length !== 3) return false;
+            
             const dataFim = new Date(partes[2], partes[1] - 1, partes[0]);
             return hoje <= dataFim;
         }
@@ -86,18 +88,20 @@
             }
 
             if (!Array.isArray(lista) || lista.length === 0) {
-                container.innerHTML = "<div class='text-center text-white/40 uppercase text-xs font-bold py-10'>Nenhum registro na planilha.</div>";
+                container.innerHTML = "<div class='text-center text-white/40 uppercase text-xs font-bold py-10'>Nenhum registro encontrado na planilha.</div>";
                 return;
             }
 
             lista.forEach(os => {
+                // Mapeamento flexível (Maiúsculas e suporte a acentos/cedilha)
                 const idOS = os["ID_OS"] || "---";
                 const cliente = os["CLIENTE"] || "Não identificado";
-                const endereco = os["ENDERECO"] || "---"; 
-                const servicosTexto = os["TIPO_DE_SERVICO"] || ""; 
-                const tecnico = os["TECNICO_RESPONSAVEL"] || ""; 
-                const dataGarantia = os["DATA_FIM_GARANTIA"] || ""; 
+                const endereco = os["ENDERECO"] || os["ENDEREÇO"] || "---"; 
+                const servicosTexto = os["TIPO_DE_SERVICO"] || os["TIPO_DE_SERVIÇO"] || ""; 
+                const tecnico = os["TECNICO_RESPONSAVEL"] || os["TECNICO_RESPONSÁVEL"] || "---"; 
+                const dataGarantia = os["DATA_FIM_GARANTIA"] || "---"; 
 
+                // Processamento da lista de serviços (separados por |)
                 const servicosArray = servicosTexto.toString().split('|');
                 let htmlServicos = "";
                 servicosArray.forEach(srv => {
@@ -112,27 +116,27 @@
 
                 container.innerHTML += `
                     <div class="glass-card p-6 card-item">
-                        <div class="flex justify-between items-start mb-4">
+                        <div class="flex flex-col md:flex-row justify-between items-start mb-4 gap-2">
                             <div>
                                 <span class="text-[10px] font-black text-blue-500 uppercase tracking-widest">OS #${idOS}</span>
-                                <h2 class="text-lg font-bold nome-cliente">${cliente}</h2>
-                                <p class="text-[10px] text-white/40 uppercase font-bold">${endereco}</p>
+                                <h2 class="text-lg font-bold nome-cliente leading-tight">${cliente}</h2>
+                                <p class="text-[10px] text-white/40 uppercase font-bold mt-1">${endereco}</p>
                             </div>
-                            <span class="status-badge ${badgeClass}">${badgeText}</span>
+                            <span class="status-badge ${badgeClass} whitespace-nowrap">${badgeText}</span>
                         </div>
                         
                         <div class="bg-white/5 rounded-xl p-4 mb-4">
-                            <span class="text-[9px] font-black text-white/30 uppercase block mb-2">Serviços Executados:</span>
+                            <span class="text-[9px] font-black text-white/30 uppercase block mb-2 tracking-widest">Serviços Executados:</span>
                             ${htmlServicos || '<div class="text-[10px] text-white/20 italic">Nenhum serviço registrado</div>'}
                         </div>
 
                         <div class="grid grid-cols-2 gap-4 text-[10px] font-bold uppercase">
                             <div>
-                                <span class="text-white/30 block">Técnico</span>
-                                <span>${tecnico}</span>
+                                <span class="text-white/30 block mb-1">Técnico Responsável</span>
+                                <span class="text-white/80">${tecnico}</span>
                             </div>
                             <div>
-                                <span class="text-white/30 block">Fim da Garantia</span>
+                                <span class="text-white/30 block mb-1">Término da Garantia</span>
                                 <span class="${estaNaGarantia ? 'text-green-400' : 'text-red-400'}">${dataGarantia}</span>
                             </div>
                         </div>
@@ -150,6 +154,7 @@
             });
         }
 
+        // Inicia o carregamento ao abrir a página
         window.onload = carregarDados;
     </script>
 </body>
