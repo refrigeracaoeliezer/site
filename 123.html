@@ -68,23 +68,22 @@
         .is-os .dark-input:focus { border-color: #10b981 !important; }
 
         .service-card {
-    background: var(--card-sub);
-    border-radius: 20px;
-    padding: 15px;
-    border: 1px solid var(--glass-border);
-    /* Adicione estas linhas abaixo */
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: var(--card-sub);
+            border-radius: 20px;
+            padding: 15px;
+            border: 1px solid var(--glass-border);
+        }
 
-/* Nova regra para alinhar o seletor e a lixeira na mesma linha */
-.service-row-top {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-}
+        .service-row-top {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+
         .qty-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: var(--input-bg); color: #3b82f6; transition: 0.2s; border: 1px solid rgba(59, 130, 246, 0.2); }
         .is-os .qty-btn { color: #10b981 !important; border-color: rgba(16, 185, 129, 0.2) !important; }
         
@@ -136,17 +135,14 @@
         .is-os .dropdown-item:hover { background: #10b981; }
         .rotate-icon { transform: translateY(-50%) rotate(180deg) !important; }
         
-        /* Oculta o texto selecionado quando estiver digitando */
         .is-searching .selected-text { display: none; }
         .search-input { background: transparent; border: none; color: inherit; width: 100%; outline: none; display: none; }
         .is-searching .search-input { display: block; }
 
-        /* AJUSTE DE VISIBILIDADE DAS FRASES */
         .selected-text {
             color: var(--text-main) !important;
             opacity: 1 !important;
         }
-        
     </style>
 </head>
 <body class="p-4 pb-10">
@@ -304,33 +300,59 @@
             </div>
         </main>
     </div>
-    
- <script src="api.js"></script>
 
-     
+    <script src="api.js"></script>
+
     <script>
-   
+        let cacheDados = [];
+        let modoOS = false;
+        let saldoQuitado = false;
 
-async function buscarDadosPlanilha() {
-    const dados = await fetchData(); // Chama a função central do api.js
-    if (dados) {
-        cacheDados = dados;
-        renderizarDatalists();
-        aplicarTextoPadrao();
-        calcularDataFinal();
-        
-        const container = document.getElementById('services-container');
-        if (container.children.length === 0) {
-            adicionarServico();
-        } else {
-            document.querySelectorAll('.dropdown-list').forEach(list => {
-                if (list.id !== 'lista-clientes-custom') {
-                    list.innerHTML = gerarHtmlServicos();
-                }
-            });
+        function toggleTheme() {
+            const body = document.body;
+            const icon = document.getElementById('theme-icon');
+            body.classList.toggle('light-mode');
+            localStorage.setItem('theme', body.classList.contains('light-mode') ? 'light' : 'dark');
+            icon.className = body.classList.contains('light-mode') ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
         }
-    }
-}
+
+        function autoExpandir(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        }
+
+        function calcularDataFinal() {
+            if (modoOS) return;
+            const dataInicioVal = document.getElementById('dataInicio').value;
+            const diasPrazo = parseInt(document.getElementById('inputGarantia').value) || 0;
+            const campoDataFinal = document.getElementById('dataPrazoFinal');
+            if (dataInicioVal) {
+                let data = new Date(dataInicioVal + 'T00:00:00');
+                data.setDate(data.getDate() + diasPrazo);
+                campoDataFinal.value = data.toISOString().split('T')[0];
+            }
+        }
+
+        async function buscarDadosPlanilha() {
+            const dados = await fetchData(); 
+            if (dados) {
+                cacheDados = dados;
+                renderizarDatalists();
+                aplicarTextoPadrao();
+                calcularDataFinal();
+                
+                const container = document.getElementById('services-container');
+                if (container.children.length === 0) {
+                    adicionarServico();
+                } else {
+                    document.querySelectorAll('.dropdown-list').forEach(list => {
+                        if (list.id !== 'lista-clientes-custom') {
+                            list.innerHTML = gerarHtmlServicos();
+                        }
+                    });
+                }
+            }
+        }
 
         function toggleDropdown(el) {
             const wrapper = el.parentElement;
@@ -407,41 +429,40 @@ async function buscarDadosPlanilha() {
             }).join('');
         }
 
-      function adicionarServico() {
-    const container = document.getElementById('services-container');
-    const div = document.createElement('div');
-    div.className = "service-card"; // Mantemos a classe base
-    const opcoes = gerarHtmlServicos();
-    
-    div.innerHTML = `
-        <div class="service-row-top">
-            <div class="relative flex-grow custom-dropdown">
-                <div class="w-full dark-input p-4 rounded-2xl text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
-                     <span class="selected-text truncate">Selecionar Serviço</span>
-                    <input type="text" class="search-input" placeholder="Selecionar Serviço" oninput="filtrarDropdown(this, 'servico')" onclick="event.stopPropagation()">
-                    <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-[10px] transition-transform duration-300"></i>
+        function adicionarServico() {
+            const container = document.getElementById('services-container');
+            const div = document.createElement('div');
+            div.className = "service-card";
+            const opcoes = gerarHtmlServicos();
+            
+            div.innerHTML = `
+                <div class="service-row-top">
+                    <div class="relative flex-grow custom-dropdown">
+                        <div class="w-full dark-input p-4 rounded-2xl text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
+                             <span class="selected-text truncate">Selecionar Serviço</span>
+                            <input type="text" class="search-input" placeholder="Selecionar Serviço" oninput="filtrarDropdown(this, 'servico')" onclick="event.stopPropagation()">
+                            <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-[10px] transition-transform duration-300"></i>
+                        </div>
+                        <ul class="dropdown-list">${opcoes}</ul>
+                        <input type="hidden" class="service-name">
+                    </div>
+                    <button onclick="this.closest('.service-card').remove(); atualizarSoma();" class="text-red-500 hover:text-red-400 transition-colors">
+                        <i class="fa-solid fa-trash-can text-lg"></i>
+                    </button>
                 </div>
-                <ul class="dropdown-list">${opcoes}</ul>
-                <input type="hidden" class="service-name">
-            </div>
-            <button onclick="this.closest('.service-card').remove(); atualizarSoma();" class="text-red-500 hover:text-red-400 transition-colors">
-                <i class="fa-solid fa-trash-can text-lg"></i>
-            </button>
-        </div>
-
-        <div class="flex items-center gap-3">
-            <div class="flex-grow relative">
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 font-bold text-xs">R$</span>
-                <input type="text" placeholder="0,00" class="w-full dark-input pl-9 p-4 rounded-2xl text-sm font-bold service-price" onkeyup="formatarMoeda(this)">
-            </div>
-            <div class="flex items-center bg-white/5 border border-white/10 rounded-2xl p-2 gap-4">
-                <button onclick="alterarQtde(this, -1)" class="qty-btn"><i class="fa-solid fa-minus text-[10px]"></i></button>
-                <span class="font-bold text-base service-qty w-4 text-center">1</span>
-                <button onclick="alterarQtde(this, 1)" class="qty-btn"><i class="fa-solid fa-plus text-[10px]"></i></button>
-            </div>
-        </div>`;
-    container.appendChild(div);
-}
+                <div class="flex items-center gap-3">
+                    <div class="flex-grow relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 font-bold text-xs">R$</span>
+                        <input type="text" placeholder="0,00" class="w-full dark-input pl-9 p-4 rounded-2xl text-sm font-bold service-price" onkeyup="formatarMoeda(this)">
+                    </div>
+                    <div class="flex items-center bg-white/5 border border-white/10 rounded-2xl p-2 gap-4">
+                        <button onclick="alterarQtde(this, -1)" class="qty-btn"><i class="fa-solid fa-minus text-[10px]"></i></button>
+                        <span class="font-bold text-base service-qty w-4 text-center">1</span>
+                        <button onclick="alterarQtde(this, 1)" class="qty-btn"><i class="fa-solid fa-plus text-[10px]"></i></button>
+                    </div>
+                </div>`;
+            container.appendChild(div);
+        }
 
         function formatarMoeda(i) {
             let v = i.value.replace(/\D/g, "");
@@ -530,7 +551,7 @@ async function buscarDadosPlanilha() {
             const saldo = (totalNum * 0.7).toLocaleString('pt-BR', {minimumFractionDigits: 2});
             document.getElementById('txt-proposta').innerText = `*ORÇAMENTO TÉCNICO - ${prestador.toUpperCase()}*\n\nOlá ${cliente}! Segue o orçamento:\n\n*SERVIÇOS:*\n${servicosTexto}\n*OBS:*\n${obs}\n\n*INVESTIMENTO TOTAL:* R$ ${total}\n(Material + Mão de Obra incluso)\n\n*${modoOS ? 'Garantia' : 'Vencimento'}:* ${dias} dias\n*Data Prevista:* ${dataFim}\n\nFicaremos no aguardo.`;
             document.getElementById('txt-sinal').innerText = `*Confirmação de Agendamento*\n\nOlá, ${cliente}, tudo bem?\n\nPara formalizarmos o seu atendimento e garantirmos a reserva dos materiais e da sua data em nossa agenda, solicitamos o pagamento da entrada:\n\n💰 *Valor da Entrada (30%):* R$ ${sinal}\n🔑 *Chave PIX:* ${chavePix}\n\nAssim que realizar a transferência, por favor, nos envie o comprovante para validarmos o agendamento. 🗓️\n\nFicamos à disposição para qualquer dúvida!`;
-           
+            
            document.getElementById('txt-conclusao').innerText = `*Finalização de Serviço* ❄️\n\nOlá, ${cliente}, tudo bem?\n\nInformamos que o serviço em seu equipamento foi concluído com sucesso! ✅ Realizamos todos os testes técnicos e o sistema já está operando em perfeitas condições.\n\n💳 *Status de Pagamento:* ${saldoQuitado ? "Saldo Quitado" : `Saldo de R$ ${saldo}`}\n🛡️ *Garantia:* Você tem *${dias} dias* de garantia total sobre o serviço executado.\n\nAgradecemos a confiança em nosso trabalho! Qualquer dúvida, estamos à disposição.\n\nAtenciosamente,\n*${prestador}*`;
             
             document.getElementById('modal-mensagens').style.display = 'block';
@@ -586,13 +607,6 @@ async function buscarDadosPlanilha() {
                 fecharTodosDropdowns();
             }
         });
-
-
-
-
-
-      
-        // O código da página vem abaixo 
     </script>
 </body>
 </html>
