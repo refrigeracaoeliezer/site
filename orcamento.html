@@ -3,7 +3,7 @@
 <head>
     <script>
     if (localStorage.getItem("inforos_logado") !== "true") {
-        window.location.replace("https://refrigeracaoeliezer.github.io/site/"); 
+        window.location.replace("https://refrigeracaoeliezer.github.io/site/");  
     }
     </script>
 
@@ -421,7 +421,7 @@
             const opcoes = gerarHtmlServicos();
             div.innerHTML = `
                 <div class="flex items-center gap-2">
-                    <div class="relative flex-grow custom-dropdown">
+                    <div class="relative flex-grow custom-dropdown w-0 min-w-full">
                         <div class="w-full dark-input p-4 rounded-2xl text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
                              <span class="selected-text truncate">Selecionar Serviço</span>
                             <input type="text" class="search-input" placeholder="Selecionar Serviço" oninput="filtrarDropdown(this, 'servico')" onclick="event.stopPropagation()">
