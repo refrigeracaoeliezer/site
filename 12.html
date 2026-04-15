@@ -105,7 +105,7 @@
         .active-label { color: white !important; }
         .mode-os .switch-bg { left: 50%; background: #10b981; }
 
-        input[type="date"]::-webkit-calendar-picker indicator { filter: invert(0.5); }
+        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.5); }
         body:not(.light-mode) input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
 
         #modal-mensagens { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.95); backdrop-filter: blur(10px); z-index: 100; overflow-y: auto; display: none; padding: 20px; }
@@ -338,10 +338,7 @@
                 renderizarDatalists();
                 aplicarTextoPadrao();
                 calcularDataFinal();
-                
-                // Verifica se há dados para edição após carregar a planilha
                 verificarEdicao();
-
             } catch (e) { console.error("Erro na carga:", e); }
         }
 
@@ -355,15 +352,36 @@
                 document.getElementById('enderecoCliente').value = os.ENDERECO || os.ENDEREÇO || "";
                 document.getElementById('telCliente').value = os.CPF || "";
                 document.getElementById('obsGeral').value = os.OBSERVACAO || "";
-                document.getElementById('inputGarantia').value = os.GARANTIA_DIAS || "30";
                 
+                // DATA INICIO E DATA FIM
+                if(os.DATA_DO_SERVICO) {
+                    const partes = os.DATA_DO_SERVICO.split('/');
+                    if(partes.length === 3) document.getElementById('dataInicio').value = `${partes[2]}-${partes[1]}-${partes[0]}`;
+                }
+                if(os.DATA_FIM_GARANTIA) {
+                    const partesFim = os.DATA_FIM_GARANTIA.split('/');
+                    if(partesFim.length === 3) document.getElementById('dataPrazoFinal').value = `${partesFim[2]}-${partesFim[1]}-${partesFim[0]}`;
+                }
+
+                // CALCULO DE DIAS (GARANTIA_DIAS)
+                if(os.DATA_DO_SERVICO && os.DATA_FIM_GARANTIA) {
+                    const d1 = new Date(document.getElementById('dataInicio').value + 'T00:00:00');
+                    const d2 = new Date(document.getElementById('dataPrazoFinal').value + 'T00:00:00');
+                    const diffTime = Math.abs(d2 - d1);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    document.getElementById('inputGarantia').value = diffDays;
+                }
+
                 const container = document.getElementById('services-container');
                 container.innerHTML = "";
 
                 const servicosTexto = os["TIPO_DE_SERVICO"] || os["TIPO_DE_SERVIÇO"] || "";
+                const valoresTexto = os["VALOR_TOTAL"] || "0,00";
+                
                 const listaServicos = servicosTexto.split('|');
+                const listaValores = valoresTexto.split('|');
 
-                listaServicos.forEach(srvTexto => {
+                listaServicos.forEach((srvTexto, index) => {
                     if (srvTexto.trim() !== "") {
                         let qtd = 1;
                         let nome = srvTexto.trim();
@@ -372,7 +390,8 @@
                             qtd = parseInt(partes[0]) || 1;
                             nome = partes[1];
                         }
-                        adicionarServicoParaEdicao(nome, qtd, os.VALOR_TOTAL);
+                        const valorIndiv = listaValores[index] ? listaValores[index].trim() : "0,00";
+                        adicionarServicoParaEdicao(nome, qtd, valorIndiv);
                     }
                 });
 
@@ -388,18 +407,16 @@
             }
         }
 
-        function adicionarServicoParaEdicao(nome, qtd, valorTotal) {
+        function adicionarServicoParaEdicao(nome, qtd, valorIndividual) {
             adicionarServico();
             const cards = document.querySelectorAll('.service-card');
             const ultimoCard = cards[cards.length - 1];
             ultimoCard.querySelector('.selected-text').innerText = nome;
             ultimoCard.querySelector('.service-name').value = nome;
             ultimoCard.querySelector('.service-qty').innerText = qtd;
-            if (cards.length === 1) {
-                const precoInput = ultimoCard.querySelector('.service-price');
-                precoInput.value = valorTotal;
-                formatarMoeda(precoInput);
-            }
+            const precoInput = ultimoCard.querySelector('.service-price');
+            precoInput.value = valorIndividual.replace("R$", "").trim();
+            formatarMoeda(precoInput);
         }
 
         function toggleDropdown(el) {
