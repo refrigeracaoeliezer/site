@@ -30,7 +30,7 @@
         <header class="flex justify-between items-center mb-8">
             <div>
                 <h1 class="text-xl font-black uppercase tracking-tighter">Histórico de <span class="text-blue-500">Serviços</span></h1>
-                <span class="text-[10px] text-blue-400 font-bold uppercase tracking-widest">Consulta de Garantia e Clientes</span>
+                <span class="text-[10px] text-blue-400 font-bold uppercase tracking-widest">Refrigeração Eliezer</span>
             </div>
             <a href="index.html" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
                 <i class="fa-solid fa-arrow-left"></i>
@@ -52,7 +52,7 @@
     </div>
 
     <script>
-        const URL_DATABASE = "https://script.google.com/macros/s/AKfycbzjbVLhStKZeeYBnrvm8wu3VSag0jbVnscZvYPdrZIoBjpp6a7L-9htfVfI_Boq5amGNA/exec"; // Use a mesma URL da página anterior
+        const URL_DATABASE = "https://script.google.com/macros/s/AKfycbzjbVLhStKZeeYBnrvm8wu3VSag0jbVnscZvYPdrZIoBjpp6a7L-9htfVfI_Boq5amGNA/exec";
 
         async function carregarDados() {
             try {
@@ -60,16 +60,16 @@
                 const dados = await response.json();
                 renderizarCards(dados);
             } catch (error) {
-                document.getElementById('container-historico').innerHTML = "Erro ao carregar dados.";
+                document.getElementById('container-historico').innerHTML = "Erro ao carregar dados. Verifique a conexão.";
             }
         }
 
         function verificarGarantia(dataFimGarantia) {
+            if (!dataFimGarantia) return false;
             const hoje = new Date();
-            // Converte data da planilha (DD/MM/YYYY) para objeto Date
             const partes = dataFimGarantia.split('/');
+            if (partes.length !== 3) return false;
             const dataFim = new Date(partes[2], partes[1] - 1, partes[0]);
-            
             return hoje <= dataFim;
         }
 
@@ -77,17 +77,30 @@
             const container = document.getElementById('container-historico');
             container.innerHTML = "";
 
+            if (!Array.isArray(lista) || lista.length === 0) {
+                container.innerHTML = "<div class='text-center text-white/40'>Nenhum registro encontrado.</div>";
+                return;
+            }
+
             lista.forEach(os => {
-                // LÓGICA DE SEPARAÇÃO DOS SERVIÇOS
-                // Supondo que na planilha os serviços estejam salvos como "Serviço 1 | Serviço 2"
-                const servicosArray = os.Tipo_de_servico.split('|');
+                // Mapeamento exato baseado na sua imagem da planilha
+                const idOS = os["ID_OS"] || "N/A";
+                const cliente = os["CLIENTE"] || "Cliente não informado";
+                const endereco = os["ENDERECO"] || "Endereço não informado";
+                const servicosTexto = os["TIPO_DE_SERVICO"] || "";
+                const tecnico = os["TECNICO_RESPONSAVEL"] || "Não designado";
+                const dataFimGarantia = os["DATA_FIM_GARANTIA"] || "";
+
+                // Formatação da lista de serviços (usando o separador |)
+                const servicosArray = servicosTexto.split('|');
                 let htmlServicos = "";
-                
                 servicosArray.forEach(srv => {
-                    htmlServicos += `<div class="item-servico text-xs text-white/70 italic">${srv.trim()}</div>`;
+                    if(srv.trim() !== "") {
+                        htmlServicos += `<div class="item-servico text-xs text-white/70 italic">${srv.trim()}</div>`;
+                    }
                 });
 
-                const estaNaGarantia = verificarGarantia(os.Data_fim_da_garantia);
+                const estaNaGarantia = verificarGarantia(dataFimGarantia);
                 const badgeClass = estaNaGarantia ? "em-garantia" : "fora-garantia";
                 const badgeText = estaNaGarantia ? "🟢 Em Garantia" : "🔴 Fora da Garantia";
 
@@ -95,26 +108,26 @@
                     <div class="glass-card p-6 card-item">
                         <div class="flex justify-between items-start mb-4">
                             <div>
-                                <span class="text-[10px] font-black text-blue-500 uppercase tracking-widest">OS #${os.ID_OS}</span>
-                                <h2 class="text-lg font-bold nome-cliente">${os.Cliente}</h2>
-                                <p class="text-[10px] text-white/40 uppercase font-bold">${os.Endereco}</p>
+                                <span class="text-[10px] font-black text-blue-500 uppercase tracking-widest">OS #${idOS}</span>
+                                <h2 class="text-lg font-bold nome-cliente">${cliente}</h2>
+                                <p class="text-[10px] text-white/40 uppercase font-bold">${endereco}</p>
                             </div>
                             <span class="status-badge ${badgeClass}">${badgeText}</span>
                         </div>
                         
                         <div class="bg-white/5 rounded-xl p-4 mb-4">
                             <span class="text-[9px] font-black text-white/30 uppercase block mb-2">Serviços Executados:</span>
-                            ${htmlServicos}
+                            ${htmlServicos || '<span class="text-xs text-white/20">Nenhum serviço listado</span>'}
                         </div>
 
                         <div class="grid grid-cols-2 gap-4 text-[10px] font-bold uppercase">
                             <div>
                                 <span class="text-white/30 block">Técnico</span>
-                                <span>${os.Tecnico_responsavel}</span>
+                                <span>${tecnico}</span>
                             </div>
                             <div>
                                 <span class="text-white/30 block">Fim da Garantia</span>
-                                <span class="${estaNaGarantia ? 'text-green-400' : 'text-red-400'}">${os.Data_fim_da_garantia}</span>
+                                <span class="${estaNaGarantia ? 'text-green-400' : 'text-red-400'}">${dataFimGarantia || '---'}</span>
                             </div>
                         </div>
                     </div>
@@ -125,7 +138,6 @@
         function filtrarHistorico() {
             const termo = document.getElementById('inputBusca').value.toLowerCase();
             const cards = document.querySelectorAll('.card-item');
-            
             cards.forEach(card => {
                 const texto = card.innerText.toLowerCase();
                 card.style.display = texto.includes(termo) ? 'block' : 'none';
