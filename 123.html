@@ -533,7 +533,9 @@
             const saldo = (totalNum * 0.7).toLocaleString('pt-BR', {minimumFractionDigits: 2});
             document.getElementById('txt-proposta').innerText = `*ORÇAMENTO TÉCNICO - ${prestador.toUpperCase()}*\n\nOlá ${cliente}! Segue o orçamento:\n\n*SERVIÇOS:*\n${servicosTexto}\n*OBS:*\n${obs}\n\n*INVESTIMENTO TOTAL:* R$ ${total}\n(Material + Mão de Obra incluso)\n\n*${modoOS ? 'Garantia' : 'Vencimento'}:* ${dias} dias\n*Data Prevista:* ${dataFim}\n\nFicaremos no aguardo.`;
             document.getElementById('txt-sinal').innerText = `Olá ${cliente}! 🤝\n\nPara agendarmos e comprarmos material, precisamos de um sinal.\n\n*Sinal (30%): R$ ${sinal}*\n\nChave PIX: ${chavePix}\n\nPor favor, envie o comprovante. Obrigado!`;
-            document.getElementById('txt-conclusao').innerText = `*Serviço Concluído!*\n\n${cliente}, serviço finalizado! ✅ Equipamento testado e pronto..\n\n${saldoQuitado ? "*Pagamento Confirmado*" : `*Saldo:* R$ ${saldo}`}\n\nLembrando que você tem *${dias} dias* de garantia. Obrigado!\n${prestador}`;
+           
+           document.getElementById('txt-conclusao').innerText = `*Finalização de Serviço* ❄️\n\nOlá, ${cliente}, tudo bem?\n\nInformamos que o serviço em seu equipamento foi concluído com sucesso! ✅ Realizamos todos os testes técnicos e o sistema já está operando em perfeitas condições.\n\n💳 *Status de Pagamento:* ${saldoQuitado ? "Saldo Quitado" : `Saldo de R$ ${saldo}`}\n🛡️ *Garantia:* Você tem *${dias} dias* de garantia total sobre o serviço executado.\n\nAgradecemos a confiança em nosso trabalho! Qualquer dúvida, estamos à disposição.\n\nAtenciosamente,\n*${prestador}*`;
+            
             document.getElementById('modal-mensagens').style.display = 'block';
             document.body.style.overflow = 'hidden';
         }
