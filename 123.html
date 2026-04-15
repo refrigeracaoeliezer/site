@@ -124,7 +124,7 @@
         .search-input { background: transparent; border: none; color: inherit; width: 100%; outline: none; display: none; }
         .is-searching .search-input { display: block; }
 
-            /* AJUSTE DE VISIBILIDADE DAS FRASES */
+        /* AJUSTE DE VISIBILIDADE DAS FRASES - CORREÇÃO CIRÚRGICA */
         .selected-text {
             color: var(--text-main) !important;
             opacity: 1 !important;
@@ -132,8 +132,7 @@
             overflow: hidden; 
             text-overflow: ellipsis; 
             white-space: nowrap;
-            max-width: 0; /* AJUSTE CRUCIAL: Impede que o texto empurre a div para fora */
-            flex: 1 1 0%; /* AJUSTE CRUCIAL: Faz o container ocupar apenas o espaço disponível */
+            max-width: calc(100vw - 120px); /* Garante que o texto nunca empurre a tela */
         }
 
         #btn-ia {
@@ -461,9 +460,9 @@
             const opcoes = gerarHtmlServicos();
             div.innerHTML = `
                 <div class="flex items-center gap-2">
-                    <div class="relative flex-grow custom-dropdown flex overflow-hidden">
-                        <div class="w-full dark-input p-4 rounded-2xl text-sm font-semibold flex justify-between items-center cursor-pointer overflow-hidden" onclick="toggleDropdown(this)">
-                             <span class="selected-text">Selecionar Serviço</span>
+                    <div class="relative flex-grow custom-dropdown">
+                        <div class="w-full dark-input p-4 rounded-2xl text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
+                             <span class="selected-text truncate">Selecionar Serviço</span>
                             <input type="text" class="search-input" placeholder="Selecionar Serviço" oninput="filtrarDropdown(this, 'servico')" onclick="event.stopPropagation()">
                             <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-[10px] transition-transform duration-300"></i>
                         </div>
