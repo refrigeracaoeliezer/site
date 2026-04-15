@@ -19,13 +19,13 @@
             font-size: 80px; transition: 0.3s;
         }
 
-        /* Botão para mostrar/esconder assinatura */
+        /* Botão para mostrar/esconder assinatura - Ajustado para o mesmo tamanho do PDF */
         .btn-assinatura {
             position: fixed; bottom: 200px; right: 30px; z-index: 10000;
-            background-color: #2980b9; color: white; width: 60px; height: 60px;
-            border-radius: 50%; border: none; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            background-color: #2980b9; color: white; width: 150px; height: 150px;
+            border-radius: 50%; border: none; box-shadow: 0 5px 20px rgba(0,0,0,0.5);
             cursor: pointer; display: flex; align-items: center; justify-content: center;
-            font-size: 24px; transition: 0.3s;
+            font-size: 80px; transition: 0.3s;
         }
 
         .paper-canvas {
@@ -89,9 +89,9 @@
             border-top: 1px solid #333;
             margin-bottom: 5px;
         }
-        /* Nome do cliente: sem negrito, tamanho 11, sem caixa alta e em linha única */
+        /* Nome do cliente: sem negrito, tamanho 12 e em linha única */
         #nome-assinatura-cliente {
-            font-size: 11px;
+            font-size: 12px;
             font-weight: normal;
             white-space: nowrap;
         }
@@ -166,7 +166,7 @@
 
         <div id="campo-assinatura" class="assinatura-cliente">
             <div class="linha-assinatura"></div>
-            <p><strong>Assinatura do Cliente</strong></p>
+            <p>Assinatura do Cliente</p>
             <p id="nome-assinatura-cliente"></p>
         </div>
 
@@ -180,13 +180,11 @@
     <script>
         const URL_DATABASE = "https://script.google.com/macros/s/AKfycbwsX8xUWHgb9PE9Nv6IvQbjB7VGQPfUQSbn6fZT1WQRk5IoQJMFAhleLHHpHSU9zHw49A/exec";
 
-        // Função para mostrar/esconder assinatura e preencher o nome
         function toggleAssinatura() {
             const campo = document.getElementById('campo-assinatura');
             const nomeCliente = document.getElementById('view-cliente').innerText;
             const displayNome = document.getElementById('nome-assinatura-cliente');
             
-            // Preenche o nome do cliente no campo de assinatura
             displayNome.innerText = nomeCliente;
             
             if (campo.style.display === "none" || campo.style.display === "") {
