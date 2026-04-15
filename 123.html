@@ -128,10 +128,12 @@
         .selected-text {
             color: var(--text-main) !important;
             opacity: 1 !important;
-            display: block; /* Garante que o elemento se comporte como bloco para o truncamento */
-            overflow: hidden; /* Esconde o que sobrar */
-            text-overflow: ellipsis; /* Adiciona os "..." no final */
-            white-space: nowrap; /* Impede que o texto quebre linha e empurre o layout */
+            display: block; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            white-space: nowrap;
+            max-width: 0; /* AJUSTE CRUCIAL: Impede que o texto empurre a div para fora */
+            flex: 1 1 0%; /* AJUSTE CRUCIAL: Faz o container ocupar apenas o espaço disponível */
         }
 
         #btn-ia {
@@ -321,6 +323,7 @@
             '',
             '',
             '',
+            '',
         ];
 
         function getRandomKey() {
@@ -458,9 +461,9 @@
             const opcoes = gerarHtmlServicos();
             div.innerHTML = `
                 <div class="flex items-center gap-2">
-                    <div class="relative flex-grow custom-dropdown">
-                        <div class="w-full dark-input p-4 rounded-2xl text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
-                             <span class="selected-text truncate">Selecionar Serviço</span>
+                    <div class="relative flex-grow custom-dropdown flex overflow-hidden">
+                        <div class="w-full dark-input p-4 rounded-2xl text-sm font-semibold flex justify-between items-center cursor-pointer overflow-hidden" onclick="toggleDropdown(this)">
+                             <span class="selected-text">Selecionar Serviço</span>
                             <input type="text" class="search-input" placeholder="Selecionar Serviço" oninput="filtrarDropdown(this, 'servico')" onclick="event.stopPropagation()">
                             <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-[10px] transition-transform duration-300"></i>
                         </div>
