@@ -19,6 +19,14 @@
             font-size: 80px; transition: 0.3s;
         }
 
+        .btn-assinatura {
+            position: fixed; bottom: 200px; right: 30px; z-index: 10000;
+            background-color: #2980b9; color: white; width: 150px; height: 150px;
+            border-radius: 50%; border: none; box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 80px; transition: 0.3s;
+        }
+
         .paper-canvas {
             background-color: #fff; width: 210mm; min-height: 297mm; padding: 15mm;
             display: flex; flex-direction: column; position: relative;
@@ -38,7 +46,7 @@
         .doc-info h2 { color: #065f46; font-size: 24px; font-weight: 900; }
         .status-badge { background: #10b981; color: white; padding: 5px 10px; border-radius: 5px; font-size: 10px; font-weight: 800; display: inline-block; margin-top: 5px; }
 
-     .client-box { 
+        .client-box { 
             background: #f8f9fa; 
             padding: 15px; 
             border-radius: 5px; 
@@ -46,7 +54,6 @@
             margin-bottom: 20px;
             display: flex; 
             justify-content: space-between;
-            /* Adição da borda lateral verde */
             border-left: 5px solid #065f46; 
         }
         
@@ -68,10 +75,33 @@
 
         footer { text-align: center; font-size: 11px; color: #777; border-top: 1px solid #eee; padding-top: 15px; width: 100%; }
 
+        /* Estilo do Campo de Assinatura */
+        .assinatura-cliente {
+            display: none; 
+            margin-top: 30px;
+            text-align: center;
+            align-self: center;
+            width: 450px; 
+        }
+        .linha-assinatura {
+            border-top: 1px solid #333;
+            margin-bottom: 5px;
+        }
+        /* Nome do cliente ocupando o lugar e estilo do texto anterior */
+        #nome-assinatura-cliente {
+            font-size: 16px;
+      
+            white-space: nowrap;
+        }
+
         @media print { .no-print { display: none !important; } }
     </style>
 </head>
 <body>
+
+    <button class="btn-assinatura no-print" onclick="toggleAssinatura()" title="Alternar Assinatura">
+        <i class="fa-solid fa-pen-nib"></i>
+    </button>
 
     <button id="btn-pdf" class="btn-flutuante no-print" onclick="baixarPDF()">
         <i class="fa-solid fa-file-pdf"></i>
@@ -132,6 +162,11 @@
             <p id="view-obs" style="margin-top: 5px; color: #166534; white-space: pre-wrap;"></p>
         </div>
 
+        <div id="campo-assinatura" class="assinatura-cliente">
+            <div class="linha-assinatura"></div>
+            <p id="nome-assinatura-cliente"></p>
+        </div>
+
         <footer>
             <p><strong>Responsável Técnico: <span id="view-resp-tecnico">---</span></strong></p>
             <p>Este documento atesta que o serviço foi testado e entregue em perfeitas condições.</p>
@@ -141,6 +176,20 @@
 
     <script>
         const URL_DATABASE = "https://script.google.com/macros/s/AKfycbwsX8xUWHgb9PE9Nv6IvQbjB7VGQPfUQSbn6fZT1WQRk5IoQJMFAhleLHHpHSU9zHw49A/exec";
+
+        function toggleAssinatura() {
+            const campo = document.getElementById('campo-assinatura');
+            const nomeCliente = document.getElementById('view-cliente').innerText;
+            const displayNome = document.getElementById('nome-assinatura-cliente');
+            
+            displayNome.innerText = nomeCliente;
+            
+            if (campo.style.display === "none" || campo.style.display === "") {
+                campo.style.display = "block";
+            } else {
+                campo.style.display = "none";
+            }
+        }
 
         async function carregarPagina() {
             document.getElementById('num-random').innerText = Math.floor(100 + Math.random() * 899) + '/2026-OS';
@@ -155,19 +204,15 @@
             document.getElementById('view-total').innerText = 'R$ ' + (dadosLocal.total || "0,00");
             document.getElementById('view-obs').innerText = dadosLocal.obs || "Serviço realizado conforme padrões técnicos.";
             document.getElementById('view-dias-garantia').innerText = dadosLocal.garantia || "90";
-const corpo = document.getElementById('tabela-corpo');
+            
+            const corpo = document.getElementById('tabela-corpo');
             corpo.innerHTML = "";
             
-            // INÍCIO DA MODIFICAÇÃO: CÁLCULO DE VALOR TOTAL POR ITEM (QTD x VALOR UNITÁRIO)
             if(dadosLocal.itens) {
                 dadosLocal.itens.forEach(i => {
-                    // Trata a string de valor para garantir que o cálculo seja feito corretamente
-                    // Remove o ponto de milhar e substitui a vírgula decimal por ponto
                     const valorUnitarioLimpo = parseFloat(i.valor.replace(/\./g, '').replace(',', '.'));
                     const quantidade = parseInt(i.qtd);
                     const valorTotalItem = valorUnitarioLimpo * quantidade;
-                    
-                    // Formata o resultado de volta para o padrão de moeda brasileiro (0.000,00)
                     const valorTotalFormatado = valorTotalItem.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
                     corpo.innerHTML += `<tr>
@@ -177,7 +222,7 @@ const corpo = document.getElementById('tabela-corpo');
                     </tr>`;
                 });
             }
-            // FIM DA MODIFICAÇÃO
+
             try {
                 const resp = await fetch(URL_DATABASE);
                 const cacheDados = await resp.json();
