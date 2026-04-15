@@ -77,10 +77,9 @@
 
         .assinatura-cliente {
             display: none; 
-            margin: 30px auto 10px auto;
+            margin: 30px auto 0 auto; /* Alterado: Centralização estável com margens automáticas */
             text-align: center;
-            width: 450px;
-            flex-shrink: 0;
+            width: 450px; 
         }
         .linha-assinatura {
             border-top: 1px solid #333;
@@ -178,18 +177,8 @@
             const campo = document.getElementById('campo-assinatura');
             const nomeCliente = document.getElementById('view-cliente').innerText;
             const displayNome = document.getElementById('nome-assinatura-cliente');
-            const canvas = document.getElementById('conteudo-pdf');
-            
             displayNome.innerText = nomeCliente;
-            
-            if (campo.style.display === "none" || campo.style.display === "") {
-                campo.style.display = "block";
-            } else {
-                campo.style.display = "none";
-            }
-            
-            // Força o navegador a recalcular o layout imediatamente
-            void canvas.offsetWidth;
+            campo.style.display = (campo.style.display === "none" || campo.style.display === "") ? "block" : "none";
         }
 
         async function carregarPagina() {
@@ -240,21 +229,11 @@
         function baixarPDF() {
             const element = document.getElementById('conteudo-pdf');
             const cliente = document.getElementById('view-cliente').innerText;
-            
-            // Garante que o layout esteja firme antes de capturar
-            void element.offsetWidth;
-
             const opt = {
                 margin: 0,
                 filename: `Ordem_de_Servico_${cliente}.pdf`,
-                image: { type: 'jpeg', quality: 1 },
-                html2canvas: { 
-                    scale: 2, 
-                    useCORS: true, 
-                    letterRendering: true,
-                    scrollX: 0,
-                    scrollY: 0
-                },
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, letterRendering: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             html2pdf().set(opt).from(element).save();
