@@ -124,10 +124,14 @@
         .search-input { background: transparent; border: none; color: inherit; width: 100%; outline: none; display: none; }
         .is-searching .search-input { display: block; }
 
-        /* AJUSTE DE VISIBILIDADE DAS FRASES */
+            /* AJUSTE DE VISIBILIDADE DAS FRASES */
         .selected-text {
             color: var(--text-main) !important;
             opacity: 1 !important;
+            display: block; /* Garante que o elemento se comporte como bloco para o truncamento */
+            overflow: hidden; /* Esconde o que sobrar */
+            text-overflow: ellipsis; /* Adiciona os "..." no final */
+            white-space: nowrap; /* Impede que o texto quebre linha e empurre o layout */
         }
 
         #btn-ia {
