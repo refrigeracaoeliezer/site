@@ -11,17 +11,37 @@
     <style>
         :root {
             --bg-body: #0d1117;
+            --text-main: white;
             --glass-bg: rgba(255, 255, 255, 0.03);
             --glass-border: rgba(255, 255, 255, 0.1);
-            --text-main: white;
+            --card-sub: rgba(255, 255, 255, 0.05);
+            --input-bg: rgba(255, 255, 255, 0.05);
         }
-        body { font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); }
-        .glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 25px; }
+
+        body.light-mode {
+            --bg-body: #f0f2f5;
+            --text-main: #1a1f26;
+            --glass-bg: rgba(255, 255, 255, 0.8);
+            --glass-border: rgba(0, 0, 0, 0.1);
+            --card-sub: rgba(0, 0, 0, 0.02);
+            --input-bg: rgba(0, 0, 0, 0.05);
+        }
+
+        body { font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); transition: background 0.3s, color 0.3s; }
+        
+        .glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 25px; }
+        
         .status-badge { padding: 4px 12px; border-radius: 50px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
         .em-garantia { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; }
         .fora-garantia { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; }
-        .search-input { background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: white; outline: none; }
-        .item-servico { border-bottom: 1px dashed rgba(255,255,255,0.1); padding: 5px 0; }
+        
+        .search-input { background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text-main); outline: none; }
+        .item-servico { border-bottom: 1px dashed var(--glass-border); padding: 5px 0; }
+
+        .theme-toggle { background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        
+        .edit-btn { background: #3b82f6; color: white; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .edit-btn:hover { transform: scale(1.1); background: #2563eb; }
     </style>
 </head>
 <body class="p-4 pb-10">
@@ -32,15 +52,20 @@
                 <h1 class="text-xl font-black uppercase tracking-tighter">Histórico de <span class="text-blue-500">Serviços</span></h1>
                 <span class="text-[10px] text-blue-400 font-bold uppercase tracking-widest">Refrigeração Eliezer</span>
             </div>
-            <a href="index.html" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
-                <i class="fa-solid fa-arrow-left"></i>
-            </a>
+            <div class="flex gap-2">
+                <button onclick="toggleTheme()" class="theme-toggle">
+                    <i id="theme-icon" class="fa-solid fa-sun"></i>
+                </button>
+                <a href="index.html" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </a>
+            </div>
         </header>
 
         <div class="glass-card p-4 mb-6">
             <div class="relative">
                 <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-white/20"></i>
-                <input type="text" id="inputBusca" onkeyup="filtrarHistorico()" placeholder="Buscar por OS (ex: #1), Cliente, CPF ou Serviço..." class="w-full p-4 pl-12 rounded-2xl search-input font-semibold">
+                <input type="text" id="inputBusca" onkeyup="filtrarHistorico()" placeholder="Buscar por OS (ex: #1), Cliente ou Serviço..." class="w-full p-4 pl-12 rounded-2xl search-input font-semibold">
             </div>
         </div>
 
@@ -54,15 +79,22 @@
     <script>
         const URL_DATABASE = "https://script.google.com/macros/s/AKfycbw2PmVAeC5bOAoG_j2IbRD6uU4QZcO5Tx1tuKpjQ-n-ihqeouLThMOZ_XK-xZTSQN8f5A/exec";
 
+        // Alternar Tema
+        function toggleTheme() {
+            const body = document.body;
+            const icon = document.getElementById('theme-icon');
+            body.classList.toggle('light-mode');
+            localStorage.setItem('theme', body.classList.contains('light-mode') ? 'light' : 'dark');
+            icon.className = body.classList.contains('light-mode') ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+        }
+
         async function carregarDados() {
             try {
                 const response = await fetch(URL_DATABASE, { redirect: "follow" });
                 const dados = await response.json();
                 
-                // Exibe apenas os últimos 10 (assume que os novos estão no final da lista)
-                // Usamos reverse() para que o mais recente apareça primeiro no topo
+                // Exibe últimos 10, do mais novo para o mais antigo
                 const ultimosDez = dados.slice(-10).reverse();
-                
                 renderizarCards(ultimosDez);
             } catch (error) {
                 console.error("Erro na requisição:", error);
@@ -79,26 +111,25 @@
             return hoje <= dataFim;
         }
 
+        // FUNÇÃO PARA EDITAR: Salva no localStorage e redireciona
+        function editarServico(dadosString) {
+            const dados = JSON.parse(decodeURIComponent(dadosString));
+            // Salva os dados para que a página de orçamento possa ler
+            localStorage.setItem('editar_os_dados', JSON.stringify(dados));
+            // Redireciona para sua página de criar orçamento (ajuste o nome do arquivo se necessário)
+            window.location.href = "orcamento.html"; 
+        }
+
         function renderizarCards(lista) {
             const container = document.getElementById('container-historico');
             container.innerHTML = "";
-
-            if (lista.erro) {
-                container.innerHTML = `<div class="text-center text-red-500 font-bold p-10">${lista.erro}</div>`;
-                return;
-            }
-
-            if (!Array.isArray(lista) || lista.length === 0) {
-                container.innerHTML = "<div class='text-center text-white/40 uppercase text-xs font-bold py-10'>Nenhum registro encontrado.</div>";
-                return;
-            }
 
             lista.forEach(os => {
                 const idOS = os["ID_OS"] || "---";
                 const cliente = os["CLIENTE"] || "Não identificado";
                 const endereco = os["ENDERECO"] || os["ENDEREÇO"] || "---"; 
                 const servicosTexto = os["TIPO_DE_SERVICO"] || os["TIPO_DE_SERVIÇO"] || ""; 
-                const valorTotal = os["VALOR_TOTAL"] || "---"; 
+                const valorTotal = os["VALOR_TOTAL"] || "0,00"; 
                 const dataGarantia = os["DATA_FIM_GARANTIA"] || "---"; 
 
                 const servicosArray = servicosTexto.toString().split('|');
@@ -113,15 +144,23 @@
                 const badgeClass = estaNaGarantia ? "em-garantia" : "fora-garantia";
                 const badgeText = estaNaGarantia ? "🟢 Em Garantia" : "🔴 Fora da Garantia";
 
+                // Prepara os dados para o botão de edição
+                const dadosParaEdicao = encodeURIComponent(JSON.stringify(os));
+
                 container.innerHTML += `
                     <div class="glass-card p-6 card-item">
-                        <div class="flex flex-col md:flex-row justify-between items-start mb-4 gap-2">
+                        <div class="flex justify-between items-start mb-4">
                             <div>
                                 <span class="text-[10px] font-black text-blue-500 uppercase tracking-widest">OS #${idOS}</span>
                                 <h2 class="text-lg font-bold nome-cliente leading-tight">${cliente}</h2>
                                 <p class="text-[10px] text-white/40 uppercase font-bold mt-1">${endereco}</p>
                             </div>
-                            <span class="status-badge ${badgeClass} whitespace-nowrap">${badgeText}</span>
+                            <div class="flex flex-col items-end gap-2">
+                                <span class="status-badge ${badgeClass}">${badgeText}</span>
+                                <button onclick="editarServico('${dadosParaEdicao}')" class="edit-btn" title="Editar Orçamento">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                            </div>
                         </div>
                         
                         <div class="bg-white/5 rounded-xl p-4 mb-4">
@@ -132,7 +171,7 @@
                         <div class="grid grid-cols-2 gap-4 text-[10px] font-bold uppercase">
                             <div>
                                 <span class="text-white/30 block mb-1">Valor Cobrado</span>
-                                <span class="text-blue-400 text-sm font-black">${valorTotal}</span>
+                                <span class="text-blue-400 text-sm font-black">R$ ${valorTotal}</span>
                             </div>
                             <div>
                                 <span class="text-white/30 block mb-1">Término da Garantia</span>
@@ -147,15 +186,16 @@
         function filtrarHistorico() {
             const termo = document.getElementById('inputBusca').value.toLowerCase();
             const cards = document.querySelectorAll('.card-item');
-            
             cards.forEach(card => {
-                // O card.innerText já inclui o "OS #1", o nome do cliente, etc.
                 const texto = card.innerText.toLowerCase();
                 card.style.display = texto.includes(termo) ? 'block' : 'none';
             });
         }
 
-        window.onload = carregarDados;
+        window.onload = () => {
+            if(localStorage.getItem('theme') === 'light') toggleTheme();
+            carregarDados();
+        };
     </script>
 </body>
 </html>
