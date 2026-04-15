@@ -52,22 +52,25 @@
     </div>
 
     <script>
-        const URL_DATABASE = "https://script.google.com/macros/s/AKfycbxCy5a1W2n6NXeyQYI-Ey3uGsoGRpQmYoWatTqf8A0VCR6_TbXpMh3q_CzYfQrn8hpZug/exec";
+        // COLE AQUI A NOVA URL QUE VOCÊ GEROU AO IMPLANTAR O SCRIPT
+        const URL_DATABASE = "https://script.google.com/macros/s/AKfycbyNTf1_jivrCDuGhY6g-VKQkzo_mZqzgjj29vYEkJU0hh2lzRBgd2vjL5HBr9BS5qqC2w/exec";
 
         async function carregarDados() {
             try {
-                const response = await fetch(URL_DATABASE);
+                // Adicionado redirect follow para lidar com o redirecionamento do Google
+                const response = await fetch(URL_DATABASE, { redirect: "follow" });
                 const dados = await response.json();
                 renderizarCards(dados);
             } catch (error) {
-                document.getElementById('container-historico').innerHTML = "Erro ao carregar dados. Verifique a conexão.";
+                console.error(error);
+                document.getElementById('container-historico').innerHTML = "Erro ao carregar dados. Verifique a URL e a conexão.";
             }
         }
 
         function verificarGarantia(dataFimGarantia) {
             if (!dataFimGarantia) return false;
             const hoje = new Date();
-            const partes = dataFimGarantia.split('/');
+            const partes = dataFimGarantia.toString().split('/');
             if (partes.length !== 3) return false;
             const dataFim = new Date(partes[2], partes[1] - 1, partes[0]);
             return hoje <= dataFim;
@@ -77,22 +80,25 @@
             const container = document.getElementById('container-historico');
             container.innerHTML = "";
 
+            if (lista.erro) {
+                container.innerHTML = `<div class="text-center text-red-500 font-bold p-10">${lista.erro}</div>`;
+                return;
+            }
+
             if (!Array.isArray(lista) || lista.length === 0) {
-                container.innerHTML = "<div class='text-center text-white/40'>Nenhum registro encontrado.</div>";
+                container.innerHTML = "<div class='text-center text-white/40 uppercase text-xs font-bold py-10'>Nenhum registro na planilha.</div>";
                 return;
             }
 
             lista.forEach(os => {
-                // Mapeamento exato baseado na sua imagem da planilha
-                const idOS = os["ID_OS"] || "N/A";
-                const cliente = os["CLIENTE"] || "Cliente não informado";
-                const endereco = os["ENDERECO"] || "Endereço não informado";
-                const servicosTexto = os["TIPO_DE_SERVICO"] || "";
-                const tecnico = os["TECNICO_RESPONSAVEL"] || "Não designado";
-                const dataFimGarantia = os["DATA_FIM_GARANTIA"] || "";
+                const idOS = os["ID_OS"] || "---";
+                const cliente = os["CLIENTE"] || "Não identificado";
+                const endereco = os["ENDERECO"] || "---"; 
+                const servicosTexto = os["TIPO_DE_SERVICO"] || ""; 
+                const tecnico = os["TECNICO_RESPONSAVEL"] || ""; 
+                const dataGarantia = os["DATA_FIM_GARANTIA"] || ""; 
 
-                // Formatação da lista de serviços (usando o separador |)
-                const servicosArray = servicosTexto.split('|');
+                const servicosArray = servicosTexto.toString().split('|');
                 let htmlServicos = "";
                 servicosArray.forEach(srv => {
                     if(srv.trim() !== "") {
@@ -100,7 +106,7 @@
                     }
                 });
 
-                const estaNaGarantia = verificarGarantia(dataFimGarantia);
+                const estaNaGarantia = verificarGarantia(dataGarantia);
                 const badgeClass = estaNaGarantia ? "em-garantia" : "fora-garantia";
                 const badgeText = estaNaGarantia ? "🟢 Em Garantia" : "🔴 Fora da Garantia";
 
@@ -117,7 +123,7 @@
                         
                         <div class="bg-white/5 rounded-xl p-4 mb-4">
                             <span class="text-[9px] font-black text-white/30 uppercase block mb-2">Serviços Executados:</span>
-                            ${htmlServicos || '<span class="text-xs text-white/20">Nenhum serviço listado</span>'}
+                            ${htmlServicos || '<div class="text-[10px] text-white/20 italic">Nenhum serviço registrado</div>'}
                         </div>
 
                         <div class="grid grid-cols-2 gap-4 text-[10px] font-bold uppercase">
@@ -127,7 +133,7 @@
                             </div>
                             <div>
                                 <span class="text-white/30 block">Fim da Garantia</span>
-                                <span class="${estaNaGarantia ? 'text-green-400' : 'text-red-400'}">${dataFimGarantia || '---'}</span>
+                                <span class="${estaNaGarantia ? 'text-green-400' : 'text-red-400'}">${dataGarantia}</span>
                             </div>
                         </div>
                     </div>
