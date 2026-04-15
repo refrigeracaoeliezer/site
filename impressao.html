@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=1024">   
+    <meta name="viewport" content="width=1024"> 
     <title>Orçamento Profissional</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -21,7 +21,7 @@
         }
 
         .paper-canvas {
-            background-color: #fff; width: 210mm; min-height: 297mm; padding: 15mm;
+            background-color: #fff; width: 210mm; min-height: 296mm; padding: 15mm; /* Ajustado para 296mm */
             display: flex; flex-direction: column; position: relative;
             box-shadow: 0 0 15px rgba(0,0,0,0.3); overflow: hidden; box-sizing: border-box;
         }
@@ -59,7 +59,7 @@
             width: 100%;
         }
 
-        footer { text-align: center; font-size: 11px; color: #777; border-top: 1px solid #eee; padding-top: 15px; width: 100%; }
+        footer { text-align: center; font-size: 11px; color: #777; border-top: 1px solid #eee; padding-top: 15px; width: 100%; margin-top: auto; }
 
         @media print { .no-print { display: none !important; } }
     </style>
@@ -197,10 +197,10 @@
             const element = document.getElementById('conteudo-pdf');
             const cliente = document.getElementById('view-cliente').innerText;
             const opt = {
-                margin: [10, 0, 10, 0],
+                margin: 0,
                 filename: `Orcamento_${cliente}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
+                html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
                 pagebreak: { mode: 'avoid-all' }
             };
