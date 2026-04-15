@@ -40,7 +40,7 @@
         <div class="glass-card p-4 mb-6">
             <div class="relative">
                 <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-white/20"></i>
-                <input type="text" id="inputBusca" onkeyup="filtrarHistorico()" placeholder="Buscar por cliente, CPF ou serviço..." class="w-full p-4 pl-12 rounded-2xl search-input font-semibold">
+                <input type="text" id="inputBusca" onkeyup="filtrarHistorico()" placeholder="Buscar por OS (ex: #1), Cliente, CPF ou Serviço..." class="w-full p-4 pl-12 rounded-2xl search-input font-semibold">
             </div>
         </div>
 
@@ -52,14 +52,18 @@
     </div>
 
     <script>
-        // LEMBRE-SE: Use a URL da "Nova Implantação" do Google Apps Script
         const URL_DATABASE = "https://script.google.com/macros/s/AKfycbw2PmVAeC5bOAoG_j2IbRD6uU4QZcO5Tx1tuKpjQ-n-ihqeouLThMOZ_XK-xZTSQN8f5A/exec";
 
         async function carregarDados() {
             try {
                 const response = await fetch(URL_DATABASE, { redirect: "follow" });
                 const dados = await response.json();
-                renderizarCards(dados);
+                
+                // Exibe apenas os últimos 10 (assume que os novos estão no final da lista)
+                // Usamos reverse() para que o mais recente apareça primeiro no topo
+                const ultimosDez = dados.slice(-10).reverse();
+                
+                renderizarCards(ultimosDez);
             } catch (error) {
                 console.error("Erro na requisição:", error);
                 document.getElementById('container-historico').innerHTML = "Erro ao conectar com a planilha.";
@@ -68,12 +72,9 @@
 
         function verificarGarantia(dataFimGarantia) {
             if (!dataFimGarantia || dataFimGarantia === "---") return false;
-            
             const hoje = new Date();
-            // Tenta converter DD/MM/YYYY
             const partes = dataFimGarantia.toString().split('/');
             if (partes.length !== 3) return false;
-            
             const dataFim = new Date(partes[2], partes[1] - 1, partes[0]);
             return hoje <= dataFim;
         }
@@ -88,20 +89,18 @@
             }
 
             if (!Array.isArray(lista) || lista.length === 0) {
-                container.innerHTML = "<div class='text-center text-white/40 uppercase text-xs font-bold py-10'>Nenhum registro encontrado na planilha.</div>";
+                container.innerHTML = "<div class='text-center text-white/40 uppercase text-xs font-bold py-10'>Nenhum registro encontrado.</div>";
                 return;
             }
 
             lista.forEach(os => {
-                // Mapeamento flexível (Maiúsculas e suporte a acentos/cedilha)
                 const idOS = os["ID_OS"] || "---";
                 const cliente = os["CLIENTE"] || "Não identificado";
                 const endereco = os["ENDERECO"] || os["ENDEREÇO"] || "---"; 
                 const servicosTexto = os["TIPO_DE_SERVICO"] || os["TIPO_DE_SERVIÇO"] || ""; 
-                const tecnico = os["TECNICO_RESPONSAVEL"] || os["TECNICO_RESPONSÁVEL"] || "---"; 
+                const valorTotal = os["VALOR_TOTAL"] || "---"; 
                 const dataGarantia = os["DATA_FIM_GARANTIA"] || "---"; 
 
-                // Processamento da lista de serviços (separados por |)
                 const servicosArray = servicosTexto.toString().split('|');
                 let htmlServicos = "";
                 servicosArray.forEach(srv => {
@@ -132,12 +131,12 @@
 
                         <div class="grid grid-cols-2 gap-4 text-[10px] font-bold uppercase">
                             <div>
-                                <span class="text-white/30 block mb-1">Técnico Responsável</span>
-                                <span class="text-white/80">${tecnico}</span>
+                                <span class="text-white/30 block mb-1">Valor Cobrado</span>
+                                <span class="text-blue-400 text-sm font-black">${valorTotal}</span>
                             </div>
                             <div>
                                 <span class="text-white/30 block mb-1">Término da Garantia</span>
-                                <span class="${estaNaGarantia ? 'text-green-400' : 'text-red-400'}">${dataGarantia}</span>
+                                <span class="${estaNaGarantia ? 'text-green-400' : 'text-red-400'} text-sm">${dataGarantia}</span>
                             </div>
                         </div>
                     </div>
@@ -148,13 +147,14 @@
         function filtrarHistorico() {
             const termo = document.getElementById('inputBusca').value.toLowerCase();
             const cards = document.querySelectorAll('.card-item');
+            
             cards.forEach(card => {
+                // O card.innerText já inclui o "OS #1", o nome do cliente, etc.
                 const texto = card.innerText.toLowerCase();
                 card.style.display = texto.includes(termo) ? 'block' : 'none';
             });
         }
 
-        // Inicia o carregamento ao abrir a página
         window.onload = carregarDados;
     </script>
 </body>
