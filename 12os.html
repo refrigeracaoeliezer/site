@@ -342,6 +342,14 @@
             } catch (e) { console.error("Erro na carga:", e); }
         }
 
+        // Função auxiliar para converter DD/MM/YYYY para YYYY-MM-DD (ISO)
+        function converterDataParaIso(dataBr) {
+            if (!dataBr || !dataBr.includes('/')) return "";
+            const partes = dataBr.split('/');
+            if(partes.length !== 3) return "";
+            return `${partes[2]}-${partes[1]}-${partes[0]}`;
+        }
+
         function verificarEdicao() {
             const dadosParaEditar = localStorage.getItem('editar_os_dados');
             if (dadosParaEditar) {
@@ -353,28 +361,29 @@
                 document.getElementById('telCliente').value = os.CPF || "";
                 document.getElementById('obsGeral').value = os.OBSERVACAO || "";
                 
-                // DATA INICIO E DATA FIM
+                // DATA INICIO (DATA_DO_SERVICO) E DATA VENC./FINAL (DATA_FIM_GARANTIA)
                 if(os.DATA_DO_SERVICO) {
-                    const partes = os.DATA_DO_SERVICO.split('/');
-                    if(partes.length === 3) document.getElementById('dataInicio').value = `${partes[2]}-${partes[1]}-${partes[0]}`;
+                    document.getElementById('dataInicio').value = converterDataParaIso(os.DATA_DO_SERVICO);
                 }
                 if(os.DATA_FIM_GARANTIA) {
-                    const partesFim = os.DATA_FIM_GARANTIA.split('/');
-                    if(partesFim.length === 3) document.getElementById('dataPrazoFinal').value = `${partesFim[2]}-${partesFim[1]}-${partesFim[0]}`;
+                    document.getElementById('dataPrazoFinal').value = converterDataParaIso(os.DATA_FIM_GARANTIA);
                 }
 
-                // CALCULO DE DIAS (GARANTIA_DIAS)
+                // CALCULO AUTOMATICO DE DIAS DE GARANTIA (GARANTIA_DIAS)
                 if(os.DATA_DO_SERVICO && os.DATA_FIM_GARANTIA) {
                     const d1 = new Date(document.getElementById('dataInicio').value + 'T00:00:00');
                     const d2 = new Date(document.getElementById('dataPrazoFinal').value + 'T00:00:00');
-                    const diffTime = Math.abs(d2 - d1);
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    document.getElementById('inputGarantia').value = diffDays;
+                    if(!isNaN(d1) && !isNaN(d2)) {
+                        const diffTime = Math.abs(d2 - d1);
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        document.getElementById('inputGarantia').value = diffDays;
+                    }
                 }
 
                 const container = document.getElementById('services-container');
                 container.innerHTML = "";
 
+                // SEPARAÇÃO INDIVIDUAL DE ITENS, QUANTIDADES E VALORES
                 const servicosTexto = os["TIPO_DE_SERVICO"] || os["TIPO_DE_SERVIÇO"] || "";
                 const valoresTexto = os["VALOR_TOTAL"] || "0,00";
                 
@@ -385,11 +394,13 @@
                     if (srvTexto.trim() !== "") {
                         let qtd = 1;
                         let nome = srvTexto.trim();
+                        // Extrai a quantidade do texto (ex: "1x ")
                         if (nome.includes('x ')) {
                             const partes = nome.split('x ');
                             qtd = parseInt(partes[0]) || 1;
                             nome = partes[1];
                         }
+                        // Pega o valor correspondente na lista de valores
                         const valorIndiv = listaValores[index] ? listaValores[index].trim() : "0,00";
                         adicionarServicoParaEdicao(nome, qtd, valorIndiv);
                     }
@@ -415,6 +426,7 @@
             ultimoCard.querySelector('.service-name').value = nome;
             ultimoCard.querySelector('.service-qty').innerText = qtd;
             const precoInput = ultimoCard.querySelector('.service-price');
+            // Remove R$ e limpa o texto antes de formatar para moeda
             precoInput.value = valorIndividual.replace("R$", "").trim();
             formatarMoeda(precoInput);
         }
@@ -576,7 +588,6 @@
             document.getElementById('btn-add-icon').className = modoOS ? "fa-solid fa-circle-plus mr-2 text-green-500" : "fa-solid fa-circle-plus mr-2 text-blue-500";
             if (modoOS) {
                 campoDataFinal.readOnly = false;
-                campoDataFinal.value = new Date().toISOString().split('T')[0];
             } else {
                 campoDataFinal.readOnly = true;
                 calcularDataFinal();
