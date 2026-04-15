@@ -83,11 +83,15 @@
             margin-top: 30px;
             text-align: center;
             align-self: center;
-            width: 300px;
+            width: 450px; /* Aumentado para comportar nomes longos em uma linha */
         }
         .linha-assinatura {
             border-top: 1px solid #333;
             margin-bottom: 5px;
+        }
+        /* Força o nome a ficar em uma única linha */
+        #nome-assinatura-cliente {
+            white-space: nowrap;
         }
 
         @media print { .no-print { display: none !important; } }
@@ -160,8 +164,8 @@
 
         <div id="campo-assinatura" class="assinatura-cliente">
             <div class="linha-assinatura"></div>
+            <p style="font-size: 14px; font-weight: bold; text-transform: uppercase;" id="nome-assinatura-cliente"></p>
             <p><strong>Assinatura do Cliente</strong></p>
-            <p style="font-size: 12px; font-weight: bold; text-transform: uppercase;" id="nome-assinatura-cliente"></p>
         </div>
 
         <footer>
