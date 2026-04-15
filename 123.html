@@ -124,32 +124,11 @@
         .search-input { background: transparent; border: none; color: inherit; width: 100%; outline: none; display: none; }
         .is-searching .search-input { display: block; }
 
-        /* AJUSTE DE VISIBILIDADE DAS FRASES - CORREÇÃO CIRÚRGICA */
+        /* AJUSTE DE VISIBILIDADE DAS FRASES */
         .selected-text {
             color: var(--text-main) !important;
             opacity: 1 !important;
-            display: block; 
-            overflow: hidden; 
-            text-overflow: ellipsis; 
-            white-space: nowrap;
-            width: 100%; /* Fixa a largura para não expandir com o conteúdo */
-            max-width: calc(100vw - 120px); /* Garante que o texto nunca empurre a tela */
         }
-
-        #btn-ia {
-            position: absolute;
-            right: 12px;
-            bottom: 12px;
-            background: rgba(59, 130, 246, 0.1);
-            color: #3b82f6;
-            padding: 8px 12px;
-            border-radius: 12px;
-            border: 1px solid rgba(59, 130, 246, 0.2);
-            transition: 0.3s;
-            cursor: pointer;
-        }
-        #btn-ia:hover { background: #3b82f6; color: white; }
-        #btn-ia:disabled { opacity: 0.5; cursor: not-allowed; }
         
     </style>
 </head>
@@ -286,9 +265,6 @@
                 <div class="space-y-2 pt-2">
                     <div class="relative">
                         <textarea id="obsGeral" placeholder="Escreva os detalhes técnicos aqui..." class="w-full p-4 rounded-2xl dark-input text-sm outline-none" oninput="autoExpandir(this)"></textarea>
-                        <button onclick="gerarObsIA()" id="btn-ia" title="Reformular com IA">
-                            <i class="fa-solid fa-wand-magic-sparkles"></i>
-                        </button>
                     </div>
                 </div>
 
@@ -314,22 +290,6 @@
 
     <script>
         const URL_DATABASE = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec"; 
-        
-        // --- POOL DE CHAVES DE API FORNECIDAS ---
-        const API_KEYS_POOL = [
-            'AIzaSyAh0vqF1zYYewQVOwwNSvG35m_hshON4Ms', 
-            'AIzaSyCmFRTIyldqUob5_OtvviGUwLX_uR0j10M',
-            '',
-            '',
-            '',
-            '',
-            '',
-        ];
-
-        function getRandomKey() {
-            return API_KEYS_POOL[Math.floor(Math.random() * API_KEYS_POOL.length)];
-        }
-
         let cacheDados = [];
         let modoOS = false;
         let saldoQuitado = false;
@@ -461,7 +421,7 @@
             const opcoes = gerarHtmlServicos();
             div.innerHTML = `
                 <div class="flex items-center gap-2">
-                    <div class="relative flex-grow custom-dropdown">
+                    <div class="relative flex-grow custom-dropdown" style="min-width: 0; overflow: hidden;">
                         <div class="w-full dark-input p-4 rounded-2xl text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
                              <span class="selected-text truncate">Selecionar Serviço</span>
                             <input type="text" class="search-input" placeholder="Selecionar Serviço" oninput="filtrarDropdown(this, 'servico')" onclick="event.stopPropagation()">
@@ -470,14 +430,14 @@
                         <ul class="dropdown-list">${opcoes}</ul>
                         <input type="hidden" class="service-name">
                     </div>
-                    <button onclick="this.closest('.service-card').remove(); atualizarSoma();" class="text-red-500 p-2 opacity-80"><i class="fa-solid fa-trash-can"></i></button>
+                    <button onclick="this.closest('.service-card').remove(); atualizarSoma();" class="text-red-500 p-2 opacity-80 flex-shrink-0"><i class="fa-solid fa-trash-can"></i></button>
                 </div>
                 <div class="flex items-center gap-2">
                     <div class="flex-grow relative">
                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 font-bold text-xs">R$</span>
                         <input type="text" placeholder="0,00" class="w-full dark-input pl-9 p-3 rounded-xl text-sm service-price" onkeyup="formatarMoeda(this)">
                     </div>
-                    <div class="flex items-center bg-white/5 border border-white/5 rounded-xl p-1 gap-3">
+                    <div class="flex items-center bg-white/5 border border-white/5 rounded-xl p-1 gap-3 flex-shrink-0">
                         <button onclick="alterarQtde(this, -1)" class="qty-btn"><i class="fa-solid fa-minus text-[10px]"></i></button>
                         <span class="font-bold text-sm service-qty w-4 text-center">1</span>
                         <button onclick="alterarQtde(this, 1)" class="qty-btn"><i class="fa-solid fa-plus text-[10px]"></i></button>
@@ -553,50 +513,6 @@
             gerarDocumento();
         }
 
-        async function gerarObsIA() {
-            const btn = document.getElementById('btn-ia');
-            const textarea = document.getElementById('obsGeral');
-            let servicos = [];
-            
-            document.querySelectorAll('.service-card').forEach(card => {
-                const nome = card.querySelector('.selected-text').innerText;
-                if(nome !== "Selecionar Serviço") servicos.push(nome);
-            });
-
-            if (servicos.length === 0) return alert("Adicione ao menos um serviço para a IA analisar.");
-
-            const iconOriginal = btn.innerHTML;
-            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
-            btn.disabled = true;
-
-            try {
-                const key = getRandomKey();
-                const tipoDoc = modoOS ? "Ordem de Serviço Concluída" : "Orçamento Técnico";
-                const prompt = `Você é um técnico de refrigeração experiente. Escreva uma observação técnica profissional e curta (máximo 4 linhas) para um ${tipoDoc}. Os serviços realizados foram: ${servicos.join(", ")}. Foco em eficiência e confiança.`;
-
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }]
-                    })
-                });
-
-                const data = await response.json();
-                if (data.candidates && data.candidates[0].content.parts[0].text) {
-                    textarea.value = data.candidates[0].content.parts[0].text.trim();
-                    autoExpandir(textarea);
-                } else {
-                    throw new Error();
-                }
-            } catch (e) {
-                alert("Erro ao conectar com a IA. Tente novamente.");
-            } finally {
-                btn.innerHTML = iconOriginal;
-                btn.disabled = false;
-            }
-        }
-
         function gerarDocumento() {
             const prestador = document.getElementById('nomePrestador').value || "ELIEZER";
             const cliente = document.getElementById('nomeCliente').value || "Cliente";
@@ -617,7 +533,7 @@
             const saldo = (totalNum * 0.7).toLocaleString('pt-BR', {minimumFractionDigits: 2});
             document.getElementById('txt-proposta').innerText = `*ORÇAMENTO TÉCNICO - ${prestador.toUpperCase()}*\n\nOlá ${cliente}! Segue o orçamento:\n\n*SERVIÇOS:*\n${servicosTexto}\n*OBS:*\n${obs}\n\n*INVESTIMENTO TOTAL:* R$ ${total}\n(Material + Mão de Obra incluso)\n\n*${modoOS ? 'Garantia' : 'Vencimento'}:* ${dias} dias\n*Data Prevista:* ${dataFim}\n\nFicaremos no aguardo.`;
             document.getElementById('txt-sinal').innerText = `*Confirmação de Agendamento*\n\nOlá, ${cliente}, tudo bem?\n\nPara formalizarmos o seu atendimento e garantirmos a reserva dos materiais e da sua data em nossa agenda, solicitamos o pagamento da entrada:\n\n💰 *Valor da Entrada (30%):* R$ ${sinal}\n🔑 *Chave PIX:* ${chavePix}\n\nAssim que realizar a transferência, por favor, nos envie o comprovante para validarmos o agendamento. 🗓️\n\nFicamos à disposição para qualquer dúvida!`;
-            
+           
            document.getElementById('txt-conclusao').innerText = `*Finalização de Serviço* ❄️\n\nOlá, ${cliente}, tudo bem?\n\nInformamos que o serviço em seu equipamento foi concluído com sucesso! ✅ Realizamos todos os testes técnicos e o sistema já está operando em perfeitas condições.\n\n💳 *Status de Pagamento:* ${saldoQuitado ? "Saldo Quitado" : `Saldo de R$ ${saldo}`}\n🛡️ *Garantia:* Você tem *${dias} dias* de garantia total sobre o serviço executado.\n\nAgradecemos a confiança em nosso trabalho! Qualquer dúvida, estamos à disposição.\n\nAtenciosamente,\n*${prestador}*`;
             
             document.getElementById('modal-mensagens').style.display = 'block';
