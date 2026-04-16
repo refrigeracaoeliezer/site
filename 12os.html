@@ -255,7 +255,7 @@
         </main>
     </div>
 
-    <script>
+<script>
 // URLs de Conexão
 const URL_DATABASE = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec"; 
 
@@ -279,11 +279,17 @@ function autoExpandir(textarea) {
     textarea.style.height = textarea.scrollHeight + 'px';
 }
 
+// AJUSTE: Cálculo automático apenas no modo Orçamento
 function calcularDataFinal() {
     if (localStorage.getItem('lock_dates') === 'true') return;
+    
+    // Se for Ordem de Serviço, as datas são independentes (manuais)
+    if (modoOS) return;
+
     const dataInicioVal = document.getElementById('dataInicio').value;
     const diasPrazo = parseInt(document.getElementById('inputGarantia').value) || 0;
     const campoDataFinal = document.getElementById('dataPrazoFinal');
+    
     if (dataInicioVal) {
         let data = new Date(dataInicioVal + 'T00:00:00');
         data.setDate(data.getDate() + diasPrazo);
@@ -465,14 +471,12 @@ function gerarDocumento() {
     const sinal = (totalNum * 0.3).toLocaleString('pt-BR', {minimumFractionDigits: 2});
     const saldo = (totalNum * 0.7).toLocaleString('pt-BR', {minimumFractionDigits: 2});
 
-    // Preenche as caixas de texto do Modal
     document.getElementById('txt-proposta').innerText = `*ORÇAMENTO TÉCNICO - ${prestador.toUpperCase()}*\n\nOlá ${cliente}! Segue o orçamento:\n\n*SERVIÇOS:*\n${servicosTexto}\n*OBS:*\n${obs}\n\n*INVESTIMENTO TOTAL:* R$ ${total}\n(Material + Mão de Obra incluso)\n\n*${modoOS ? 'Garantia' : 'Vencimento'}:* ${dias} dias\n*Data Prevista:* ${dataFim}\n\nFicaremos no aguardo.`;
     
     document.getElementById('txt-sinal').innerText = `*Confirmação de Agendamento*\n\nOlá, ${cliente}, tudo bem?\n\nPara formalizarmos o seu atendimento e garantirmos a reserva dos materiais e da sua data em nossa agenda, solicitamos o pagamento da entrada:\n\n💰 *Valor da Entrada (30%):* R$ ${sinal}\n🔑 *Chave PIX:* ${chavePix}\n\nAssim que realizar a transferência, por favor, nos envie o comprovante para validarmos o agendamento. 🗓️\n\nFicamos à disposição para qualquer dúvida!`;
     
     document.getElementById('txt-conclusao').innerText = `*Finalização de Serviço* ❄️\n\nOlá, ${cliente}, tudo bem?\n\nInformamos que o serviço em seu equipamento foi concluído com sucesso! ✅ Realizamos todos os testes técnicos e o sistema já está operando em perfeitas condições.\n\n💳 *Status de Pagamento:* ${saldoQuitado ? "Saldo Quitado" : `Saldo de R$ ${saldo}`}\n🛡️ *Garantia:* Você tem *${dias} dias* de garantia total sobre o serviço executado.\n\nAgradecemos a confiança em nosso trabalho! Qualquer dúvida, estamos à disposição.\n\nAtenciosamente,\n*${prestador}*`;
     
-    // Abre o Modal
     document.getElementById('modal-mensagens').style.display = 'block';
     document.body.style.overflow = 'hidden';
 }
@@ -517,13 +521,26 @@ function baixarPDF() {
 
 // --- LÓGICA DE EDIÇÃO E MODOS ---
 
+// AJUSTE: Alternância de controle das datas
 function alternarModo() {
     modoOS = !modoOS;
+    const campoDataFinal = document.getElementById('dataPrazoFinal');
+    
     document.getElementById('toggleMode').classList.toggle('mode-os');
     document.getElementById('card-principal').classList.toggle('is-os');
     document.getElementById('sub-title').innerText = modoOS ? "Ordem de Serviço (OS)" : "Sistema de Orçamento";
     document.getElementById('btn-acao').innerHTML = modoOS ? 'Finalizar O.S <i class="fa-solid fa-check"></i>' : 'Gerar Orçamento <i class="fa-solid fa-arrow-right"></i>';
     document.getElementById('label-prazo').innerText = modoOS ? "Garantia" : "Vencimento";
+
+    if (modoOS) {
+        // Na OS as datas são independentes (manuais)
+        campoDataFinal.readOnly = false;
+    } else {
+        // No Orçamento a data final é travada e automática
+        campoDataFinal.readOnly = true;
+        calcularDataFinal();
+    }
+    
     aplicarTextoPadrao();
 }
 
@@ -607,6 +624,6 @@ window.onload = async () => {
 };
 
 window.addEventListener('click', e => { if (!e.target.closest('.custom-dropdown')) fecharTodosDropdowns(); });
-    </script>
+</script>
 </body>
 </html>
