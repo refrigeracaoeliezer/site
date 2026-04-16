@@ -269,46 +269,60 @@
     // para que a função baixarPDF() consiga ler o ID correto.
     localStorage.setItem('dados_impressao', JSON.stringify(dadosLocal));
 }
-    async function baixarPDF() {
-        const dados = JSON.parse(localStorage.getItem('dados_impressao'));
-        if (!dados) return;
+async function baixarPDF() {
+    const dados = JSON.parse(localStorage.getItem('dados_impressao'));
+    if (!dados) return;
 
-        const servicosTexto = dados.itens.map(i => `${i.qtd}x ${i.descricao}`).join(' | ');
-        const valoresTexto = dados.itens.map(i => i.valor).join(' | ');
-        const idLimpo = document.getElementById('num-random').innerText.split(' ')[0].toString().padStart(3, '0');
+    // 1. Preparamos os textos de serviços e valores
+    const servicosTexto = dados.itens.map(i => `${i.qtd}x ${i.descricao}`).join(' | ');
+    const valoresTexto = dados.itens.map(i => i.valor).join(' | ');
 
-        const formData = new URLSearchParams();
-        formData.append('ID_OS', idLimpo);
-        formData.append('CLIENTE', dados.cliente);
-        formData.append('ENDERECO', dados.endereco);
-        formData.append('CPF', dados.cpf);
-        formData.append('DATA_DO_SERVICO', dados.emissao);
-        formData.append('TIPO_DE_SERVICO', servicosTexto);
-        formData.append('TECNICO_RESPONSVEL', document.getElementById('view-resp-tecnico').innerText);
-        formData.append('VALOR_TOTAL', valoresTexto);
-        formData.append('GARANTIA_DIAS', dados.emissao);
-        formData.append('DATA_FIM_GARANTIA', dados.validade);
-        formData.append('OSERVACAO', dados.obs);
-        formData.append('DIA', dados.garantia);
+    // 2. LÓGICA CRUCIAL: Decidir qual ID enviar
+    // Se dados.id_os for "---", vazio ou não existir, enviamos vazio "" 
+    // para que o Apps Script gere o próximo número sequencial.
+    let idParaEnviar = (dados.id_os && dados.id_os !== "---" && dados.id_os !== "") ? dados.id_os : "";
+    
+    // Pegamos o ID que está na tela apenas para o nome do arquivo PDF
+    const idNomeArquivo = document.getElementById('num-random').innerText.split(' ')[0];
 
-        try {
-            await fetch(URL_SALVAR, { 
-                method: 'POST', 
-                mode: 'no-cors', 
-                body: formData 
-            });
-        } catch (e) { console.error("Erro ao salvar na planilha:", e); }
+    const formData = new URLSearchParams();
+    formData.append('ID_OS', idParaEnviar); // Enviamos vazio para novo ou o número real para edição
+    formData.append('CLIENTE', dados.cliente);
+    formData.append('ENDERECO', dados.endereco);
+    formData.append('CPF', dados.cpf);
+    formData.append('DATA_DO_SERVICO', dados.emissao);
+    formData.append('TIPO_DE_SERVICO', servicosTexto);
+    formData.append('TECNICO_RESPONSVEL', document.getElementById('view-resp-tecnico').innerText);
+    formData.append('VALOR_TOTAL', dados.total || "0,00");
+    formData.append('GARANTIA_DIAS', dados.garantia || "30");
+    formData.append('DATA_FIM_GARANTIA', dados.validade);
+    formData.append('OSERVACAO', dados.obs);
+    formData.append('DIA', dados.garantia);
 
-        const element = document.getElementById('conteudo-pdf');
-        const opt = {
-            margin: [0, 0, 0, 0],
-            filename: `${idLimpo}_OS_${dados.cliente}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-        html2pdf().set(opt).from(element).save();
+    try {
+        // Enviamos para a planilha
+        await fetch(URL_SALVAR, { 
+            method: 'POST', 
+            mode: 'no-cors', 
+            body: formData 
+        });
+        console.log("Dados enviados para processamento na planilha.");
+    } catch (e) { 
+        console.error("Erro ao salvar na planilha:", e); 
     }
+
+    // 3. Geração do PDF
+    const element = document.getElementById('conteudo-pdf');
+    const opt = {
+        margin: [0, 0, 0, 0],
+        filename: `${idNomeArquivo}_OS_${dados.cliente}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    
+    html2pdf().set(opt).from(element).save();
+}
 
     window.onload = carregarPagina;
 </script>
