@@ -181,43 +181,47 @@
         campo.style.display = (campo.style.display === "none" || campo.style.display === "") ? "block" : "none";
     }
 
-   async function carregarPagina() {
+  async function carregarPagina() {
     const dadosLocal = JSON.parse(localStorage.getItem('dados_impressao'));
     if (!dadosLocal) return;
+
+    // Primeiro limpamos o visual para evitar confusão
+    document.getElementById('num-random').innerText = "Carregando...";
 
     try {
         const resp = await fetch(URL_BUSCA);
         const cacheDados = await resp.json();
         
-        // --- LÓGICA DE NÚMERO SEQUENCIAL COM BUSCA DE FALTANTES (CORRIGIDA) ---
-        // Só gera um novo ID se a OS não tiver um ID_OS vindo do formulário ou se for uma OS nova (string vazia ou null)
+        // --- LÓGICA DE NÚMERO SEQUENCIAL ---
+        
+        // 1. Verificamos se é uma EDIÇÃO: 
+        // Se dadosLocal já tem um ID_OS válido (que não seja vazio ou traços)
         if (dadosLocal.id_os && dadosLocal.id_os !== "" && dadosLocal.id_os !== "---") {
-            document.getElementById('num-random').innerText = dadosLocal.id_os.toString().padStart(3, '0') + ' - OS';
-        } else {
-            // Extrai IDs, converte para número de forma segura e remove duplicados/inválidos
+            const idFixo = dadosLocal.id_os.toString().padStart(3, '0');
+            document.getElementById('num-random').innerText = idFixo + ' - OS';
+        } 
+        // 2. Se for uma NOVA OS:
+        else {
             const idsExistentes = cacheDados
-                .map(d => parseInt(String(d.ID_OS).replace(/\D/g, ''))) // Remove qualquer caractere não numérico antes de converter
+                .map(d => parseInt(String(d.ID_OS).replace(/\D/g, ''))) 
                 .filter(n => !isNaN(n))
                 .sort((a, b) => a - b);
 
             let proximoId = 1;
-            // Se a lista não estiver vazia, procura o primeiro buraco
-            if (idsExistentes.length > 0) {
-                for (let i = 0; i < idsExistentes.length; i++) {
-                    if (idsExistentes[i] === proximoId) {
-                        proximoId++;
-                    } else if (idsExistentes[i] > proximoId) {
-                        break; 
-                    }
+            for (let i = 0; i < idsExistentes.length; i++) {
+                if (idsExistentes[i] === proximoId) {
+                    proximoId++;
+                } else if (idsExistentes[i] > proximoId) {
+                    break; 
                 }
             }
             
-            const idFormatado = proximoId.toString().padStart(3, '0');
-            document.getElementById('num-random').innerText = idFormatado + ' - OS';
-            dadosLocal.id_os = idFormatado; // Atualiza o objeto para o POST salvar o número correto
+            const idGerado = proximoId.toString().padStart(3, '0');
+            document.getElementById('num-random').innerText = idGerado + ' - OS';
+            dadosLocal.id_os = idGerado; // Gravamos o novo ID no objeto
         }
 
-        // Preenche dados da empresa
+        // --- PREENCHIMENTO DOS DADOS DA EMPRESA ---
         const emp = cacheDados.find(d => d.emp_nome) || cacheDados[0];
         if (emp) {
             document.getElementById('emp-nome').innerText = emp.emp_nome || "---";
@@ -227,7 +231,7 @@
             document.getElementById('view-resp-tecnico').innerText = emp.emp_resp || "---";
         }
 
-        // Recuperação do CPF do cliente
+        // --- CPF E OUTROS DADOS ---
         let cpfFinal = dadosLocal.cpf || "---";
         if (cpfFinal === "---" || !cpfFinal) {
             const cliInfo = cacheDados.find(d => d.cli_nome === dadosLocal.cliente);
@@ -237,11 +241,12 @@
         dadosLocal.cpf = cpfFinal;
 
     } catch (e) { 
-        console.error("Erro ao carregar dados:", e); 
+        console.error("Erro ao buscar dados da planilha:", e);
+        // Fallback: se tudo falhar e for novo, assume 001
         if(!dadosLocal.id_os) document.getElementById('num-random').innerText = '001 - OS';
     }
 
-    // Preenchimento dos campos visuais
+    // --- PREENCHIMENTO VISUAL FINAL ---
     document.getElementById('view-cliente').innerText = dadosLocal.cliente || "---";
     document.getElementById('view-endereco').innerText = dadosLocal.endereco || "---";
     document.getElementById('view-data').innerText = dadosLocal.emissao || "---";
@@ -259,7 +264,9 @@
             corpo.innerHTML += `<tr><td>${i.descricao}</td><td style="text-align:center">${i.qtd}</td><td style="text-align:right">R$ ${vTotal}</td></tr>`;
         });
     }
-    // Salva de volta no localStorage para que o baixarPDF pegue o ID_OS gerado aqui
+
+    // MUITO IMPORTANTE: Salva o ID gerado de volta no LocalStorage
+    // para que a função baixarPDF() consiga ler o ID correto.
     localStorage.setItem('dados_impressao', JSON.stringify(dadosLocal));
 }
     async function baixarPDF() {
