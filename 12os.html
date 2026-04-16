@@ -2,8 +2,8 @@
 <html lang="pt-br">
 <head>
     <script>
-    if (localStorage.getItem("inforos_logado") !== "true") { 
-        window.location.replace("https://refrigeracaoeliezer.github.io/site/");
+    if (localStorage.getItem("inforos_logado") !== "true") {
+        window.location.replace("https://refrigeracaoeliezer.github.io/site/");  
     }
     </script>
 
@@ -57,7 +57,7 @@
 
         .glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-top: 4px solid #1e40af; border-radius: 30px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); transition: all 0.5s ease; }
 
-        .is-os { border-top-color: #10b981 !important; color: white !important; }
+        .is-os { border-top-color: #10b981 !important; }
         .is-os .text-blue-500, .is-os .text-blue-400, .is-os .section-header i, .is-os .section-header span { color: #10b981 !important; }
         .is-os .btn-primary { background: linear-gradient(135deg, #065f46 0%, #10b981 100%) !important; }
         .is-os .total-container { background: #065f46 !important; border-color: rgba(16, 185, 129, 0.3) !important; }
@@ -67,8 +67,22 @@
         .dark-input:focus { border-color: #3b82f6 !important; background: rgba(255, 255, 255, 0.08) !important; outline: none; }
         .is-os .dark-input:focus { border-color: #10b981 !important; }
 
-        .service-card { background: var(--card-sub); border-radius: 20px; padding: 15px; border: 1px solid var(--glass-border); display: flex; flex-direction: column; gap: 12px; }
-        .service-row-top { display: flex; align-items: center; gap: 10px; width: 100%; }
+        .service-card {
+            background: var(--card-sub);
+            border-radius: 20px;
+            padding: 15px;
+            border: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .service-row-top {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
         .qty-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: var(--input-bg); color: #3b82f6; transition: 0.2s; border: 1px solid rgba(59, 130, 246, 0.2); }
         .is-os .qty-btn { color: #10b981 !important; border-color: rgba(16, 185, 129, 0.2) !important; }
         
@@ -91,25 +105,43 @@
         .active-label { color: white !important; }
         .mode-os .switch-bg { left: 50%; background: #10b981; }
 
-        .dropdown-list { position: absolute; left: 0; right: 0; top: 110%; background: var(--dropdown-bg); border: 1px solid var(--glass-border); border-radius: 20px; z-index: 50; max-height: 250px; overflow-y: auto; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        .dropdown-item { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--glass-border); transition: 0.2s; cursor: pointer; }
-        .dropdown-item:hover { background: #1e40af; color: white; }
-        .is-os .dropdown-item:hover { background: #10b981; }
+        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.5); }
+        body:not(.light-mode) input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
 
-        .is-searching .selected-text { display: none; }
-        .search-input { background: transparent; border: none; color: inherit; width: 100%; outline: none; display: none; }
-        .is-searching .search-input { display: block; }
-        .selected-text { color: var(--text-main) !important; opacity: 1 !important; }
-
-        .total-container { background: var(--total-container-bg) !important; border: 1px solid rgba(255,255,255,0.1) !important; transition: all 0.4s ease; }
-        
         #modal-mensagens { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.95); backdrop-filter: blur(10px); z-index: 100; overflow-y: auto; display: none; padding: 20px; }
         body.light-mode #modal-mensagens { background: rgba(240, 242, 245, 0.98); color: #1a1f26; }
+        
+        .btn-copy-success { background-color: #3b82f6 !important; color: white !important; }
+
+        .theme-toggle { background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
         .modal-glass-container { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 25px; padding: 20px; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
         .text-preview-box { background: var(--modal-text-box); border-radius: 20px; padding: 15px; font-family: monospace; font-size: 13px; color: var(--modal-text-color); white-space: pre-wrap; word-break: break-all; margin: 15px 0; border: 1px solid var(--glass-border); }
         .btn-copy-custom { background: rgba(128,128,128,0.15); color: var(--text-main); border: 1px solid var(--glass-border); }
-        .btn-copy-success { background-color: #3b82f6 !important; color: white !important; }
-        .theme-toggle { background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+        .total-container { background: var(--total-container-bg) !important; border: 1px solid rgba(255,255,255,0.1) !important; transition: all 0.4s ease; }
+
+        .dropdown-list {
+            position: absolute; left: 0; right: 0; top: 110%;
+            background: var(--dropdown-bg); border: 1px solid var(--glass-border);
+            border-radius: 20px; z-index: 50; max-height: 250px; overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: none;
+        }
+        .dropdown-item { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--glass-border); transition: 0.2s; }
+        .dropdown-item:last-child { border-bottom: none; }
+        .dropdown-item:hover { background: #1e40af; color: white; cursor: pointer; }
+        .is-os .dropdown-item:hover { background: #10b981; }
+        .rotate-icon { transform: translateY(-50%) rotate(180deg) !important; }
+        
+        .is-searching .selected-text { display: none; }
+        .search-input { background: transparent; border: none; color: inherit; width: 100%; outline: none; display: none; }
+        .is-searching .search-input { display: block; }
+
+        .selected-text {
+            color: var(--text-main) !important;
+            opacity: 1 !important;
+        }
+        
     </style>
 </head>
 <body class="p-4 pb-10">
@@ -181,7 +213,9 @@
 
         <header class="flex justify-between items-center mb-8 pt-4">
             <div>
-                <h1 class="text-xl font-black tracking-tighter uppercase leading-none">REFRIGERAÇÃO <span class="text-blue-500" id="header-name">ELIEZER</span></h1>
+                <h1 class="text-xl font-black tracking-tighter uppercase leading-none">
+                    REFRIGERAÇÃO <span class="text-blue-500" id="header-name">ELIEZER</span>
+                </h1>
                 <span class="text-[10px] text-blue-400 font-bold uppercase tracking-widest" id="sub-title">Sistema de Orçamento</span>
             </div>
             <button onclick="toggleTheme()" class="theme-toggle">
@@ -197,6 +231,7 @@
                 </div>
                 <div class="space-y-3">
                     <input type="text" id="nomePrestador" placeholder="Sua Empresa" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
+                    
                     <div class="relative custom-dropdown" id="dropdown-cliente">
                         <div class="w-full p-4 rounded-2xl dark-input text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
                             <span class="selected-text truncate">Selecionar Cliente</span>
@@ -206,8 +241,10 @@
                         <ul id="lista-clientes-custom" class="dropdown-list"></ul>
                         <input type="hidden" id="nomeCliente">
                     </div>
+
                     <input type="text" id="enderecoCliente" placeholder="Endereço Completo" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
                     <input type="tel" id="telCliente" placeholder="WhatsApp" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
+                    
                     <div class="grid grid-cols-2 gap-2 pt-2">
                         <div class="space-y-1">
                             <label class="text-[9px] font-bold text-white/30 uppercase ml-2">Início</label>
@@ -218,9 +255,10 @@
                             <input type="date" id="dataPrazoFinal" class="w-full p-3 rounded-xl dark-input text-[11px] font-bold text-center" readonly>
                         </div>
                     </div>
+
                     <div class="relative pt-4">
                         <input type="number" id="inputGarantia" value="30" class="w-full p-4 rounded-2xl dark-input text-sm font-bold text-center" oninput="calcularDataFinal()">
-                        <span id="label-prazo" class="absolute -top-1 left-1/2 -translate-x-1/2 bg-blue-600 text-[8px] px-2 py-0.5 rounded text-white font-black uppercase shadow-lg">Vencimento</span>
+                        <span id="label-prazo" class="absolute -top-1 left-1/2 -translate-x-1/2 bg-blue-600 text-[8px] px-2 py-0.5 rounded text-white font-black tracking-widest uppercase shadow-lg">Vencimento</span>
                         <span class="absolute right-4 top-1/2 -translate-y-1/2 mt-2 text-[10px] text-white/20 font-black">DIAS</span>
                     </div>
                 </div>
@@ -232,12 +270,16 @@
                     <span>Serviços Realizados</span>
                 </div>
                 <div id="services-container" class="space-y-4"></div>
-                <button onclick="adicionarServico()" class="btn-add-item"><i id="btn-add-icon" class="fa-solid fa-circle-plus mr-2 text-blue-500"></i> ADICIONAR ITEM</button>
+                <button onclick="adicionarServico()" class="btn-add-item">
+                    <i id="btn-add-icon" class="fa-solid fa-circle-plus mr-2 text-blue-500"></i> ADICIONAR ITEM
+                </button>
+
                 <div class="space-y-2 pt-2">
                     <div class="relative">
                         <textarea id="obsGeral" placeholder="Escreva os detalhes técnicos aqui..." class="w-full p-4 rounded-2xl dark-input text-sm outline-none" oninput="autoExpandir(this)"></textarea>
                     </div>
                 </div>
+
                 <div id="sec-custos" class="space-y-4">
                     <div class="section-header">
                         <i class="fa-solid fa-calculator"></i>
@@ -250,19 +292,19 @@
                         </div>
                     </div>
                 </div>
-                <button onclick="gerarDocumento()" id="btn-acao" class="w-full btn-primary text-white py-5 rounded-2xl font-black text-base uppercase tracking-widest flex items-center justify-center gap-3">Gerar Orçamento <i class="fa-solid fa-arrow-right"></i></button>
+
+                <button onclick="gerarDocumento()" id="btn-acao" class="w-full btn-primary text-white py-5 rounded-2xl font-black text-base uppercase tracking-widest flex items-center justify-center gap-3">
+                    Gerar Orçamento <i class="fa-solid fa-arrow-right"></i>
+                </button>
             </div>
         </main>
     </div>
 
     <script>
-       // Localize onde está a URL_DATABASE e adicione a URL_CONFIG logo abaixo
-const URL_DATABASE = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec"; 
-const URL_CONFIG = "https://script.google.com/macros/s/AKfycbyUiAkd5D0HTIBdq3mlHQ0iVYeMfInplUJHwOhWgwfUn6aCnfIxCsJG_2_vjFTgY7Kc/exec";
+        const URL_DATABASE = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec"; 
         let cacheDados = [];
         let modoOS = false;
         let saldoQuitado = false;
-        let id_os_atual = ""; 
 
         function toggleTheme() {
             const body = document.body;
@@ -278,7 +320,7 @@ const URL_CONFIG = "https://script.google.com/macros/s/AKfycbyUiAkd5D0HTIBdq3mlH
         }
 
         function calcularDataFinal() {
-            if (modoOS && localStorage.getItem('lock_dates') === 'true') return;
+            if (modoOS) return;
             const dataInicioVal = document.getElementById('dataInicio').value;
             const diasPrazo = parseInt(document.getElementById('inputGarantia').value) || 0;
             const campoDataFinal = document.getElementById('dataPrazoFinal');
@@ -291,7 +333,7 @@ const URL_CONFIG = "https://script.google.com/macros/s/AKfycbyUiAkd5D0HTIBdq3mlH
 
         async function buscarDadosPlanilha() {
             try {
-                const resp = await fetch(URL_CONFIG);
+                const resp = await fetch(URL_DATABASE);
                 cacheDados = await resp.json();
                 renderizarDatalists();
                 aplicarTextoPadrao();
@@ -300,18 +342,109 @@ const URL_CONFIG = "https://script.google.com/macros/s/AKfycbyUiAkd5D0HTIBdq3mlH
             } catch (e) { console.error("Erro na carga:", e); }
         }
 
+        // Função auxiliar para converter DD/MM/YYYY para YYYY-MM-DD (ISO)
+        function converterDataParaIso(dataBr) {
+            if (!dataBr || !dataBr.includes('/')) return "";
+            const partes = dataBr.split('/');
+            if(partes.length !== 3) return "";
+            return `${partes[2]}-${partes[1]}-${partes[0]}`;
+        }
+
+        function verificarEdicao() {
+            const dadosParaEditar = localStorage.getItem('editar_os_dados');
+            if (dadosParaEditar) {
+                const os = JSON.parse(dadosParaEditar);
+                
+                document.getElementById('nomeCliente').value = os.CLIENTE || "";
+                document.querySelector('#dropdown-cliente .selected-text').innerText = os.CLIENTE || "Selecionar Cliente";
+                document.getElementById('enderecoCliente').value = os.ENDERECO || os.ENDEREÇO || "";
+                document.getElementById('telCliente').value = os.CPF || "";
+                document.getElementById('obsGeral').value = os.OBSERVACAO || "";
+                
+                // DATA INICIO (DATA_DO_SERVICO) E DATA VENC./FINAL (DATA_FIM_GARANTIA)
+                if(os.DATA_DO_SERVICO) {
+                    document.getElementById('dataInicio').value = converterDataParaIso(os.DATA_DO_SERVICO);
+                }
+                if(os.DATA_FIM_GARANTIA) {
+                    document.getElementById('dataPrazoFinal').value = converterDataParaIso(os.DATA_FIM_GARANTIA);
+                }
+
+                // CALCULO AUTOMATICO DE DIAS DE GARANTIA (GARANTIA_DIAS)
+                if(os.DATA_DO_SERVICO && os.DATA_FIM_GARANTIA) {
+                    const d1 = new Date(document.getElementById('dataInicio').value + 'T00:00:00');
+                    const d2 = new Date(document.getElementById('dataPrazoFinal').value + 'T00:00:00');
+                    if(!isNaN(d1) && !isNaN(d2)) {
+                        const diffTime = Math.abs(d2 - d1);
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        document.getElementById('inputGarantia').value = diffDays;
+                    }
+                }
+
+                const container = document.getElementById('services-container');
+                container.innerHTML = "";
+
+                // SEPARAÇÃO INDIVIDUAL DE ITENS, QUANTIDADES E VALORES
+                const servicosTexto = os["TIPO_DE_SERVICO"] || os["TIPO_DE_SERVIÇO"] || "";
+                const valoresTexto = os["VALOR_TOTAL"] || "0,00";
+                
+                const listaServicos = servicosTexto.split('|');
+                const listaValores = valoresTexto.split('|');
+
+                listaServicos.forEach((srvTexto, index) => {
+                    if (srvTexto.trim() !== "") {
+                        let qtd = 1;
+                        let nome = srvTexto.trim();
+                        // Extrai a quantidade do texto (ex: "1x ")
+                        if (nome.includes('x ')) {
+                            const partes = nome.split('x ');
+                            qtd = parseInt(partes[0]) || 1;
+                            nome = partes[1];
+                        }
+                        // Pega o valor correspondente na lista de valores
+                        const valorIndiv = listaValores[index] ? listaValores[index].trim() : "0,00";
+                        adicionarServicoParaEdicao(nome, qtd, valorIndiv);
+                    }
+                });
+
+                if (container.children.length === 0) adicionarServico();
+                if (os.ID_OS && !modoOS) alternarModo();
+
+                autoExpandir(document.getElementById('obsGeral'));
+                atualizarSoma();
+                localStorage.removeItem('editar_os_dados');
+            } else {
+                const container = document.getElementById('services-container');
+                if (container.children.length === 0) adicionarServico();
+            }
+        }
+
+        function adicionarServicoParaEdicao(nome, qtd, valorIndividual) {
+            adicionarServico();
+            const cards = document.querySelectorAll('.service-card');
+            const ultimoCard = cards[cards.length - 1];
+            ultimoCard.querySelector('.selected-text').innerText = nome;
+            ultimoCard.querySelector('.service-name').value = nome;
+            ultimoCard.querySelector('.service-qty').innerText = qtd;
+            const precoInput = ultimoCard.querySelector('.service-price');
+            // Remove R$ e limpa o texto antes de formatar para moeda
+            precoInput.value = valorIndividual.replace("R$", "").trim();
+            formatarMoeda(precoInput);
+        }
+
         function toggleDropdown(el) {
             const wrapper = el.parentElement;
             const list = el.nextElementSibling;
             const icon = el.querySelector('i');
             const searchInput = el.querySelector('.search-input');
             const isVisible = list.style.display === 'block';
+            
             document.querySelectorAll('.dropdown-list').forEach(l => l.style.display = 'none');
             document.querySelectorAll('.custom-dropdown i').forEach(i => i.classList.remove('rotate-icon'));
             document.querySelectorAll('.custom-dropdown').forEach(d => d.classList.remove('is-searching'));
+
             if (!isVisible) {
                 list.style.display = 'block';
-                if(icon) icon.classList.add('rotate-icon');
+                icon.classList.add('rotate-icon');
                 wrapper.classList.add('is-searching');
                 searchInput.focus();
                 searchInput.value = ''; 
@@ -324,7 +457,8 @@ const URL_CONFIG = "https://script.google.com/macros/s/AKfycbyUiAkd5D0HTIBdq3mlH
             const list = input.closest('.custom-dropdown').querySelector('.dropdown-list');
             const items = list.querySelectorAll('.dropdown-item');
             items.forEach(item => {
-                item.style.display = item.textContent.toLowerCase().includes(termo) ? 'block' : 'none';
+                const texto = item.textContent.toLowerCase();
+                item.style.display = texto.includes(termo) ? 'block' : 'none';
             });
         }
 
@@ -352,6 +486,7 @@ const URL_CONFIG = "https://script.google.com/macros/s/AKfycbyUiAkd5D0HTIBdq3mlH
 
         function fecharTodosDropdowns() {
             document.querySelectorAll('.dropdown-list').forEach(l => l.style.display = 'none');
+            document.querySelectorAll('.custom-dropdown i').forEach(i => i.classList.remove('rotate-icon'));
             document.querySelectorAll('.custom-dropdown').forEach(d => d.classList.remove('is-searching'));
         }
 
@@ -375,21 +510,24 @@ const URL_CONFIG = "https://script.google.com/macros/s/AKfycbyUiAkd5D0HTIBdq3mlH
             const container = document.getElementById('services-container');
             const div = document.createElement('div');
             div.className = "service-card";
+            const opcoes = gerarHtmlServicos();
+            
             div.innerHTML = `
                 <div class="service-row-top">
                     <div class="relative flex-grow custom-dropdown">
                         <div class="w-full dark-input p-4 rounded-2xl text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
                              <span class="selected-text truncate">Selecionar Serviço</span>
                             <input type="text" class="search-input" placeholder="Selecionar Serviço" oninput="filtrarDropdown(this, 'servico')" onclick="event.stopPropagation()">
-                            <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-[10px]"></i>
+                            <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-[10px] transition-transform duration-300"></i>
                         </div>
-                        <ul class="dropdown-list">${gerarHtmlServicos()}</ul>
+                        <ul class="dropdown-list">${opcoes}</ul>
                         <input type="hidden" class="service-name">
                     </div>
                     <button onclick="this.closest('.service-card').remove(); atualizarSoma();" class="text-red-500 hover:text-red-400 transition-colors">
                         <i class="fa-solid fa-trash-can text-lg"></i>
                     </button>
                 </div>
+
                 <div class="flex items-center gap-3">
                     <div class="flex-grow relative">
                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 font-bold text-xs">R$</span>
@@ -422,21 +560,41 @@ const URL_CONFIG = "https://script.google.com/macros/s/AKfycbyUiAkd5D0HTIBdq3mlH
             document.getElementById('totalFinal').value = total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
         }
 
+        function alterarQtde(btn, delta) {
+            const span = btn.parentElement.querySelector('.service-qty');
+            let val = Math.max(1, parseInt(span.innerText) + delta);
+            span.innerText = val;
+            atualizarSoma();
+        }
+
         function alternarModo() {
             modoOS = !modoOS;
             const card = document.getElementById('card-principal');
+            const subTitle = document.getElementById('sub-title');
+            const btnAcao = document.getElementById('btn-acao');
+            const lblPrazo = document.getElementById('label-prazo');
+            const campoDataFinal = document.getElementById('dataPrazoFinal');
             document.getElementById('toggleMode').classList.toggle('mode-os');
             card.classList.toggle('is-os');
             aplicarTextoPadrao();
-            document.getElementById('sub-title').innerText = modoOS ? "Ordem de Serviço (OS)" : "Sistema de Orçamento";
-            document.getElementById('btn-acao').innerHTML = modoOS ? 'Finalizar O.S <i class="fa-solid fa-check"></i>' : 'Gerar Orçamento <i class="fa-solid fa-arrow-right"></i>';
+            subTitle.innerText = modoOS ? "Ordem de Serviço (OS)" : "Sistema de Orçamento";
+            btnAcao.innerHTML = modoOS ? 'Finalizar O.S <i class="fa-solid fa-check"></i>' : 'Gerar Orçamento <i class="fa-solid fa-arrow-right"></i>';
             document.getElementById('label-dados').innerText = modoOS ? "Dados da Ordem de Serviço" : "Dados do Orçamento";
-            document.getElementById('label-prazo').innerText = modoOS ? "Garantia" : "Vencimento";
-            if (modoOS) { document.getElementById('dataPrazoFinal').readOnly = false; } else { document.getElementById('dataPrazoFinal').readOnly = true; calcularDataFinal(); }
+            lblPrazo.innerText = modoOS ? "Garantia" : "Vencimento";
+            lblPrazo.classList.toggle('bg-blue-600', !modoOS);
+            lblPrazo.classList.toggle('bg-green-600', modoOS);
+            document.getElementById('lbl-os').classList.toggle('active-label', modoOS);
+            document.getElementById('lbl-orc').classList.toggle('active-label', !modoOS);
+            document.getElementById('btn-add-icon').className = modoOS ? "fa-solid fa-circle-plus mr-2 text-green-500" : "fa-solid fa-circle-plus mr-2 text-blue-500";
+            if (modoOS) {
+                campoDataFinal.readOnly = false;
+            } else {
+                campoDataFinal.readOnly = true;
+                calcularDataFinal();
+            }
         }
 
         function aplicarTextoPadrao() {
-            if (localStorage.getItem('lock_dates') === 'true') return;
             const listaObs = cacheDados.map(d => d.txt_obs).filter(Boolean);
             document.getElementById('obsGeral').value = modoOS ? (listaObs[1] || "") : (listaObs[0] || "");
             autoExpandir(document.getElementById('obsGeral'));
@@ -470,22 +628,34 @@ const URL_CONFIG = "https://script.google.com/macros/s/AKfycbyUiAkd5D0HTIBdq3mlH
             const saldo = (totalNum * 0.7).toLocaleString('pt-BR', {minimumFractionDigits: 2});
             document.getElementById('txt-proposta').innerText = `*ORÇAMENTO TÉCNICO - ${prestador.toUpperCase()}*\n\nOlá ${cliente}! Segue o orçamento:\n\n*SERVIÇOS:*\n${servicosTexto}\n*OBS:*\n${obs}\n\n*INVESTIMENTO TOTAL:* R$ ${total}\n(Material + Mão de Obra incluso)\n\n*${modoOS ? 'Garantia' : 'Vencimento'}:* ${dias} dias\n*Data Prevista:* ${dataFim}\n\nFicaremos no aguardo.`;
             document.getElementById('txt-sinal').innerText = `*Confirmação de Agendamento*\n\nOlá, ${cliente}, tudo bem?\n\nPara formalizarmos o seu atendimento e garantirmos a reserva dos materiais e da sua data em nossa agenda, solicitamos o pagamento da entrada:\n\n💰 *Valor da Entrada (30%):* R$ ${sinal}\n🔑 *Chave PIX:* ${chavePix}\n\nAssim que realizar a transferência, por favor, nos envie o comprovante para validarmos o agendamento. 🗓️\n\nFicamos à disposição para qualquer dúvida!`;
-            document.getElementById('txt-conclusao').innerText = `*Finalização de Serviço* ❄️\n\nOlá, ${cliente}, tudo bem?\n\nInformamos que o serviço em seu equipamento foi concluído com sucesso! ✅ Realizamos todos os testes técnicos e o sistema já está operando em perfeitas condições.\n\n💳 *Status de Pagamento:* ${saldoQuitado ? "Saldo Quitado" : `Saldo de R$ ${saldo}`}\n🛡️ *Garantia:* Você tem *${dias} dias* de garantia total sobre o serviço executado.\n\nAgradecemos a confiança em nosso trabalho! Qualquer dúvida, estamos à disposição.\n\nAtenciosamente,\n*${prestador}*`;
+            
+           document.getElementById('txt-conclusao').innerText = `*Finalização de Serviço* ❄️\n\nOlá, ${cliente}, tudo bem?\n\nInformamos que o serviço em seu equipamento foi concluído com sucesso! ✅ Realizamos todos os testes técnicos e o sistema já está operando em perfeitas condições.\n\n💳 *Status de Pagamento:* ${saldoQuitado ? "Saldo Quitado" : `Saldo de R$ ${saldo}`}\n🛡️ *Garantia:* Você tem *${dias} dias* de garantia total sobre o serviço executado.\n\nAgradecemos a confiança em nosso trabalho! Qualquer dúvida, estamos à disposição.\n\nAtenciosamente,\n*${prestador}*`;
+            
             document.getElementById('modal-mensagens').style.display = 'block';
             document.body.style.overflow = 'hidden';
         }
 
         function fecharModal() { document.getElementById('modal-mensagens').style.display = 'none'; document.body.style.overflow = 'auto'; }
-        function enviarWpp(id) { const txt = document.getElementById(id).innerText; const tel = document.getElementById('telCliente').value.replace(/\D/g, ''); if(!tel) return alert("WhatsApp!"); window.open(`https://api.whatsapp.com/send?phone=55${tel}&text=${encodeURIComponent(txt)}`, '_blank'); }
-        function copiarTextoProfissional(id, el) { navigator.clipboard.writeText(document.getElementById(id).innerText).then(() => { const old = el.innerText; el.innerText = "COPIADO!"; el.classList.add('btn-copy-success'); setTimeout(() => { el.innerText = old; el.classList.remove('btn-copy-success'); }, 2000); }); }
         
+        function enviarWpp(id) {
+            const txt = document.getElementById(id).innerText;
+            const tel = document.getElementById('telCliente').value.replace(/\D/g, '');
+            if(!tel) return alert("WhatsApp!");
+            window.open(`https://api.whatsapp.com/send?phone=55${tel}&text=${encodeURIComponent(txt)}`, '_blank');
+        }
+
+        function copiarTextoProfissional(id, el) {
+            navigator.clipboard.writeText(document.getElementById(id).innerText).then(() => {
+                const old = el.innerText; el.innerText = "COPIADO!"; el.classList.add('btn-copy-success');
+                setTimeout(() => { el.innerText = old; el.classList.remove('btn-copy-success'); }, 2000);
+            });
+        }
+
         function baixarPDF() {
             const dados = {
                 tipo: modoOS ? "ORDEM DE SERVIÇO" : "ORÇAMENTO",
-                id_os: id_os_atual, 
                 cliente: document.getElementById('nomeCliente').value || "Cliente",
                 endereco: document.getElementById('enderecoCliente').value,
-                cpf: document.getElementById('telCliente').value, 
                 emissao: document.getElementById('dataInicio').value.split('-').reverse().join('/'),
                 validade: document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/'),
                 total: document.getElementById('totalFinal').value,
@@ -498,106 +668,22 @@ const URL_CONFIG = "https://script.google.com/macros/s/AKfycbyUiAkd5D0HTIBdq3mlH
                 }))
             };
             localStorage.setItem('dados_impressao', JSON.stringify(dados));
-            window.location.href = modoOS ? "imp.html" : "impressao.html";
+            window.location.href = modoOS ? "impressao_os.html" : "impressao.html";
         }
 
-        function verificarEdicao() {
-            const dadosParaEditar = localStorage.getItem('editar_os_dados');
-            if (dadosParaEditar) {
-                const os = JSON.parse(dadosParaEditar);
-                
-                localStorage.setItem('lock_dates', 'true');
+        window.onload = () => {
+            if(localStorage.getItem('theme') === 'light') toggleTheme();
+            const dataHoje = new Date().toISOString().split('T')[0];
+            document.getElementById('dataInicio').value = dataHoje;
+            document.getElementById('dataPrazoFinal').value = dataHoje;
+            buscarDadosPlanilha();
+        };
 
-                if (os.ID_OS && !modoOS) {
-                    alternarModo();
-                }
-
-                id_os_atual = os.ID_OS || ""; 
-                document.getElementById('nomeCliente').value = os.CLIENTE || "";
-                document.querySelector('#dropdown-cliente .selected-text').innerText = os.CLIENTE || "Selecionar Cliente";
-                document.getElementById('enderecoCliente').value = os.ENDERECO || "";
-                document.getElementById('telCliente').value = os.CPF || "";
-                
-                // DATA INÍCIO
-                if (os.DATA_DO_SERVICO) document.getElementById('dataInicio').value = converterDataParaIso(os.DATA_DO_SERVICO);
-                
-                // DATA FINAL
-                if (os.DATA_FIM_GARANTIA) document.getElementById('dataPrazoFinal').value = converterDataParaIso(os.DATA_FIM_GARANTIA);
-                
-                // DIAS DE GARANTIA (Preenche o campo numérico central)
-                if (os.GARANTIA_DIAS_CALCULADOS) { 
-                    document.getElementById('inputGarantia').value = os.GARANTIA_DIAS_CALCULADOS; 
-                }
-
-                setTimeout(() => {
-                    document.getElementById('obsGeral').value = os.OSERVACAO || os.OBSERVACAO || ""; 
-                    autoExpandir(document.getElementById('obsGeral'));
-                }, 500);
-
-                const container = document.getElementById('services-container');
-                container.innerHTML = "";
-                const listaServicos = (os["TIPO_DE_SERVICO"] || os["TIPO_DE_SERVIÇO"] || "").split('|');
-                const listaValores = (os["VALOR_TOTAL"] || "0,00").split('|');
-                
-                listaServicos.forEach((srvTexto, index) => {
-                    if (srvTexto.trim() !== "") {
-                        let qtd = 1, nome = srvTexto.trim();
-                        if (nome.includes('x ')) { const p = nome.split('x '); qtd = parseInt(p[0]) || 1; nome = p[1]; }
-                        let valorIndiv = listaValores[index] ? listaValores[index].trim() : "0,00";
-                        adicionarServicoParaEdicao(nome, qtd, valorIndiv);
-                    }
-                });
-
-                atualizarSoma();
-                localStorage.removeItem('editar_os_dados');
-            } else {
-                localStorage.removeItem('lock_dates');
-                if (document.getElementById('services-container').children.length === 0) adicionarServico();
+        window.addEventListener('click', e => {
+            if (!e.target.closest('.custom-dropdown')) {
+                fecharTodosDropdowns();
             }
-        }
-
-        function converterDataParaIso(dataBr) {
-            if (!dataBr) return "";
-            // Remove qualquer parte de hora (T03:00...) e divide por "/" ou "-"
-            let limpa = dataBr.toString().split('T')[0];
-            let partes = limpa.includes('/') ? limpa.split('/') : limpa.split('-');
-            
-            if (partes.length !== 3) return "";
-
-            // Se a primeira parte tiver 4 dígitos, já é ISO (YYYY-MM-DD)
-            if (partes[0].length === 4) return limpa;
-
-            // Se não, converte de DD/MM/YYYY para YYYY-MM-DD
-            return `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
-        }
-
-        function adicionarServicoParaEdicao(nome, qtd, valorIndividual) {
-            adicionarServico();
-            const cards = document.querySelectorAll('.service-card');
-            const ultimoCard = cards[cards.length - 1];
-            ultimoCard.querySelector('.selected-text').innerText = nome;
-            ultimoCard.querySelector('.service-name').value = nome;
-            ultimoCard.querySelector('.service-qty').innerText = qtd;
-            const precoInput = ultimoCard.querySelector('.service-price');
-            precoInput.value = valorIndividual.replace("R$", "").trim();
-            formatarMoeda(precoInput);
-        }
-window.onload = async () => {
-    if(localStorage.getItem('theme') === 'light') toggleTheme();
-    
-    // Define datas padrão
-    const dataHoje = new Date().toISOString().split('T')[0];
-    document.getElementById('dataInicio').value = dataHoje;
-    document.getElementById('dataPrazoFinal').value = dataHoje;
-
-    // Primeiro busca os dados da planilha (clientes/serviços)
-    await buscarDadosPlanilha(); 
-    
-    // SOMENTE DEPOIS verifica se há dados vindos da primeira página para editar
-    verificarEdicao();
-};
-
-        window.addEventListener('click', e => { if (!e.target.closest('.custom-dropdown')) fecharTodosDropdowns(); });
+        });
     </script>
 </body>
 </html>
