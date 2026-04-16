@@ -139,6 +139,19 @@
             }
         }
 
+        function formatarDataBR(dataPlanilha) {
+            if (!dataPlanilha || dataPlanilha === "---") return "---";
+            
+            // Se a data vier como esse texto longo do Google (ISO String)
+            if (dataPlanilha.toString().includes('T')) {
+                const d = new Date(dataPlanilha);
+                return d.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+            }
+            
+            // Se já vier formatada, apenas retorna ela
+            return dataPlanilha;
+        }
+
         function renderizarCards(lista) {
             const container = document.getElementById('container-historico');
             container.innerHTML = "";
@@ -149,7 +162,9 @@
                 const endereco = os["ENDERECO"] || os["ENDEREÇO"] || "---"; 
                 const servicosTexto = os["TIPO_DE_SERVICO"] || os["TIPO_DE_SERVIÇO"] || ""; 
                 const valorTotal = os["VALOR_TOTAL"] || "0,00"; 
-                const dataGarantia = os["DATA_FIM_GARANTIA"] || "---"; 
+                
+                // AQUI ESTÁ A CORREÇÃO: Chamando a função para limpar a data
+                const dataGarantia = formatarDataBR(os["DATA_FIM_GARANTIA"]); 
 
                 const servicosArray = servicosTexto.toString().split('|');
                 let htmlServicos = "";
@@ -205,20 +220,6 @@
                 `;
             });
         }
-
-        function filtrarHistorico() {
-            const termo = document.getElementById('inputBusca').value.toLowerCase();
-            const cards = document.querySelectorAll('.card-item');
-            cards.forEach(card => {
-                const texto = card.innerText.toLowerCase();
-                card.style.display = texto.includes(termo) ? 'block' : 'none';
-            });
-        }
-
-        window.onload = () => {
-            if(localStorage.getItem('theme') === 'light') toggleTheme();
-            carregarDados();
-        };
     </script>
 </body>
 </html>
