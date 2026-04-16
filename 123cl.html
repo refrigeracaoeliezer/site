@@ -43,7 +43,6 @@
         .edit-btn { background: #3b82f6; color: white; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
         .edit-btn:hover { transform: scale(1.1); background: #2563eb; }
 
-        /* Estilo do botão excluir */
         .delete-btn { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
         .delete-btn:hover { background: #ef4444; color: white; transform: scale(1.1); }
     </style>
@@ -112,60 +111,55 @@
             return hoje <= dataFim;
         }
 
+        // Função para calcular a diferença de dias entre duas datas (DD/MM/YYYY)
+        function calcularDiasGarantia(inicio, fim) {
+            if (!inicio || !fim || inicio === "---" || fim === "---") return 30;
+            const conv = (s) => { const p = s.split('/'); return new Date(p[2], p[1] - 1, p[0]); };
+            const d1 = conv(inicio);
+            const d2 = conv(fim);
+            const diff = Math.abs(d2 - d1);
+            return Math.ceil(diff / (1000 * 60 * 60 * 24));
+        }
+
         function editarServico(dadosString) {
-            const dados = JSON.parse(decodeURIComponent(dadosString));
-            localStorage.setItem('editar_os_dados', JSON.stringify(dados));
+            const os = JSON.parse(decodeURIComponent(dadosString));
+            const diasCalculados = calcularDiasGarantia(os["DATA_DO_SERVICO"], os["DATA_FIM_GARANTIA"]);
+            const pacoteCompleto = { ...os, "GARANTIA_DIAS_CALCULADOS": diasCalculados };
+            localStorage.setItem('editar_os_dados', JSON.stringify(pacoteCompleto));
             window.location.href = "12os.html"; 
         }
 
-        // Nova função para excluir OS
         async function excluirOS(id) {
             if (!confirm(`Tem certeza que deseja excluir a OS #${id}?`)) return;
-            
             try {
-                // Envia comando de exclusão via parâmetro para o Apps Script
                 const response = await fetch(`${URL_DATABASE}?deleteID=${id}`, { redirect: "follow" });
                 const res = await response.json();
-                
                 if (res.status === "success") {
                     alert("Excluído com sucesso!");
-                    carregarDados(); // Recarrega a lista
-                } else {
-                    alert("Erro ao excluir na planilha.");
-                }
-            } catch (error) {
-                console.error("Erro:", error);
-                alert("Erro de conexão ao tentar excluir.");
-            }
+                    carregarDados();
+                } else { alert("Erro ao excluir na planilha."); }
+            } catch (error) { alert("Erro de conexão ao tentar excluir."); }
         }
 
         function formatarDataBR(dataPlanilha) {
             if (!dataPlanilha || dataPlanilha === "---") return "---";
-            
-            // Se a data vier como esse texto longo do Google (ISO String)
             if (dataPlanilha.toString().includes('T')) {
                 const d = new Date(dataPlanilha);
                 return d.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
             }
-            
-            // Se já vier formatada, apenas retorna ela
             return dataPlanilha;
         }
 
         function renderizarCards(lista) {
             const container = document.getElementById('container-historico');
             container.innerHTML = "";
-
             lista.forEach(os => {
                 const idOS = os["ID_OS"] || "---";
                 const cliente = os["CLIENTE"] || "Não identificado";
                 const endereco = os["ENDERECO"] || os["ENDEREÇO"] || "---"; 
                 const servicosTexto = os["TIPO_DE_SERVICO"] || os["TIPO_DE_SERVIÇO"] || ""; 
                 const valorTotal = os["VALOR_TOTAL"] || "0,00"; 
-                
-                // AQUI ESTÁ A CORREÇÃO: Chamando a função para limpar a data
                 const dataGarantia = formatarDataBR(os["DATA_FIM_GARANTIA"]); 
-
                 const servicosArray = servicosTexto.toString().split('|');
                 let htmlServicos = "";
                 servicosArray.forEach(srv => {
@@ -173,13 +167,10 @@
                         htmlServicos += `<div class="item-servico text-xs text-white/70 italic">${srv.trim()}</div>`;
                     }
                 });
-
                 const estaNaGarantia = verificarGarantia(dataGarantia);
                 const badgeClass = estaNaGarantia ? "em-garantia" : "fora-garantia";
                 const badgeText = estaNaGarantia ? "🟢 Em Garantia" : "🔴 Fora da Garantia";
-
                 const dadosParaEdicao = encodeURIComponent(JSON.stringify(os));
-
                 container.innerHTML += `
                     <div class="glass-card p-6 card-item">
                         <div class="flex justify-between items-start mb-4">
@@ -200,12 +191,10 @@
                                 </div>
                             </div>
                         </div>
-                        
                         <div class="bg-white/5 rounded-xl p-4 mb-4">
                             <span class="text-[9px] font-black text-white/30 uppercase block mb-2 tracking-widest">Serviços Executados:</span>
                             ${htmlServicos || '<div class="text-[10px] text-white/20 italic">Nenhum serviço registrado</div>'}
                         </div>
-
                         <div class="grid grid-cols-2 gap-4 text-[10px] font-bold uppercase">
                             <div>
                                 <span class="text-white/30 block mb-1">Valor Cobrado</span>
@@ -220,6 +209,20 @@
                 `;
             });
         }
+
+        function filtrarHistorico() {
+            const termo = document.getElementById('inputBusca').value.toLowerCase();
+            const cards = document.querySelectorAll('.card-item');
+            cards.forEach(card => {
+                const texto = card.innerText.toLowerCase();
+                card.style.display = texto.includes(termo) ? 'block' : 'none';
+            });
+        }
+
+        window.onload = () => {
+            if(localStorage.getItem('theme') === 'light') toggleTheme();
+            carregarDados();
+        };
     </script>
 </body>
 </html>
