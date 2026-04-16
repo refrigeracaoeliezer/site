@@ -42,6 +42,10 @@
         
         .edit-btn { background: #3b82f6; color: white; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
         .edit-btn:hover { transform: scale(1.1); background: #2563eb; }
+
+        /* Estilo do botão excluir */
+        .delete-btn { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .delete-btn:hover { background: #ef4444; color: white; transform: scale(1.1); }
     </style>
 </head>
 <body class="p-4 pb-10">
@@ -77,9 +81,8 @@
     </div>
 
     <script>
-        const URL_DATABASE = "https://script.google.com/macros/s/AKfycbz7QbIcT5Jxxd3Wp7dmG1LAKjc1hvHSE4oLncUXe8w_6YNngPhd6PAgxQRTHM8nTveL2Q/exec";
+        const URL_DATABASE = "https://script.google.com/macros/s/AKfycbwQtl03sFhb6_rfUd2HwZRE5I3q5u9hHHAFnO87brEmKhTf1FUdLmr8TNA7SfrLqS5jVQ/exec";
 
-        // Alternar Tema
         function toggleTheme() {
             const body = document.body;
             const icon = document.getElementById('theme-icon');
@@ -92,8 +95,6 @@
             try {
                 const response = await fetch(URL_DATABASE, { redirect: "follow" });
                 const dados = await response.json();
-                
-                // Exibe últimos 10, do mais novo para o mais antigo
                 const ultimosDez = dados.slice(-10).reverse();
                 renderizarCards(ultimosDez);
             } catch (error) {
@@ -111,13 +112,31 @@
             return hoje <= dataFim;
         }
 
-        // FUNÇÃO PARA EDITAR: Salva no localStorage e redireciona
         function editarServico(dadosString) {
             const dados = JSON.parse(decodeURIComponent(dadosString));
-            // Salva os dados para que a página de orçamento possa ler
             localStorage.setItem('editar_os_dados', JSON.stringify(dados));
-            // Redireciona para sua página de criar orçamento (ajuste o nome do arquivo se necessário)
             window.location.href = "12os.html"; 
+        }
+
+        // Nova função para excluir OS
+        async function excluirOS(id) {
+            if (!confirm(`Tem certeza que deseja excluir a OS #${id}?`)) return;
+            
+            try {
+                // Envia comando de exclusão via parâmetro para o Apps Script
+                const response = await fetch(`${URL_DATABASE}?deleteID=${id}`, { redirect: "follow" });
+                const res = await response.json();
+                
+                if (res.status === "success") {
+                    alert("Excluído com sucesso!");
+                    carregarDados(); // Recarrega a lista
+                } else {
+                    alert("Erro ao excluir na planilha.");
+                }
+            } catch (error) {
+                console.error("Erro:", error);
+                alert("Erro de conexão ao tentar excluir.");
+            }
         }
 
         function renderizarCards(lista) {
@@ -144,7 +163,6 @@
                 const badgeClass = estaNaGarantia ? "em-garantia" : "fora-garantia";
                 const badgeText = estaNaGarantia ? "🟢 Em Garantia" : "🔴 Fora da Garantia";
 
-                // Prepara os dados para o botão de edição
                 const dadosParaEdicao = encodeURIComponent(JSON.stringify(os));
 
                 container.innerHTML += `
@@ -157,9 +175,14 @@
                             </div>
                             <div class="flex flex-col items-end gap-2">
                                 <span class="status-badge ${badgeClass}">${badgeText}</span>
-                                <button onclick="editarServico('${dadosParaEdicao}')" class="edit-btn" title="Editar Orçamento">
-                                    <i class="fa-solid fa-pen-to-square"></i>
-                                </button>
+                                <div class="flex gap-2">
+                                    <button onclick="editarServico('${dadosParaEdicao}')" class="edit-btn" title="Editar Orçamento">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
+                                    <button onclick="excluirOS('${idOS}')" class="delete-btn" title="Excluir OS">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         
