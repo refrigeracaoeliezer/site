@@ -141,7 +141,6 @@
             color: var(--text-main) !important;
             opacity: 1 !important;
         }
-        
     </style>
 </head>
 <body class="p-4 pb-10">
@@ -338,14 +337,16 @@
                 renderizarDatalists();
                 aplicarTextoPadrao();
                 calcularDataFinal();
-                verificarEdicao();
+                
+                // NOVIDADE: Chama a função que preenche os dados vindo do histórico
+                verificarEdicao(); 
+                
             } catch (e) { console.error("Erro na carga:", e); }
         }
 
         function converterDataParaIso(dataBr) {
             if (!dataBr || !dataBr.includes('/')) return "";
             const partes = dataBr.split('/');
-            if(partes.length !== 3) return "";
             return `${partes[2]}-${partes[1]}-${partes[0]}`;
         }
 
@@ -354,30 +355,35 @@
             if (dadosParaEditar) {
                 const os = JSON.parse(dadosParaEditar);
                 
+                // 1. Preenche Dados Básicos e Observação
                 document.getElementById('nomeCliente').value = os.CLIENTE || "";
                 document.querySelector('#dropdown-cliente .selected-text').innerText = os.CLIENTE || "Selecionar Cliente";
                 document.getElementById('enderecoCliente').value = os.ENDERECO || os.ENDEREÇO || "";
                 document.getElementById('telCliente').value = os.CPF || "";
-                document.getElementById('obsGeral').value = os.OBSERVACAO || "";
+                document.getElementById('obsGeral').value = os.OBSERVACAO || ""; 
                 
-                if(os.DATA_DO_SERVICO) document.getElementById('dataInicio').value = converterDataParaIso(os.DATA_DO_SERVICO);
-                if(os.DATA_FIM_GARANTIA) document.getElementById('dataPrazoFinal').value = converterDataParaIso(os.DATA_FIM_GARANTIA);
-
-                if(os.DATA_DO_SERVICO && os.DATA_FIM_GARANTIA) {
+                // 2. Preenche Datas e Dias de Garantia
+                if (os.DATA_DO_SERVICO) {
+                    document.getElementById('dataInicio').value = converterDataParaIso(os.DATA_DO_SERVICO);
+                }
+                if (os.DATA_FIM_GARANTIA) {
+                    document.getElementById('dataPrazoFinal').value = converterDataParaIso(os.DATA_FIM_GARANTIA);
+                }
+                if (os.DATA_DO_SERVICO && os.DATA_FIM_GARANTIA) {
                     const d1 = new Date(document.getElementById('dataInicio').value + 'T00:00:00');
                     const d2 = new Date(document.getElementById('dataPrazoFinal').value + 'T00:00:00');
-                    if(!isNaN(d1) && !isNaN(d2)) {
-                        const diffTime = Math.abs(d2 - d1);
-                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                        document.getElementById('inputGarantia').value = diffDays;
-                    }
+                    const diffTime = Math.abs(d2 - d1);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    document.getElementById('inputGarantia').value = diffDays;
                 }
-
+                
                 const container = document.getElementById('services-container');
                 container.innerHTML = "";
 
+                // 3. Reconstrói os Serviços com Quantidade e Valores Individuais
                 const servicosTexto = os["TIPO_DE_SERVICO"] || os["TIPO_DE_SERVIÇO"] || "";
                 const valoresTexto = os["VALOR_TOTAL"] || "0,00";
+                
                 const listaServicos = servicosTexto.split('|');
                 const listaValores = valoresTexto.split('|');
 
@@ -390,8 +396,8 @@
                             qtd = parseInt(partes[0]) || 1;
                             nome = partes[1];
                         }
-                        const valorIndiv = listaValores[index] ? listaValores[index].trim() : "0,00";
-                        adicionarServicoParaEdicao(nome, qtd, valorIndiv);
+                        let valorIndividual = listaValores[index] ? listaValores[index].trim() : "0,00";
+                        adicionarServicoParaEdicao(nome, qtd, valorIndividual);
                     }
                 });
 
