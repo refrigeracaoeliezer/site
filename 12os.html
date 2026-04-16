@@ -260,7 +260,7 @@
         let cacheDados = [];
         let modoOS = false;
         let saldoQuitado = false;
-        let id_os_atual = ""; // Variável global para o ID
+        let id_os_atual = ""; 
 
         function toggleTheme() {
             const body = document.body;
@@ -480,10 +480,10 @@
         function baixarPDF() {
             const dados = {
                 tipo: modoOS ? "ORDEM DE SERVIÇO" : "ORÇAMENTO",
-                id_os: id_os_atual, // Envia o ID capturado
+                id_os: id_os_atual, 
                 cliente: document.getElementById('nomeCliente').value || "Cliente",
                 endereco: document.getElementById('enderecoCliente').value,
-                cpf: document.getElementById('telCliente').value, // Envia o CPF que está no campo WhatsApp
+                cpf: document.getElementById('telCliente').value, 
                 emissao: document.getElementById('dataInicio').value.split('-').reverse().join('/'),
                 validade: document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/'),
                 total: document.getElementById('totalFinal').value,
@@ -504,24 +504,25 @@
             if (dadosParaEditar) {
                 const os = JSON.parse(dadosParaEditar);
                 
-                // Trava as datas e observações automáticas
                 localStorage.setItem('lock_dates', 'true');
 
                 if (os.ID_OS && !modoOS) {
                     alternarModo();
                 }
 
-                id_os_atual = os.ID_OS || ""; // Captura o ID
+                id_os_atual = os.ID_OS || ""; 
                 document.getElementById('nomeCliente').value = os.CLIENTE || "";
                 document.querySelector('#dropdown-cliente .selected-text').innerText = os.CLIENTE || "Selecionar Cliente";
                 document.getElementById('enderecoCliente').value = os.ENDERECO || "";
                 document.getElementById('telCliente').value = os.CPF || "";
                 
-                // Recebendo as Datas (Preenche antes de travar)
+                // DATA INÍCIO
                 if (os.DATA_DO_SERVICO) document.getElementById('dataInicio').value = converterDataParaIso(os.DATA_DO_SERVICO);
+                
+                // DATA FINAL
                 if (os.DATA_FIM_GARANTIA) document.getElementById('dataPrazoFinal').value = converterDataParaIso(os.DATA_FIM_GARANTIA);
                 
-                // Recebendo os Dias Calculados
+                // DIAS DE GARANTIA (Preenche o campo numérico central)
                 if (os.GARANTIA_DIAS_CALCULADOS) { 
                     document.getElementById('inputGarantia').value = os.GARANTIA_DIAS_CALCULADOS; 
                 }
@@ -555,9 +556,17 @@
 
         function converterDataParaIso(dataBr) {
             if (!dataBr) return "";
-            const partes = dataBr.toString().split('T')[0].split('/');
-            if (partes.length !== 3) return dataBr.toString().split('T')[0];
-            return `${partes[2].split(' ')[0]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
+            // Remove qualquer parte de hora (T03:00...) e divide por "/" ou "-"
+            let limpa = dataBr.toString().split('T')[0];
+            let partes = limpa.includes('/') ? limpa.split('/') : limpa.split('-');
+            
+            if (partes.length !== 3) return "";
+
+            // Se a primeira parte tiver 4 dígitos, já é ISO (YYYY-MM-DD)
+            if (partes[0].length === 4) return limpa;
+
+            // Se não, converte de DD/MM/YYYY para YYYY-MM-DD
+            return `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
         }
 
         function adicionarServicoParaEdicao(nome, qtd, valorIndividual) {
