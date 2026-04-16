@@ -191,31 +191,16 @@
 
         <main class="glass-card p-6 space-y-7" id="card-principal">
             <div id="sec-dados" class="space-y-4">
-               
-
-
-
-
-
-
-
-
-
-
-
-<div class="section-header flex justify-between items-center w-full">
-    <div class="flex items-center gap-2">
-        <i class="fa-solid fa-user-gear"></i>
-        <span id="label-dados">Dados do Orçamento</span>
-    </div>
-    <div class="bg-white/5 border border-white/10 px-4 py-1.5 rounded-xl backdrop-blur-md shadow-sm">
-        <span class="text-[9px] font-black text-blue-500/60 uppercase tracking-tighter">OS nº</span>
-        <span id="display-id" class="text-xs font-black text-blue-500 ml-1 tracking-widest">---</span>
-    </div>
-</div>
-
-
-
+                <div class="section-header flex justify-between items-center w-full">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-user-gear"></i>
+                        <span id="label-dados">Dados do Orçamento</span>
+                    </div>
+                    <div class="bg-white/5 border border-white/10 px-4 py-1.5 rounded-xl backdrop-blur-md shadow-sm">
+                        <span class="text-[9px] font-black text-blue-500/60 uppercase tracking-tighter">OS nº</span>
+                        <span id="display-id" class="text-xs font-black text-blue-500 ml-1 tracking-widest">---</span>
+                    </div>
+                </div>
 
                 <div class="space-y-3">
                     <input type="text" id="nomePrestador" placeholder="Sua Empresa" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
@@ -278,15 +263,15 @@
     </div>
 
 <script>
-// URLs de Conexão
+// Link da Planilha para leitura da Coluna A (ID_OS)
+const URL_READ_ID = "https://script.google.com/macros/s/AKfycbzozyKIziDzmieP59KCfMEZeQETFz9H7wAa4UGntF7uHDDxTcm3Dmo14dx_V4rYfr7nzw/exec";
+// Link original para outros dados
 const URL_DATABASE = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec"; 
 
 let cacheDados = [];
 let modoOS = false;
 let saldoQuitado = false;
 let id_os_atual = ""; 
-
-// --- FUNÇÕES DE INTERFACE ---
 
 function toggleTheme() {
     const body = document.body;
@@ -304,11 +289,9 @@ function autoExpandir(textarea) {
 function calcularDataFinal() {
     if (localStorage.getItem('lock_dates') === 'true') return;
     if (modoOS) return;
-
     const dataInicioVal = document.getElementById('dataInicio').value;
     const diasPrazo = parseInt(document.getElementById('inputGarantia').value) || 0;
     const campoDataFinal = document.getElementById('dataPrazoFinal');
-    
     if (dataInicioVal) {
         let data = new Date(dataInicioVal + 'T00:00:00');
         data.setDate(data.getDate() + diasPrazo);
@@ -316,28 +299,37 @@ function calcularDataFinal() {
     }
 }
 
-// --- BUSCA DE DADOS NA PLANILHA ---
-
 async function buscarDadosPlanilha() {
     try {
-        const resp = await fetch(URL_DATABASE);
-        cacheDados = await resp.json();
+        // Buscamos os dados da planilha que contém os IDs para gerar o numeral correto
+        const respID = await fetch(URL_READ_ID);
+        const dadosID = await respID.json();
+        
+        // Buscamos os outros dados (clientes/serviços)
+        const respDB = await fetch(URL_DATABASE);
+        cacheDados = await respDB.json();
+
         renderizarDatalists();
         aplicarTextoPadrao();
-        verificarEdicao();
+        verificarEdicao(); 
         
-        // Lógica de numeral ID_OS
+        // Se após verificarEdicao o id_os_atual ainda estiver vazio, gera novo usando os dados da planilha de IDs
         if (!id_os_atual || id_os_atual === "" || id_os_atual === "---") {
-            gerarNovoID();
+            gerarNovoID(dadosID);
         }
     } catch (e) { 
         console.error("Erro ao carregar dados da planilha:", e); 
     }
 }
 
-function gerarNovoID() {
-    // Busca na coluna ID_OS (que seu Dashboard também usa)
-    const idsExistentes = cacheDados
+function gerarNovoID(dadosPlanilha) {
+    if (id_os_atual && id_os_atual !== "" && id_os_atual !== "---") {
+        document.getElementById('display-id').innerText = id_os_atual.toString().padStart(3, '0');
+        return;
+    }
+
+    // Procura na coluna ID_OS ou id_os dos dados recebidos
+    const idsExistentes = dadosPlanilha
         .map(item => parseInt((item.ID_OS || item.id_os || "0").toString().replace(/\D/g, '')))
         .filter(n => !isNaN(n))
         .sort((a, b) => a - b);
@@ -350,8 +342,6 @@ function gerarNovoID() {
     id_os_atual = proximo.toString().padStart(3, '0');
     document.getElementById('display-id').innerText = id_os_atual;
 }
-
-// --- CONTROLE DE DROPDOWNS ---
 
 function toggleDropdown(el) {
     const wrapper = el.parentElement;
@@ -420,8 +410,6 @@ function gerarHtmlServicos() {
     }).join('');
 }
 
-// --- GERENCIAMENTO DE ITENS ---
-
 function adicionarServico() {
     const container = document.getElementById('services-container');
     const div = document.createElement('div');
@@ -480,8 +468,6 @@ function atualizarSoma() {
     document.getElementById('totalFinal').value = total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
 }
 
-// --- GERAÇÃO DE DOCUMENTO E MODAL ---
-
 function alternarQuitacao() {
     saldoQuitado = !saldoQuitado;
     const btn = document.getElementById('btn-quitar');
@@ -498,7 +484,6 @@ function gerarDocumento() {
     const dias = document.getElementById('inputGarantia').value;
     const dataFim = document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/');
     const chavePix = (cacheDados.find(d => d.emp_pix) || {}).emp_pix || "[PIX]";
-    
     let servicosTexto = "";
     document.querySelectorAll('.service-card').forEach(card => {
         const n = card.querySelector('.service-name').value;
@@ -506,17 +491,12 @@ function gerarDocumento() {
         const q = card.querySelector('.service-qty').innerText;
         if(n) servicosTexto += `• ${q}x ${n} - R$ ${p}\n`;
     });
-
     const totalNum = parseFloat(total.replace(/\./g, "").replace(",", ".")) || 0;
     const sinal = (totalNum * 0.3).toLocaleString('pt-BR', {minimumFractionDigits: 2});
     const saldo = (totalNum * 0.7).toLocaleString('pt-BR', {minimumFractionDigits: 2});
-
     document.getElementById('txt-proposta').innerText = `*ORÇAMENTO TÉCNICO - ${prestador.toUpperCase()}*\n\nOlá ${cliente}! Segue o orçamento:\n\n*SERVIÇOS:*\n${servicosTexto}\n*OBS:*\n${obs}\n\n*INVESTIMENTO TOTAL:* R$ ${total}\n(Material + Mão de Obra incluso)\n\n*${modoOS ? 'Garantia' : 'Vencimento'}:* ${dias} dias\n*Data Prevista:* ${dataFim}\n\nFicaremos no aguardo.`;
-    
     document.getElementById('txt-sinal').innerText = `*Confirmação de Agendamento*\n\nOlá, ${cliente}, tudo bem?\n\nPara formalizarmos o seu atendimento e garantirmos a reserva dos materiais e da sua data em nossa agenda, solicitamos o pagamento da entrada:\n\n💰 *Valor da Entrada (30%):* R$ ${sinal}\n🔑 *Chave PIX:* ${chavePix}\n\nAssim que realizar a transferência, por favor, nos envie o comprovante para validarmos o agendamento. 🗓️\n\nFicamos à disposição para qualquer dúvida!`;
-    
     document.getElementById('txt-conclusao').innerText = `*Finalização de Serviço* ❄️\n\nOlá, ${cliente}, tudo bem?\n\nInformamos que o serviço em seu equipamento foi concluído com sucesso! ✅ Realizamos todos os testes técnicos e o sistema já está operando em perfeitas condições.\n\n💳 *Status de Pagamento:* ${saldoQuitado ? "Saldo Quitado" : `Saldo de R$ ${saldo}`}\n🛡️ *Garantia:* Você tem *${dias} dias* de garantia total sobre o serviço executado.\n\nAgradecemos a confiança em nosso trabalho! Qualquer dúvida, estamos à disposição.\n\nAtenciosamente,\n*${prestador}*`;
-    
     document.getElementById('modal-mensagens').style.display = 'block';
     document.body.style.overflow = 'hidden';
 }
@@ -559,18 +539,14 @@ function baixarPDF() {
     window.location.href = modoOS ? "imp.html" : "impressao.html";
 }
 
-// --- LÓGICA DE EDIÇÃO E MODOS ---
-
 function alternarModo() {
     modoOS = !modoOS;
     const campoDataFinal = document.getElementById('dataPrazoFinal');
-    
     document.getElementById('toggleMode').classList.toggle('mode-os');
     document.getElementById('card-principal').classList.toggle('is-os');
     document.getElementById('sub-title').innerText = modoOS ? "Ordem de Serviço (OS)" : "Sistema de Orçamento";
     document.getElementById('btn-acao').innerHTML = modoOS ? 'Finalizar O.S <i class="fa-solid fa-check"></i>' : 'Gerar Orçamento <i class="fa-solid fa-arrow-right"></i>';
     document.getElementById('label-prazo').innerText = modoOS ? "Garantia" : "Vencimento";
-
     if (modoOS) {
         campoDataFinal.readOnly = false;
     } else {
@@ -592,13 +568,9 @@ function verificarEdicao() {
     if (dadosParaEditar) {
         const os = JSON.parse(dadosParaEditar);
         localStorage.setItem('lock_dates', 'true');
-        
-        // Bloqueia geração de novo ID pois é edição
         id_os_atual = (os.ID_OS || os.id_os || "---").toString().padStart(3, '0');
         document.getElementById('display-id').innerText = id_os_atual;
-
         if (id_os_atual !== "---" && !modoOS) alternarModo();
-        
         document.getElementById('nomeCliente').value = os.CLIENTE || "";
         const displayCli = document.querySelector('#dropdown-cliente .selected-text');
         if(displayCli) displayCli.innerText = os.CLIENTE || "Selecionar Cliente";
@@ -607,12 +579,10 @@ function verificarEdicao() {
         if (os.DATA_DO_SERVICO) document.getElementById('dataInicio').value = converterDataParaIso(os.DATA_DO_SERVICO);
         if (os.DATA_FIM_GARANTIA) document.getElementById('dataPrazoFinal').value = converterDataParaIso(os.DATA_FIM_GARANTIA);
         if (os.GARANTIA_DIAS_CALCULADOS) document.getElementById('inputGarantia').value = os.GARANTIA_DIAS_CALCULADOS;
-        
         setTimeout(() => {
             document.getElementById('obsGeral').value = os.OSERVACAO || os.OBSERVACAO || ""; 
             autoExpandir(document.getElementById('obsGeral'));
         }, 300);
-        
         const container = document.getElementById('services-container');
         container.innerHTML = "";
         const listaServicos = (os["TIPO_DE_SERVICO"] || os["TIPO_DE_SERVIÇO"] || "").split('|');
