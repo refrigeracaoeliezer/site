@@ -191,10 +191,32 @@
 
         <main class="glass-card p-6 space-y-7" id="card-principal">
             <div id="sec-dados" class="space-y-4">
-                <div class="section-header">
-                    <i class="fa-solid fa-user-gear"></i>
-                    <span id="label-dados">Dados do Orçamento</span>
-                </div>
+               
+
+
+
+
+
+
+
+
+
+
+
+<div class="section-header flex justify-between items-center w-full">
+    <div class="flex items-center gap-2">
+        <i class="fa-solid fa-user-gear"></i>
+        <span id="label-dados">Dados do Orçamento</span>
+    </div>
+    <div class="bg-white/5 border border-white/10 px-4 py-1.5 rounded-xl backdrop-blur-md shadow-sm">
+        <span class="text-[9px] font-black text-blue-500/60 uppercase tracking-tighter">OS nº</span>
+        <span id="display-id" class="text-xs font-black text-blue-500 ml-1 tracking-widest">---</span>
+    </div>
+</div>
+
+
+
+
                 <div class="space-y-3">
                     <input type="text" id="nomePrestador" placeholder="Sua Empresa" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
                     <div class="relative custom-dropdown" id="dropdown-cliente">
@@ -279,11 +301,8 @@ function autoExpandir(textarea) {
     textarea.style.height = textarea.scrollHeight + 'px';
 }
 
-// AJUSTE: Cálculo automático apenas no modo Orçamento
 function calcularDataFinal() {
     if (localStorage.getItem('lock_dates') === 'true') return;
-    
-    // Se for Ordem de Serviço, as datas são independentes (manuais)
     if (modoOS) return;
 
     const dataInicioVal = document.getElementById('dataInicio').value;
@@ -306,9 +325,30 @@ async function buscarDadosPlanilha() {
         renderizarDatalists();
         aplicarTextoPadrao();
         verificarEdicao();
+        
+        // Lógica de numeral ID_OS
+        if (!id_os_atual || id_os_atual === "" || id_os_atual === "---") {
+            gerarNovoID();
+        }
     } catch (e) { 
         console.error("Erro ao carregar dados da planilha:", e); 
     }
+}
+
+function gerarNovoID() {
+    // Busca na coluna ID_OS (que seu Dashboard também usa)
+    const idsExistentes = cacheDados
+        .map(item => parseInt((item.ID_OS || item.id_os || "0").toString().replace(/\D/g, '')))
+        .filter(n => !isNaN(n))
+        .sort((a, b) => a - b);
+
+    let proximo = 1;
+    for (let i = 0; i < idsExistentes.length; i++) {
+        if (idsExistentes[i] === proximo) proximo++;
+    }
+    
+    id_os_atual = proximo.toString().padStart(3, '0');
+    document.getElementById('display-id').innerText = id_os_atual;
 }
 
 // --- CONTROLE DE DROPDOWNS ---
@@ -521,7 +561,6 @@ function baixarPDF() {
 
 // --- LÓGICA DE EDIÇÃO E MODOS ---
 
-// AJUSTE: Alternância de controle das datas
 function alternarModo() {
     modoOS = !modoOS;
     const campoDataFinal = document.getElementById('dataPrazoFinal');
@@ -533,14 +572,11 @@ function alternarModo() {
     document.getElementById('label-prazo').innerText = modoOS ? "Garantia" : "Vencimento";
 
     if (modoOS) {
-        // Na OS as datas são independentes (manuais)
         campoDataFinal.readOnly = false;
     } else {
-        // No Orçamento a data final é travada e automática
         campoDataFinal.readOnly = true;
         calcularDataFinal();
     }
-    
     aplicarTextoPadrao();
 }
 
@@ -556,8 +592,13 @@ function verificarEdicao() {
     if (dadosParaEditar) {
         const os = JSON.parse(dadosParaEditar);
         localStorage.setItem('lock_dates', 'true');
-        if (os.ID_OS && !modoOS) alternarModo();
-        id_os_atual = os.ID_OS || ""; 
+        
+        // Bloqueia geração de novo ID pois é edição
+        id_os_atual = (os.ID_OS || os.id_os || "---").toString().padStart(3, '0');
+        document.getElementById('display-id').innerText = id_os_atual;
+
+        if (id_os_atual !== "---" && !modoOS) alternarModo();
+        
         document.getElementById('nomeCliente').value = os.CLIENTE || "";
         const displayCli = document.querySelector('#dropdown-cliente .selected-text');
         if(displayCli) displayCli.innerText = os.CLIENTE || "Selecionar Cliente";
@@ -566,10 +607,12 @@ function verificarEdicao() {
         if (os.DATA_DO_SERVICO) document.getElementById('dataInicio').value = converterDataParaIso(os.DATA_DO_SERVICO);
         if (os.DATA_FIM_GARANTIA) document.getElementById('dataPrazoFinal').value = converterDataParaIso(os.DATA_FIM_GARANTIA);
         if (os.GARANTIA_DIAS_CALCULADOS) document.getElementById('inputGarantia').value = os.GARANTIA_DIAS_CALCULADOS;
+        
         setTimeout(() => {
             document.getElementById('obsGeral').value = os.OSERVACAO || os.OBSERVACAO || ""; 
             autoExpandir(document.getElementById('obsGeral'));
         }, 300);
+        
         const container = document.getElementById('services-container');
         container.innerHTML = "";
         const listaServicos = (os["TIPO_DE_SERVICO"] || os["TIPO_DE_SERVIÇO"] || "").split('|');
@@ -614,7 +657,6 @@ function converterDataParaIso(dataBr) {
     return partes[0].length === 4 ? limpa : `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
 }
 
-// Inicialização
 window.onload = async () => {
     if(localStorage.getItem('theme') === 'light') toggleTheme();
     const dataHoje = new Date().toISOString().split('T')[0];
