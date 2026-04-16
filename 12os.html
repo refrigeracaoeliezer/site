@@ -57,7 +57,7 @@
 
         .glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-top: 4px solid #1e40af; border-radius: 30px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); transition: all 0.5s ease; }
 
-        .is-os { border-top-color: #10b981 !important; }
+        .is-os { border-top-color: #10b981 !important; color: white !important; } /* CORREÇÃO: Forçando letra branca no modo OS */
         .is-os .text-blue-500, .is-os .text-blue-400, .is-os .section-header i, .is-os .section-header span { color: #10b981 !important; }
         .is-os .btn-primary { background: linear-gradient(135deg, #065f46 0%, #10b981 100%) !important; }
         .is-os .total-container { background: #065f46 !important; border-color: rgba(16, 185, 129, 0.3) !important; }
@@ -181,7 +181,7 @@
 
         <header class="flex justify-between items-center mb-8 pt-4">
             <div>
-                <h1 class="text-xl font-black tracking-tighter uppercase leading-none">REFRIGERAÇÃO <span class="text-blue-500" id="header-name">ELIEZER</span></h1>
+                <h1 class="text-xl font-black tracking-tighter uppercase leading-none">REFRIGERAÇÃO <span class="text-blue-500">ELIEZER</span></h1>
                 <span class="text-[10px] text-blue-400 font-bold uppercase tracking-widest" id="sub-title">Sistema de Orçamento</span>
             </div>
             <button onclick="toggleTheme()" class="theme-toggle">
@@ -220,7 +220,7 @@
                     </div>
                     <div class="relative pt-4">
                         <input type="number" id="inputGarantia" value="30" class="w-full p-4 rounded-2xl dark-input text-sm font-bold text-center" oninput="calcularDataFinal()">
-                        <span id="label-prazo" class="absolute -top-1 left-1/2 -translate-x-1/2 bg-blue-600 text-[8px] px-2 py-0.5 rounded text-white font-black tracking-widest uppercase shadow-lg">Vencimento</span>
+                        <span id="label-prazo" class="absolute -top-1 left-1/2 -translate-x-1/2 bg-blue-600 text-[8px] px-2 py-0.5 rounded text-white font-black uppercase shadow-lg">Vencimento</span>
                         <span class="absolute right-4 top-1/2 -translate-y-1/2 mt-2 text-[10px] text-white/20 font-black">DIAS</span>
                     </div>
                 </div>
@@ -501,22 +501,39 @@
             window.location.href = modoOS ? "impressao_os.html" : "impressao.html";
         }
 
+        // CORREÇÃO: Função Verificar Edição agora aguarda a mudança de modo para preencher campos
         function verificarEdicao() {
             const dadosParaEditar = localStorage.getItem('editar_os_dados');
             if (dadosParaEditar) {
                 const os = JSON.parse(dadosParaEditar);
+                
+                // Ativa o Modo OS primeiro se os dados forem de uma OS
+                if (os.ID_OS && !modoOS) {
+                    alternarModo();
+                }
+
                 document.getElementById('nomeCliente').value = os.CLIENTE || "";
                 document.querySelector('#dropdown-cliente .selected-text').innerText = os.CLIENTE || "Selecionar Cliente";
                 document.getElementById('enderecoCliente').value = os.ENDERECO || "";
                 document.getElementById('telCliente').value = os.CPF || "";
-                document.getElementById('obsGeral').value = os.OSERVACAO || ""; 
+                
+                // Recebendo a Observação da Planilha
+                document.getElementById('obsGeral').value = os.OSERVACAO || os.OBSERVACAO || ""; 
+                
+                // Recebendo as Datas (Convertendo para o formato do input date)
                 if (os.DATA_DO_SERVICO) document.getElementById('dataInicio').value = converterDataParaIso(os.DATA_DO_SERVICO);
                 if (os.DATA_FIM_GARANTIA) document.getElementById('dataPrazoFinal').value = converterDataParaIso(os.DATA_FIM_GARANTIA);
-                if (os.GARANTIA_DIAS_CALCULADOS) { document.getElementById('inputGarantia').value = os.GARANTIA_DIAS_CALCULADOS; }
+                
+                // Recebendo os Dias Calculados
+                if (os.GARANTIA_DIAS_CALCULADOS) { 
+                    document.getElementById('inputGarantia').value = os.GARANTIA_DIAS_CALCULADOS; 
+                }
+
                 const container = document.getElementById('services-container');
                 container.innerHTML = "";
-                const listaServicos = (os["TIPO_DE_SERVICO"] || "").split('|');
+                const listaServicos = (os["TIPO_DE_SERVICO"] || os["TIPO_DE_SERVIÇO"] || "").split('|');
                 const listaValores = (os["VALOR_TOTAL"] || "0,00").split('|');
+                
                 listaServicos.forEach((srvTexto, index) => {
                     if (srvTexto.trim() !== "") {
                         let qtd = 1, nome = srvTexto.trim();
@@ -525,7 +542,7 @@
                         adicionarServicoParaEdicao(nome, qtd, valorIndiv);
                     }
                 });
-                if (os.ID_OS && !modoOS) alternarModo();
+
                 autoExpandir(document.getElementById('obsGeral'));
                 atualizarSoma();
                 localStorage.removeItem('editar_os_dados');
@@ -537,7 +554,8 @@
         function converterDataParaIso(dataBr) {
             if (!dataBr || !dataBr.includes('/')) return "";
             const partes = dataBr.split('/');
-            return `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
+            // Trata formatos DD/MM/YYYY
+            return `${partes[2].split(' ')[0]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
         }
 
         function adicionarServicoParaEdicao(nome, qtd, valorIndividual) {
