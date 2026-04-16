@@ -269,7 +269,6 @@ const URL_DATABASE = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chr
 
 let cacheDados = [];
 let modoOS = false;
-let saldoQuitado = false;
 let id_os_atual = ""; 
 
 function toggleTheme() {
@@ -300,30 +299,30 @@ function calcularDataFinal() {
 
 async function buscarDadosPlanilha() {
     try {
-        // Carregar Planilha de Clientes e Serviços Primeiro
-        const respDB = await fetch(URL_DATABASE);
-        cacheDados = await respDB.json();
-        
+        // Carrega em paralelo para não travar
+        const [respDB, respID] = await Promise.all([
+            fetch(URL_DATABASE).then(r => r.json()),
+            fetch(URL_READ_ID).then(r => r.json())
+        ]);
+
+        cacheDados = respDB;
         renderizarDatalists();
         aplicarTextoPadrao();
-        verificarEdicao(); // Tenta carregar dados de edição se existirem
+        verificarEdicao(); // Preenche id_os_atual se for edição
 
-        // Se após verificarEdicao o id_os_atual ainda estiver vazio, busca o numeral da outra planilha
+        // Gera novo numeral apenas se id_os_atual ainda estiver vazio
         if (!id_os_atual || id_os_atual === "" || id_os_atual === "---") {
-            const respID = await fetch(URL_READ_ID);
-            const dadosID = await respID.json();
-            gerarNovoID(dadosID);
+            gerarNovoID(respID);
+        } else {
+            document.getElementById('display-id').innerText = id_os_atual;
         }
+
     } catch (e) { 
         console.error("Erro ao carregar dados:", e); 
     }
 }
 
 function gerarNovoID(dadosPlanilha) {
-    if (id_os_atual && id_os_atual !== "" && id_os_atual !== "---") {
-        document.getElementById('display-id').innerText = id_os_atual;
-        return;
-    }
     const idsExistentes = dadosPlanilha
         .map(item => parseInt((item.ID_OS || item.id_os || "0").toString().replace(/\D/g, '')))
         .filter(n => !isNaN(n))
@@ -480,10 +479,10 @@ function gerarDocumento() {
     const chavePix = (cacheDados.find(d => d.emp_pix) || {}).emp_pix || "[PIX]";
     let servicosTexto = "";
     document.querySelectorAll('.service-card').forEach(card => {
-        const n = card.querySelector('.service-name').value;
+        const n = card.querySelector('.service-name').value || card.querySelector('.selected-text').innerText;
         const p = card.querySelector('.service-price').value;
         const q = card.querySelector('.service-qty').innerText;
-        if(n) servicosTexto += `• ${q}x ${n} - R$ ${p}\n`;
+        if(n && n !== "Selecionar Serviço") servicosTexto += `• ${q}x ${n} - R$ ${p}\n`;
     });
     const totalNum = parseFloat(total.replace(/\./g, "").replace(",", ".")) || 0;
     const sinal = (totalNum * 0.3).toLocaleString('pt-BR', {minimumFractionDigits: 2});
@@ -562,21 +561,24 @@ function verificarEdicao() {
     if (dadosParaEditar) {
         const os = JSON.parse(dadosParaEditar);
         localStorage.setItem('lock_dates', 'true');
-        id_os_atual = (os.ID_OS || os.id_os || "---").toString().padStart(3, '0');
-        document.getElementById('display-id').innerText = id_os_atual;
-        if (id_os_atual !== "---" && !modoOS) alternarModo();
+        id_os_atual = (os.ID_OS || os.id_os || "").toString().padStart(3, '0');
+        
+        if (id_os_atual && id_os_atual !== "---" && !modoOS) alternarModo();
+        
         document.getElementById('nomeCliente').value = os.CLIENTE || "";
         const displayCli = document.querySelector('#dropdown-cliente .selected-text');
         if(displayCli) displayCli.innerText = os.CLIENTE || "Selecionar Cliente";
         document.getElementById('enderecoCliente').value = os.ENDERECO || os.ENDEREÇO || "";
-        document.getElementById('telCliente').value = os.CPF || os.TELEFONE || "";
+        document.getElementById('telCliente').value = os.CPF || os.TELEFONE || os.CPF || "";
         if (os.DATA_DO_SERVICO) document.getElementById('dataInicio').value = converterDataParaIso(os.DATA_DO_SERVICO);
         if (os.DATA_FIM_GARANTIA) document.getElementById('dataPrazoFinal').value = converterDataParaIso(os.DATA_FIM_GARANTIA);
         if (os.GARANTIA_DIAS_CALCULADOS) document.getElementById('inputGarantia').value = os.GARANTIA_DIAS_CALCULADOS;
+        
         setTimeout(() => {
             document.getElementById('obsGeral').value = os.OSERVACAO || os.OBSERVACAO || ""; 
             autoExpandir(document.getElementById('obsGeral'));
         }, 300);
+
         const container = document.getElementById('services-container');
         container.innerHTML = "";
         const listaServicos = (os["TIPO_DE_SERVICO"] || os["TIPO_DE_SERVIÇO"] || "").split('|');
