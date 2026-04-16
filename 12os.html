@@ -256,7 +256,9 @@
     </div>
 
     <script>
-       const URL_DATABASE = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec"; 
+       // Localize onde está a URL_DATABASE e adicione a URL_CONFIG logo abaixo
+const URL_DATABASE = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec"; 
+const URL_CONFIG = "https://script.google.com/macros/s/AKfycbyUiAkd5D0HTIBdq3mlHQ0iVYeMfInplUJHwOhWgwfUn6aCnfIxCsJG_2_vjFTgY7Kc/exec";
         let cacheDados = [];
         let modoOS = false;
         let saldoQuitado = false;
@@ -580,14 +582,20 @@
             precoInput.value = valorIndividual.replace("R$", "").trim();
             formatarMoeda(precoInput);
         }
+window.onload = async () => {
+    if(localStorage.getItem('theme') === 'light') toggleTheme();
+    
+    // Define datas padrão
+    const dataHoje = new Date().toISOString().split('T')[0];
+    document.getElementById('dataInicio').value = dataHoje;
+    document.getElementById('dataPrazoFinal').value = dataHoje;
 
-        window.onload = () => {
-            if(localStorage.getItem('theme') === 'light') toggleTheme();
-            const dataHoje = new Date().toISOString().split('T')[0];
-            document.getElementById('dataInicio').value = dataHoje;
-            document.getElementById('dataPrazoFinal').value = dataHoje;
-            buscarDadosPlanilha();
-        };
+    // Primeiro busca os dados da planilha (clientes/serviços)
+    await buscarDadosPlanilha(); 
+    
+    // SOMENTE DEPOIS verifica se há dados vindos da primeira página para editar
+    verificarEdicao();
+};
 
         window.addEventListener('click', e => { if (!e.target.closest('.custom-dropdown')) fecharTodosDropdowns(); });
     </script>
