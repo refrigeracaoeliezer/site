@@ -135,13 +135,13 @@
     function editarServico(dadosString) {
         const os = JSON.parse(decodeURIComponent(dadosString));
         
-        // Calculamos os dias de garantia aqui para preencher a barra de dias na outra página
-        const diasCalculados = calcularDiasEntre(os["DATA_DO_SERVICO"], os["DATA_FIM_GARANTIA"]);
+        // Em vez de calcular, pegamos o valor direto da Coluna L (DIA) da planilha
+        // Usamos o mesmo nome de variável anterior para não quebrar as outras páginas
+        const diasDaColunaL = os["DIA"] || 90; // Se estiver vazio, assume 30 por segurança
         
-        // Empacota todos os dados (CPF, OBS, Datas e Dias Calculados)
         const pacoteCompleto = { 
             ...os, 
-            "GARANTIA_DIAS_CALCULADOS": diasCalculados 
+            "GARANTIA_DIAS_CALCULADOS": diasDaColunaL 
         };
         
         localStorage.setItem('editar_os_dados', JSON.stringify(pacoteCompleto));
