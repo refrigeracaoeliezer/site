@@ -171,11 +171,8 @@
     </div>
 
 <script>
-    // URL antiga para BUSCA de dados (Configurações)
     const URL_BUSCA = "https://script.google.com/macros/s/AKfycbwsX8xUWHgb9PE9Nv6IvQbjB7VGQPfUQSbn6fZT1WQRk5IoQJMFAhleLHHpHSU9zHw49A/exec";
-    
-    // NOVA URL para SALVAR dados (Onde os dados da O.S. serão gravados)
-    const URL_SALVAR = "https://script.google.com/macros/s/AKfycbwhVPLlG1MVSOhOM8GT9fiv3wvo2ULqDI1MYCoasclTOirDxSDw-dbxFR9Tb6Drm3aa0Q/exec";
+    const URL_SALVAR = "https://script.google.com/macros/s/AKfycbygHllqZp6NAsw2rqCJ1pUSVNcWO9TW65hsgqreY_mAoCgWTlSPtuhRRBycWwoM1jWdpg/exec";
 
     function toggleAssinatura() {
         const campo = document.getElementById('campo-assinatura');
@@ -189,22 +186,36 @@
         if (!dadosLocal) return;
 
         try {
-            // BUSCA os dados na planilha antiga para preencher Empresa e buscar CPF se necessário
             const resp = await fetch(URL_BUSCA);
             const cacheDados = await resp.json();
             
-            // Lógica do ID_OS sequencial baseada na planilha antiga (ou na nova se preferir trocar a URL de busca)
+            // --- LÓGICA DE NÚMERO SEQUENCIAL COM BUSCA DE FALTANTES ---
             if (dadosLocal.id_os) {
-                document.getElementById('num-random').innerText = dadosLocal.id_os + ' - OS';
+                // Se já veio com ID (Edição), mantém o ID original
+                document.getElementById('num-random').innerText = dadosLocal.id_os.toString().padStart(3, '0') + ' - OS';
             } else {
-                const ultimosIds = cacheDados.map(d => parseInt(d.ID_OS)).filter(n => !isNaN(n));
-                const proximoId = ultimosIds.length > 0 ? Math.max(...ultimosIds) + 1 : 1;
+                // Se for novo, extrai todos os IDs numéricos da coluna ID_OS (Coluna A)
+                const idsExistentes = cacheDados
+                    .map(d => parseInt(d.ID_OS))
+                    .filter(n => !isNaN(n))
+                    .sort((a, b) => a - b);
+
+                // Encontra o primeiro número faltante começando do 1
+                let proximoId = 1;
+                for (let i = 0; i < idsExistentes.length; i++) {
+                    if (idsExistentes[i] === proximoId) {
+                        proximoId++;
+                    } else if (idsExistentes[i] > proximoId) {
+                        break; // Encontrou um buraco na sequência
+                    }
+                }
+                
                 const idFormatado = proximoId.toString().padStart(3, '0');
                 document.getElementById('num-random').innerText = idFormatado + ' - OS';
-                dadosLocal.id_os = idFormatado;
+                dadosLocal.id_os = idFormatado; // Salva para o POST
             }
 
-            // Preenche dados da empresa (Puxando da URL_BUSCA)
+            // Preenche dados da empresa
             const emp = cacheDados.find(d => d.emp_nome) || cacheDados[0];
             if (emp) {
                 document.getElementById('emp-nome').innerText = emp.emp_nome;
@@ -214,7 +225,7 @@
                 document.getElementById('view-resp-tecnico').innerText = emp.emp_resp;
             }
 
-            // Recuperação do CPF caso não tenha vindo
+            // Recuperação do CPF
             let cpfFinal = dadosLocal.cpf || "---";
             if (cpfFinal === "---" || !cpfFinal) {
                 const cliInfo = cacheDados.find(d => d.cli_nome === dadosLocal.cliente);
@@ -223,9 +234,13 @@
             document.getElementById('view-cpf-cli').innerText = cpfFinal;
             dadosLocal.cpf = cpfFinal;
 
-        } catch (e) { console.error("Erro ao carregar dados:", e); }
+        } catch (e) { 
+            console.error("Erro ao carregar dados:", e); 
+            // Fallback caso a planilha falhe: gera um número aleatório para não travar
+            if(!dadosLocal.id_os) document.getElementById('num-random').innerText = '001 - OS';
+        }
 
-        // Preenchimento Visual
+        // Preenchimento dos campos visuais
         document.getElementById('view-cliente').innerText = dadosLocal.cliente || "---";
         document.getElementById('view-endereco').innerText = dadosLocal.endereco || "---";
         document.getElementById('view-data').innerText = dadosLocal.emissao || "---";
@@ -234,7 +249,6 @@
         document.getElementById('view-obs').innerText = dadosLocal.obs || "Serviço realizado conforme padrões técnicos.";
         document.getElementById('view-dias-garantia').innerText = dadosLocal.garantia || "30";
 
-        // Tabela de Itens
         const corpo = document.getElementById('tabela-corpo');
         corpo.innerHTML = "";
         if (dadosLocal.itens) {
@@ -247,18 +261,16 @@
         localStorage.setItem('dados_impressao', JSON.stringify(dadosLocal));
     }
 
-async function baixarPDF() {
+    async function baixarPDF() {
         const dados = JSON.parse(localStorage.getItem('dados_impressao'));
-        
-        // Formatação dos serviços e valores
+        if (!dados) return;
+
         const servicosTexto = dados.itens.map(i => `${i.qtd}x ${i.descricao}`).join(' | ');
         const valoresTexto = dados.itens.map(i => i.valor).join(' | ');
+        const idLimpo = document.getElementById('num-random').innerText.split(' ')[0].toString().padStart(3, '0');
 
-        // Envio via POST usando FormData (mais compatível)
-        const formData = new FormData();
-        // Substitua a linha antiga por esta:
-const idLimpo = document.getElementById('num-random').innerText.split(' ')[0].toString().padStart(3, '0');
-formData.append('ID_OS', idLimpo);
+        const formData = new URLSearchParams();
+        formData.append('ID_OS', idLimpo);
         formData.append('CLIENTE', dados.cliente);
         formData.append('ENDERECO', dados.endereco);
         formData.append('CPF', dados.cpf);
@@ -274,15 +286,15 @@ formData.append('ID_OS', idLimpo);
         try {
             await fetch(URL_SALVAR, { 
                 method: 'POST', 
-                body: new URLSearchParams(formData) // Converte para formato aceito pelo doPost
+                mode: 'no-cors', 
+                body: formData 
             });
         } catch (e) { console.error("Erro ao salvar na planilha:", e); }
 
-        // GERAÇÃO DO PDF (Mantendo suas configurações)
         const element = document.getElementById('conteudo-pdf');
         const opt = {
             margin: [0, 0, 0, 0],
-            filename: `OS_${dados.cliente}.pdf`,
+            filename: `${idLimpo}_OS_${dados.cliente}.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
