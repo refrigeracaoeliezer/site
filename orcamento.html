@@ -305,308 +305,648 @@
         </main>
     </div>
 
-    <script>
-    // URLs de Conexão
-const URL_DATABASE = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec"; 
+   <script>
 
-let cacheDados = [];
-let modoOS = false;
-let saldoQuitado = false;
-let id_os_atual = ""; 
+        const URL_DATABASE = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec"; 
 
-// --- FUNÇÕES DE INTERFACE ---
+        let cacheDados = [];
 
-function toggleTheme() {
-    const body = document.body;
-    const icon = document.getElementById('theme-icon');
-    body.classList.toggle('light-mode');
-    localStorage.setItem('theme', body.classList.contains('light-mode') ? 'light' : 'dark');
-    if(icon) icon.className = body.classList.contains('light-mode') ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
-}
+        let modoOS = false;
 
-function autoExpandir(textarea) {
-    textarea.style.height = 'auto';
-    textarea.style.height = textarea.scrollHeight + 'px';
-}
+        let saldoQuitado = false;
 
-function calcularDataFinal() {
-    // Se estivermos editando algo vindo da lista, não recalculamos para não perder a data original
-    if (localStorage.getItem('lock_dates') === 'true') return;
-    
-    const dataInicioVal = document.getElementById('dataInicio').value;
-    const diasPrazo = parseInt(document.getElementById('inputGarantia').value) || 0;
-    const campoDataFinal = document.getElementById('dataPrazoFinal');
-    if (dataInicioVal) {
-        let data = new Date(dataInicioVal + 'T00:00:00');
-        data.setDate(data.getDate() + diasPrazo);
-        campoDataFinal.value = data.toISOString().split('T')[0];
-    }
-}
 
-// --- BUSCA DE DADOS NA PLANILHA ---
 
-async function buscarDadosPlanilha() {
-    try {
-        // Usando a URL que você confirmou que funciona
-        const resp = await fetch(URL_DATABASE);
-        cacheDados = await resp.json();
-        
-        renderizarDatalists();
-        aplicarTextoPadrao();
-        
-        // Após carregar os dados da planilha, verificamos se há algo para editar vindo do localStorage
-        verificarEdicao();
-        
-    } catch (e) { 
-        console.error("Erro ao carregar dados da planilha:", e); 
-    }
-}
+        function toggleTheme() {
 
-// --- CONTROLE DE DROPDOWNS ---
+            const body = document.body;
 
-function toggleDropdown(el) {
-    const wrapper = el.parentElement;
-    const list = el.nextElementSibling;
-    const searchInput = el.querySelector('.search-input');
-    const isVisible = list.style.display === 'block';
-    
-    fecharTodosDropdowns();
+            const icon = document.getElementById('theme-icon');
 
-    if (!isVisible) {
-        list.style.display = 'block';
-        wrapper.classList.add('is-searching');
-        searchInput.focus();
-        searchInput.value = ''; 
-        filtrarDropdown(searchInput);
-    }
-}
+            body.classList.toggle('light-mode');
 
-function filtrarDropdown(input) {
-    const termo = input.value.toLowerCase();
-    const list = input.closest('.custom-dropdown').querySelector('.dropdown-list');
-    const items = list.querySelectorAll('.dropdown-item');
-    items.forEach(item => {
-        item.style.display = item.textContent.toLowerCase().includes(termo) ? 'block' : 'none';
-    });
-}
+            localStorage.setItem('theme', body.classList.contains('light-mode') ? 'light' : 'dark');
 
-function selecionarItemDropdown(li, nome, valorExtra, tipo) {
-    const wrapper = li.closest('.custom-dropdown');
-    const display = wrapper.querySelector('.selected-text');
-    const hiddenInput = wrapper.querySelector('input[type="hidden"]');
-    
-    display.innerText = nome;
-    hiddenInput.value = nome;
-    
-    if (tipo === 'servico') {
-        const card = li.closest('.service-card');
-        const precoInput = card.querySelector('.service-price');
-        let valor = valorExtra.replace("R$", "").replace(/\./g, "").replace(",", ".").trim();
-        precoInput.value = (parseFloat(valor) || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2});
-        atualizarSoma();
-    } else if (tipo === 'cliente') {
-        const cliente = cacheDados.find(x => x.cli_nome === nome);
-        if (cliente) {
-            document.getElementById('enderecoCliente').value = cliente.cli_end || "";
-            document.getElementById('telCliente').value = cliente.cli_tel || "";
+            icon.className = body.classList.contains('light-mode') ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+
         }
-    }
-    fecharTodosDropdowns();
-}
 
-function fecharTodosDropdowns() {
-    document.querySelectorAll('.dropdown-list').forEach(l => l.style.display = 'none');
-    document.querySelectorAll('.custom-dropdown').forEach(d => d.classList.remove('is-searching'));
-}
 
-function renderizarDatalists() {
-    const clientes = [...new Set(cacheDados.map(d => d.cli_nome))].filter(Boolean);
-    document.getElementById('lista-clientes-custom').innerHTML = clientes.map(n => 
-        `<li class="dropdown-item" onclick="selecionarItemDropdown(this, '${n}', '', 'cliente')">${n}</li>`).join('');
-    
-    const dadosEmp = cacheDados.find(d => d.emp_nome);
-    if(dadosEmp) document.getElementById('nomePrestador').value = dadosEmp.emp_nome;
-}
 
-function gerarHtmlServicos() {
-    const servicos = [...new Set(cacheDados.map(d => d.srv_nome))].filter(Boolean);
-    return servicos.map(n => {
-        const item = cacheDados.find(d => d.srv_nome === n);
-        return `<li class="dropdown-item" onclick="selecionarItemDropdown(this, '${n}', '${item.srv_valor}', 'servico')">${n}</li>`;
-    }).join('');
-}
+        function autoExpandir(textarea) {
 
-// --- GERENCIAMENTO DE ITENS/SERVIÇOS ---
+            textarea.style.height = 'auto';
 
-function adicionarServico() {
-    const container = document.getElementById('services-container');
-    const div = document.createElement('div');
-    div.className = "service-card";
-    div.innerHTML = `
-        <div class="service-row-top">
-            <div class="relative flex-grow custom-dropdown">
-                <div class="w-full dark-input p-4 rounded-2xl text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
-                     <span class="selected-text truncate">Selecionar Serviço</span>
-                    <input type="text" class="search-input" placeholder="Pesquisar..." oninput="filtrarDropdown(this)" onclick="event.stopPropagation()">
-                    <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-[10px]"></i>
-                </div>
-                <ul class="dropdown-list">${gerarHtmlServicos()}</ul>
-                <input type="hidden" class="service-name">
-            </div>
-            <button onclick="this.closest('.service-card').remove(); atualizarSoma();" class="text-red-500 p-2">
-                <i class="fa-solid fa-trash-can"></i>
-            </button>
-        </div>
-        <div class="flex items-center gap-3">
-            <div class="flex-grow relative">
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 font-bold text-xs">R$</span>
-                <input type="text" placeholder="0,00" class="w-full dark-input pl-9 p-4 rounded-2xl text-sm font-bold service-price" onkeyup="formatarMoeda(this)">
-            </div>
-            <div class="flex items-center bg-white/5 border border-white/10 rounded-2xl p-2 gap-4">
-                <button onclick="alterarQtde(this, -1)" class="qty-btn"><i class="fa-solid fa-minus"></i></button>
-                <span class="font-bold service-qty w-4 text-center">1</span>
-                <button onclick="alterarQtde(this, 1)" class="qty-btn"><i class="fa-solid fa-plus"></i></button>
-            </div>
-        </div>`;
-    container.appendChild(div);
-}
+            textarea.style.height = textarea.scrollHeight + 'px';
 
-function alterarQtde(btn, delta) {
-    const span = btn.parentElement.querySelector('.service-qty');
-    let val = Math.max(1, parseInt(span.innerText) + delta);
-    span.innerText = val;
-    atualizarSoma();
-}
+        }
 
-function formatarMoeda(i) {
-    let v = i.value.replace(/\D/g, "");
-    v = (v / 100).toFixed(2).replace(".", ",");
-    v = v.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
-    i.value = v;
-    atualizarSoma(); 
-}
 
-function atualizarSoma() {
-    let total = 0;
-    document.querySelectorAll('.service-card').forEach(card => {
-        let preco = parseFloat(card.querySelector('.service-price').value.replace(/\./g, "").replace(",", ".")) || 0;
-        let qtde = parseInt(card.querySelector('.service-qty').innerText) || 1;
-        total += (preco * qtde);
-    });
-    document.getElementById('totalFinal').value = total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-}
 
-// --- LÓGICA DE EDIÇÃO (DADOS DA OUTRA PÁGINA) ---
+        function calcularDataFinal() {
 
-function verificarEdicao() {
-    const dadosParaEditar = localStorage.getItem('editar_os_dados');
-    if (dadosParaEditar) {
-        const os = JSON.parse(dadosParaEditar);
-        localStorage.setItem('lock_dates', 'true');
+            if (modoOS) return;
 
-        if (os.ID_OS && !modoOS) alternarModo();
+            const dataInicioVal = document.getElementById('dataInicio').value;
 
-        id_os_atual = os.ID_OS || ""; 
-        
-        // Preenche Cliente
-        document.getElementById('nomeCliente').value = os.CLIENTE || "";
-        const displayCli = document.querySelector('#dropdown-cliente .selected-text');
-        if(displayCli) displayCli.innerText = os.CLIENTE || "Selecionar Cliente";
-        
-        document.getElementById('enderecoCliente').value = os.ENDERECO || os.ENDEREÇO || "";
-        document.getElementById('telCliente').value = os.CPF || os.TELEFONE || "";
-        
-        // Datas
-        if (os.DATA_DO_SERVICO) document.getElementById('dataInicio').value = converterDataParaIso(os.DATA_DO_SERVICO);
-        if (os.DATA_FIM_GARANTIA) document.getElementById('dataPrazoFinal').value = converterDataParaIso(os.DATA_FIM_GARANTIA);
-        if (os.GARANTIA_DIAS_CALCULADOS) document.getElementById('inputGarantia').value = os.GARANTIA_DIAS_CALCULADOS;
+            const diasPrazo = parseInt(document.getElementById('inputGarantia').value) || 0;
 
-        // Observação
-        setTimeout(() => {
-            document.getElementById('obsGeral').value = os.OSERVACAO || os.OBSERVACAO || ""; 
-            autoExpandir(document.getElementById('obsGeral'));
-        }, 300);
+            const campoDataFinal = document.getElementById('dataPrazoFinal');
 
-        // Serviços (Limpa os vazios e adiciona os da OS)
-        const container = document.getElementById('services-container');
-        container.innerHTML = "";
-        
-        const listaServicos = (os["TIPO_DE_SERVICO"] || os["TIPO_DE_SERVIÇO"] || "").split('|');
-        const listaValores = (os["VALOR_TOTAL"] || "0,00").split('|');
-        
-        listaServicos.forEach((srvTexto, index) => {
-            if (srvTexto.trim() !== "") {
-                let qtd = 1, nome = srvTexto.trim();
-                if (nome.includes('x ')) {
-                    const p = nome.split('x ');
-                    qtd = parseInt(p[0]) || 1;
-                    nome = p[1];
-                }
-                let valorIndiv = listaValores[index] ? listaValores[index].trim() : "0,00";
-                adicionarServicoParaEdicao(nome, qtd, valorIndiv);
+            if (dataInicioVal) {
+
+                let data = new Date(dataInicioVal + 'T00:00:00');
+
+                data.setDate(data.getDate() + diasPrazo);
+
+                campoDataFinal.value = data.toISOString().split('T')[0];
+
             }
+
+        }
+
+
+
+        async function buscarDadosPlanilha() {
+
+            try {
+
+                const resp = await fetch(URL_DATABASE);
+
+                cacheDados = await resp.json();
+
+                renderizarDatalists();
+
+                aplicarTextoPadrao();
+
+                calcularDataFinal();
+
+                const container = document.getElementById('services-container');
+
+                if (container.children.length === 0) {
+
+                    adicionarServico();
+
+                } else {
+
+                    document.querySelectorAll('.dropdown-list').forEach(list => {
+
+                        if (list.id !== 'lista-clientes-custom') {
+
+                            list.innerHTML = gerarHtmlServicos();
+
+                        }
+
+                    });
+
+                }
+
+            } catch (e) { console.error("Erro na carga:", e); }
+
+        }
+
+
+
+        function toggleDropdown(el) {
+
+            const wrapper = el.parentElement;
+
+            const list = el.nextElementSibling;
+
+            const icon = el.querySelector('i');
+
+            const searchInput = el.querySelector('.search-input');
+
+            const isVisible = list.style.display === 'block';
+
+            
+
+            document.querySelectorAll('.dropdown-list').forEach(l => l.style.display = 'none');
+
+            document.querySelectorAll('.custom-dropdown i').forEach(i => i.classList.remove('rotate-icon'));
+
+            document.querySelectorAll('.custom-dropdown').forEach(d => d.classList.remove('is-searching'));
+
+
+
+            if (!isVisible) {
+
+                list.style.display = 'block';
+
+                icon.classList.add('rotate-icon');
+
+                wrapper.classList.add('is-searching');
+
+                searchInput.focus();
+
+                searchInput.value = ''; 
+
+                filtrarDropdown(searchInput, wrapper.id === 'dropdown-cliente' ? 'cliente' : 'servico');
+
+            }
+
+        }
+
+
+
+        function filtrarDropdown(input, tipo) {
+
+            const termo = input.value.toLowerCase();
+
+            const list = input.closest('.custom-dropdown').querySelector('.dropdown-list');
+
+            const items = list.querySelectorAll('.dropdown-item');
+
+            items.forEach(item => {
+
+                const texto = item.textContent.toLowerCase();
+
+                item.style.display = texto.includes(termo) ? 'block' : 'none';
+
+            });
+
+        }
+
+
+
+        function selecionarItemDropdown(li, nome, valorExtra, tipo) {
+
+            const wrapper = li.closest('.custom-dropdown');
+
+            const display = wrapper.querySelector('.selected-text');
+
+            const hiddenInput = wrapper.querySelector('input[type="hidden"]');
+
+            display.innerText = nome;
+
+            hiddenInput.value = nome;
+
+            if (tipo === 'servico') {
+
+                const card = li.closest('.service-card');
+
+                const precoInput = card.querySelector('.service-price');
+
+                let valor = valorExtra.replace("R$", "").replace(".", "").replace(",", ".").trim();
+
+                precoInput.value = (parseFloat(valor) || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+
+                atualizarSoma();
+
+            } else if (tipo === 'cliente') {
+
+                const cliente = cacheDados.find(x => x.cli_nome === nome);
+
+                if (cliente) {
+
+                    document.getElementById('enderecoCliente').value = cliente.cli_end || "";
+
+                    document.getElementById('telCliente').value = cliente.cli_tel || "";
+
+                }
+
+            }
+
+            fecharTodosDropdowns();
+
+        }
+
+
+
+        function fecharTodosDropdowns() {
+
+            document.querySelectorAll('.dropdown-list').forEach(l => l.style.display = 'none');
+
+            document.querySelectorAll('.custom-dropdown i').forEach(i => i.classList.remove('rotate-icon'));
+
+            document.querySelectorAll('.custom-dropdown').forEach(d => d.classList.remove('is-searching'));
+
+        }
+
+
+
+        function renderizarDatalists() {
+
+            const clientes = [...new Set(cacheDados.map(d => d.cli_nome))].filter(Boolean);
+
+            document.getElementById('lista-clientes-custom').innerHTML = clientes.map(n => 
+
+                `<li class="dropdown-item" onclick="selecionarItemDropdown(this, '${n}', '', 'cliente')">${n}</li>`).join('');
+
+            const dadosEmp = cacheDados.find(d => d.emp_nome);
+
+            if(dadosEmp) document.getElementById('nomePrestador').value = dadosEmp.emp_nome;
+
+        }
+
+
+
+        function gerarHtmlServicos() {
+
+            const servicos = [...new Set(cacheDados.map(d => d.srv_nome))].filter(Boolean);
+
+            return servicos.map(n => {
+
+                const item = cacheDados.find(d => d.srv_nome === n);
+
+                return `<li class="dropdown-item" onclick="selecionarItemDropdown(this, '${n}', '${item.srv_valor}', 'servico')">${n}</li>`;
+
+            }).join('');
+
+        }
+
+
+
+      function adicionarServico() {
+
+    const container = document.getElementById('services-container');
+
+    const div = document.createElement('div');
+
+    div.className = "service-card"; // Mantemos a classe base
+
+    const opcoes = gerarHtmlServicos();
+
+    
+
+    div.innerHTML = `
+
+        <div class="service-row-top">
+
+            <div class="relative flex-grow custom-dropdown">
+
+                <div class="w-full dark-input p-4 rounded-2xl text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
+
+                     <span class="selected-text truncate">Selecionar Serviço</span>
+
+                    <input type="text" class="search-input" placeholder="Selecionar Serviço" oninput="filtrarDropdown(this, 'servico')" onclick="event.stopPropagation()">
+
+                    <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-[10px] transition-transform duration-300"></i>
+
+                </div>
+
+                <ul class="dropdown-list">${opcoes}</ul>
+
+                <input type="hidden" class="service-name">
+
+            </div>
+
+            <button onclick="this.closest('.service-card').remove(); atualizarSoma();" class="text-red-500 hover:text-red-400 transition-colors">
+
+                <i class="fa-solid fa-trash-can text-lg"></i>
+
+            </button>
+
+        </div>
+
+
+
+        <div class="flex items-center gap-3">
+
+            <div class="flex-grow relative">
+
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 font-bold text-xs">R$</span>
+
+                <input type="text" placeholder="0,00" class="w-full dark-input pl-9 p-4 rounded-2xl text-sm font-bold service-price" onkeyup="formatarMoeda(this)">
+
+            </div>
+
+            <div class="flex items-center bg-white/5 border border-white/10 rounded-2xl p-2 gap-4">
+
+                <button onclick="alterarQtde(this, -1)" class="qty-btn"><i class="fa-solid fa-minus text-[10px]"></i></button>
+
+                <span class="font-bold text-base service-qty w-4 text-center">1</span>
+
+                <button onclick="alterarQtde(this, 1)" class="qty-btn"><i class="fa-solid fa-plus text-[10px]"></i></button>
+
+            </div>
+
+        </div>`;
+
+    container.appendChild(div);
+
+}
+
+
+
+        function formatarMoeda(i) {
+
+            let v = i.value.replace(/\D/g, "");
+
+            v = (v / 100).toFixed(2).replace(".", ",");
+
+            v = v.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
+
+            i.value = v;
+
+            atualizarSoma(); 
+
+        }
+
+
+
+        function atualizarSoma() {
+
+            let total = 0;
+
+            document.querySelectorAll('.service-card').forEach(card => {
+
+                let preco = parseFloat(card.querySelector('.service-price').value.replace(/\./g, "").replace(",", ".")) || 0;
+
+                let qtde = parseInt(card.querySelector('.service-qty').innerText) || 1;
+
+                total += (preco * qtde);
+
+            });
+
+            document.getElementById('totalFinal').value = total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+
+        }
+
+
+
+        function alterarQtde(btn, delta) {
+
+            const span = btn.parentElement.querySelector('.service-qty');
+
+            let val = Math.max(1, parseInt(span.innerText) + delta);
+
+            span.innerText = val;
+
+            atualizarSoma();
+
+        }
+
+
+
+        function alternarModo() {
+
+            modoOS = !modoOS;
+
+            const card = document.getElementById('card-principal');
+
+            const subTitle = document.getElementById('sub-title');
+
+            const btnAcao = document.getElementById('btn-acao');
+
+            const lblPrazo = document.getElementById('label-prazo');
+
+            const campoDataFinal = document.getElementById('dataPrazoFinal');
+
+            document.getElementById('toggleMode').classList.toggle('mode-os');
+
+            card.classList.toggle('is-os');
+
+            aplicarTextoPadrao();
+
+            subTitle.innerText = modoOS ? "Ordem de Serviço (OS)" : "Sistema de Orçamento";
+
+            btnAcao.innerHTML = modoOS ? 'Finalizar O.S <i class="fa-solid fa-check"></i>' : 'Gerar Orçamento <i class="fa-solid fa-arrow-right"></i>';
+
+            document.getElementById('label-dados').innerText = modoOS ? "Dados da Ordem de Serviço" : "Dados do Orçamento";
+
+            lblPrazo.innerText = modoOS ? "Garantia" : "Vencimento";
+
+            lblPrazo.classList.toggle('bg-blue-600', !modoOS);
+
+            lblPrazo.classList.toggle('bg-green-600', modoOS);
+
+            document.getElementById('lbl-os').classList.toggle('active-label', modoOS);
+
+            document.getElementById('lbl-orc').classList.toggle('active-label', !modoOS);
+
+            document.getElementById('btn-add-icon').className = modoOS ? "fa-solid fa-circle-plus mr-2 text-green-500" : "fa-solid fa-circle-plus mr-2 text-blue-500";
+
+            if (modoOS) {
+
+                campoDataFinal.readOnly = false;
+
+                campoDataFinal.value = new Date().toISOString().split('T')[0];
+
+            } else {
+
+                campoDataFinal.readOnly = true;
+
+                calcularDataFinal();
+
+            }
+
+        }
+
+
+
+        function aplicarTextoPadrao() {
+
+            const listaObs = cacheDados.map(d => d.txt_obs).filter(Boolean);
+
+            document.getElementById('obsGeral').value = modoOS ? (listaObs[1] || "") : (listaObs[0] || "");
+
+            autoExpandir(document.getElementById('obsGeral'));
+
+        }
+
+
+
+        function alternarQuitacao() {
+
+            saldoQuitado = !saldoQuitado;
+
+            const btn = document.getElementById('btn-quitar');
+
+            btn.innerText = saldoQuitado ? "PAGAMENTO CONFIRMADO" : "QUITAR SALDO";
+
+            btn.className = saldoQuitado ? "text-[9px] font-black px-3 py-1 rounded-lg border border-green-600 text-white bg-green-600" : "text-[9px] font-black px-3 py-1 rounded-lg border border-green-500/30 text-green-500 bg-green-500/10";
+
+            gerarDocumento();
+
+        }
+
+
+
+        function gerarDocumento() {
+
+            const prestador = document.getElementById('nomePrestador').value || "ELIEZER";
+
+            const cliente = document.getElementById('nomeCliente').value || "Cliente";
+
+            const total = document.getElementById('totalFinal').value;
+
+            const obs = document.getElementById('obsGeral').value;
+
+            const dias = document.getElementById('inputGarantia').value;
+
+            const dataFim = document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/');
+
+            const chavePix = (cacheDados.find(d => d.emp_pix) || {}).emp_pix || "[PIX]";
+
+            let servicosTexto = "";
+
+            document.querySelectorAll('.service-card').forEach(card => {
+
+                const n = card.querySelector('.service-name').value;
+
+                const p = card.querySelector('.service-price').value;
+
+                const q = card.querySelector('.service-qty').innerText;
+
+                if(n) servicosTexto += `• ${q}x ${n} - R$ ${p}\n`;
+
+            });
+
+            const totalNum = parseFloat(total.replace(/\./g, "").replace(",", ".")) || 0;
+
+            const sinal = (totalNum * 0.3).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+
+            const saldo = (totalNum * 0.7).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+
+            document.getElementById('txt-proposta').innerText = `*ORÇAMENTO TÉCNICO - ${prestador.toUpperCase()}*\n\nOlá ${cliente}! Segue o orçamento:\n\n*SERVIÇOS:*\n${servicosTexto}\n*OBS:*\n${obs}\n\n*INVESTIMENTO TOTAL:* R$ ${total}\n(Material + Mão de Obra incluso)\n\n*${modoOS ? 'Garantia' : 'Vencimento'}:* ${dias} dias\n*Data Prevista:* ${dataFim}\n\nFicaremos no aguardo.`;
+
+            document.getElementById('txt-sinal').innerText = `*Confirmação de Agendamento*\n\nOlá, ${cliente}, tudo bem?\n\nPara formalizarmos o seu atendimento e garantirmos a reserva dos materiais e da sua data em nossa agenda, solicitamos o pagamento da entrada:\n\n💰 *Valor da Entrada (30%):* R$ ${sinal}\n🔑 *Chave PIX:* ${chavePix}\n\nAssim que realizar a transferência, por favor, nos envie o comprovante para validarmos o agendamento. 🗓️\n\nFicamos à disposição para qualquer dúvida!`;
+
+           
+
+           document.getElementById('txt-conclusao').innerText = `*Finalização de Serviço* ❄️\n\nOlá, ${cliente}, tudo bem?\n\nInformamos que o serviço em seu equipamento foi concluído com sucesso! ✅ Realizamos todos os testes técnicos e o sistema já está operando em perfeitas condições.\n\n💳 *Status de Pagamento:* ${saldoQuitado ? "Saldo Quitado" : `Saldo de R$ ${saldo}`}\n🛡️ *Garantia:* Você tem *${dias} dias* de garantia total sobre o serviço executado.\n\nAgradecemos a confiança em nosso trabalho! Qualquer dúvida, estamos à disposição.\n\nAtenciosamente,\n*${prestador}*`;
+
+            
+
+            document.getElementById('modal-mensagens').style.display = 'block';
+
+            document.body.style.overflow = 'hidden';
+
+        }
+
+
+
+        function fecharModal() { document.getElementById('modal-mensagens').style.display = 'none'; document.body.style.overflow = 'auto'; }
+
+        
+
+        function enviarWpp(id) {
+
+            const txt = document.getElementById(id).innerText;
+
+            const tel = document.getElementById('telCliente').value.replace(/\D/g, '');
+
+            if(!tel) return alert("WhatsApp!");
+
+            window.open(`https://api.whatsapp.com/send?phone=55${tel}&text=${encodeURIComponent(txt)}`, '_blank');
+
+        }
+
+
+
+        function copiarTextoProfissional(id, el) {
+
+            navigator.clipboard.writeText(document.getElementById(id).innerText).then(() => {
+
+                const old = el.innerText; el.innerText = "COPIADO!"; el.classList.add('btn-copy-success');
+
+                setTimeout(() => { el.innerText = old; el.classList.remove('btn-copy-success'); }, 2000);
+
+            });
+
+        }
+
+
+
+        function baixarPDF() {
+
+            const dados = {
+
+                tipo: modoOS ? "ORDEM DE SERVIÇO" : "ORÇAMENTO",
+
+                cliente: document.getElementById('nomeCliente').value || "Cliente",
+
+                endereco: document.getElementById('enderecoCliente').value,
+
+                emissao: document.getElementById('dataInicio').value.split('-').reverse().join('/'),
+
+                validade: document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/'),
+
+                total: document.getElementById('totalFinal').value,
+
+                obs: document.getElementById('obsGeral').value,
+
+                garantia: document.getElementById('inputGarantia').value,
+
+                itens: Array.from(document.querySelectorAll('.service-card')).map(c => ({
+
+                    descricao: c.querySelector('.service-name').value,
+
+                    qtd: c.querySelector('.service-qty').innerText,
+
+                    valor: c.querySelector('.service-price').value
+
+                }))
+
+            };
+
+            localStorage.setItem('dados_impressao', JSON.stringify(dados));
+
+            window.location.href = modoOS ? "imp.html" : "impressao.html";
+
+        }
+
+
+
+        window.onload = () => {
+
+            if(localStorage.getItem('theme') === 'light') toggleTheme();
+
+            const dataHoje = new Date().toISOString().split('T')[0];
+
+            document.getElementById('dataInicio').value = dataHoje;
+
+            document.getElementById('dataPrazoFinal').value = dataHoje;
+
+            buscarDadosPlanilha();
+
+        };
+
+
+
+        window.addEventListener('click', e => {
+
+            if (!e.target.closest('.custom-dropdown')) {
+
+                fecharTodosDropdowns();
+
+            }
+
         });
 
-        atualizarSoma();
-        localStorage.removeItem('editar_os_dados');
-    } else {
-        localStorage.removeItem('lock_dates');
-        if (document.getElementById('services-container').children.length === 0) adicionarServico();
-    }
-}
 
-function adicionarServicoParaEdicao(nome, qtd, valorIndividual) {
-    adicionarServico();
-    const cards = document.querySelectorAll('.service-card');
-    const ultimoCard = cards[cards.length - 1];
-    ultimoCard.querySelector('.selected-text').innerText = nome;
-    ultimoCard.querySelector('.service-name').value = nome;
-    ultimoCard.querySelector('.service-qty').innerText = qtd;
-    const precoInput = ultimoCard.querySelector('.service-price');
-    precoInput.value = valorIndividual.replace("R$", "").trim();
-    formatarMoeda(precoInput);
-}
 
-function converterDataParaIso(dataBr) {
-    if (!dataBr) return "";
-    let limpa = dataBr.toString().split('T')[0];
-    let partes = limpa.includes('/') ? limpa.split('/') : limpa.split('-');
-    if (partes.length !== 3) return "";
-    return partes[0].length === 4 ? limpa : `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
-}
 
-// --- FINALIZAÇÃO E DOCUMENTOS ---
 
-function alternarModo() {
-    modoOS = !modoOS;
-    document.getElementById('toggleMode').classList.toggle('mode-os');
-    document.getElementById('card-principal').classList.toggle('is-os');
-    document.getElementById('sub-title').innerText = modoOS ? "Ordem de Serviço (OS)" : "Sistema de Orçamento";
-    document.getElementById('btn-acao').innerHTML = modoOS ? 'Finalizar O.S <i class="fa-solid fa-check"></i>' : 'Gerar Orçamento <i class="fa-solid fa-arrow-right"></i>';
-    aplicarTextoPadrao();
-}
+        // Adicione isso dentro do window.onload ou no final da tag <script> do seu criador de orçamentos
 
-function aplicarTextoPadrao() {
-    if (localStorage.getItem('lock_dates') === 'true') return;
-    const listaObs = cacheDados.map(d => d.txt_obs).filter(Boolean);
-    document.getElementById('obsGeral').value = modoOS ? (listaObs[1] || "") : (listaObs[0] || "");
-    autoExpandir(document.getElementById('obsGeral'));
-}
+const dadosParaEditar = localStorage.getItem('editar_os_dados');
 
-// Inicialização
-window.onload = async () => {
-    if(localStorage.getItem('theme') === 'light') toggleTheme();
+if (dadosParaEditar) {
+
+    const os = JSON.parse(dadosParaEditar);
+
     
-    // Datas iniciais
-    const dataHoje = new Date().toISOString().split('T')[0];
-    document.getElementById('dataInicio').value = dataHoje;
-    document.getElementById('dataPrazoFinal').value = dataHoje;
 
-    // Busca dados e depois verifica edição
-    await buscarDadosPlanilha();
-};
+    // Preenche os campos básicos
 
-window.addEventListener('click', e => { if (!e.target.closest('.custom-dropdown')) fecharTodosDropdowns(); });
+    document.getElementById('nomeCliente').value = os.CLIENTE || "";
+
+    document.getElementById('enderecoCliente').value = os.ENDERECO || os.ENDEREÇO || "";
+
+    // Você pode preencher os outros campos seguindo essa lógica...
+
+
+
+    // Limpa o cache após usar para não carregar sempre os mesmos dados
+
+    localStorage.removeItem('editar_os_dados'); 
+
+}
+
     </script>
+
 </body>
+
 </html>
