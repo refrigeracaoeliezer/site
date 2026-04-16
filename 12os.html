@@ -168,11 +168,16 @@
     </div>
 
     <script>
-        const URL_DATABASE = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec"; 
+        // PLANILHA 1 (CONFIGURAÇÕES): Alimenta clientes, serviços e empresa na barra de pesquisa
+        const URL_CONFIG = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec";
+        
+        // PLANILHA 2 (HISTÓRICO O.S): Usada apenas para edição silenciosa via Dashboard
+        const URL_DATABASE = "https://script.google.com/macros/s/AKfycbwQtl03sFhb6_rfUd2HwZRE5I3q5u9hHHAFnO87brEmKhTf1FUdLmr8TNA7SfrLqS5jVQ/exec"; 
+
         let cacheDados = [];
         let modoOS = false;
 
-        // --- FUNÇÕES DE SINCRONIZAÇÃO COM A PLANILHA O.S. ---
+        // --- FUNÇÕES DE SINCRONIZAÇÃO COM PLANILHA DE O.S. (APENAS PARA EDIÇÃO) ---
 
         function converterDataParaIso(dataBr) {
             if (!dataBr || !dataBr.includes('/')) return "";
@@ -197,18 +202,16 @@
             if (dadosParaEditar) {
                 const os = JSON.parse(dadosParaEditar);
                 
-                // Mapeamento baseado nas colunas da Planilha O.S (B, C, D, E, I, K)
                 document.getElementById('nomeCliente').value = os.CLIENTE || "";
                 document.querySelector('#dropdown-cliente .selected-text').innerText = os.CLIENTE || "Selecionar Cliente";
                 document.getElementById('enderecoCliente').value = os.ENDERECO || "";
                 document.getElementById('telCliente').value = os.CPF || "";
-                document.getElementById('obsGeral').value = os.OSERVACAO || ""; // Coluna K
+                document.getElementById('obsGeral').value = os.OSERVACAO || ""; 
 
                 if (os.DATA_DO_SERVICO) document.getElementById('dataInicio').value = converterDataParaIso(os.DATA_DO_SERVICO);
                 if (os.DATA_FIM_GARANTIAO) document.getElementById('dataPrazoFinal').value = converterDataParaIso(os.DATA_FIM_GARANTIAO);
                 if (os.GARANTIA_DIAS) document.getElementById('inputGarantia').value = os.GARANTIA_DIAS.toString().replace(/\D/g, "");
 
-                // Reconstrói Itens (Coluna F)
                 const container = document.getElementById('services-container');
                 container.innerHTML = "";
                 const servicosTexto = os["TIPO_DE_SERVICO"] || "";
@@ -240,18 +243,23 @@
             }
         }
 
-        // --- FUNÇÕES ORIGINAIS (MANTIDAS SEM ALTERAÇÃO) ---
+        // --- CARREGAMENTO DE DADOS (USANDO APENAS URL_CONFIG PARA A BUSCA) ---
 
         async function buscarDadosPlanilha() {
             try {
-                const resp = await fetch(URL_DATABASE);
+                // Apenas busca da Planilha 1 para popular os menus
+                const resp = await fetch(URL_CONFIG);
                 cacheDados = await resp.json();
                 renderizarDatalists();
                 aplicarTextoPadrao();
                 calcularDataFinal();
-                verificarEdicao(); // Chamada após carregar cache
-            } catch (e) { console.error("Erro:", e); }
+                
+                // Após carregar os clientes/serviços, verifica se veio do Dashboard para editar
+                verificarEdicao();
+            } catch (e) { console.error("Erro na carga:", e); }
         }
+
+        // --- FUNÇÕES DE COMPORTAMENTO ORIGINAIS ---
 
         function formatarMoeda(i) {
             let v = i.value.replace(/\D/g, "");
@@ -299,13 +307,13 @@
             container.appendChild(div);
         }
 
-        function alternarModo() {
-            modoOS = !modoOS;
-            document.getElementById('card-principal').classList.toggle('is-os');
-            document.getElementById('sub-title').innerText = modoOS ? "Ordem de Serviço (OS)" : "Sistema de Orçamento";
-            document.getElementById('label-prazo').innerText = modoOS ? "Garantia" : "Vencimento";
-            document.getElementById('dataPrazoFinal').readOnly = !modoOS;
-            aplicarTextoPadrao();
+        function renderizarDatalists() {
+            // Usa apenas os dados da Planilha 1 (cacheDados)
+            const clientes = [...new Set(cacheDados.map(d => d.cli_nome))].filter(Boolean);
+            document.getElementById('lista-clientes-custom').innerHTML = clientes.map(n => 
+                `<li class="dropdown-item" onclick="selecionarItemDropdown(this, '${n}', '', 'cliente')">${n}</li>`).join('');
+            const dadosEmp = cacheDados.find(d => d.emp_nome);
+            if(dadosEmp) document.getElementById('nomePrestador').value = dadosEmp.emp_nome;
         }
 
         function gerarHtmlServicos() {
@@ -316,17 +324,19 @@
             }).join('');
         }
 
+        // Funções auxiliares (Dropdown, Alternar modo, PDF, etc) permanecem as mesmas
+        function alternarModo() {
+            modoOS = !modoOS;
+            document.getElementById('card-principal').classList.toggle('is-os');
+            document.getElementById('sub-title').innerText = modoOS ? "Ordem de Serviço (OS)" : "Sistema de Orçamento";
+            document.getElementById('label-prazo').innerText = modoOS ? "Garantia" : "Vencimento";
+            document.getElementById('dataPrazoFinal').readOnly = !modoOS;
+            aplicarTextoPadrao();
+        }
+
         function aplicarTextoPadrao() {
             const listaObs = cacheDados.map(d => d.txt_obs).filter(Boolean);
             document.getElementById('obsGeral').value = modoOS ? (listaObs[1] || "") : (listaObs[0] || "");
-        }
-
-        function renderizarDatalists() {
-            const clientes = [...new Set(cacheDados.map(d => d.cli_nome))].filter(Boolean);
-            document.getElementById('lista-clientes-custom').innerHTML = clientes.map(n => 
-                `<li class="dropdown-item" onclick="selecionarItemDropdown(this, '${n}', '', 'cliente')">${n}</li>`).join('');
-            const dadosEmp = cacheDados.find(d => d.emp_nome);
-            if(dadosEmp) document.getElementById('nomePrestador').value = dadosEmp.emp_nome;
         }
 
         window.onload = () => {
@@ -336,10 +346,47 @@
             buscarDadosPlanilha();
         };
 
-        // Funções de UI (Dropdown, Expandir, etc) mantidas conforme seu original
         function autoExpandir(t) { t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; }
         function alterarQtde(b, d) { const s = b.parentElement.querySelector('.service-qty'); s.innerText = Math.max(1, parseInt(s.innerText) + d); atualizarSoma(); }
         function fecharModal() { document.getElementById('modal-mensagens').style.display = 'none'; document.body.style.overflow = 'auto'; }
+
+        // Dropdown Logic
+        function toggleDropdown(el) {
+            const list = el.nextElementSibling;
+            const isVisible = list.style.display === 'block';
+            document.querySelectorAll('.dropdown-list').forEach(l => l.style.display = 'none');
+            if (!isVisible) list.style.display = 'block';
+        }
+
+        function selecionarItemDropdown(li, nome, valorExtra, tipo) {
+            const wrapper = li.closest('.custom-dropdown');
+            wrapper.querySelector('.selected-text').innerText = nome;
+            wrapper.querySelector('input[type="hidden"]').value = nome;
+            if (tipo === 'servico') {
+                const card = li.closest('.service-card');
+                card.querySelector('.service-price').value = valorExtra.replace("R$", "").trim();
+                formatarMoeda(card.querySelector('.service-price'));
+            } else if (tipo === 'cliente') {
+                const cliente = cacheDados.find(x => x.cli_nome === nome);
+                if (cliente) {
+                    document.getElementById('enderecoCliente').value = cliente.cli_end || "";
+                    document.getElementById('telCliente').value = cliente.cli_tel || "";
+                }
+            }
+            li.parentElement.style.display = 'none';
+        }
+
+        function calcularDataFinal() {
+            if (modoOS) return;
+            const dataInicioVal = document.getElementById('dataInicio').value;
+            const diasPrazo = parseInt(document.getElementById('inputGarantia').value) || 0;
+            const campoDataFinal = document.getElementById('dataPrazoFinal');
+            if (dataInicioVal) {
+                let data = new Date(dataInicioVal + 'T00:00:00');
+                data.setDate(data.getDate() + diasPrazo);
+                campoDataFinal.value = data.toISOString().split('T')[0];
+            }
+        }
     </script>
 </body>
 </html>
