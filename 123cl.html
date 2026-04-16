@@ -80,149 +80,169 @@
     </div>
 
     <script>
-        const URL_DATABASE = "https://script.google.com/macros/s/AKfycbz-zP-zvRgrzKkmf0KsfoEnmgKU7kJ9XOm4xp9PkkaNii2jT-6Cxy8YEu4rWQkRNS80kw/exec";
+    const URL_DATABASE = "https://script.google.com/macros/s/AKfycbz-zP-zvRgrzKkmf0KsfoEnmgKU7kJ9XOm4xp9PkkaNii2jT-6Cxy8YEu4rWQkRNS80kw/exec";
 
-        function toggleTheme() {
-            const body = document.body;
-            const icon = document.getElementById('theme-icon');
-            body.classList.toggle('light-mode');
-            localStorage.setItem('theme', body.classList.contains('light-mode') ? 'light' : 'dark');
-            icon.className = body.classList.contains('light-mode') ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+    function toggleTheme() {
+        const body = document.body;
+        const icon = document.getElementById('theme-icon');
+        body.classList.toggle('light-mode');
+        localStorage.setItem('theme', body.classList.contains('light-mode') ? 'light' : 'dark');
+        icon.className = body.classList.contains('light-mode') ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+    }
+
+    async function carregarDados() {
+        try {
+            const response = await fetch(URL_DATABASE, { redirect: "follow" });
+            const dados = await response.json();
+            const ultimosDez = dados.slice(-10).reverse();
+            renderizarCards(ultimosDez);
+        } catch (error) {
+            console.error("Erro na requisição:", error);
+            document.getElementById('container-historico').innerHTML = "Erro ao conectar com a planilha.";
         }
+    }
 
-        async function carregarDados() {
-            try {
-                const response = await fetch(URL_DATABASE, { redirect: "follow" });
-                const dados = await response.json();
-                const ultimosDez = dados.slice(-10).reverse();
-                renderizarCards(ultimosDez);
-            } catch (error) {
-                console.error("Erro na requisição:", error);
-                document.getElementById('container-historico').innerHTML = "Erro ao conectar com a planilha.";
-            }
-        }
+    function verificarGarantia(dataFimGarantia) {
+        if (!dataFimGarantia || dataFimGarantia === "---") return false;
+        const hoje = new Date();
+        const partes = dataFimGarantia.toString().split('/');
+        if (partes.length !== 3) return false;
+        const dataFim = new Date(partes[2], partes[1] - 1, partes[0]);
+        return hoje <= dataFim;
+    }
 
-        function verificarGarantia(dataFimGarantia) {
-            if (!dataFimGarantia || dataFimGarantia === "---") return false;
-            const hoje = new Date();
-            const partes = dataFimGarantia.toString().split('/');
-            if (partes.length !== 3) return false;
-            const dataFim = new Date(partes[2], partes[1] - 1, partes[0]);
-            return hoje <= dataFim;
-        }
-
-        // Função para calcular a diferença de dias entre duas datas (DD/MM/YYYY)
-        function calcularDiasGarantia(inicio, fim) {
-            if (!inicio || !fim || inicio === "---" || fim === "---") return 30;
-            const conv = (s) => { const p = s.split('/'); return new Date(p[2], p[1] - 1, p[0]); };
+    // Função para calcular a diferença de dias entre duas datas (DD/MM/YYYY)
+    function calcularDiasEntre(inicio, fim) {
+        if (!inicio || !fim || inicio === "---" || fim === "---") return 30;
+        const conv = (s) => { 
+            const p = s.split('/'); 
+            return new Date(p[2], p[1] - 1, p[0]); 
+        };
+        try {
             const d1 = conv(inicio);
             const d2 = conv(fim);
             const diff = Math.abs(d2 - d1);
             return Math.ceil(diff / (1000 * 60 * 60 * 24));
-        }
+        } catch(e) { return 30; }
+    }
 
-        function editarServico(dadosString) {
-            const os = JSON.parse(decodeURIComponent(dadosString));
-            const diasCalculados = calcularDiasGarantia(os["DATA_DO_SERVICO"], os["DATA_FIM_GARANTIA"]);
-            const pacoteCompleto = { ...os, "GARANTIA_DIAS_CALCULADOS": diasCalculados };
-            localStorage.setItem('editar_os_dados', JSON.stringify(pacoteCompleto));
-            window.location.href = "12os.html"; 
-        }
+    function editarServico(dadosString) {
+        const os = JSON.parse(decodeURIComponent(dadosString));
+        
+        // Calculamos os dias de garantia aqui para preencher a barra de dias na outra página
+        const diasCalculados = calcularDiasEntre(os["DATA_DO_SERVICO"], os["DATA_FIM_GARANTIA"]);
+        
+        // Empacota todos os dados (CPF, OBS, Datas e Dias Calculados)
+        const pacoteCompleto = { 
+            ...os, 
+            "GARANTIA_DIAS_CALCULADOS": diasCalculados 
+        };
+        
+        localStorage.setItem('editar_os_dados', JSON.stringify(pacoteCompleto));
+        window.location.href = "12os.html"; 
+    }
 
-        async function excluirOS(id) {
-            if (!confirm(`Tem certeza que deseja excluir a OS #${id}?`)) return;
-            try {
-                const response = await fetch(`${URL_DATABASE}?deleteID=${id}`, { redirect: "follow" });
-                const res = await response.json();
-                if (res.status === "success") {
-                    alert("Excluído com sucesso!");
-                    carregarDados();
-                } else { alert("Erro ao excluir na planilha."); }
-            } catch (error) { alert("Erro de conexão ao tentar excluir."); }
-        }
+    async function excluirOS(id) {
+        if (!confirm(`Tem certeza que deseja excluir a OS #${id}?`)) return;
+        try {
+            const response = await fetch(`${URL_DATABASE}?deleteID=${id}`, { redirect: "follow" });
+            const res = await response.json();
+            if (res.status === "success") {
+                alert("Excluído com sucesso!");
+                carregarDados();
+            } else { alert("Erro ao excluir na planilha."); }
+        } catch (error) { alert("Erro de conexão ao tentar excluir."); }
+    }
 
-        function formatarDataBR(dataPlanilha) {
-            if (!dataPlanilha || dataPlanilha === "---") return "---";
-            if (dataPlanilha.toString().includes('T')) {
-                const d = new Date(dataPlanilha);
-                return d.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
-            }
-            return dataPlanilha;
+    function formatarDataBR(dataPlanilha) {
+        if (!dataPlanilha || dataPlanilha === "---") return "---";
+        if (dataPlanilha.toString().includes('T')) {
+            const d = new Date(dataPlanilha);
+            return d.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
         }
+        return dataPlanilha;
+    }
 
-        function renderizarCards(lista) {
-            const container = document.getElementById('container-historico');
-            container.innerHTML = "";
-            lista.forEach(os => {
-                const idOS = os["ID_OS"] || "---";
-                const cliente = os["CLIENTE"] || "Não identificado";
-                const endereco = os["ENDERECO"] || os["ENDEREÇO"] || "---"; 
-                const servicosTexto = os["TIPO_DE_SERVICO"] || os["TIPO_DE_SERVIÇO"] || ""; 
-                const valorTotal = os["VALOR_TOTAL"] || "0,00"; 
-                const dataGarantia = formatarDataBR(os["DATA_FIM_GARANTIA"]); 
-                const servicosArray = servicosTexto.toString().split('|');
-                let htmlServicos = "";
-                servicosArray.forEach(srv => {
-                    if(srv.trim() !== "") {
-                        htmlServicos += `<div class="item-servico text-xs text-white/70 italic">${srv.trim()}</div>`;
-                    }
-                });
-                const estaNaGarantia = verificarGarantia(dataGarantia);
-                const badgeClass = estaNaGarantia ? "em-garantia" : "fora-garantia";
-                const badgeText = estaNaGarantia ? "🟢 Em Garantia" : "🔴 Fora da Garantia";
-                const dadosParaEdicao = encodeURIComponent(JSON.stringify(os));
-                container.innerHTML += `
-                    <div class="glass-card p-6 card-item">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <span class="text-[10px] font-black text-blue-500 uppercase tracking-widest">OS #${idOS}</span>
-                                <h2 class="text-lg font-bold nome-cliente leading-tight">${cliente}</h2>
-                                <p class="text-[10px] text-white/40 uppercase font-bold mt-1">${endereco}</p>
-                            </div>
-                            <div class="flex flex-col items-end gap-2">
-                                <span class="status-badge ${badgeClass}">${badgeText}</span>
-                                <div class="flex gap-2">
-                                    <button onclick="editarServico('${dadosParaEdicao}')" class="edit-btn" title="Editar Orçamento">
-                                        <i class="fa-solid fa-pen-to-square"></i>
-                                    </button>
-                                    <button onclick="excluirOS('${idOS}')" class="delete-btn" title="Excluir OS">
-                                        <i class="fa-solid fa-trash-can"></i>
-                                    </button>
-                                </div>
-                            </div>
+    function renderizarCards(lista) {
+        const container = document.getElementById('container-historico');
+        container.innerHTML = "";
+        lista.forEach(os => {
+            const idOS = os["ID_OS"] || "---";
+            const cliente = os["CLIENTE"] || "Não identificado";
+            const endereco = os["ENDERECO"] || os["ENDEREÇO"] || "---"; 
+            const servicosTexto = os["TIPO_DE_SERVICO"] || os["TIPO_DE_SERVIÇO"] || ""; 
+            const valorTotal = os["VALOR_TOTAL"] || "0,00"; 
+            
+            // Exibe a data formatada corretamente na tela
+            const dataGarantia = formatarDataBR(os["DATA_FIM_GARANTIA"]); 
+
+            const servicosArray = servicosTexto.toString().split('|');
+            let htmlServicos = "";
+            servicosArray.forEach(srv => {
+                if(srv.trim() !== "") {
+                    htmlServicos += `<div class="item-servico text-xs text-white/70 italic">${srv.trim()}</div>`;
+                }
+            });
+
+            const estaNaGarantia = verificarGarantia(dataGarantia);
+            const badgeClass = estaNaGarantia ? "em-garantia" : "fora-garantia";
+            const badgeText = estaNaGarantia ? "🟢 Em Garantia" : "🔴 Fora da Garantia";
+            
+            // O pacote de dados enviado pelo botão contém a linha inteira da planilha (incluindo CPF e OBS)
+            const dadosParaEdicao = encodeURIComponent(JSON.stringify(os));
+
+            container.innerHTML += `
+                <div class="glass-card p-6 card-item">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <span class="text-[10px] font-black text-blue-500 uppercase tracking-widest">OS #${idOS}</span>
+                            <h2 class="text-lg font-bold nome-cliente leading-tight">${cliente}</h2>
+                            <p class="text-[10px] text-white/40 uppercase font-bold mt-1">${endereco}</p>
                         </div>
-                        <div class="bg-white/5 rounded-xl p-4 mb-4">
-                            <span class="text-[9px] font-black text-white/30 uppercase block mb-2 tracking-widest">Serviços Executados:</span>
-                            ${htmlServicos || '<div class="text-[10px] text-white/20 italic">Nenhum serviço registrado</div>'}
-                        </div>
-                        <div class="grid grid-cols-2 gap-4 text-[10px] font-bold uppercase">
-                            <div>
-                                <span class="text-white/30 block mb-1">Valor Cobrado</span>
-                                <span class="text-blue-400 text-sm font-black">R$ ${valorTotal}</span>
-                            </div>
-                            <div>
-                                <span class="text-white/30 block mb-1">Término da Garantia</span>
-                                <span class="${estaNaGarantia ? 'text-green-400' : 'text-red-400'} text-sm">${dataGarantia}</span>
+                        <div class="flex flex-col items-end gap-2">
+                            <span class="status-badge ${badgeClass}">${badgeText}</span>
+                            <div class="flex gap-2">
+                                <button onclick="editarServico('${dadosParaEdicao}')" class="edit-btn" title="Editar Orçamento">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button onclick="excluirOS('${idOS}')" class="delete-btn" title="Excluir OS">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
-                `;
-            });
-        }
+                    <div class="bg-white/5 rounded-xl p-4 mb-4">
+                        <span class="text-[9px] font-black text-white/30 uppercase block mb-2 tracking-widest">Serviços Executados:</span>
+                        ${htmlServicos || '<div class="text-[10px] text-white/20 italic">Nenhum serviço registrado</div>'}
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-[10px] font-bold uppercase">
+                        <div>
+                            <span class="text-white/30 block mb-1">Valor Cobrado</span>
+                            <span class="text-blue-400 text-sm font-black">R$ ${valorTotal}</span>
+                        </div>
+                        <div>
+                            <span class="text-white/30 block mb-1">Término da Garantia</span>
+                            <span class="${estaNaGarantia ? 'text-green-400' : 'text-red-400'} text-sm">${dataGarantia}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+    }
 
-        function filtrarHistorico() {
-            const termo = document.getElementById('inputBusca').value.toLowerCase();
-            const cards = document.querySelectorAll('.card-item');
-            cards.forEach(card => {
-                const texto = card.innerText.toLowerCase();
-                card.style.display = texto.includes(termo) ? 'block' : 'none';
-            });
-        }
+    function filtrarHistorico() {
+        const termo = document.getElementById('inputBusca').value.toLowerCase();
+        const cards = document.querySelectorAll('.card-item');
+        cards.forEach(card => {
+            const texto = card.innerText.toLowerCase();
+            card.style.display = texto.includes(termo) ? 'block' : 'none';
+        });
+    }
 
-        window.onload = () => {
-            if(localStorage.getItem('theme') === 'light') toggleTheme();
-            carregarDados();
-        };
-    </script>
+    window.onload = () => {
+        if(localStorage.getItem('theme') === 'light') toggleTheme();
+        carregarDados();
+    };
+</script>
 </body>
 </html>
