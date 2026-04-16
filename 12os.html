@@ -67,23 +67,36 @@
         .dark-input:focus { border-color: #3b82f6 !important; background: rgba(255, 255, 255, 0.08) !important; outline: none; }
         .is-os .dark-input:focus { border-color: #10b981 !important; }
 
-        /* CORREÇÃO DAS CORES DO CALENDÁRIO */
-        input[type="date"] { color-scheme: dark; }
-        body.light-mode input[type="date"] { color-scheme: light; }
-        input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; filter: invert(1); }
-        body.light-mode input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0); }
+        .service-card {
+            background: var(--card-sub);
+            border-radius: 20px;
+            padding: 15px;
+            border: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
 
-        .service-card { background: var(--card-sub); border-radius: 20px; padding: 15px; border: 1px solid var(--glass-border); display: flex; flex-direction: column; gap: 12px; }
-        .service-row-top { display: flex; align-items: center; gap: 10px; width: 100%; }
+        .service-row-top {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
         .qty-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: var(--input-bg); color: #3b82f6; transition: 0.2s; border: 1px solid rgba(59, 130, 246, 0.2); }
+        .is-os .qty-btn { color: #10b981 !important; border-color: rgba(16, 185, 129, 0.2) !important; }
         
         .section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+        .section-header i { font-size: 14px; color: #3b82f6; }
         .section-header span { font-size: 11px; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        .btn-primary { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); transition: transform 0.2s; }
-        .btn-add-item { width: 100%; padding: 1rem; border: 2px dashed rgba(59, 130, 246, 0.5); border-radius: 1.25rem; color: var(--text-main); font-weight: 700; font-size: 0.75rem; background: rgba(59, 130, 246, 0.05); }
+        .btn-primary { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); transition: transform 0.2s; box-shadow: 0 10px 20px -5px rgba(30, 64, 175, 0.5); }
+        .btn-primary:active { transform: scale(0.95); }
 
-        #obsGeral { overflow: hidden; resize: none; min-height: 100px; }
+        .btn-add-item { width: 100%; padding: 1rem; border: 2px dashed rgba(59, 130, 246, 0.5); border-radius: 1.25rem; color: var(--text-main); font-weight: 700; font-size: 0.75rem; transition: all 0.3s; background: rgba(59, 130, 246, 0.05); }
+        .is-os .btn-add-item { border-color: rgba(16, 185, 129, 0.5); background: rgba(16, 185, 129, 0.05); }
+
+        #obsGeral { overflow: hidden; resize: none; min-height: 100px; transition: min-height 0.2s ease; }
 
         .switch { position: relative; display: inline-block; width: 100%; height: 44px; background: var(--input-bg); border-radius: 15px; padding: 4px; border: 1px solid var(--glass-border); cursor: pointer; }
         .switch-bg { position: absolute; top: 4px; left: 4px; width: calc(50% - 4px); height: calc(100% - 8px); background: #1e40af; border-radius: 12px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1; }
@@ -92,14 +105,42 @@
         .active-label { color: white !important; }
         .mode-os .switch-bg { left: 50%; background: #10b981; }
 
-        .dropdown-list { position: absolute; left: 0; right: 0; top: 110%; background: var(--dropdown-bg); border: 1px solid var(--glass-border); border-radius: 20px; z-index: 50; max-height: 250px; overflow-y: auto; display: none; }
-        .dropdown-item { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--glass-border); }
-        .dropdown-item:hover { background: #1e40af; color: white; cursor: pointer; }
+        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.5); }
+        body:not(.light-mode) input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
+
+        #modal-mensagens { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.95); backdrop-filter: blur(10px); z-index: 100; overflow-y: auto; display: none; padding: 20px; }
+        body.light-mode #modal-mensagens { background: rgba(240, 242, 245, 0.98); color: #1a1f26; }
         
-        .selected-text { color: var(--text-main) !important; opacity: 1 !important; }
+        .btn-copy-success { background-color: #3b82f6 !important; color: white !important; }
+
+        .theme-toggle { background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+        .modal-glass-container { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 25px; padding: 20px; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .text-preview-box { background: var(--modal-text-box); border-radius: 20px; padding: 15px; font-family: monospace; font-size: 13px; color: var(--modal-text-color); white-space: pre-wrap; word-break: break-all; margin: 15px 0; border: 1px solid var(--glass-border); }
+        .btn-copy-custom { background: rgba(128,128,128,0.15); color: var(--text-main); border: 1px solid var(--glass-border); }
+
+        .total-container { background: var(--total-container-bg) !important; border: 1px solid rgba(255,255,255,0.1) !important; transition: all 0.4s ease; }
+
+        .dropdown-list {
+            position: absolute; left: 0; right: 0; top: 110%;
+            background: var(--dropdown-bg); border: 1px solid var(--glass-border);
+            border-radius: 20px; z-index: 50; max-height: 250px; overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: none;
+        }
+        .dropdown-item { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--glass-border); transition: 0.2s; }
+        .dropdown-item:last-child { border-bottom: none; }
+        .dropdown-item:hover { background: #1e40af; color: white; cursor: pointer; }
+        .is-os .dropdown-item:hover { background: #10b981; }
+        .rotate-icon { transform: translateY(-50%) rotate(180deg) !important; }
+        
         .is-searching .selected-text { display: none; }
         .search-input { background: transparent; border: none; color: inherit; width: 100%; outline: none; display: none; }
         .is-searching .search-input { display: block; }
+
+        .selected-text {
+            color: var(--text-main) !important;
+            opacity: 1 !important;
+        }
     </style>
 </head>
 <body class="p-4 pb-10">
@@ -107,8 +148,56 @@
     <div class="corner-ball ball-top-right"></div>
     <div class="corner-ball ball-bottom-left"></div>
 
-    <div id="modal-mensagens" style="display:none">
+    <div id="modal-mensagens">
+        <div class="max-w-md mx-auto">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-xl font-black uppercase tracking-tighter">Mensagens <span class="text-blue-500">Prontas</span></h2>
+                <button onclick="fecharModal()" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="modal-glass-container">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-[10px] font-bold text-white">1</span>
+                    <span class="text-xs font-bold uppercase">Proposta</span>
+                </div>
+                <div id="txt-proposta" class="text-preview-box"></div>
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="copiarTextoProfissional('txt-proposta', this)" class="py-3 btn-copy-custom rounded-xl font-bold text-[9px] uppercase">COPIAR</button>
+                    <button onclick="baixarPDF()" class="py-3 bg-red-600/20 text-red-500 border border-red-500/30 rounded-xl font-bold text-[9px] uppercase">GERAR PDF</button>
+                    <button onclick="enviarWpp('txt-proposta')" class="py-3 bg-blue-600 text-white rounded-xl font-bold text-[9px] uppercase">WHATSAPP</button>
+                </div>
+            </div>
+
+            <div class="modal-glass-container">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="w-6 h-6 rounded-full bg-orange-600 flex items-center justify-center text-[10px] font-bold text-white">2</span>
+                    <span class="text-xs font-bold uppercase">Sinal</span>
+                </div>
+                <div id="txt-sinal" class="text-preview-box"></div>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="copiarTextoProfissional('txt-sinal', this)" class="py-3 btn-copy-custom rounded-xl font-bold text-[10px] uppercase">COPIAR</button>
+                    <button onclick="enviarWpp('txt-sinal')" class="py-3 bg-orange-600 text-white rounded-xl font-bold text-[10px] uppercase">WHATSAPP</button>
+                </div>
+            </div>
+
+            <div class="modal-glass-container">
+                <div class="flex justify-between items-center mb-2">
+                    <div class="flex items-center gap-3">
+                        <span class="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center text-[10px] font-bold text-white">3</span>
+                        <span class="text-xs font-bold uppercase">Conclusão</span>
+                    </div>
+                    <button id="btn-quitar" onclick="alternarQuitacao()" class="text-[9px] font-black px-3 py-1 rounded-lg border border-green-500/30 text-green-500 bg-green-500/10">QUITAR SALDO</button>
+                </div>
+                <div id="txt-conclusao" class="text-preview-box"></div>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="copiarTextoProfissional('txt-conclusao', this)" class="py-3 btn-copy-custom rounded-xl font-bold text-[10px] uppercase">COPIAR</button>
+                    <button onclick="enviarWpp('txt-conclusao')" class="py-3 bg-green-600 text-white rounded-xl font-bold text-[10px] uppercase">WHATSAPP</button>
+                </div>
+            </div>
         </div>
+    </div>
 
     <div class="max-w-md mx-auto relative z-10" id="main-container">
         <div class="mb-6">
@@ -248,7 +337,7 @@
                 renderizarDatalists();
                 aplicarTextoPadrao();
                 calcularDataFinal();
-                // Chama a verificação de edição APÓS carregar os dados da empresa/listas
+                // ESSENCIAL: Dispara a verificação de edição logo após carregar os dados
                 verificarEdicao(); 
             } catch (e) { console.error("Erro na carga:", e); }
         }
@@ -270,15 +359,17 @@
                 document.getElementById('telCliente').value = os.CPF || "";
                 document.getElementById('obsGeral').value = os.OBSERVACAO || ""; 
                 
-                if(os.DATA_DO_SERVICO) document.getElementById('dataInicio').value = converterDataParaIso(os.DATA_DO_SERVICO);
-                if(os.DATA_FIM_GARANTIA) document.getElementById('dataPrazoFinal').value = converterDataParaIso(os.DATA_FIM_GARANTIA);
+                if (os.DATA_DO_SERVICO) document.getElementById('dataInicio').value = converterDataParaIso(os.DATA_DO_SERVICO);
+                if (os.DATA_FIM_GARANTIA) document.getElementById('dataPrazoFinal').value = converterDataParaIso(os.DATA_FIM_GARANTIA);
 
-                // Cálculo automático de dias
-                if(os.DATA_DO_SERVICO && os.DATA_FIM_GARANTIA) {
+                if (os.DATA_DO_SERVICO && os.DATA_FIM_GARANTIA) {
                     const d1 = new Date(document.getElementById('dataInicio').value + 'T00:00:00');
                     const d2 = new Date(document.getElementById('dataPrazoFinal').value + 'T00:00:00');
-                    const diffDays = Math.ceil(Math.abs(d2 - d1) / (1000 * 60 * 60 * 24));
-                    document.getElementById('inputGarantia').value = diffDays;
+                    if (!isNaN(d1) && !isNaN(d2)) {
+                        const diffTime = Math.abs(d2 - d1);
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        document.getElementById('inputGarantia').value = diffDays;
+                    }
                 }
 
                 const container = document.getElementById('services-container');
@@ -327,14 +418,17 @@
             formatarMoeda(precoInput);
         }
 
-        // Funções de Dropdown e Soma permanecem iguais
         function toggleDropdown(el) {
             const wrapper = el.parentElement;
             const list = el.nextElementSibling;
             const icon = el.querySelector('i');
             const searchInput = el.querySelector('.search-input');
             const isVisible = list.style.display === 'block';
-            fecharTodosDropdowns();
+            
+            document.querySelectorAll('.dropdown-list').forEach(l => l.style.display = 'none');
+            document.querySelectorAll('.custom-dropdown i').forEach(i => i.classList.remove('rotate-icon'));
+            document.querySelectorAll('.custom-dropdown').forEach(d => d.classList.remove('is-searching'));
+
             if (!isVisible) {
                 list.style.display = 'block';
                 icon.classList.add('rotate-icon');
@@ -350,14 +444,17 @@
             const list = input.closest('.custom-dropdown').querySelector('.dropdown-list');
             const items = list.querySelectorAll('.dropdown-item');
             items.forEach(item => {
-                item.style.display = item.textContent.toLowerCase().includes(termo) ? 'block' : 'none';
+                const texto = item.textContent.toLowerCase();
+                item.style.display = texto.includes(termo) ? 'block' : 'none';
             });
         }
 
         function selecionarItemDropdown(li, nome, valorExtra, tipo) {
             const wrapper = li.closest('.custom-dropdown');
-            wrapper.querySelector('.selected-text').innerText = nome;
-            wrapper.querySelector('input[type="hidden"]').value = nome;
+            const display = wrapper.querySelector('.selected-text');
+            const hiddenInput = wrapper.querySelector('input[type="hidden"]');
+            display.innerText = nome;
+            hiddenInput.value = nome;
             if (tipo === 'servico') {
                 const card = li.closest('.service-card');
                 const precoInput = card.querySelector('.service-price');
@@ -401,6 +498,7 @@
             const div = document.createElement('div');
             div.className = "service-card";
             const opcoes = gerarHtmlServicos();
+            
             div.innerHTML = `
                 <div class="service-row-top">
                     <div class="relative flex-grow custom-dropdown">
@@ -416,6 +514,7 @@
                         <i class="fa-solid fa-trash-can text-lg"></i>
                     </button>
                 </div>
+
                 <div class="flex items-center gap-3">
                     <div class="flex-grow relative">
                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 font-bold text-xs">R$</span>
@@ -461,16 +560,25 @@
             const subTitle = document.getElementById('sub-title');
             const btnAcao = document.getElementById('btn-acao');
             const lblPrazo = document.getElementById('label-prazo');
+            const campoDataFinal = document.getElementById('dataPrazoFinal');
             document.getElementById('toggleMode').classList.toggle('mode-os');
             card.classList.toggle('is-os');
+            aplicarTextoPadrao();
             subTitle.innerText = modoOS ? "Ordem de Serviço (OS)" : "Sistema de Orçamento";
             btnAcao.innerHTML = modoOS ? 'Finalizar O.S <i class="fa-solid fa-check"></i>' : 'Gerar Orçamento <i class="fa-solid fa-arrow-right"></i>';
             document.getElementById('label-dados').innerText = modoOS ? "Dados da Ordem de Serviço" : "Dados do Orçamento";
             lblPrazo.innerText = modoOS ? "Garantia" : "Vencimento";
-            lblPrazo.className = modoOS ? "absolute -top-1 left-1/2 -translate-x-1/2 bg-green-600 text-[8px] px-2 py-0.5 rounded text-white font-black tracking-widest uppercase shadow-lg" : "absolute -top-1 left-1/2 -translate-x-1/2 bg-blue-600 text-[8px] px-2 py-0.5 rounded text-white font-black tracking-widest uppercase shadow-lg";
+            lblPrazo.classList.toggle('bg-blue-600', !modoOS);
+            lblPrazo.classList.toggle('bg-green-600', modoOS);
             document.getElementById('lbl-os').classList.toggle('active-label', modoOS);
             document.getElementById('lbl-orc').classList.toggle('active-label', !modoOS);
-            document.getElementById('dataPrazoFinal').readOnly = !modoOS;
+            document.getElementById('btn-add-icon').className = modoOS ? "fa-solid fa-circle-plus mr-2 text-green-500" : "fa-solid fa-circle-plus mr-2 text-blue-500";
+            if (modoOS) {
+                campoDataFinal.readOnly = false;
+            } else {
+                campoDataFinal.readOnly = true;
+                calcularDataFinal();
+            }
         }
 
         function aplicarTextoPadrao() {
@@ -494,21 +602,21 @@
             const obs = document.getElementById('obsGeral').value;
             const dias = document.getElementById('inputGarantia').value;
             const dataFim = document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/');
+            const chavePix = (cacheDados.find(d => d.emp_pix) || {}).emp_pix || "[PIX]";
+            let servicosTexto = "";
+            document.querySelectorAll('.service-card').forEach(card => {
+                const n = card.querySelector('.service-name').value;
+                const p = card.querySelector('.service-price').value;
+                const q = card.querySelector('.service-qty').innerText;
+                if(n) servicosTexto += `• ${q}x ${n} - R$ ${p}\n`;
+            });
             const totalNum = parseFloat(total.replace(/\./g, "").replace(",", ".")) || 0;
             const sinal = (totalNum * 0.3).toLocaleString('pt-BR', {minimumFractionDigits: 2});
             const saldo = (totalNum * 0.7).toLocaleString('pt-BR', {minimumFractionDigits: 2});
-            
-            let servicosTexto = "";
-            document.querySelectorAll('.service-card').forEach(card => {
-                const n = card.querySelector('.selected-text').innerText;
-                const p = card.querySelector('.service-price').value;
-                const q = card.querySelector('.service-qty').innerText;
-                if(n && n !== "Selecionar Serviço") servicosTexto += `• ${q}x ${n} - R$ ${p}\n`;
-            });
-
             document.getElementById('txt-proposta').innerText = `*ORÇAMENTO TÉCNICO - ${prestador.toUpperCase()}*\n\nOlá ${cliente}! Segue o orçamento:\n\n*SERVIÇOS:*\n${servicosTexto}\n*OBS:*\n${obs}\n\n*INVESTIMENTO TOTAL:* R$ ${total}\n(Material + Mão de Obra incluso)\n\n*${modoOS ? 'Garantia' : 'Vencimento'}:* ${dias} dias\n*Data Prevista:* ${dataFim}\n\nFicaremos no aguardo.`;
-            document.getElementById('txt-sinal').innerText = `*Confirmação de Agendamento*\n\nEntrada (30%): R$ ${sinal}`;
-            document.getElementById('txt-conclusao').innerText = `*Serviço Concluído*\nStatus: ${saldoQuitado ? "Quitado" : "Saldo de R$ " + saldo}`;
+            document.getElementById('txt-sinal').innerText = `*Confirmação de Agendamento*\n\nOlá, ${cliente}, tudo bem?\n\nPara formalizarmos o seu atendimento e garantirmos a reserva dos materiais e da sua data em nossa agenda, solicitamos o pagamento da entrada:\n\n💰 *Valor da Entrada (30%):* R$ ${sinal}\n🔑 *Chave PIX:* ${chavePix}\n\nAssim que realizar a transferência, por favor, nos envie o comprovante para validarmos o agendamento. 🗓️\n\nFicamos à disposição para qualquer dúvida!`;
+            
+           document.getElementById('txt-conclusao').innerText = `*Finalização de Serviço* ❄️\n\nOlá, ${cliente}, tudo bem?\n\nInformamos que o serviço em seu equipamento foi concluído com sucesso! ✅ Realizamos todos os testes técnicos e o sistema já está operando em perfeitas condições.\n\n💳 *Status de Pagamento:* ${saldoQuitado ? "Saldo Quitado" : `Saldo de R$ ${saldo}`}\n🛡️ *Garantia:* Você tem *${dias} dias* de garantia total sobre o serviço executado.\n\nAgradecemos a confiança em nosso trabalho! Qualquer dúvida, estamos à disposição.\n\nAtenciosamente,\n*${prestador}*`;
             
             document.getElementById('modal-mensagens').style.display = 'block';
             document.body.style.overflow = 'hidden';
@@ -519,6 +627,7 @@
         function enviarWpp(id) {
             const txt = document.getElementById(id).innerText;
             const tel = document.getElementById('telCliente').value.replace(/\D/g, '');
+            if(!tel) return alert("WhatsApp!");
             window.open(`https://api.whatsapp.com/send?phone=55${tel}&text=${encodeURIComponent(txt)}`, '_blank');
         }
 
@@ -529,16 +638,39 @@
             });
         }
 
+        function baixarPDF() {
+            const dados = {
+                tipo: modoOS ? "ORDEM DE SERVIÇO" : "ORÇAMENTO",
+                cliente: document.getElementById('nomeCliente').value || "Cliente",
+                endereco: document.getElementById('enderecoCliente').value,
+                emissao: document.getElementById('dataInicio').value.split('-').reverse().join('/'),
+                validade: document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/'),
+                total: document.getElementById('totalFinal').value,
+                obs: document.getElementById('obsGeral').value,
+                garantia: document.getElementById('inputGarantia').value,
+                itens: Array.from(document.querySelectorAll('.service-card')).map(c => ({
+                    descricao: c.querySelector('.service-name').value,
+                    qtd: c.querySelector('.service-qty').innerText,
+                    valor: c.querySelector('.service-price').value
+                }))
+            };
+            localStorage.setItem('dados_impressao', JSON.stringify(dados));
+            window.location.href = modoOS ? "imp.html" : "impressao.html";
+        }
+
         window.onload = () => {
             if(localStorage.getItem('theme') === 'light') toggleTheme();
             const dataHoje = new Date().toISOString().split('T')[0];
             document.getElementById('dataInicio').value = dataHoje;
             document.getElementById('dataPrazoFinal').value = dataHoje;
+            // O disparador de tudo é a carga da planilha
             buscarDadosPlanilha();
         };
 
         window.addEventListener('click', e => {
-            if (!e.target.closest('.custom-dropdown')) fecharTodosDropdowns();
+            if (!e.target.closest('.custom-dropdown')) {
+                fecharTodosDropdowns();
+            }
         });
     </script>
 </body>
