@@ -111,16 +111,22 @@
         return hoje <= dataFim;
     }
 
-    // Função para calcular a diferença de dias entre duas datas (DD/MM/YYYY)
+    // CORREÇÃO: Função aprimorada para calcular dias independente do formato da planilha
     function calcularDiasEntre(inicio, fim) {
         if (!inicio || !fim || inicio === "---" || fim === "---") return 30;
-        const conv = (s) => { 
-            const p = s.split('/'); 
-            return new Date(p[2], p[1] - 1, p[0]); 
+        
+        const parseData = (d) => {
+            let s = d.toString().split('T')[0]; // Remove parte de tempo se houver
+            if (s.includes('/')) {
+                const p = s.split('/');
+                return new Date(p[2], p[1] - 1, p[0]);
+            }
+            return new Date(s); // Trata formato ISO YYYY-MM-DD
         };
+
         try {
-            const d1 = conv(inicio);
-            const d2 = conv(fim);
+            const d1 = parseData(inicio);
+            const d2 = parseData(fim);
             const diff = Math.abs(d2 - d1);
             return Math.ceil(diff / (1000 * 60 * 60 * 24));
         } catch(e) { return 30; }
@@ -172,8 +178,6 @@
             const endereco = os["ENDERECO"] || os["ENDEREÇO"] || "---"; 
             const servicosTexto = os["TIPO_DE_SERVICO"] || os["TIPO_DE_SERVIÇO"] || ""; 
             const valorTotal = os["VALOR_TOTAL"] || "0,00"; 
-            
-            // Exibe a data formatada corretamente na tela
             const dataGarantia = formatarDataBR(os["DATA_FIM_GARANTIA"]); 
 
             const servicosArray = servicosTexto.toString().split('|');
@@ -188,7 +192,6 @@
             const badgeClass = estaNaGarantia ? "em-garantia" : "fora-garantia";
             const badgeText = estaNaGarantia ? "🟢 Em Garantia" : "🔴 Fora da Garantia";
             
-            // O pacote de dados enviado pelo botão contém a linha inteira da planilha (incluindo CPF e OBS)
             const dadosParaEdicao = encodeURIComponent(JSON.stringify(os));
 
             container.innerHTML += `
