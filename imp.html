@@ -175,7 +175,7 @@
     const URL_BUSCA = "https://script.google.com/macros/s/AKfycbwsX8xUWHgb9PE9Nv6IvQbjB7VGQPfUQSbn6fZT1WQRk5IoQJMFAhleLHHpHSU9zHw49A/exec";
     
     // NOVA URL para SALVAR dados (Onde os dados da O.S. serão gravados)
-    const URL_SALVAR = "https://script.google.com/macros/s/AKfycbzIliB_ly_w98GaKiTgSvBXczZh9-OYgoep6aAhPjUtbka7RFlo77Alvb6pR1BGoM6p0A/exec";
+    const URL_SALVAR = "https://script.google.com/macros/s/AKfycbwwprVVuyLfGlXIzT-L9PvHmOXgV2oQQWRFPu0HRdIY-fJDVDUOmkIa-kc4RqCMFwLhDw/exec";
 
     function toggleAssinatura() {
         const campo = document.getElementById('campo-assinatura');
@@ -256,7 +256,9 @@ async function baixarPDF() {
 
         // Envio via POST usando FormData (mais compatível)
         const formData = new FormData();
-        formData.append('ID_OS', document.getElementById('num-random').innerText.split(' ')[0]);
+        // Substitua a linha antiga por esta:
+const idLimpo = document.getElementById('num-random').innerText.split(' ')[0].toString().padStart(3, '0');
+formData.append('ID_OS', idLimpo);
         formData.append('CLIENTE', dados.cliente);
         formData.append('ENDERECO', dados.endereco);
         formData.append('CPF', dados.cpf);
