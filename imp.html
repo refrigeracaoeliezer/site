@@ -169,10 +169,9 @@
             <p>Lembrando que você tem <strong><span id="view-dias-garantia">---</span> dias</strong> de garantia referente ao serviço prestado.</p>
         </footer>
     </div>
-
 <script>
     const URL_BUSCA = "https://script.google.com/macros/s/AKfycbwsX8xUWHgb9PE9Nv6IvQbjB7VGQPfUQSbn6fZT1WQRk5IoQJMFAhleLHHpHSU9zHw49A/exec";
-    const URL_SALVAR = "https://script.google.com/macros/s/AKfycbz1eUAYafEjNyIvVm8435ZYvE3nm0eiB61PcJ8_y26zw2o8oWlAl7KOJNFKJ2t_3nlVoQ/exec";
+    const URL_SALVAR = "https://script.google.com/macros/s/AKfycbykJ7gl4J1Ez-GMhVYoeEd_ppVe6gPxg6IfdAHRDoTo7hUb-qJqOL0DOOTGgj8NMSm8Zw/exec";
 
     function toggleAssinatura() {
         const campo = document.getElementById('campo-assinatura');
@@ -181,153 +180,153 @@
         campo.style.display = (campo.style.display === "none" || campo.style.display === "") ? "block" : "none";
     }
 
-  async function carregarPagina() {
-    const dadosLocal = JSON.parse(localStorage.getItem('dados_impressao'));
-    if (!dadosLocal) return;
-
-    // Primeiro limpamos o visual para evitar confusão
-    document.getElementById('num-random').innerText = "Carregando...";
-
-    try {
-        const resp = await fetch(URL_BUSCA);
-        const cacheDados = await resp.json();
-        
-        // --- LÓGICA DE NÚMERO SEQUENCIAL ---
-        
-        // 1. Verificamos se é uma EDIÇÃO: 
-        // Se dadosLocal já tem um ID_OS válido (que não seja vazio ou traços)
-        if (dadosLocal.id_os && dadosLocal.id_os !== "" && dadosLocal.id_os !== "---") {
-            const idFixo = dadosLocal.id_os.toString().padStart(3, '0');
-            document.getElementById('num-random').innerText = idFixo + ' - OS';
-        } 
-        // 2. Se for uma NOVA OS:
-        else {
-            const idsExistentes = cacheDados
-                .map(d => parseInt(String(d.ID_OS).replace(/\D/g, ''))) 
-                .filter(n => !isNaN(n))
-                .sort((a, b) => a - b);
-
-            let proximoId = 1;
-            for (let i = 0; i < idsExistentes.length; i++) {
-                if (idsExistentes[i] === proximoId) {
-                    proximoId++;
-                } else if (idsExistentes[i] > proximoId) {
-                    break; 
-                }
-            }
+    // Função auxiliar para somar dias a uma data no formato DD/MM/AAAA
+    function calcularSomaData(dataString, dias) {
+        try {
+            const partes = dataString.split('/');
+            // Cria o objeto Date (ano, mês-1, dia)
+            const data = new Date(partes[2], partes[1] - 1, partes[0]);
+            data.setDate(data.getDate() + parseInt(dias));
             
-            const idGerado = proximoId.toString().padStart(3, '0');
-            document.getElementById('num-random').innerText = idGerado + ' - OS';
-            dadosLocal.id_os = idGerado; // Gravamos o novo ID no objeto
+            const dd = String(data.getDate()).padStart(2, '0');
+            const mm = String(data.getMonth() + 1).padStart(2, '0');
+            const yyyy = data.getFullYear();
+            
+            return `${dd}/${mm}/${yyyy}`;
+        } catch (e) {
+            return dataString; // Retorna a original em caso de erro
+        }
+    }
+
+    async function carregarPagina() {
+        const dadosLocal = JSON.parse(localStorage.getItem('dados_impressao'));
+        if (!dadosLocal) return;
+
+        document.getElementById('num-random').innerText = "Carregando...";
+
+        try {
+            const resp = await fetch(URL_BUSCA);
+            const cacheDados = await resp.json();
+            
+            if (dadosLocal.id_os && dadosLocal.id_os !== "" && dadosLocal.id_os !== "---") {
+                const idFixo = dadosLocal.id_os.toString().padStart(3, '0');
+                document.getElementById('num-random').innerText = idFixo + ' - OS';
+            } else {
+                const idsExistentes = cacheDados
+                    .map(d => parseInt(String(d.ID_OS).replace(/\D/g, ''))) 
+                    .filter(n => !isNaN(n))
+                    .sort((a, b) => a - b);
+
+                let proximoId = 1;
+                for (let i = 0; i < idsExistentes.length; i++) {
+                    if (idsExistentes[i] === proximoId) {
+                        proximoId++;
+                    } else if (idsExistentes[i] > proximoId) {
+                        break; 
+                    }
+                }
+                
+                const idGerado = proximoId.toString().padStart(3, '0');
+                document.getElementById('num-random').innerText = idGerado + ' - OS';
+                dadosLocal.id_os = idGerado;
+            }
+
+            const emp = cacheDados.find(d => d.emp_nome) || cacheDados[0];
+            if (emp) {
+                document.getElementById('emp-nome').innerText = emp.emp_nome || "---";
+                document.getElementById('emp-cnpj').innerText = "CNPJ: " + (emp.emp_cnpj || "---");
+                document.getElementById('emp-end').innerText = emp.emp_end || "---";
+                document.getElementById('emp-tel').innerText = "Tel: " + (emp.emp_tel || "---");
+                document.getElementById('view-resp-tecnico').innerText = emp.emp_resp || "---";
+            }
+
+            let cpfFinal = dadosLocal.cpf || "---";
+            if (cpfFinal === "---" || !cpfFinal) {
+                const cliInfo = cacheDados.find(d => d.cli_nome === dadosLocal.cliente);
+                cpfFinal = cliInfo ? cliInfo.cli_doc : "---";
+            }
+            document.getElementById('view-cpf-cli').innerText = cpfFinal;
+            dadosLocal.cpf = cpfFinal;
+
+        } catch (e) { 
+            console.error("Erro ao buscar dados da planilha:", e);
+            if(!dadosLocal.id_os) document.getElementById('num-random').innerText = '001 - OS';
         }
 
-        // --- PREENCHIMENTO DOS DADOS DA EMPRESA ---
-        const emp = cacheDados.find(d => d.emp_nome) || cacheDados[0];
-        if (emp) {
-            document.getElementById('emp-nome').innerText = emp.emp_nome || "---";
-            document.getElementById('emp-cnpj').innerText = "CNPJ: " + (emp.emp_cnpj || "---");
-            document.getElementById('emp-end').innerText = emp.emp_end || "---";
-            document.getElementById('emp-tel').innerText = "Tel: " + (emp.emp_tel || "---");
-            document.getElementById('view-resp-tecnico').innerText = emp.emp_resp || "---";
+        document.getElementById('view-cliente').innerText = dadosLocal.cliente || "---";
+        document.getElementById('view-endereco').innerText = dadosLocal.endereco || "---";
+        document.getElementById('view-data').innerText = dadosLocal.emissao || "---";
+        document.getElementById('view-venc').innerText = dadosLocal.validade || "---";
+        document.getElementById('view-total').innerText = 'R$ ' + (dadosLocal.total || "0,00");
+        document.getElementById('view-obs').innerText = dadosLocal.obs || "Serviço realizado conforme padrões técnicos.";
+        document.getElementById('view-dias-garantia').innerText = dadosLocal.garantia || "30";
+
+        const corpo = document.getElementById('tabela-corpo');
+        corpo.innerHTML = "";
+        if (dadosLocal.itens) {
+            dadosLocal.itens.forEach(i => {
+                const vUnit = parseFloat(i.valor.replace(/\./g, '').replace(',', '.'));
+                const vTotal = (vUnit * parseInt(i.qtd)).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+                corpo.innerHTML += `<tr><td>${i.descricao}</td><td style="text-align:center">${i.qtd}</td><td style="text-align:right">R$ ${vTotal}</td></tr>`;
+            });
         }
 
-        // --- CPF E OUTROS DADOS ---
-        let cpfFinal = dadosLocal.cpf || "---";
-        if (cpfFinal === "---" || !cpfFinal) {
-            const cliInfo = cacheDados.find(d => d.cli_nome === dadosLocal.cliente);
-            cpfFinal = cliInfo ? cliInfo.cli_doc : "---";
+        localStorage.setItem('dados_impressao', JSON.stringify(dadosLocal));
+    }
+
+    async function baixarPDF() {
+        const dados = JSON.parse(localStorage.getItem('dados_impressao'));
+        if (!dados) return;
+
+        const servicosTexto = dados.itens.map(i => `${i.qtd}x ${i.descricao}`).join(' | ');
+        const idNomeArquivo = document.getElementById('num-random').innerText.split(' ')[0];
+        let idParaEnviar = (dados.id_os && dados.id_os !== "---" && dados.id_os !== "") ? dados.id_os : "";
+
+        // --- LÓGICA DE SOMA DE DATAS ---
+        const dataInicio = dados.emissao; // Pega a Data de Início
+        const diasGarantia = dados.garantia || "30"; // Pega os dias
+        const dataVencimentoGarantia = calcularSomaData(dataInicio, diasGarantia);
+
+        const formData = new URLSearchParams();
+        formData.append('ID_OS', idParaEnviar);
+        formData.append('CLIENTE', dados.cliente);
+        formData.append('ENDERECO', dados.endereco);
+        formData.append('CPF', dados.cpf);
+        formData.append('DATA_DO_SERVICO', dataInicio);
+        formData.append('TIPO_DE_SERVICO', servicosTexto);
+        formData.append('TECNICO_RESPONSVEL', document.getElementById('view-resp-tecnico').innerText);
+        formData.append('VALOR_TOTAL', dados.total || "0,00");
+        formData.append('GARANTIA_DIAS', diasGarantia);
+        
+        // COLUNA J: Salva a SOMA (Início + Dias)
+        formData.append('DATA_FIM_GARANTIA', dataVencimentoGarantia); 
+        
+        formData.append('OSERVACAO', dados.obs);
+        
+        // COLUNA L: Salva a DATA DE CONCLUSÃO (Término)
+        formData.append('DIA', dados.validade); 
+
+        try {
+            await fetch(URL_SALVAR, { 
+                method: 'POST', 
+                mode: 'no-cors', 
+                body: formData 
+            });
+        } catch (e) { 
+            console.error("Erro ao salvar na planilha:", e); 
         }
-        document.getElementById('view-cpf-cli').innerText = cpfFinal;
-        dadosLocal.cpf = cpfFinal;
 
-    } catch (e) { 
-        console.error("Erro ao buscar dados da planilha:", e);
-        // Fallback: se tudo falhar e for novo, assume 001
-        if(!dadosLocal.id_os) document.getElementById('num-random').innerText = '001 - OS';
+        const element = document.getElementById('conteudo-pdf');
+        const opt = {
+            margin: [0, 0, 0, 0],
+            filename: `${idNomeArquivo}_OS_${dados.cliente}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        
+        html2pdf().set(opt).from(element).save();
     }
-
-    // --- PREENCHIMENTO VISUAL FINAL ---
-    document.getElementById('view-cliente').innerText = dadosLocal.cliente || "---";
-    document.getElementById('view-endereco').innerText = dadosLocal.endereco || "---";
-    document.getElementById('view-data').innerText = dadosLocal.emissao || "---";
-    document.getElementById('view-venc').innerText = dadosLocal.validade || "---";
-    document.getElementById('view-total').innerText = 'R$ ' + (dadosLocal.total || "0,00");
-    document.getElementById('view-obs').innerText = dadosLocal.obs || "Serviço realizado conforme padrões técnicos.";
-    document.getElementById('view-dias-garantia').innerText = dadosLocal.garantia || "30";
-
-    const corpo = document.getElementById('tabela-corpo');
-    corpo.innerHTML = "";
-    if (dadosLocal.itens) {
-        dadosLocal.itens.forEach(i => {
-            const vUnit = parseFloat(i.valor.replace(/\./g, '').replace(',', '.'));
-            const vTotal = (vUnit * parseInt(i.qtd)).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-            corpo.innerHTML += `<tr><td>${i.descricao}</td><td style="text-align:center">${i.qtd}</td><td style="text-align:right">R$ ${vTotal}</td></tr>`;
-        });
-    }
-
-    // MUITO IMPORTANTE: Salva o ID gerado de volta no LocalStorage
-    // para que a função baixarPDF() consiga ler o ID correto.
-    localStorage.setItem('dados_impressao', JSON.stringify(dadosLocal));
-}
-async function baixarPDF() {
-    const dados = JSON.parse(localStorage.getItem('dados_impressao'));
-    if (!dados) return;
-
-    // --- LÓGICA DE CÁLCULO DA DATA DE GARANTIA (COLUNA J) ---
-    function somarDias(dataStr, dias) {
-        if (!dataStr || dataStr === "---") return "---";
-        const partes = dataStr.split('/');
-        const data = new Date(partes[2], partes[1] - 1, partes[0]);
-        data.setDate(data.getDate() + parseInt(dias));
-        return data.toLocaleDateString('pt-BR');
-    }
-
-    const diasGarantia = dados.garantia || "30";
-    const dataFimGarantiaCalculada = somarDias(dados.emissao, diasGarantia);
-    // -------------------------------------------------------
-
-    const servicosTexto = dados.itens.map(i => `${i.qtd}x ${i.descricao}`).join(' | ');
-    let idParaEnviar = (dados.id_os && dados.id_os !== "---" && dados.id_os !== "") ? dados.id_os : "";
-    const idNomeArquivo = document.getElementById('num-random').innerText.split(' ')[0];
-
-    const formData = new URLSearchParams();
-    formData.append('ID_OS', idParaEnviar);
-    formData.append('CLIENTE', dados.cliente);
-    formData.append('ENDERECO', dados.endereco);
-    formData.append('CPF', dados.cpf);
-    formData.append('DATA_DO_SERVICO', dados.emissao); // Data de Início
-    formData.append('TIPO_DE_SERVICO', servicosTexto);
-    formData.append('TECNICO_RESPONSVEL', document.getElementById('view-resp-tecnico').innerText);
-    formData.append('VALOR_TOTAL', dados.total || "0,00");
-    formData.append('GARANTIA_DIAS', diasGarantia);
-    
-    // NOVA LOGICA DE COLUNAS:
-    formData.append('DATA_FIM_GARANTIA', dataFimGarantiaCalculada); // Vai para Coluna J (Soma)
-    formData.append('OSERVACAO', dados.obs);
-    formData.append('TERMINO_SERVICO', dados.validade); // Vai para Coluna L (Data Conclusão)
-
-    try {
-        await fetch(URL_SALVAR, { 
-            method: 'POST', 
-            mode: 'no-cors', 
-            body: formData 
-        });
-        console.log("Dados enviados para processamento na planilha.");
-    } catch (e) { 
-        console.error("Erro ao salvar na planilha:", e); 
-    }
-
-    const element = document.getElementById('conteudo-pdf');
-    const opt = {
-        margin: [0, 0, 0, 0],
-        filename: `${idNomeArquivo}_OS_${dados.cliente}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-    
-    html2pdf().set(opt).from(element).save();
-}
 
     window.onload = carregarPagina;
 </script>
