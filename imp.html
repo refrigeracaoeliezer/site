@@ -170,135 +170,92 @@
         </footer>
     </div>
 
-    <script>
-        const URL_DATABASE = "https://script.google.com/macros/s/AKfycbwsX8xUWHgb9PE9Nv6IvQbjB7VGQPfUQSbn6fZT1WQRk5IoQJMFAhleLHHpHSU9zHw49A/exec";
+ <script>
+    const URL_DATABASE = "https://script.google.com/macros/s/AKfycbwsX8xUWHgb9PE9Nv6IvQbjB7VGQPfUQSbn6fZT1WQRk5IoQJMFAhleLHHpHSU9zHw49A/exec";
 
-        function toggleAssinatura() {
-            const campo = document.getElementById('campo-assinatura');
-            const nomeCliente = document.getElementById('view-cliente').innerText;
-            const displayNome = document.getElementById('nome-assinatura-cliente');
-            displayNome.innerText = nomeCliente;
-            campo.style.display = (campo.style.display === "none" || campo.style.display === "") ? "block" : "none";
+    function toggleAssinatura() {
+        const campo = document.getElementById('campo-assinatura');
+        const nomeCliente = document.getElementById('view-cliente').innerText;
+        const displayNome = document.getElementById('nome-assinatura-cliente');
+        displayNome.innerText = nomeCliente;
+        campo.style.display = (campo.style.display === "none" || campo.style.display === "") ? "block" : "none";
+    }
+
+    async function carregarPagina() {
+        const dadosLocal = JSON.parse(localStorage.getItem('dados_impressao'));
+        if (!dadosLocal) return;
+
+        // Preenche o Número da OS
+        if (dadosLocal.id_os) {
+            document.getElementById('num-random').innerText = dadosLocal.id_os + ' - OS';
+        } else {
+            document.getElementById('num-random').innerText = Math.floor(100 + Math.random() * 899) + ' - OS';
         }
 
-       async function carregarPagina() {
-            const dadosLocal = JSON.parse(localStorage.getItem('dados_impressao'));
-            if(!dadosLocal) return;
+        // Preenche Dados do Cliente
+        document.getElementById('view-cliente').innerText = dadosLocal.cliente || "---";
+        document.getElementById('view-endereco').innerText = dadosLocal.endereco || "---";
+        document.getElementById('view-cpf-cli').innerText = dadosLocal.cpf || "---";
 
-            // CORREÇÃO: Mostra o número da OS conforme solicitado (Nº XXX - OS)
-            if(dadosLocal.id_os) {
-                document.getElementById('num-random').innerText = dadosLocal.id_os + ' - OS';
-            } else {
-                document.getElementById('num-random').innerText = Math.floor(100 + Math.random() * 899) + ' - OS';
-            }
+        // Preenche Datas e Valores
+        document.getElementById('view-data').innerText = dadosLocal.emissao || "---";
+        document.getElementById('view-venc').innerText = dadosLocal.validade || "---";
+        document.getElementById('view-total').innerText = 'R$ ' + (dadosLocal.total || "0,00");
+        document.getElementById('view-obs').innerText = dadosLocal.obs || "Serviço realizado conforme padrões técnicos.";
+        document.getElementById('view-dias-garantia').innerText = dadosLocal.garantia || "---";
 
-            document.getElementById('view-cliente').innerText = dadosLocal.cliente || "---";
-            document.getElementById('view-endereco').innerText = dadosLocal.endereco || "---";
-            
-            // CORREÇÃO: Recebe o CPF enviado pela segunda página
-            document.getElementById('view-cpf-cli').innerText = dadosLocal.cpf || "---";
-
-            document.getElementById('view-data').innerText = dadosLocal.emissao || "---";
-            document.getElementById('view-venc').innerText = dadosLocal.validade || "---";
-            document.getElementById('view-total').innerText = 'R$ ' + (dadosLocal.total || "0,00");
-            document.getElementById('view-obs').innerText = dadosLocal.obs || "Serviço realizado conforme padrões técnicos.";
-            document.getElementById('view-dias-garantia').innerText = dadosLocal.garantia || "90";
-            
-            const corpo = document.getElementById('tabela-corpo');
-            corpo.innerHTML = "";
-            if(dadosLocal.itens) {
-                dadosLocal.itens.forEach(i => {
-                    const valorUnitarioLimpo = parseFloat(i.valor.replace(/\./g, '').replace(',', '.'));
-                    const quantidade = parseInt(i.qtd);
-                    const valorTotalItem = valorUnitarioLimpo * quantidade;
-                    const valorTotalFormatado = valorTotalItem.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                    corpo.innerHTML += `<tr>
+        // Constrói a Tabela de Serviços
+        const corpo = document.getElementById('tabela-corpo');
+        corpo.innerHTML = "";
+        if (dadosLocal.itens) {
+            dadosLocal.itens.forEach(i => {
+                const valorUnitarioLimpo = parseFloat(i.valor.replace(/\./g, '').replace(',', '.'));
+                const quantidade = parseInt(i.qtd);
+                const valorTotalItem = valorUnitarioLimpo * quantidade;
+                const valorTotalFormatado = valorTotalItem.toLocaleString('pt-BR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+                corpo.innerHTML += `<tr>
                         <td>${i.descricao}</td>
                         <td style="text-align:center">${i.qtd}</td>
                         <td style="text-align:right">R$ ${valorTotalFormatado}</td>
                     </tr>`;
-                });
+            });
+        }
+
+        // Busca dados da empresa na planilha
+        try {
+            const resp = await fetch(URL_DATABASE);
+            const cacheDados = await resp.json();
+            const emp = cacheDados.find(d => d.emp_nome) || cacheDados[0];
+            if (emp) {
+                document.getElementById('emp-nome').innerText = emp.emp_nome;
+                document.getElementById('emp-cnpj').innerText = "CNPJ: " + emp.emp_cnpj;
+                document.getElementById('emp-end').innerText = emp.emp_end;
+                document.getElementById('emp-tel').innerText = "Tel: " + emp.emp_tel;
+                document.getElementById('view-resp-tecnico').innerText = emp.emp_resp;
             }
-
-            try {
-                const resp = await fetch(URL_DATABASE);
-                const cacheDados = await resp.json();
-                const emp = cacheDados.find(d => d.emp_nome) || cacheDados[0];
-                if(emp) {
-                    document.getElementById('emp-nome').innerText = emp.emp_nome;
-                    document.getElementById('emp-cnpj').innerText = "CNPJ: " + emp.emp_cnpj;
-                    document.getElementById('emp-end').innerText = emp.emp_end; 
-                    document.getElementById('emp-tel').innerText = "Tel: " + emp.emp_tel;
-                    document.getElementById('view-resp-tecnico').innerText = emp.emp_resp; 
-                }
-            } catch (e) { console.error("Erro ao buscar dados remotos:", e); }
+        } catch (e) {
+            console.error("Erro ao buscar dados remotos:", e);
         }
+    }
 
-        function baixarPDF() {
-            const dados = {
-                tipo: modoOS ? "ORDEM DE SERVIÇO" : "ORÇAMENTO",
-                id_os: id_os_atual, // Envia o ID capturado na edição
-                cliente: document.getElementById('nomeCliente').value || "Cliente",
-                endereco: document.getElementById('enderecoCliente').value,
-                cpf: document.getElementById('telCliente').value, // Captura o CPF/CNPJ do campo
-                emissao: document.getElementById('dataInicio').value.split('-').reverse().join('/'),
-                validade: document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/'),
-                total: document.getElementById('totalFinal').value,
-                obs: document.getElementById('obsGeral').value,
-                garantia: document.getElementById('inputGarantia').value,
-                itens: Array.from(document.querySelectorAll('.service-card')).map(c => ({
-                    descricao: c.querySelector('.service-name').value,
-                    qtd: c.querySelector('.service-qty').innerText,
-                    valor: c.querySelector('.service-price').value
-                }))
-            };
-            localStorage.setItem('dados_impressao', JSON.stringify(dados));
-            window.location.href = modoOS ? "impressao_os.html" : "impressao.html";
-        }
+    function baixarPDF() {
+        const element = document.getElementById('conteudo-pdf');
+        const cliente = document.getElementById('view-cliente').innerText;
+        const opt = {
+            margin: [0, 0, 0, 0],
+            filename: `Ordem_de_Servico_${cliente}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak: { mode: 'avoid' }
+        };
+        html2pdf().set(opt).from(element).save();
+    }
 
-        function verificarEdicao() {
-            const dadosParaEditar = localStorage.getItem('editar_os_dados');
-            if (dadosParaEditar) {
-                const os = JSON.parse(dadosParaEditar);
-                localStorage.setItem('lock_dates', 'true');
-
-                if (os.ID_OS && !modoOS) { alternarModo(); }
-
-                // SALVA O ID DA OS PARA ENVIAR PARA A IMPRESSÃO
-                id_os_atual = os.ID_OS || ""; 
-
-                document.getElementById('nomeCliente').value = os.CLIENTE || "";
-                document.querySelector('#dropdown-cliente .selected-text').innerText = os.CLIENTE || "Selecionar Cliente";
-                document.getElementById('enderecoCliente').value = os.ENDERECO || "";
-                document.getElementById('telCliente').value = os.CPF || ""; // CPF carregado aqui
-                
-                document.getElementById('dataInicio').value = converterDataParaIso(os.DATA_DO_SERVICO);
-                document.getElementById('dataPrazoFinal').value = converterDataParaIso(os.DATA_FIM_GARANTIA);
-                if (os.GARANTIA_DIAS_CALCULADOS) { document.getElementById('inputGarantia').value = os.GARANTIA_DIAS_CALCULADOS; }
-
-                setTimeout(() => {
-                    document.getElementById('obsGeral').value = os.OSERVACAO || os.OBSERVACAO || ""; 
-                    autoExpandir(document.getElementById('obsGeral'));
-                }, 500);
-
-                const container = document.getElementById('services-container');
-                container.innerHTML = "";
-                const listaServicos = (os["TIPO_DE_SERVICO"] || "").split('|');
-                const listaValores = (os["VALOR_TOTAL"] || "0,00").split('|');
-                listaServicos.forEach((srvTexto, index) => {
-                    if (srvTexto.trim() !== "") {
-                        let qtd = 1, nome = srvTexto.trim();
-                        if (nome.includes('x ')) { const p = nome.split('x '); qtd = parseInt(p[0]) || 1; nome = p[1]; }
-                        let valorIndiv = listaValores[index] ? listaValores[index].trim() : "0,00";
-                        adicionarServicoParaEdicao(nome, qtd, valorIndiv);
-                    }
-                });
-                atualizarSoma();
-                localStorage.removeItem('editar_os_dados');
-            }
-        }
-
-        window.onload = carregarPagina;
-    </script>
+    window.onload = carregarPagina;
+</script>
 </body>
 </html>
