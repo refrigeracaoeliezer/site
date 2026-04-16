@@ -172,7 +172,7 @@
 
 <script>
     const URL_BUSCA = "https://script.google.com/macros/s/AKfycbwsX8xUWHgb9PE9Nv6IvQbjB7VGQPfUQSbn6fZT1WQRk5IoQJMFAhleLHHpHSU9zHw49A/exec";
-    const URL_SALVAR = "https://script.google.com/macros/s/AKfycbykJ7gl4J1Ez-GMhVYoeEd_ppVe6gPxg6IfdAHRDoTo7hUb-qJqOL0DOOTGgj8NMSm8Zw/exec";
+    const URL_SALVAR = "https://script.google.com/macros/s/AKfycbz1eUAYafEjNyIvVm8435ZYvE3nm0eiB61PcJ8_y26zw2o8oWlAl7KOJNFKJ2t_3nlVoQ/exec";
 
     function toggleAssinatura() {
         const campo = document.getElementById('campo-assinatura');
@@ -273,34 +273,40 @@ async function baixarPDF() {
     const dados = JSON.parse(localStorage.getItem('dados_impressao'));
     if (!dados) return;
 
-    // 1. Preparamos os textos de serviços e valores
-    const servicosTexto = dados.itens.map(i => `${i.qtd}x ${i.descricao}`).join(' | ');
-    const valoresTexto = dados.itens.map(i => i.valor).join(' | ');
+    // --- LÓGICA DE CÁLCULO DA DATA DE GARANTIA (COLUNA J) ---
+    function somarDias(dataStr, dias) {
+        if (!dataStr || dataStr === "---") return "---";
+        const partes = dataStr.split('/');
+        const data = new Date(partes[2], partes[1] - 1, partes[0]);
+        data.setDate(data.getDate() + parseInt(dias));
+        return data.toLocaleDateString('pt-BR');
+    }
 
-    // 2. LÓGICA CRUCIAL: Decidir qual ID enviar
-    // Se dados.id_os for "---", vazio ou não existir, enviamos vazio "" 
-    // para que o Apps Script gere o próximo número sequencial.
+    const diasGarantia = dados.garantia || "30";
+    const dataFimGarantiaCalculada = somarDias(dados.emissao, diasGarantia);
+    // -------------------------------------------------------
+
+    const servicosTexto = dados.itens.map(i => `${i.qtd}x ${i.descricao}`).join(' | ');
     let idParaEnviar = (dados.id_os && dados.id_os !== "---" && dados.id_os !== "") ? dados.id_os : "";
-    
-    // Pegamos o ID que está na tela apenas para o nome do arquivo PDF
     const idNomeArquivo = document.getElementById('num-random').innerText.split(' ')[0];
 
     const formData = new URLSearchParams();
-    formData.append('ID_OS', idParaEnviar); // Enviamos vazio para novo ou o número real para edição
+    formData.append('ID_OS', idParaEnviar);
     formData.append('CLIENTE', dados.cliente);
     formData.append('ENDERECO', dados.endereco);
     formData.append('CPF', dados.cpf);
-    formData.append('DATA_DO_SERVICO', dados.emissao);
+    formData.append('DATA_DO_SERVICO', dados.emissao); // Data de Início
     formData.append('TIPO_DE_SERVICO', servicosTexto);
     formData.append('TECNICO_RESPONSVEL', document.getElementById('view-resp-tecnico').innerText);
     formData.append('VALOR_TOTAL', dados.total || "0,00");
-    formData.append('GARANTIA_DIAS', dados.garantia || "30");
-    formData.append('DATA_FIM_GARANTIA', dados.validade);
+    formData.append('GARANTIA_DIAS', diasGarantia);
+    
+    // NOVA LOGICA DE COLUNAS:
+    formData.append('DATA_FIM_GARANTIA', dataFimGarantiaCalculada); // Vai para Coluna J (Soma)
     formData.append('OSERVACAO', dados.obs);
-    formData.append('DIA', dados.garantia);
+    formData.append('TERMINO_SERVICO', dados.validade); // Vai para Coluna L (Data Conclusão)
 
     try {
-        // Enviamos para a planilha
         await fetch(URL_SALVAR, { 
             method: 'POST', 
             mode: 'no-cors', 
@@ -311,7 +317,6 @@ async function baixarPDF() {
         console.error("Erro ao salvar na planilha:", e); 
     }
 
-    // 3. Geração do PDF
     const element = document.getElementById('conteudo-pdf');
     const opt = {
         margin: [0, 0, 0, 0],
