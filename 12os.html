@@ -57,7 +57,7 @@
 
         .glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-top: 4px solid #1e40af; border-radius: 30px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); transition: all 0.5s ease; }
 
-        .is-os { border-top-color: #10b981 !important; color: white !important; } /* CORREÇÃO: Forçando letra branca no modo OS */
+        .is-os { border-top-color: #10b981 !important; color: white !important; }
         .is-os .text-blue-500, .is-os .text-blue-400, .is-os .section-header i, .is-os .section-header span { color: #10b981 !important; }
         .is-os .btn-primary { background: linear-gradient(135deg, #065f46 0%, #10b981 100%) !important; }
         .is-os .total-container { background: #065f46 !important; border-color: rgba(16, 185, 129, 0.3) !important; }
@@ -501,13 +501,11 @@
             window.location.href = modoOS ? "impressao_os.html" : "impressao.html";
         }
 
-        // CORREÇÃO: Função Verificar Edição agora aguarda a mudança de modo para preencher campos
         function verificarEdicao() {
             const dadosParaEditar = localStorage.getItem('editar_os_dados');
             if (dadosParaEditar) {
                 const os = JSON.parse(dadosParaEditar);
                 
-                // Ativa o Modo OS primeiro se os dados forem de uma OS
                 if (os.ID_OS && !modoOS) {
                     alternarModo();
                 }
@@ -517,17 +515,20 @@
                 document.getElementById('enderecoCliente').value = os.ENDERECO || "";
                 document.getElementById('telCliente').value = os.CPF || "";
                 
-                // Recebendo a Observação da Planilha
-                document.getElementById('obsGeral').value = os.OSERVACAO || os.OBSERVACAO || ""; 
-                
-                // Recebendo as Datas (Convertendo para o formato do input date)
+                // CORREÇÃO: Preenche as Datas convertendo corretamente
                 if (os.DATA_DO_SERVICO) document.getElementById('dataInicio').value = converterDataParaIso(os.DATA_DO_SERVICO);
                 if (os.DATA_FIM_GARANTIA) document.getElementById('dataPrazoFinal').value = converterDataParaIso(os.DATA_FIM_GARANTIA);
                 
-                // Recebendo os Dias Calculados
+                // CORREÇÃO: Preenche os Dias Calculados
                 if (os.GARANTIA_DIAS_CALCULADOS) { 
                     document.getElementById('inputGarantia').value = os.GARANTIA_DIAS_CALCULADOS; 
                 }
+
+                // CORREÇÃO: Preenche a Observação com prioridade sobre o texto padrão
+                setTimeout(() => {
+                    document.getElementById('obsGeral').value = os.OSERVACAO || os.OBSERVACAO || ""; 
+                    autoExpandir(document.getElementById('obsGeral'));
+                }, 500);
 
                 const container = document.getElementById('services-container');
                 container.innerHTML = "";
@@ -543,7 +544,6 @@
                     }
                 });
 
-                autoExpandir(document.getElementById('obsGeral'));
                 atualizarSoma();
                 localStorage.removeItem('editar_os_dados');
             } else {
@@ -552,9 +552,13 @@
         }
 
         function converterDataParaIso(dataBr) {
-            if (!dataBr || !dataBr.includes('/')) return "";
-            const partes = dataBr.split('/');
-            // Trata formatos DD/MM/YYYY
+            if (!dataBr) return "";
+            const partes = dataBr.toString().split('T')[0].split('/');
+            if (partes.length !== 3) {
+                // Caso a data já venha no formato ISO do banco (YYYY-MM-DD)
+                return dataBr.toString().split('T')[0];
+            }
+            // Converte DD/MM/YYYY para YYYY-MM-DD
             return `${partes[2].split(' ')[0]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
         }
 
