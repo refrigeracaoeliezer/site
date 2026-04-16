@@ -256,7 +256,7 @@
     </div>
 
     <script>
-      // URLs de Conexão
+// URLs de Conexão
 const URL_DATABASE = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec"; 
 
 let cacheDados = [];
@@ -280,9 +280,7 @@ function autoExpandir(textarea) {
 }
 
 function calcularDataFinal() {
-    // Se estivermos editando algo vindo da lista, não recalculamos para não perder a data original
     if (localStorage.getItem('lock_dates') === 'true') return;
-    
     const dataInicioVal = document.getElementById('dataInicio').value;
     const diasPrazo = parseInt(document.getElementById('inputGarantia').value) || 0;
     const campoDataFinal = document.getElementById('dataPrazoFinal');
@@ -297,16 +295,11 @@ function calcularDataFinal() {
 
 async function buscarDadosPlanilha() {
     try {
-        // Usando a URL que você confirmou que funciona
         const resp = await fetch(URL_DATABASE);
         cacheDados = await resp.json();
-        
         renderizarDatalists();
         aplicarTextoPadrao();
-        
-        // Após carregar os dados da planilha, verificamos se há algo para editar vindo do localStorage
         verificarEdicao();
-        
     } catch (e) { 
         console.error("Erro ao carregar dados da planilha:", e); 
     }
@@ -319,9 +312,7 @@ function toggleDropdown(el) {
     const list = el.nextElementSibling;
     const searchInput = el.querySelector('.search-input');
     const isVisible = list.style.display === 'block';
-    
     fecharTodosDropdowns();
-
     if (!isVisible) {
         list.style.display = 'block';
         wrapper.classList.add('is-searching');
@@ -344,10 +335,8 @@ function selecionarItemDropdown(li, nome, valorExtra, tipo) {
     const wrapper = li.closest('.custom-dropdown');
     const display = wrapper.querySelector('.selected-text');
     const hiddenInput = wrapper.querySelector('input[type="hidden"]');
-    
     display.innerText = nome;
     hiddenInput.value = nome;
-    
     if (tipo === 'servico') {
         const card = li.closest('.service-card');
         const precoInput = card.querySelector('.service-price');
@@ -373,7 +362,6 @@ function renderizarDatalists() {
     const clientes = [...new Set(cacheDados.map(d => d.cli_nome))].filter(Boolean);
     document.getElementById('lista-clientes-custom').innerHTML = clientes.map(n => 
         `<li class="dropdown-item" onclick="selecionarItemDropdown(this, '${n}', '', 'cliente')">${n}</li>`).join('');
-    
     const dadosEmp = cacheDados.find(d => d.emp_nome);
     if(dadosEmp) document.getElementById('nomePrestador').value = dadosEmp.emp_nome;
 }
@@ -386,7 +374,7 @@ function gerarHtmlServicos() {
     }).join('');
 }
 
-// --- GERENCIAMENTO DE ITENS/SERVIÇOS ---
+// --- GERENCIAMENTO DE ITENS ---
 
 function adicionarServico() {
     const container = document.getElementById('services-container');
@@ -446,44 +434,129 @@ function atualizarSoma() {
     document.getElementById('totalFinal').value = total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
 }
 
-// --- LÓGICA DE EDIÇÃO (DADOS DA OUTRA PÁGINA) ---
+// --- GERAÇÃO DE DOCUMENTO E MODAL ---
+
+function alternarQuitacao() {
+    saldoQuitado = !saldoQuitado;
+    const btn = document.getElementById('btn-quitar');
+    btn.innerText = saldoQuitado ? "PAGAMENTO CONFIRMADO" : "QUITAR SALDO";
+    btn.className = saldoQuitado ? "text-[9px] font-black px-3 py-1 rounded-lg border border-green-600 text-white bg-green-600" : "text-[9px] font-black px-3 py-1 rounded-lg border border-green-500/30 text-green-500 bg-green-500/10";
+    gerarDocumento();
+}
+
+function gerarDocumento() {
+    const prestador = document.getElementById('nomePrestador').value || "ELIEZER";
+    const cliente = document.getElementById('nomeCliente').value || "Cliente";
+    const total = document.getElementById('totalFinal').value;
+    const obs = document.getElementById('obsGeral').value;
+    const dias = document.getElementById('inputGarantia').value;
+    const dataFim = document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/');
+    const chavePix = (cacheDados.find(d => d.emp_pix) || {}).emp_pix || "[PIX]";
+    
+    let servicosTexto = "";
+    document.querySelectorAll('.service-card').forEach(card => {
+        const n = card.querySelector('.service-name').value;
+        const p = card.querySelector('.service-price').value;
+        const q = card.querySelector('.service-qty').innerText;
+        if(n) servicosTexto += `• ${q}x ${n} - R$ ${p}\n`;
+    });
+
+    const totalNum = parseFloat(total.replace(/\./g, "").replace(",", ".")) || 0;
+    const sinal = (totalNum * 0.3).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+    const saldo = (totalNum * 0.7).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+
+    // Preenche as caixas de texto do Modal
+    document.getElementById('txt-proposta').innerText = `*ORÇAMENTO TÉCNICO - ${prestador.toUpperCase()}*\n\nOlá ${cliente}! Segue o orçamento:\n\n*SERVIÇOS:*\n${servicosTexto}\n*OBS:*\n${obs}\n\n*INVESTIMENTO TOTAL:* R$ ${total}\n(Material + Mão de Obra incluso)\n\n*${modoOS ? 'Garantia' : 'Vencimento'}:* ${dias} dias\n*Data Prevista:* ${dataFim}\n\nFicaremos no aguardo.`;
+    
+    document.getElementById('txt-sinal').innerText = `*Confirmação de Agendamento*\n\nOlá, ${cliente}, tudo bem?\n\nPara formalizarmos o seu atendimento e garantirmos a reserva dos materiais e da sua data em nossa agenda, solicitamos o pagamento da entrada:\n\n💰 *Valor da Entrada (30%):* R$ ${sinal}\n🔑 *Chave PIX:* ${chavePix}\n\nAssim que realizar a transferência, por favor, nos envie o comprovante para validarmos o agendamento. 🗓️\n\nFicamos à disposição para qualquer dúvida!`;
+    
+    document.getElementById('txt-conclusao').innerText = `*Finalização de Serviço* ❄️\n\nOlá, ${cliente}, tudo bem?\n\nInformamos que o serviço em seu equipamento foi concluído com sucesso! ✅ Realizamos todos os testes técnicos e o sistema já está operando em perfeitas condições.\n\n💳 *Status de Pagamento:* ${saldoQuitado ? "Saldo Quitado" : `Saldo de R$ ${saldo}`}\n🛡️ *Garantia:* Você tem *${dias} dias* de garantia total sobre o serviço executado.\n\nAgradecemos a confiança em nosso trabalho! Qualquer dúvida, estamos à disposição.\n\nAtenciosamente,\n*${prestador}*`;
+    
+    // Abre o Modal
+    document.getElementById('modal-mensagens').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+function fecharModal() { document.getElementById('modal-mensagens').style.display = 'none'; document.body.style.overflow = 'auto'; }
+
+function enviarWpp(id) {
+    const txt = document.getElementById(id).innerText;
+    const tel = document.getElementById('telCliente').value.replace(/\D/g, '');
+    if(!tel) return alert("Por favor, preencha o WhatsApp do cliente!");
+    window.open(`https://api.whatsapp.com/send?phone=55${tel}&text=${encodeURIComponent(txt)}`, '_blank');
+}
+
+function copiarTextoProfissional(id, el) {
+    navigator.clipboard.writeText(document.getElementById(id).innerText).then(() => {
+        const old = el.innerText; el.innerText = "COPIADO!"; el.classList.add('btn-copy-success');
+        setTimeout(() => { el.innerText = old; el.classList.remove('btn-copy-success'); }, 2000);
+    });
+}
+
+function baixarPDF() {
+    const dados = {
+        tipo: modoOS ? "ORDEM DE SERVIÇO" : "ORÇAMENTO",
+        id_os: id_os_atual,
+        cliente: document.getElementById('nomeCliente').value || "Cliente",
+        endereco: document.getElementById('enderecoCliente').value,
+        cpf: document.getElementById('telCliente').value,
+        emissao: document.getElementById('dataInicio').value.split('-').reverse().join('/'),
+        validade: document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/'),
+        total: document.getElementById('totalFinal').value,
+        obs: document.getElementById('obsGeral').value,
+        garantia: document.getElementById('inputGarantia').value,
+        itens: Array.from(document.querySelectorAll('.service-card')).map(c => ({
+            descricao: c.querySelector('.service-name').value,
+            qtd: c.querySelector('.service-qty').innerText,
+            valor: c.querySelector('.service-price').value
+        }))
+    };
+    localStorage.setItem('dados_impressao', JSON.stringify(dados));
+    window.location.href = modoOS ? "imp.html" : "impressao.html";
+}
+
+// --- LÓGICA DE EDIÇÃO E MODOS ---
+
+function alternarModo() {
+    modoOS = !modoOS;
+    document.getElementById('toggleMode').classList.toggle('mode-os');
+    document.getElementById('card-principal').classList.toggle('is-os');
+    document.getElementById('sub-title').innerText = modoOS ? "Ordem de Serviço (OS)" : "Sistema de Orçamento";
+    document.getElementById('btn-acao').innerHTML = modoOS ? 'Finalizar O.S <i class="fa-solid fa-check"></i>' : 'Gerar Orçamento <i class="fa-solid fa-arrow-right"></i>';
+    document.getElementById('label-prazo').innerText = modoOS ? "Garantia" : "Vencimento";
+    aplicarTextoPadrao();
+}
+
+function aplicarTextoPadrao() {
+    if (localStorage.getItem('lock_dates') === 'true') return;
+    const listaObs = cacheDados.map(d => d.txt_obs).filter(Boolean);
+    document.getElementById('obsGeral').value = modoOS ? (listaObs[1] || "") : (listaObs[0] || "");
+    autoExpandir(document.getElementById('obsGeral'));
+}
 
 function verificarEdicao() {
     const dadosParaEditar = localStorage.getItem('editar_os_dados');
     if (dadosParaEditar) {
         const os = JSON.parse(dadosParaEditar);
         localStorage.setItem('lock_dates', 'true');
-
         if (os.ID_OS && !modoOS) alternarModo();
-
         id_os_atual = os.ID_OS || ""; 
-        
-        // Preenche Cliente
         document.getElementById('nomeCliente').value = os.CLIENTE || "";
         const displayCli = document.querySelector('#dropdown-cliente .selected-text');
         if(displayCli) displayCli.innerText = os.CLIENTE || "Selecionar Cliente";
-        
         document.getElementById('enderecoCliente').value = os.ENDERECO || os.ENDEREÇO || "";
         document.getElementById('telCliente').value = os.CPF || os.TELEFONE || "";
-        
-        // Datas
         if (os.DATA_DO_SERVICO) document.getElementById('dataInicio').value = converterDataParaIso(os.DATA_DO_SERVICO);
         if (os.DATA_FIM_GARANTIA) document.getElementById('dataPrazoFinal').value = converterDataParaIso(os.DATA_FIM_GARANTIA);
         if (os.GARANTIA_DIAS_CALCULADOS) document.getElementById('inputGarantia').value = os.GARANTIA_DIAS_CALCULADOS;
-
-        // Observação
         setTimeout(() => {
             document.getElementById('obsGeral').value = os.OSERVACAO || os.OBSERVACAO || ""; 
             autoExpandir(document.getElementById('obsGeral'));
         }, 300);
-
-        // Serviços (Limpa os vazios e adiciona os da OS)
         const container = document.getElementById('services-container');
         container.innerHTML = "";
-        
         const listaServicos = (os["TIPO_DE_SERVICO"] || os["TIPO_DE_SERVIÇO"] || "").split('|');
         const listaValores = (os["VALOR_TOTAL"] || "0,00").split('|');
-        
         listaServicos.forEach((srvTexto, index) => {
             if (srvTexto.trim() !== "") {
                 let qtd = 1, nome = srvTexto.trim();
@@ -496,7 +569,6 @@ function verificarEdicao() {
                 adicionarServicoParaEdicao(nome, qtd, valorIndiv);
             }
         });
-
         atualizarSoma();
         localStorage.removeItem('editar_os_dados');
     } else {
@@ -525,34 +597,12 @@ function converterDataParaIso(dataBr) {
     return partes[0].length === 4 ? limpa : `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
 }
 
-// --- FINALIZAÇÃO E DOCUMENTOS ---
-
-function alternarModo() {
-    modoOS = !modoOS;
-    document.getElementById('toggleMode').classList.toggle('mode-os');
-    document.getElementById('card-principal').classList.toggle('is-os');
-    document.getElementById('sub-title').innerText = modoOS ? "Ordem de Serviço (OS)" : "Sistema de Orçamento";
-    document.getElementById('btn-acao').innerHTML = modoOS ? 'Finalizar O.S <i class="fa-solid fa-check"></i>' : 'Gerar Orçamento <i class="fa-solid fa-arrow-right"></i>';
-    aplicarTextoPadrao();
-}
-
-function aplicarTextoPadrao() {
-    if (localStorage.getItem('lock_dates') === 'true') return;
-    const listaObs = cacheDados.map(d => d.txt_obs).filter(Boolean);
-    document.getElementById('obsGeral').value = modoOS ? (listaObs[1] || "") : (listaObs[0] || "");
-    autoExpandir(document.getElementById('obsGeral'));
-}
-
 // Inicialização
 window.onload = async () => {
     if(localStorage.getItem('theme') === 'light') toggleTheme();
-    
-    // Datas iniciais
     const dataHoje = new Date().toISOString().split('T')[0];
     document.getElementById('dataInicio').value = dataHoje;
     document.getElementById('dataPrazoFinal').value = dataHoje;
-
-    // Busca dados e depois verifica edição
     await buscarDadosPlanilha();
 };
 
