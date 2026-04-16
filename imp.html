@@ -172,7 +172,7 @@
 
 <script>
     const URL_BUSCA = "https://script.google.com/macros/s/AKfycbwsX8xUWHgb9PE9Nv6IvQbjB7VGQPfUQSbn6fZT1WQRk5IoQJMFAhleLHHpHSU9zHw49A/exec";
-    const URL_SALVAR = "https://script.google.com/macros/s/AKfycbyUiAkd5D0HTIBdq3mlHQ0iVYeMfInplUJHwOhWgwfUn6aCnfIxCsJG_2_vjFTgY7Kc/exec";
+    const URL_SALVAR = "https://script.google.com/macros/s/AKfycbykJ7gl4J1Ez-GMhVYoeEd_ppVe6gPxg6IfdAHRDoTo7hUb-qJqOL0DOOTGgj8NMSm8Zw/exec";
 
     function toggleAssinatura() {
         const campo = document.getElementById('campo-assinatura');
@@ -181,85 +181,87 @@
         campo.style.display = (campo.style.display === "none" || campo.style.display === "") ? "block" : "none";
     }
 
-    async function carregarPagina() {
-        const dadosLocal = JSON.parse(localStorage.getItem('dados_impressao'));
-        if (!dadosLocal) return;
+   async function carregarPagina() {
+    const dadosLocal = JSON.parse(localStorage.getItem('dados_impressao'));
+    if (!dadosLocal) return;
 
-        try {
-            const resp = await fetch(URL_BUSCA);
-            const cacheDados = await resp.json();
-            
-            // --- LÓGICA DE NÚMERO SEQUENCIAL COM BUSCA DE FALTANTES (REVISADA) ---
-            if (dadosLocal.id_os) {
-                // Se for Edição (já possui ID), mantém o original
-                document.getElementById('num-random').innerText = dadosLocal.id_os.toString().padStart(3, '0') + ' - OS';
-            } else {
-                // Extrai IDs numéricos, filtra nulos e ordena do menor para o maior
-                const idsExistentes = cacheDados
-                    .map(d => parseInt(d.ID_OS))
-                    .filter(n => !isNaN(n))
-                    .sort((a, b) => a - b);
+    try {
+        const resp = await fetch(URL_BUSCA);
+        const cacheDados = await resp.json();
+        
+        // --- LÓGICA DE NÚMERO SEQUENCIAL COM BUSCA DE FALTANTES (CORRIGIDA) ---
+        // Só gera um novo ID se a OS não tiver um ID_OS vindo do formulário ou se for uma OS nova (string vazia ou null)
+        if (dadosLocal.id_os && dadosLocal.id_os !== "" && dadosLocal.id_os !== "---") {
+            document.getElementById('num-random').innerText = dadosLocal.id_os.toString().padStart(3, '0') + ' - OS';
+        } else {
+            // Extrai IDs, converte para número de forma segura e remove duplicados/inválidos
+            const idsExistentes = cacheDados
+                .map(d => parseInt(String(d.ID_OS).replace(/\D/g, ''))) // Remove qualquer caractere não numérico antes de converter
+                .filter(n => !isNaN(n))
+                .sort((a, b) => a - b);
 
-                // Inicia busca do 1. Se o 1 estiver faltando, ele será o novo ID.
-                let proximoId = 1;
+            let proximoId = 1;
+            // Se a lista não estiver vazia, procura o primeiro buraco
+            if (idsExistentes.length > 0) {
                 for (let i = 0; i < idsExistentes.length; i++) {
                     if (idsExistentes[i] === proximoId) {
-                        proximoId++; // Número já existe, tenta o próximo
+                        proximoId++;
                     } else if (idsExistentes[i] > proximoId) {
-                        break; // Encontrou um buraco na sequência
+                        break; 
                     }
                 }
-                
-                const idFormatado = proximoId.toString().padStart(3, '0');
-                document.getElementById('num-random').innerText = idFormatado + ' - OS';
-                dadosLocal.id_os = idFormatado; // Armazena para o envio via POST
             }
-
-            // Preenche dados da empresa
-            const emp = cacheDados.find(d => d.emp_nome) || cacheDados[0];
-            if (emp) {
-                document.getElementById('emp-nome').innerText = emp.emp_nome;
-                document.getElementById('emp-cnpj').innerText = "CNPJ: " + emp.emp_cnpj;
-                document.getElementById('emp-end').innerText = emp.emp_end;
-                document.getElementById('emp-tel').innerText = "Tel: " + emp.emp_tel;
-                document.getElementById('view-resp-tecnico').innerText = emp.emp_resp;
-            }
-
-            // Recuperação do CPF do cliente
-            let cpfFinal = dadosLocal.cpf || "---";
-            if (cpfFinal === "---" || !cpfFinal) {
-                const cliInfo = cacheDados.find(d => d.cli_nome === dadosLocal.cliente);
-                cpfFinal = cliInfo ? cliInfo.cli_doc : "---";
-            }
-            document.getElementById('view-cpf-cli').innerText = cpfFinal;
-            dadosLocal.cpf = cpfFinal;
-
-        } catch (e) { 
-            console.error("Erro ao carregar dados:", e); 
-            if(!dadosLocal.id_os) document.getElementById('num-random').innerText = '001 - OS';
+            
+            const idFormatado = proximoId.toString().padStart(3, '0');
+            document.getElementById('num-random').innerText = idFormatado + ' - OS';
+            dadosLocal.id_os = idFormatado; // Atualiza o objeto para o POST salvar o número correto
         }
 
-        // Preenchimento Visual
-        document.getElementById('view-cliente').innerText = dadosLocal.cliente || "---";
-        document.getElementById('view-endereco').innerText = dadosLocal.endereco || "---";
-        document.getElementById('view-data').innerText = dadosLocal.emissao || "---";
-        document.getElementById('view-venc').innerText = dadosLocal.validade || "---";
-        document.getElementById('view-total').innerText = 'R$ ' + (dadosLocal.total || "0,00");
-        document.getElementById('view-obs').innerText = dadosLocal.obs || "Serviço realizado conforme padrões técnicos.";
-        document.getElementById('view-dias-garantia').innerText = dadosLocal.garantia || "30";
-
-        const corpo = document.getElementById('tabela-corpo');
-        corpo.innerHTML = "";
-        if (dadosLocal.itens) {
-            dadosLocal.itens.forEach(i => {
-                const vUnit = parseFloat(i.valor.replace(/\./g, '').replace(',', '.'));
-                const vTotal = (vUnit * parseInt(i.qtd)).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-                corpo.innerHTML += `<tr><td>${i.descricao}</td><td style="text-align:center">${i.qtd}</td><td style="text-align:right">R$ ${vTotal}</td></tr>`;
-            });
+        // Preenche dados da empresa
+        const emp = cacheDados.find(d => d.emp_nome) || cacheDados[0];
+        if (emp) {
+            document.getElementById('emp-nome').innerText = emp.emp_nome || "---";
+            document.getElementById('emp-cnpj').innerText = "CNPJ: " + (emp.emp_cnpj || "---");
+            document.getElementById('emp-end').innerText = emp.emp_end || "---";
+            document.getElementById('emp-tel').innerText = "Tel: " + (emp.emp_tel || "---");
+            document.getElementById('view-resp-tecnico').innerText = emp.emp_resp || "---";
         }
-        localStorage.setItem('dados_impressao', JSON.stringify(dadosLocal));
+
+        // Recuperação do CPF do cliente
+        let cpfFinal = dadosLocal.cpf || "---";
+        if (cpfFinal === "---" || !cpfFinal) {
+            const cliInfo = cacheDados.find(d => d.cli_nome === dadosLocal.cliente);
+            cpfFinal = cliInfo ? cliInfo.cli_doc : "---";
+        }
+        document.getElementById('view-cpf-cli').innerText = cpfFinal;
+        dadosLocal.cpf = cpfFinal;
+
+    } catch (e) { 
+        console.error("Erro ao carregar dados:", e); 
+        if(!dadosLocal.id_os) document.getElementById('num-random').innerText = '001 - OS';
     }
 
+    // Preenchimento dos campos visuais
+    document.getElementById('view-cliente').innerText = dadosLocal.cliente || "---";
+    document.getElementById('view-endereco').innerText = dadosLocal.endereco || "---";
+    document.getElementById('view-data').innerText = dadosLocal.emissao || "---";
+    document.getElementById('view-venc').innerText = dadosLocal.validade || "---";
+    document.getElementById('view-total').innerText = 'R$ ' + (dadosLocal.total || "0,00");
+    document.getElementById('view-obs').innerText = dadosLocal.obs || "Serviço realizado conforme padrões técnicos.";
+    document.getElementById('view-dias-garantia').innerText = dadosLocal.garantia || "30";
+
+    const corpo = document.getElementById('tabela-corpo');
+    corpo.innerHTML = "";
+    if (dadosLocal.itens) {
+        dadosLocal.itens.forEach(i => {
+            const vUnit = parseFloat(i.valor.replace(/\./g, '').replace(',', '.'));
+            const vTotal = (vUnit * parseInt(i.qtd)).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+            corpo.innerHTML += `<tr><td>${i.descricao}</td><td style="text-align:center">${i.qtd}</td><td style="text-align:right">R$ ${vTotal}</td></tr>`;
+        });
+    }
+    // Salva de volta no localStorage para que o baixarPDF pegue o ID_OS gerado aqui
+    localStorage.setItem('dados_impressao', JSON.stringify(dadosLocal));
+}
     async function baixarPDF() {
         const dados = JSON.parse(localStorage.getItem('dados_impressao'));
         if (!dados) return;
