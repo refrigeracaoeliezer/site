@@ -263,10 +263,9 @@
     </div>
 
 <script>
-// Link da Planilha para leitura da Coluna A (ID_OS)
-const URL_READ_ID = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec";
-// Link original para outros dados
-const URL_DATABASE = "https://script.google.com/macros/s/AKfycbzozyKIziDzmieP59KCfMEZeQETFz9H7wAa4UGntF7uHDDxTcm3Dmo14dx_V4rYfr7nzw/exec"; 
+// Links Planilha
+const URL_READ_ID = "https://script.google.com/macros/s/AKfycbzozyKIziDzmieP59KCfMEZeQETFz9H7wAa4UGntF7uHDDxTcm3Dmo14dx_V4rYfr7nzw/exec";
+const URL_DATABASE = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec"; 
 
 let cacheDados = [];
 let modoOS = false;
@@ -301,34 +300,30 @@ function calcularDataFinal() {
 
 async function buscarDadosPlanilha() {
     try {
-        // Buscamos os dados da planilha que contém os IDs para gerar o numeral correto
-        const respID = await fetch(URL_READ_ID);
-        const dadosID = await respID.json();
-        
-        // Buscamos os outros dados (clientes/serviços)
+        // Carregar Planilha de Clientes e Serviços Primeiro
         const respDB = await fetch(URL_DATABASE);
         cacheDados = await respDB.json();
-
+        
         renderizarDatalists();
         aplicarTextoPadrao();
-        verificarEdicao(); 
-        
-        // Se após verificarEdicao o id_os_atual ainda estiver vazio, gera novo usando os dados da planilha de IDs
+        verificarEdicao(); // Tenta carregar dados de edição se existirem
+
+        // Se após verificarEdicao o id_os_atual ainda estiver vazio, busca o numeral da outra planilha
         if (!id_os_atual || id_os_atual === "" || id_os_atual === "---") {
+            const respID = await fetch(URL_READ_ID);
+            const dadosID = await respID.json();
             gerarNovoID(dadosID);
         }
     } catch (e) { 
-        console.error("Erro ao carregar dados da planilha:", e); 
+        console.error("Erro ao carregar dados:", e); 
     }
 }
 
 function gerarNovoID(dadosPlanilha) {
     if (id_os_atual && id_os_atual !== "" && id_os_atual !== "---") {
-        document.getElementById('display-id').innerText = id_os_atual.toString().padStart(3, '0');
+        document.getElementById('display-id').innerText = id_os_atual;
         return;
     }
-
-    // Procura na coluna ID_OS ou id_os dos dados recebidos
     const idsExistentes = dadosPlanilha
         .map(item => parseInt((item.ID_OS || item.id_os || "0").toString().replace(/\D/g, '')))
         .filter(n => !isNaN(n))
@@ -338,7 +333,6 @@ function gerarNovoID(dadosPlanilha) {
     for (let i = 0; i < idsExistentes.length; i++) {
         if (idsExistentes[i] === proximo) proximo++;
     }
-    
     id_os_atual = proximo.toString().padStart(3, '0');
     document.getElementById('display-id').innerText = id_os_atual;
 }
@@ -530,7 +524,7 @@ function baixarPDF() {
         obs: document.getElementById('obsGeral').value,
         garantia: document.getElementById('inputGarantia').value,
         itens: Array.from(document.querySelectorAll('.service-card')).map(c => ({
-            descricao: c.querySelector('.service-name').value,
+            descricao: c.querySelector('.service-name').value || c.querySelector('.selected-text').innerText,
             qtd: c.querySelector('.service-qty').innerText,
             valor: c.querySelector('.service-price').value
         }))
