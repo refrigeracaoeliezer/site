@@ -275,29 +275,37 @@
     }
 
 async function baixarPDF() {
-        const dados = JSON.parse(localStorage.getItem('dados_impressao'));
-        if (!dados) return;
 
-        // --- CÓDIGO CORRIGIDO COM CENTAVOS (R$ 0,00) ---
-        const servicosTexto = dados.itens.map(i => {
-            // Converte o valor para número limpando pontos e ajustando a vírgula
-            const valorNumerico = parseFloat(i.valor.replace(/\./g, '').replace(',', '.'));
-            
-            // Formata para o padrão brasileiro garantindo sempre 2 casas decimais
-            const valorFormatado = valorNumerico.toLocaleString('pt-BR', { 
-                minimumFractionDigits: 2, 
-                maximumFractionDigits: 2 
-            });
-            
-            return `${i.qtd}x ${i.descricao} (R$ ${valorFormatado})`;
-        }).join(' | ');
-        // ----------------------------------------------
+const dados = JSON.parse(localStorage.getItem('dados_impressao'));
 
-        const idNomeArquivo = document.getElementById('num-random').innerText.split(' ')[0];
-        let idParaEnviar = (dados.id_os && dados.id_os !== "---" && dados.id_os !== "") ? dados.id_os : "";
+if (!dados) return;
 
-        // ... resto do seu código (lógica de datas e envio para planilha)
-        
+
+
+const servicosTexto = dados.itens.map(i => `${i.qtd}x ${i.descricao}`).join(' | ');
+
+const idNomeArquivo = document.getElementById('num-random').innerText.split(' ')[0];
+
+let idParaEnviar = (dados.id_os && dados.id_os !== "---" && dados.id_os !== "") ? dados.id_os : "";
+
+
+
+// --- CÓDIGO MODIFICADO ---
+
+const servicosTexto = dados.itens.map(i => {
+
+// Converte o valor para número e formata com 2 casas decimais e vírgula
+
+const valorFormatado = parseFloat(i.valor.replace(/\./g, '').replace(',', '.'))
+
+.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+
+return `${i.qtd}x ${i.descricao} (R$ ${valorFormatado})`;
+
+}).join(' | ');
+
+// -------------------------
         
         
         
