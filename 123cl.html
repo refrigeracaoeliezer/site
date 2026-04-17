@@ -90,67 +90,80 @@
     
     
     
-    
-    <script>
-    const URL_DATABASE = "https://script.google.com/macros/s/AKfycbx27IVxqdpT4NJUQeBYR07ul4XNEDzgI92IfZJ6JoOgzZbsRQUiZo0YoMr7lXKVGIjD/exec"; // Certifique-se de atualizar após o novo Deploy
+  <script>
+    const URL_DATABASE = "https://script.google.com/macros/s/AKfycbx27IVxqdpT4NJUQeBYR07ul4XNEDzgI92IfZJ6JoOgzZbsRQUiZo0YoMr7lXKVGIjD/exec"; 
 
+    // --- RESTAURADO: Troca de Tema (Dark/Light) ---
+    function toggleTheme() {
+        const body = document.body;
+        const icon = document.getElementById('theme-icon');
+        body.classList.toggle('light-mode');
+        localStorage.setItem('theme', body.classList.contains('light-mode') ? 'light' : 'dark');
+        if(icon) icon.className = body.classList.contains('light-mode') ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+    }
 
+    // --- RESTAURADO: Filtro de Busca ---
+    function filtrarHistorico() {
+        const termo = document.getElementById('inputBusca').value.toLowerCase();
+        const cards = document.querySelectorAll('.card-item');
+        cards.forEach(card => {
+            const texto = card.innerText.toLowerCase();
+            card.style.display = texto.includes(termo) ? 'block' : 'none';
+        });
+    }
 
-    // 2. Função para buscar os dados da planilha (Aciona o doGet do Script)
     async function carregarDados() {
         try {
             const response = await fetch(URL_DATABASE, { redirect: "follow" });
             const dados = await response.json();
-            // Inverte a lista para que as OS mais recentes apareçam no topo
             renderizarCards(dados.reverse());
         } catch (error) {
             console.error("Erro ao carregar dados:", error);
             const container = document.getElementById('container-historico');
-            if (container) {
-                container.innerHTML = `<div class="text-center py-10 text-red-400 font-bold uppercase text-xs">
-                    Erro ao conectar com a planilha. Verifique a URL do Deploy.
-                </div>`;
-            }
+            if (container) container.innerHTML = `<div class="text-center py-10 text-red-400 font-bold uppercase text-xs">Erro ao conectar com a planilha.</div>`;
         }
     }
 
-    // 3. Função para preparar a edição e navegar para a próxima página
+    async function excluirOS(id) {
+        if (!confirm(`Tem certeza que deseja excluir a OS #${id}?`)) return;
+        try {
+            const response = await fetch(`${URL_DATABASE}?deleteID=${id}`, { redirect: "follow" });
+            const res = await response.json();
+            if (res.status === "success") {
+                alert("OS excluída com sucesso!");
+                carregarDados();
+            } else {
+                alert("Erro ao excluir: " + res.message);
+            }
+        } catch (error) {
+            console.error("Erro na exclusão:", error);
+            alert("Erro de conexão ao tentar excluir.");
+        }
+    }
+
     function editarServico(dadosString) {
         try {
-            // Decodifica a string JSON que foi enviada pelo botão
             const os = JSON.parse(decodeURIComponent(dadosString));
-            
-            // Salva o objeto completo no localStorage para ser lido pela página 12os.html
             localStorage.setItem('editar_os_dados', JSON.stringify(os));
-            
-            // Redireciona para a página de formulário/edição
             window.location.href = "12os.html"; 
         } catch (e) {
-            console.error("Erro ao preparar edição:", e);
             alert("Erro ao carregar dados para edição.");
         }
     }
 
-    // 4. Função para construir os cards na tela
     function renderizarCards(lista) {
         const container = document.getElementById('container-historico');
         if (!container) return;
-        
         container.innerHTML = "";
         
         lista.forEach(os => {
-            // Tratamento de datas e status de garantia
             const dataGarantia = formatarDataBR(os.DATA_FIM_GARANTIA);
             const estaNaGarantia = verificarGarantia(os.DATA_FIM_GARANTIA);
-            
-            // Processa a string de serviços (Coluna F) separada por "|"
-            const servicosTexto = os.TIPO_DE_SERVICO || "";
-            const servicosArray = servicosTexto.toString().split('|');
+            const servicosArray = (os.TIPO_DE_SERVICO || "").toString().split('|');
             let htmlServicos = servicosArray.map(srv => 
                 srv.trim() !== "" ? `<div class="item-servico text-xs text-white/70 italic">${srv.trim()}</div>` : ""
             ).join("");
 
-            // Transforma o objeto da OS em uma string segura para ser passada no onclick do botão
             const dadosParaEdicao = encodeURIComponent(JSON.stringify(os));
 
             container.innerHTML += `
@@ -168,6 +181,9 @@
                             <div class="flex gap-2">
                                 <button onclick="editarServico('${dadosParaEdicao}')" class="edit-btn" title="Editar OS">
                                     <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button onclick="excluirOS('${os.ID_OS}')" class="delete-btn" title="Excluir OS">
+                                    <i class="fa-solid fa-trash-can"></i>
                                 </button>
                             </div>
                         </div>
@@ -190,10 +206,8 @@
         });
     }
 
-    // 5. Funções Auxiliares de Formatação
     function formatarDataBR(dataPlanilha) {
         if (!dataPlanilha || dataPlanilha === "---") return "---";
-        // Se a data vier no formato ISO do Google (com 'T'), converte para BR
         if (dataPlanilha.toString().includes('T')) {
             const d = new Date(dataPlanilha);
             return d.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
@@ -204,8 +218,7 @@
     function verificarGarantia(dataFimGarantia) {
         if (!dataFimGarantia || dataFimGarantia === "---") return false;
         const hoje = new Date();
-        hoje.setHours(0, 0, 0, 0); // Zera as horas para comparação justa
-
+        hoje.setHours(0, 0, 0, 0);
         let dataFim;
         if (dataFimGarantia.toString().includes('/')) {
             const partes = dataFimGarantia.split('/');
@@ -216,8 +229,11 @@
         return hoje <= dataFim;
     }
 
-    // Inicialização ao carregar a página
-    window.onload = carregarDados;
+    // Inicialização
+    window.onload = () => {
+        if(localStorage.getItem('theme') === 'light') toggleTheme();
+        carregarDados();
+    };
 </script>
 </body>
 </html>
