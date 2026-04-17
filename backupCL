@@ -12,31 +12,34 @@
         :root {
             --bg-body: #0d1117;
             --text-main: white;
+            --text-sub: rgba(255, 255, 255, 0.4);
             --glass-bg: rgba(255, 255, 255, 0.03);
             --glass-border: rgba(255, 255, 255, 0.1);
             --card-sub: rgba(255, 255, 255, 0.05);
             --input-bg: rgba(255, 255, 255, 0.05);
         }
 
+        /* CORREÇÃO DE CORES PARA O MODO CLARO */
         body.light-mode {
             --bg-body: #f0f2f5;
             --text-main: #1a1f26;
+            --text-sub: #4b5563; /* Cinza escuro para visibilidade total */
             --glass-bg: rgba(255, 255, 255, 0.8);
             --glass-border: rgba(0, 0, 0, 0.1);
-            --card-sub: rgba(0, 0, 0, 0.02);
-            --input-bg: rgba(0, 0, 0, 0.05);
+            --card-sub: rgba(0, 0, 0, 0.04);
+            --input-bg: rgba(255, 255, 255, 0.9);
         }
 
         body { font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); transition: background 0.3s, color 0.3s; }
-        
         .glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 25px; }
         
+        /* Badges e Textos Secundários */
         .status-badge { padding: 4px 12px; border-radius: 50px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
         .em-garantia { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; }
         .fora-garantia { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; }
         
         .search-input { background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text-main); outline: none; }
-        .item-servico { border-bottom: 1px dashed var(--glass-border); padding: 5px 0; }
+        .item-servico { border-bottom: 1px dashed var(--glass-border); padding: 5px 0; color: var(--text-sub); } /* Ajustado */
 
         .theme-toggle { background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         
@@ -45,9 +48,27 @@
 
         .delete-btn { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
         .delete-btn:hover { background: #ef4444; color: white; transform: scale(1.1); }
+
+        /* Estilo do Modal Profissional */
+        #modal-excluir { transition: all 0.3s ease; }
+        .modal-content { background: var(--bg-body); border: 1px solid var(--glass-border); color: var(--text-main); }
     </style>
 </head>
 <body class="p-4 pb-10">
+
+    <div id="modal-excluir" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div class="modal-content w-full max-w-sm p-8 rounded-[30px] shadow-2xl text-center">
+            <div class="w-16 h-16 bg-red-500/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl border border-red-500/30">
+                <i class="fa-solid fa-trash-can"></i>
+            </div>
+            <h3 class="text-xl font-black uppercase mb-2">Excluir Serviço?</h3>
+            <p class="text-xs font-medium opacity-60 mb-8 px-4" id="modal-msg-id">Esta ação não poderá ser desfeita na sua planilha de controle.</p>
+            <div class="flex gap-3">
+                <button onclick="fecharModal()" class="flex-1 py-4 rounded-2xl bg-white/5 font-bold uppercase text-[10px] tracking-widest border border-white/10 hover:bg-white/10 transition">Cancelar</button>
+                <button id="btn-confirmar-exclusao" class="flex-1 py-4 rounded-2xl bg-red-500 text-white font-bold uppercase text-[10px] tracking-widest shadow-lg shadow-red-500/20 hover:bg-red-600 transition">Sim, Apagar</button>
+            </div>
+        </div>
+    </div>
 
     <div class="max-w-4xl mx-auto">
         <header class="flex justify-between items-center mb-8">
@@ -67,13 +88,13 @@
 
         <div class="glass-card p-4 mb-6">
             <div class="relative">
-                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-white/20"></i>
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 opacity-20"></i>
                 <input type="text" id="inputBusca" onkeyup="filtrarHistorico()" placeholder="Buscar pelo Nome ou nº O.S" class="w-full p-4 pl-12 rounded-2xl search-input font-semibold">
             </div>
         </div>
 
         <div id="container-historico" class="space-y-4">
-            <div class="text-center py-10 text-white/20 font-bold uppercase tracking-widest text-xs">
+            <div class="text-center py-10 opacity-20 font-bold uppercase tracking-widest text-xs">
                 Carregando histórico...
             </div>
         </div>
@@ -81,6 +102,7 @@
 
     <script>
     const URL_DATABASE = "https://script.google.com/macros/s/AKfycbykJ7gl4J1Ez-GMhVYoeEd_ppVe6gPxg6IfdAHRDoTo7hUb-qJqOL0DOOTGgj8NMSm8Zw/exec";
+    let idParaExcluirGlobal = null;
 
     function toggleTheme() {
         const body = document.body;
@@ -102,6 +124,38 @@
         }
     }
 
+    /* FUNÇÕES DO MODAL PROFISSIONAL */
+    function abrirModalExcluir(id) {
+        idParaExcluirGlobal = id;
+        document.getElementById('modal-msg-id').innerText = `Tem certeza que deseja excluir a OS #${id}?`;
+        document.getElementById('modal-excluir').classList.remove('hidden');
+    }
+
+    function fecharModal() {
+        document.getElementById('modal-excluir').classList.add('hidden');
+        idParaExcluirGlobal = null;
+    }
+
+    document.getElementById('btn-confirmar-exclusao').onclick = async function() {
+        if (!idParaExcluirGlobal) return;
+        const btn = this;
+        btn.innerText = "Excluindo...";
+        btn.disabled = true;
+
+        try {
+            const response = await fetch(`${URL_DATABASE}?deleteID=${idParaExcluirGlobal}`, { redirect: "follow" });
+            const res = await response.json();
+            if (res.status === "success") {
+                fecharModal();
+                carregarDados();
+            } else { alert("Erro ao excluir na planilha."); }
+        } catch (error) { alert("Erro de conexão ao tentar excluir."); }
+        finally {
+            btn.innerText = "Sim, Apagar";
+            btn.disabled = false;
+        }
+    };
+
     function verificarGarantia(dataFimGarantia) {
         if (!dataFimGarantia || dataFimGarantia === "---") return false;
         const hoje = new Date();
@@ -111,53 +165,12 @@
         return hoje <= dataFim;
     }
 
-    // CORREÇÃO: Função aprimorada para calcular dias independente do formato da planilha
-    function calcularDiasEntre(inicio, fim) {
-        if (!inicio || !fim || inicio === "---" || fim === "---") return 30;
-        
-        const parseData = (d) => {
-            let s = d.toString().split('T')[0]; // Remove parte de tempo se houver
-            if (s.includes('/')) {
-                const p = s.split('/');
-                return new Date(p[2], p[1] - 1, p[0]);
-            }
-            return new Date(s); // Trata formato ISO YYYY-MM-DD
-        };
-
-        try {
-            const d1 = parseData(inicio);
-            const d2 = parseData(fim);
-            const diff = Math.abs(d2 - d1);
-            return Math.ceil(diff / (1000 * 60 * 60 * 24));
-        } catch(e) { return 30; }
-    }
-
     function editarServico(dadosString) {
         const os = JSON.parse(decodeURIComponent(dadosString));
-        
-        // Em vez de calcular, pegamos o valor direto da Coluna L (DIA) da planilha
-        // Usamos o mesmo nome de variável anterior para não quebrar as outras páginas
-        const diasDaColunaL = os["DIA"] || 90; // Se estiver vazio, assume 30 por segurança
-        
-        const pacoteCompleto = { 
-            ...os, 
-            "GARANTIA_DIAS_CALCULADOS": diasDaColunaL 
-        };
-        
+        const diasDaColunaL = os["DIA"] || 90; 
+        const pacoteCompleto = { ...os, "GARANTIA_DIAS_CALCULADOS": diasDaColunaL };
         localStorage.setItem('editar_os_dados', JSON.stringify(pacoteCompleto));
         window.location.href = "12os.html"; 
-    }
-
-    async function excluirOS(id) {
-        if (!confirm(`Tem certeza que deseja excluir a OS #${id}?`)) return;
-        try {
-            const response = await fetch(`${URL_DATABASE}?deleteID=${id}`, { redirect: "follow" });
-            const res = await response.json();
-            if (res.status === "success") {
-                alert("Excluído com sucesso!");
-                carregarDados();
-            } else { alert("Erro ao excluir na planilha."); }
-        } catch (error) { alert("Erro de conexão ao tentar excluir."); }
     }
 
     function formatarDataBR(dataPlanilha) {
@@ -184,14 +197,13 @@
             let htmlServicos = "";
             servicosArray.forEach(srv => {
                 if(srv.trim() !== "") {
-                    htmlServicos += `<div class="item-servico text-xs text-white/70 italic">${srv.trim()}</div>`;
+                    htmlServicos += `<div class="item-servico text-xs italic">${srv.trim()}</div>`;
                 }
             });
 
             const estaNaGarantia = verificarGarantia(dataGarantia);
             const badgeClass = estaNaGarantia ? "em-garantia" : "fora-garantia";
             const badgeText = estaNaGarantia ? "🟢 Em Garantia" : "🔴 Fora da Garantia";
-            
             const dadosParaEdicao = encodeURIComponent(JSON.stringify(os));
 
             container.innerHTML += `
@@ -199,8 +211,8 @@
                     <div class="flex justify-between items-start mb-4">
                         <div>
                             <span class="text-[10px] font-black text-blue-500 uppercase tracking-widest">OS #${idOS}</span>
-                            <h2 class="text-lg font-bold nome-cliente leading-tight">${cliente}</h2>
-                            <p class="text-[10px] text-white/40 uppercase font-bold mt-1">${endereco}</p>
+                            <h2 class="text-lg font-bold leading-tight">${cliente}</h2>
+                            <p class="text-[10px] uppercase font-bold mt-1" style="color: var(--text-sub)">${endereco}</p>
                         </div>
                         <div class="flex flex-col items-end gap-2">
                             <span class="status-badge ${badgeClass}">${badgeText}</span>
@@ -208,23 +220,23 @@
                                 <button onclick="editarServico('${dadosParaEdicao}')" class="edit-btn" title="Editar Orçamento">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </button>
-                                <button onclick="excluirOS('${idOS}')" class="delete-btn" title="Excluir OS">
+                                <button onclick="abrirModalExcluir('${idOS}')" class="delete-btn" title="Excluir OS">
                                     <i class="fa-solid fa-trash-can"></i>
                                 </button>
                             </div>
                         </div>
                     </div>
-                    <div class="bg-white/5 rounded-xl p-4 mb-4">
-                        <span class="text-[9px] font-black text-white/30 uppercase block mb-2 tracking-widest">Serviços Executados:</span>
-                        ${htmlServicos || '<div class="text-[10px] text-white/20 italic">Nenhum serviço registrado</div>'}
+                    <div class="bg-white/5 rounded-xl p-4 mb-4" style="background: var(--card-sub)">
+                        <span class="text-[9px] font-black uppercase block mb-2 tracking-widest opacity-30">Serviços Executados:</span>
+                        ${htmlServicos || '<div class="text-[10px] opacity-20 italic">Nenhum serviço registrado</div>'}
                     </div>
                     <div class="grid grid-cols-2 gap-4 text-[10px] font-bold uppercase">
                         <div>
-                            <span class="text-white/30 block mb-1">Valor Cobrado</span>
+                            <span class="block mb-1 opacity-30">Valor Cobrado</span>
                             <span class="text-blue-400 text-sm font-black">R$ ${valorTotal}</span>
                         </div>
                         <div>
-                            <span class="text-white/30 block mb-1">Término da Garantia</span>
+                            <span class="block mb-1 opacity-30">Término da Garantia</span>
                             <span class="${estaNaGarantia ? 'text-green-400' : 'text-red-400'} text-sm">${dataGarantia}</span>
                         </div>
                     </div>
