@@ -102,17 +102,7 @@
         .is-searching .selected-text { display: none; }
         .search-input { background: transparent; border: none; color: inherit; width: 100%; outline: none; display: none; }
         .is-searching .search-input { display: block; }
-        
-       /* Localize a classe .selected-text e verifique se está assim: */
-.selected-text { 
-    color: var(--text-main) !important; 
-    opacity: 1 !important; 
-    overflow: hidden;      /* Esconde o texto que sobra */
-    text-overflow: ellipsis; /* Adiciona os "..." */
-    white-space: nowrap;   /* Impede o texto de pular linha */
-    display: block;
-    width: 100%;           /* Garante que ocupe apenas o espaço da caixa */
-}
+        .selected-text { color: var(--text-main) !important; opacity: 1 !important; }
 
         .total-container { background: var(--total-container-bg) !important; border: 1px solid rgba(255,255,255,0.1) !important; transition: all 0.4s ease; }
         
@@ -421,7 +411,7 @@ function adicionarServico() {
     div.className = "service-card";
     div.innerHTML = `
         <div class="service-row-top">
-            <div class="relative custom-dropdown" style="width: 280px; min-width: 280px; max-width: 280px;">
+            <div class="relative flex-grow custom-dropdown">
                 <div class="w-full dark-input p-4 rounded-2xl text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
                      <span class="selected-text truncate">Selecionar Serviço</span>
                     <input type="text" class="search-input" placeholder="Pesquisar..." oninput="filtrarDropdown(this)" onclick="event.stopPropagation()">
