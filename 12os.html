@@ -70,8 +70,9 @@
         .is-os .dark-input:focus { border-color: #10b981 !important; }
 
         .service-card { background: var(--card-sub); border-radius: 20px; padding: 15px; border: 1px solid var(--glass-border); display: flex; flex-direction: column; gap: 12px; }
-        .service-row-top { display: flex; align-items: center; gap: 10px; width: 100%; overflow: hidden; }
+        .service-row-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; }
         
+        /* ESTILO PARA TRAVAR O TEXTO DENTRO DA CAIXA */
         .selected-text { 
             color: var(--text-main) !important; 
             opacity: 1 !important; 
@@ -79,8 +80,7 @@
             text-overflow: ellipsis;
             white-space: nowrap;
             display: block;
-            flex: 1;
-            min-width: 0;
+            width: 100%;
         }
 
         .qty-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: var(--input-bg); color: #3b82f6; transition: 0.2s; border: 1px solid rgba(59, 130, 246, 0.2); }
@@ -428,7 +428,7 @@ function adicionarServico() {
     div.className = "service-card";
     div.innerHTML = `
         <div class="service-row-top">
-            <div class="relative custom-dropdown" style="flex: 1; min-width: 0; max-width: 100%;">
+            <div class="relative custom-dropdown" style="width: 280px; min-width: 280px; max-width: 280px;">
                 <div class="w-full dark-input p-4 rounded-2xl text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
                      <span class="selected-text truncate">Selecionar Serviço</span>
                     <input type="text" class="search-input" placeholder="Pesquisar..." oninput="filtrarDropdown(this)" onclick="event.stopPropagation()">
