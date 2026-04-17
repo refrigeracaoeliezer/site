@@ -1,612 +1,1269 @@
 <!DOCTYPE html>
+
 <html lang="pt-br">
+
 <head>
+
     <script>
+
     if (localStorage.getItem("inforos_logado") !== "true") { 
+
         window.location.replace("https://refrigeracaoeliezer.github.io/site/");
+
     }
+
     </script>
 
+
+
     <meta charset="UTF-8">
+
     <title>Orçamento | Profissional</title>
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
     
+
     <script src="https://cdn.tailwindcss.com"></script>
+
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+
     
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
     
+
     <style>
+
         /* --- INICIO VARIÁVEIS DE TEMA --- */
+
         :root {
+
             --bg-body: #0d1117;
+
             --text-main: white;
+
             --glass-bg: rgba(255, 255, 255, 0.03); 
+
             --glass-border: rgba(255, 255, 255, 0.1);
+
             --input-bg: rgba(255, 255, 255, 0.05);
+
             --input-text: white;
+
             --card-sub: rgba(255, 255, 255, 0.02);
+
             --modal-text-box: rgba(255, 255, 255, 0.05);
+
             --modal-text-color: #ffffff;
+
             --total-container-bg: rgba(30, 64, 175, 0.3);
+
             --total-text-color: #ffffff;
+
             --dropdown-bg: #161b22;
+
         }
+
+
 
         body.light-mode {
+
             --bg-body: #f0f2f5;
+
             --text-main: #1a1f26;
+
             --glass-bg: rgba(255, 255, 255, 0.8);
+
             --glass-border: rgba(0, 0, 0, 0.1);
+
             --input-bg: rgba(0, 0, 0, 0.05);
+
             --input-text: #1a1f26;
+
             --card-sub: rgba(0, 0, 0, 0.02);
+
             --modal-text-box: #f3f4f6;
+
             --modal-text-color: #1a1f26;
+
             --total-container-bg: #1e40af;
+
             --dropdown-bg: #ffffff;
+
         }
 
+
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body { font-family: 'Inter', sans-serif; min-height: 100vh; background: var(--bg-body); color: var(--text-main); position: relative; overflow-x: hidden; -webkit-font-smoothing: antialiased; transition: background 0.3s, color 0.3s; }
 
+
+
         .corner-ball { position: fixed; background: rgba(30, 64, 175, 0.1); border-radius: 50%; z-index: 0; pointer-events: none; filter: blur(80px); }
+
         .ball-top-right { width: 400px; height: 400px; top: -100px; right: -100px; }
+
         .ball-bottom-left { width: 300px; height: 300px; bottom: -100px; left: -100px; }
+
+
 
         .glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-top: 4px solid #1e40af; border-radius: 30px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); transition: all 0.5s ease; }
 
+
+
         .is-os { border-top-color: #10b981 !important; color: white !important; }
+
         .is-os .text-blue-500, .is-os .text-blue-400, .is-os .section-header i, .is-os .section-header span { color: #10b981 !important; }
+
         .is-os .btn-primary { background: linear-gradient(135deg, #065f46 0%, #10b981 100%) !important; }
+
         .is-os .total-container { background: #065f46 !important; border-color: rgba(16, 185, 129, 0.3) !important; }
+
         body.light-mode.is-os .total-container { background: #1e40af !important; border-color: rgba(255,255,255,0.1) !important; }
 
+
+
         .dark-input { background: var(--input-bg) !important; border: 1px solid var(--glass-border) !important; color: var(--input-text) !important; transition: all 0.3s ease; }
+
         .dark-input:focus { border-color: #3b82f6 !important; background: rgba(255, 255, 255, 0.08) !important; outline: none; }
+
         .is-os .dark-input:focus { border-color: #10b981 !important; }
 
+
+
         .service-card { background: var(--card-sub); border-radius: 20px; padding: 15px; border: 1px solid var(--glass-border); display: flex; flex-direction: column; gap: 12px; }
+
         .service-row-top { display: flex; align-items: center; gap: 10px; width: 100%; }
+
         .qty-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: var(--input-bg); color: #3b82f6; transition: 0.2s; border: 1px solid rgba(59, 130, 246, 0.2); }
+
         .is-os .qty-btn { color: #10b981 !important; border-color: rgba(16, 185, 129, 0.2) !important; }
+
         
+
         .section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+
         .section-header i { font-size: 14px; color: #3b82f6; }
+
         .section-header span { font-size: 11px; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.5px; }
 
+
+
         .btn-primary { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); transition: transform 0.2s; box-shadow: 0 10px 20px -5px rgba(30, 64, 175, 0.5); }
+
         .btn-primary:active { transform: scale(0.95); }
 
+
+
         .btn-add-item { width: 100%; padding: 1rem; border: 2px dashed rgba(59, 130, 246, 0.5); border-radius: 1.25rem; color: var(--text-main); font-weight: 700; font-size: 0.75rem; transition: all 0.3s; background: rgba(59, 130, 246, 0.05); }
+
         .is-os .btn-add-item { border-color: rgba(16, 185, 129, 0.5); background: rgba(16, 185, 129, 0.05); }
+
+
 
         #obsGeral { overflow: hidden; resize: none; min-height: 100px; transition: min-height 0.2s ease; }
 
+
+
         .switch { position: relative; display: inline-block; width: 100%; height: 44px; background: var(--input-bg); border-radius: 15px; padding: 4px; border: 1px solid var(--glass-border); cursor: pointer; }
+
         .switch-bg { position: absolute; top: 4px; left: 4px; width: calc(50% - 4px); height: calc(100% - 8px); background: #1e40af; border-radius: 12px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1; }
+
         .switch-labels { position: relative; display: flex; height: 100%; z-index: 2; align-items: center; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+
         .switch-labels div { flex: 1; text-align: center; color: rgba(128,128,128,0.6); }
+
         .active-label { color: white !important; }
+
         .mode-os .switch-bg { left: 50%; background: #10b981; }
 
+
+
         .dropdown-list { position: absolute; left: 0; right: 0; top: 110%; background: var(--dropdown-bg); border: 1px solid var(--glass-border); border-radius: 20px; z-index: 50; max-height: 250px; overflow-y: auto; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+
         .dropdown-item { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--glass-border); transition: 0.2s; cursor: pointer; }
+
         .dropdown-item:hover { background: #1e40af; color: white; }
+
         .is-os .dropdown-item:hover { background: #10b981; }
 
+
+
         .is-searching .selected-text { display: none; }
+
         .search-input { background: transparent; border: none; color: inherit; width: 100%; outline: none; display: none; }
+
         .is-searching .search-input { display: block; }
+
         .selected-text { color: var(--text-main) !important; opacity: 1 !important; }
 
+
+
         .total-container { background: var(--total-container-bg) !important; border: 1px solid rgba(255,255,255,0.1) !important; transition: all 0.4s ease; }
+
         
+
         #modal-mensagens { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.95); backdrop-filter: blur(10px); z-index: 100; overflow-y: auto; display: none; padding: 20px; }
+
         body.light-mode #modal-mensagens { background: rgba(240, 242, 245, 0.98); color: #1a1f26; }
+
         .modal-glass-container { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 25px; padding: 20px; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+
         .text-preview-box { background: var(--modal-text-box); border-radius: 20px; padding: 15px; font-family: monospace; font-size: 13px; color: var(--modal-text-color); white-space: pre-wrap; word-break: break-all; margin: 15px 0; border: 1px solid var(--glass-border); }
+
         .btn-copy-custom { background: rgba(128,128,128,0.15); color: var(--text-main); border: 1px solid var(--glass-border); }
+
         .btn-copy-success { background-color: #3b82f6 !important; color: white !important; }
+
         .theme-toggle { background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
     </style>
+
 </head>
+
 <body class="p-4 pb-10">
 
+
+
     <div class="corner-ball ball-top-right"></div>
+
     <div class="corner-ball ball-bottom-left"></div>
 
+
+
     <div id="modal-mensagens">
+
         <div class="max-w-md mx-auto">
+
             <div class="flex justify-between items-center mb-8">
+
                 <h2 class="text-xl font-black uppercase tracking-tighter">Mensagens <span class="text-blue-500">Prontas</span></h2>
+
                 <button onclick="fecharModal()" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+
                     <i class="fa-solid fa-xmark"></i>
+
                 </button>
+
             </div>
 
+
+
             <div class="modal-glass-container">
+
                 <div class="flex items-center gap-3 mb-2">
+
                     <span class="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-[10px] font-bold text-white">1</span>
+
                     <span class="text-xs font-bold uppercase">Proposta</span>
+
                 </div>
+
                 <div id="txt-proposta" class="text-preview-box"></div>
+
                 <div class="grid grid-cols-3 gap-2">
+
                     <button onclick="copiarTextoProfissional('txt-proposta', this)" class="py-3 btn-copy-custom rounded-xl font-bold text-[9px] uppercase">COPIAR</button>
+
                     <button onclick="baixarPDF()" class="py-3 bg-red-600/20 text-red-500 border border-red-500/30 rounded-xl font-bold text-[9px] uppercase">GERAR PDF</button>
+
                     <button onclick="enviarWpp('txt-proposta')" class="py-3 bg-blue-600 text-white rounded-xl font-bold text-[9px] uppercase">WHATSAPP</button>
+
                 </div>
+
             </div>
 
+
+
             <div class="modal-glass-container">
+
                 <div class="flex items-center gap-3 mb-2">
+
                     <span class="w-6 h-6 rounded-full bg-orange-600 flex items-center justify-center text-[10px] font-bold text-white">2</span>
+
                     <span class="text-xs font-bold uppercase">Sinal</span>
+
                 </div>
+
                 <div id="txt-sinal" class="text-preview-box"></div>
+
                 <div class="grid grid-cols-2 gap-2">
+
                     <button onclick="copiarTextoProfissional('txt-sinal', this)" class="py-3 btn-copy-custom rounded-xl font-bold text-[10px] uppercase">COPIAR</button>
+
                     <button onclick="enviarWpp('txt-sinal')" class="py-3 bg-orange-600 text-white rounded-xl font-bold text-[10px] uppercase">WHATSAPP</button>
+
                 </div>
+
             </div>
 
+
+
             <div class="modal-glass-container">
+
                 <div class="flex justify-between items-center mb-2">
+
                     <div class="flex items-center gap-3">
+
                         <span class="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center text-[10px] font-bold text-white">3</span>
+
                         <span class="text-xs font-bold uppercase">Conclusão</span>
+
                     </div>
+
                     <button id="btn-quitar" onclick="alternarQuitacao()" class="text-[9px] font-black px-3 py-1 rounded-lg border border-green-500/30 text-green-500 bg-green-500/10">QUITAR SALDO</button>
+
                 </div>
+
                 <div id="txt-conclusao" class="text-preview-box"></div>
+
                 <div class="grid grid-cols-2 gap-2">
+
                     <button onclick="copiarTextoProfissional('txt-conclusao', this)" class="py-3 btn-copy-custom rounded-xl font-bold text-[10px] uppercase">COPIAR</button>
+
                     <button onclick="enviarWpp('txt-conclusao')" class="py-3 bg-green-600 text-white rounded-xl font-bold text-[10px] uppercase">WHATSAPP</button>
+
                 </div>
+
             </div>
+
         </div>
+
     </div>
+
+
 
     <div class="max-w-md mx-auto relative z-10" id="main-container">
+
         <div class="mb-6">
+
             <div class="switch" id="toggleMode" onclick="alternarModo()">
+
                 <div class="switch-bg" id="switch-thumb"></div>
+
                 <div class="switch-labels">
+
                     <div id="lbl-orc" class="active-label">Orçamento</div>
+
                     <div id="lbl-os">Ordem de Serviço</div>
+
                 </div>
+
             </div>
+
         </div>
+
+
 
         <header class="flex justify-between items-center mb-8 pt-4">
+
             <div>
+
                 <h1 class="text-xl font-black tracking-tighter uppercase leading-none">REFRIGERAÇÃO <span class="text-blue-500" id="header-name">ELIEZER</span></h1>
+
                 <span class="text-[10px] text-blue-400 font-bold uppercase tracking-widest" id="sub-title">Sistema de Orçamento</span>
+
             </div>
+
             <button onclick="toggleTheme()" class="theme-toggle">
+
                 <i id="theme-icon" class="fa-solid fa-sun"></i>
+
             </button>
+
         </header>
 
+
+
         <main class="glass-card p-6 space-y-7" id="card-principal">
+
             <div id="sec-dados" class="space-y-4">
-                <div class="section-header">
-                    <i class="fa-solid fa-user-gear"></i>
-                    <span id="label-dados">Dados do Orçamento</span>
+
+                <div class="section-header flex justify-between items-center w-full">
+
+                    <div class="flex items-center gap-2">
+
+                        <i class="fa-solid fa-user-gear"></i>
+
+                        <span id="label-dados">Dados do Orçamento</span>
+
+                    </div>
+
+                    <div class="bg-white/5 border border-white/10 px-4 py-1.5 rounded-xl backdrop-blur-md shadow-sm">
+
+                        <span class="text-[9px] font-black text-blue-500/60 uppercase tracking-tighter">OS nº</span>
+
+                        <span id="display-id" class="text-xs font-black text-blue-500 ml-1 tracking-widest">---</span>
+
+                    </div>
+
                 </div>
+
+
+
                 <div class="space-y-3">
+
                     <input type="text" id="nomePrestador" placeholder="Sua Empresa" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
+
                     <div class="relative custom-dropdown" id="dropdown-cliente">
+
                         <div class="w-full p-4 rounded-2xl dark-input text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
+
                             <span class="selected-text truncate">Selecionar Cliente</span>
+
                             <input type="text" class="search-input" placeholder="Selecionar Cliente" oninput="filtrarDropdown(this, 'cliente')" onclick="event.stopPropagation()">
+
                             <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-xs transition-transform duration-300"></i>
+
                         </div>
+
                         <ul id="lista-clientes-custom" class="dropdown-list"></ul>
+
                         <input type="hidden" id="nomeCliente">
+
                     </div>
+
                     <input type="text" id="enderecoCliente" placeholder="Endereço Completo" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
+
                     <input type="tel" id="telCliente" placeholder="WhatsApp" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
+
                     <div class="grid grid-cols-2 gap-2 pt-2">
+
                         <div class="space-y-1">
+
                             <label class="text-[9px] font-bold text-white/30 uppercase ml-2">Início</label>
+
                             <input type="date" id="dataInicio" class="w-full p-3 rounded-xl dark-input text-[11px] font-bold text-center" onchange="calcularDataFinal()">
+
                         </div>
+
                         <div class="space-y-1">
+
                             <label class="text-[9px] font-bold text-white/30 uppercase ml-2">Venc./Final</label>
+
                             <input type="date" id="dataPrazoFinal" class="w-full p-3 rounded-xl dark-input text-[11px] font-bold text-center" readonly>
+
                         </div>
+
                     </div>
+
                     <div class="relative pt-4">
+
                         <input type="number" id="inputGarantia" value="30" class="w-full p-4 rounded-2xl dark-input text-sm font-bold text-center" oninput="calcularDataFinal()">
+
                         <span id="label-prazo" class="absolute -top-1 left-1/2 -translate-x-1/2 bg-blue-600 text-[8px] px-2 py-0.5 rounded text-white font-black uppercase shadow-lg">Vencimento</span>
+
                         <span class="absolute right-4 top-1/2 -translate-y-1/2 mt-2 text-[10px] text-white/20 font-black">DIAS</span>
+
                     </div>
+
                 </div>
+
             </div>
+
+
 
             <div id="sec-servicos" class="space-y-4">
+
                 <div class="section-header">
+
                     <i class="fa-solid fa-screwdriver-wrench"></i>
+
                     <span>Serviços Realizados</span>
+
                 </div>
+
                 <div id="services-container" class="space-y-4"></div>
+
                 <button onclick="adicionarServico()" class="btn-add-item"><i id="btn-add-icon" class="fa-solid fa-circle-plus mr-2 text-blue-500"></i> ADICIONAR ITEM</button>
+
                 <div class="space-y-2 pt-2">
+
                     <div class="relative">
+
                         <textarea id="obsGeral" placeholder="Escreva os detalhes técnicos aqui..." class="w-full p-4 rounded-2xl dark-input text-sm outline-none" oninput="autoExpandir(this)"></textarea>
+
                     </div>
+
                 </div>
+
                 <div id="sec-custos" class="space-y-4">
+
                     <div class="section-header">
+
                         <i class="fa-solid fa-calculator"></i>
+
                         <span id="label-total">Total do Serviço</span>
+
                     </div>
+
                     <div class="total-container p-6 rounded-3xl">
+
                         <div class="flex items-center gap-3">
+
                             <span class="text-xl font-black text-white/40">R$</span>
+
                             <input type="text" id="totalFinal" placeholder="0,00" class="w-full bg-transparent border-none text-3xl font-black text-[#ffffff] focus:outline-none" readonly>
+
                         </div>
+
                     </div>
+
                 </div>
+
                 <button onclick="gerarDocumento()" id="btn-acao" class="w-full btn-primary text-white py-5 rounded-2xl font-black text-base uppercase tracking-widest flex items-center justify-center gap-3">Gerar Orçamento <i class="fa-solid fa-arrow-right"></i></button>
+
             </div>
+
         </main>
+
     </div>
 
-    <script>
-// URLs de Conexão
+
+
+<script>
+
+// Links Planilha
+
+const URL_READ_ID = "https://script.google.com/macros/s/AKfycbzozyKIziDzmieP59KCfMEZeQETFz9H7wAa4UGntF7uHDDxTcm3Dmo14dx_V4rYfr7nzw/exec";
+
 const URL_DATABASE = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec"; 
 
+
+
 let cacheDados = [];
+
 let modoOS = false;
+
 let saldoQuitado = false;
+
 let id_os_atual = ""; 
 
-// --- FUNÇÕES DE INTERFACE ---
+
 
 function toggleTheme() {
+
     const body = document.body;
+
     const icon = document.getElementById('theme-icon');
+
     body.classList.toggle('light-mode');
+
     localStorage.setItem('theme', body.classList.contains('light-mode') ? 'light' : 'dark');
+
     if(icon) icon.className = body.classList.contains('light-mode') ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+
 }
+
+
 
 function autoExpandir(textarea) {
+
     textarea.style.height = 'auto';
+
     textarea.style.height = textarea.scrollHeight + 'px';
+
 }
+
+
 
 function calcularDataFinal() {
+
     if (localStorage.getItem('lock_dates') === 'true') return;
+
+    if (modoOS) return;
+
     const dataInicioVal = document.getElementById('dataInicio').value;
+
     const diasPrazo = parseInt(document.getElementById('inputGarantia').value) || 0;
+
     const campoDataFinal = document.getElementById('dataPrazoFinal');
+
     if (dataInicioVal) {
+
         let data = new Date(dataInicioVal + 'T00:00:00');
+
         data.setDate(data.getDate() + diasPrazo);
+
         campoDataFinal.value = data.toISOString().split('T')[0];
+
     }
+
 }
 
-// --- BUSCA DE DADOS NA PLANILHA ---
+
 
 async function buscarDadosPlanilha() {
+
     try {
-        const resp = await fetch(URL_DATABASE);
-        cacheDados = await resp.json();
+
+        // Carregar Planilha de Clientes e Serviços Primeiro
+
+        const respDB = await fetch(URL_DATABASE);
+
+        cacheDados = await respDB.json();
+
+        
+
         renderizarDatalists();
+
         aplicarTextoPadrao();
-        verificarEdicao();
+
+        verificarEdicao(); // Tenta carregar dados de edição se existirem
+
+
+
+        // Se após verificarEdicao o id_os_atual ainda estiver vazio, busca o numeral da outra planilha
+
+        if (!id_os_atual || id_os_atual === "" || id_os_atual === "---") {
+
+            const respID = await fetch(URL_READ_ID);
+
+            const dadosID = await respID.json();
+
+            gerarNovoID(dadosID);
+
+        }
+
     } catch (e) { 
-        console.error("Erro ao carregar dados da planilha:", e); 
+
+        console.error("Erro ao carregar dados:", e); 
+
     }
+
 }
 
-// --- CONTROLE DE DROPDOWNS ---
+
+
+function gerarNovoID(dadosPlanilha) {
+
+    if (id_os_atual && id_os_atual !== "" && id_os_atual !== "---") {
+
+        document.getElementById('display-id').innerText = id_os_atual;
+
+        return;
+
+    }
+
+    const idsExistentes = dadosPlanilha
+
+        .map(item => parseInt((item.ID_OS || item.id_os || "0").toString().replace(/\D/g, '')))
+
+        .filter(n => !isNaN(n))
+
+        .sort((a, b) => a - b);
+
+
+
+    let proximo = 1;
+
+    for (let i = 0; i < idsExistentes.length; i++) {
+
+        if (idsExistentes[i] === proximo) proximo++;
+
+    }
+
+    id_os_atual = proximo.toString().padStart(3, '0');
+
+    document.getElementById('display-id').innerText = id_os_atual;
+
+}
+
+
 
 function toggleDropdown(el) {
+
     const wrapper = el.parentElement;
+
     const list = el.nextElementSibling;
+
     const searchInput = el.querySelector('.search-input');
+
     const isVisible = list.style.display === 'block';
+
     fecharTodosDropdowns();
+
     if (!isVisible) {
+
         list.style.display = 'block';
+
         wrapper.classList.add('is-searching');
+
         searchInput.focus();
+
         searchInput.value = ''; 
+
         filtrarDropdown(searchInput);
+
     }
+
 }
+
+
 
 function filtrarDropdown(input) {
+
     const termo = input.value.toLowerCase();
+
     const list = input.closest('.custom-dropdown').querySelector('.dropdown-list');
+
     const items = list.querySelectorAll('.dropdown-item');
+
     items.forEach(item => {
+
         item.style.display = item.textContent.toLowerCase().includes(termo) ? 'block' : 'none';
+
     });
+
 }
+
+
 
 function selecionarItemDropdown(li, nome, valorExtra, tipo) {
+
     const wrapper = li.closest('.custom-dropdown');
+
     const display = wrapper.querySelector('.selected-text');
+
     const hiddenInput = wrapper.querySelector('input[type="hidden"]');
+
     display.innerText = nome;
+
     hiddenInput.value = nome;
+
     if (tipo === 'servico') {
+
         const card = li.closest('.service-card');
+
         const precoInput = card.querySelector('.service-price');
+
         let valor = valorExtra.replace("R$", "").replace(/\./g, "").replace(",", ".").trim();
+
         precoInput.value = (parseFloat(valor) || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+
         atualizarSoma();
+
     } else if (tipo === 'cliente') {
+
         const cliente = cacheDados.find(x => x.cli_nome === nome);
+
         if (cliente) {
+
             document.getElementById('enderecoCliente').value = cliente.cli_end || "";
+
             document.getElementById('telCliente').value = cliente.cli_tel || "";
+
         }
+
     }
+
     fecharTodosDropdowns();
+
 }
+
+
 
 function fecharTodosDropdowns() {
+
     document.querySelectorAll('.dropdown-list').forEach(l => l.style.display = 'none');
+
     document.querySelectorAll('.custom-dropdown').forEach(d => d.classList.remove('is-searching'));
+
 }
+
+
 
 function renderizarDatalists() {
+
     const clientes = [...new Set(cacheDados.map(d => d.cli_nome))].filter(Boolean);
+
     document.getElementById('lista-clientes-custom').innerHTML = clientes.map(n => 
+
         `<li class="dropdown-item" onclick="selecionarItemDropdown(this, '${n}', '', 'cliente')">${n}</li>`).join('');
+
     const dadosEmp = cacheDados.find(d => d.emp_nome);
+
     if(dadosEmp) document.getElementById('nomePrestador').value = dadosEmp.emp_nome;
+
 }
+
+
 
 function gerarHtmlServicos() {
+
     const servicos = [...new Set(cacheDados.map(d => d.srv_nome))].filter(Boolean);
+
     return servicos.map(n => {
+
         const item = cacheDados.find(d => d.srv_nome === n);
+
         return `<li class="dropdown-item" onclick="selecionarItemDropdown(this, '${n}', '${item.srv_valor}', 'servico')">${n}</li>`;
+
     }).join('');
+
 }
 
-// --- GERENCIAMENTO DE ITENS ---
+
 
 function adicionarServico() {
+
     const container = document.getElementById('services-container');
+
     const div = document.createElement('div');
+
     div.className = "service-card";
+
     div.innerHTML = `
+
         <div class="service-row-top">
+
             <div class="relative flex-grow custom-dropdown">
+
                 <div class="w-full dark-input p-4 rounded-2xl text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
+
                      <span class="selected-text truncate">Selecionar Serviço</span>
+
                     <input type="text" class="search-input" placeholder="Pesquisar..." oninput="filtrarDropdown(this)" onclick="event.stopPropagation()">
+
                     <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-[10px]"></i>
+
                 </div>
+
                 <ul class="dropdown-list">${gerarHtmlServicos()}</ul>
+
                 <input type="hidden" class="service-name">
+
             </div>
+
             <button onclick="this.closest('.service-card').remove(); atualizarSoma();" class="text-red-500 p-2">
+
                 <i class="fa-solid fa-trash-can"></i>
+
             </button>
+
         </div>
+
         <div class="flex items-center gap-3">
+
             <div class="flex-grow relative">
+
                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 font-bold text-xs">R$</span>
+
                 <input type="text" placeholder="0,00" class="w-full dark-input pl-9 p-4 rounded-2xl text-sm font-bold service-price" onkeyup="formatarMoeda(this)">
+
             </div>
+
             <div class="flex items-center bg-white/5 border border-white/10 rounded-2xl p-2 gap-4">
+
                 <button onclick="alterarQtde(this, -1)" class="qty-btn"><i class="fa-solid fa-minus"></i></button>
+
                 <span class="font-bold service-qty w-4 text-center">1</span>
+
                 <button onclick="alterarQtde(this, 1)" class="qty-btn"><i class="fa-solid fa-plus"></i></button>
+
             </div>
+
         </div>`;
+
     container.appendChild(div);
+
 }
+
+
 
 function alterarQtde(btn, delta) {
+
     const span = btn.parentElement.querySelector('.service-qty');
+
     let val = Math.max(1, parseInt(span.innerText) + delta);
+
     span.innerText = val;
+
     atualizarSoma();
+
 }
+
+
 
 function formatarMoeda(i) {
+
     let v = i.value.replace(/\D/g, "");
+
     v = (v / 100).toFixed(2).replace(".", ",");
+
     v = v.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
+
     i.value = v;
+
     atualizarSoma(); 
+
 }
+
+
 
 function atualizarSoma() {
+
     let total = 0;
+
     document.querySelectorAll('.service-card').forEach(card => {
+
         let preco = parseFloat(card.querySelector('.service-price').value.replace(/\./g, "").replace(",", ".")) || 0;
+
         let qtde = parseInt(card.querySelector('.service-qty').innerText) || 1;
+
         total += (preco * qtde);
+
     });
+
     document.getElementById('totalFinal').value = total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+
 }
 
-// --- GERAÇÃO DE DOCUMENTO E MODAL ---
+
 
 function alternarQuitacao() {
+
     saldoQuitado = !saldoQuitado;
+
     const btn = document.getElementById('btn-quitar');
+
     btn.innerText = saldoQuitado ? "PAGAMENTO CONFIRMADO" : "QUITAR SALDO";
+
     btn.className = saldoQuitado ? "text-[9px] font-black px-3 py-1 rounded-lg border border-green-600 text-white bg-green-600" : "text-[9px] font-black px-3 py-1 rounded-lg border border-green-500/30 text-green-500 bg-green-500/10";
+
     gerarDocumento();
+
 }
 
+
+
 function gerarDocumento() {
+
     const prestador = document.getElementById('nomePrestador').value || "ELIEZER";
+
     const cliente = document.getElementById('nomeCliente').value || "Cliente";
+
     const total = document.getElementById('totalFinal').value;
+
     const obs = document.getElementById('obsGeral').value;
+
     const dias = document.getElementById('inputGarantia').value;
+
     const dataFim = document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/');
+
     const chavePix = (cacheDados.find(d => d.emp_pix) || {}).emp_pix || "[PIX]";
-    
+
     let servicosTexto = "";
+
     document.querySelectorAll('.service-card').forEach(card => {
+
         const n = card.querySelector('.service-name').value;
+
         const p = card.querySelector('.service-price').value;
+
         const q = card.querySelector('.service-qty').innerText;
+
         if(n) servicosTexto += `• ${q}x ${n} - R$ ${p}\n`;
+
     });
 
     const totalNum = parseFloat(total.replace(/\./g, "").replace(",", ".")) || 0;
+
     const sinal = (totalNum * 0.3).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+
     const saldo = (totalNum * 0.7).toLocaleString('pt-BR', {minimumFractionDigits: 2});
 
-    // Preenche as caixas de texto do Modal
     document.getElementById('txt-proposta').innerText = `*ORÇAMENTO TÉCNICO - ${prestador.toUpperCase()}*\n\nOlá ${cliente}! Segue o orçamento:\n\n*SERVIÇOS:*\n${servicosTexto}\n*OBS:*\n${obs}\n\n*INVESTIMENTO TOTAL:* R$ ${total}\n(Material + Mão de Obra incluso)\n\n*${modoOS ? 'Garantia' : 'Vencimento'}:* ${dias} dias\n*Data Prevista:* ${dataFim}\n\nFicaremos no aguardo.`;
-    
+
     document.getElementById('txt-sinal').innerText = `*Confirmação de Agendamento*\n\nOlá, ${cliente}, tudo bem?\n\nPara formalizarmos o seu atendimento e garantirmos a reserva dos materiais e da sua data em nossa agenda, solicitamos o pagamento da entrada:\n\n💰 *Valor da Entrada (30%):* R$ ${sinal}\n🔑 *Chave PIX:* ${chavePix}\n\nAssim que realizar a transferência, por favor, nos envie o comprovante para validarmos o agendamento. 🗓️\n\nFicamos à disposição para qualquer dúvida!`;
-    
+
     document.getElementById('txt-conclusao').innerText = `*Finalização de Serviço* ❄️\n\nOlá, ${cliente}, tudo bem?\n\nInformamos que o serviço em seu equipamento foi concluído com sucesso! ✅ Realizamos todos os testes técnicos e o sistema já está operando em perfeitas condições.\n\n💳 *Status de Pagamento:* ${saldoQuitado ? "Saldo Quitado" : `Saldo de R$ ${saldo}`}\n🛡️ *Garantia:* Você tem *${dias} dias* de garantia total sobre o serviço executado.\n\nAgradecemos a confiança em nosso trabalho! Qualquer dúvida, estamos à disposição.\n\nAtenciosamente,\n*${prestador}*`;
-    
-    // Abre o Modal
+
     document.getElementById('modal-mensagens').style.display = 'block';
+
     document.body.style.overflow = 'hidden';
+
 }
+
+
 
 function fecharModal() { document.getElementById('modal-mensagens').style.display = 'none'; document.body.style.overflow = 'auto'; }
 
+
+
 function enviarWpp(id) {
+
     const txt = document.getElementById(id).innerText;
+
     const tel = document.getElementById('telCliente').value.replace(/\D/g, '');
+
     if(!tel) return alert("Por favor, preencha o WhatsApp do cliente!");
+
     window.open(`https://api.whatsapp.com/send?phone=55${tel}&text=${encodeURIComponent(txt)}`, '_blank');
+
 }
+
+
 
 function copiarTextoProfissional(id, el) {
+
     navigator.clipboard.writeText(document.getElementById(id).innerText).then(() => {
+
         const old = el.innerText; el.innerText = "COPIADO!"; el.classList.add('btn-copy-success');
+
         setTimeout(() => { el.innerText = old; el.classList.remove('btn-copy-success'); }, 2000);
+
     });
+
 }
+
+
 
 function baixarPDF() {
+
     const dados = {
+
         tipo: modoOS ? "ORDEM DE SERVIÇO" : "ORÇAMENTO",
+
         id_os: id_os_atual,
+
         cliente: document.getElementById('nomeCliente').value || "Cliente",
+
         endereco: document.getElementById('enderecoCliente').value,
+
         cpf: document.getElementById('telCliente').value,
+
         emissao: document.getElementById('dataInicio').value.split('-').reverse().join('/'),
+
         validade: document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/'),
+
         total: document.getElementById('totalFinal').value,
+
         obs: document.getElementById('obsGeral').value,
+
         garantia: document.getElementById('inputGarantia').value,
+
         itens: Array.from(document.querySelectorAll('.service-card')).map(c => ({
-            descricao: c.querySelector('.service-name').value,
+
+            descricao: c.querySelector('.service-name').value || c.querySelector('.selected-text').innerText,
+
             qtd: c.querySelector('.service-qty').innerText,
+
             valor: c.querySelector('.service-price').value
+
         }))
+
     };
+
     localStorage.setItem('dados_impressao', JSON.stringify(dados));
+
     window.location.href = modoOS ? "imp.html" : "impressao.html";
+
 }
 
-// --- LÓGICA DE EDIÇÃO E MODOS ---
+
 
 function alternarModo() {
+
     modoOS = !modoOS;
+
+    const campoDataFinal = document.getElementById('dataPrazoFinal');
+
     document.getElementById('toggleMode').classList.toggle('mode-os');
+
     document.getElementById('card-principal').classList.toggle('is-os');
+
     document.getElementById('sub-title').innerText = modoOS ? "Ordem de Serviço (OS)" : "Sistema de Orçamento";
+
     document.getElementById('btn-acao').innerHTML = modoOS ? 'Finalizar O.S <i class="fa-solid fa-check"></i>' : 'Gerar Orçamento <i class="fa-solid fa-arrow-right"></i>';
+
     document.getElementById('label-prazo').innerText = modoOS ? "Garantia" : "Vencimento";
+
+    if (modoOS) {
+
+        campoDataFinal.readOnly = false;
+
+    } else {
+
+        campoDataFinal.readOnly = true;
+
+        calcularDataFinal();
+
+    }
+
     aplicarTextoPadrao();
+
 }
+
+
 
 function aplicarTextoPadrao() {
+
     if (localStorage.getItem('lock_dates') === 'true') return;
+
     const listaObs = cacheDados.map(d => d.txt_obs).filter(Boolean);
+
     document.getElementById('obsGeral').value = modoOS ? (listaObs[1] || "") : (listaObs[0] || "");
+
     autoExpandir(document.getElementById('obsGeral'));
+
 }
+
+
 
 function verificarEdicao() {
+
     const dadosParaEditar = localStorage.getItem('editar_os_dados');
+
     if (dadosParaEditar) {
+
         const os = JSON.parse(dadosParaEditar);
+
         localStorage.setItem('lock_dates', 'true');
-        if (os.ID_OS && !modoOS) alternarModo();
-        id_os_atual = os.ID_OS || ""; 
+
+        id_os_atual = (os.ID_OS || os.id_os || "---").toString().padStart(3, '0');
+
+        document.getElementById('display-id').innerText = id_os_atual;
+
+        if (id_os_atual !== "---" && !modoOS) alternarModo();
+
         document.getElementById('nomeCliente').value = os.CLIENTE || "";
+
         const displayCli = document.querySelector('#dropdown-cliente .selected-text');
+
         if(displayCli) displayCli.innerText = os.CLIENTE || "Selecionar Cliente";
+
         document.getElementById('enderecoCliente').value = os.ENDERECO || os.ENDEREÇO || "";
+
         document.getElementById('telCliente').value = os.CPF || os.TELEFONE || "";
+
         if (os.DATA_DO_SERVICO) document.getElementById('dataInicio').value = converterDataParaIso(os.DATA_DO_SERVICO);
+
         if (os.DATA_FIM_GARANTIA) document.getElementById('dataPrazoFinal').value = converterDataParaIso(os.DATA_FIM_GARANTIA);
+
         if (os.GARANTIA_DIAS_CALCULADOS) document.getElementById('inputGarantia').value = os.GARANTIA_DIAS_CALCULADOS;
+
         setTimeout(() => {
+
             document.getElementById('obsGeral').value = os.OSERVACAO || os.OBSERVACAO || ""; 
+
             autoExpandir(document.getElementById('obsGeral'));
+
         }, 300);
+
         const container = document.getElementById('services-container');
+
         container.innerHTML = "";
+
         const listaServicos = (os["TIPO_DE_SERVICO"] || os["TIPO_DE_SERVIÇO"] || "").split('|');
+
         const listaValores = (os["VALOR_TOTAL"] || "0,00").split('|');
+
         listaServicos.forEach((srvTexto, index) => {
+
             if (srvTexto.trim() !== "") {
+
                 let qtd = 1, nome = srvTexto.trim();
+
                 if (nome.includes('x ')) {
+
                     const p = nome.split('x ');
+
                     qtd = parseInt(p[0]) || 1;
+
                     nome = p[1];
+
                 }
+
                 let valorIndiv = listaValores[index] ? listaValores[index].trim() : "0,00";
+
                 adicionarServicoParaEdicao(nome, qtd, valorIndiv);
+
             }
+
         });
+
         atualizarSoma();
+
         localStorage.removeItem('editar_os_dados');
+
     } else {
+
         localStorage.removeItem('lock_dates');
+
         if (document.getElementById('services-container').children.length === 0) adicionarServico();
+
     }
+
 }
+
+
 
 function adicionarServicoParaEdicao(nome, qtd, valorIndividual) {
+
     adicionarServico();
+
     const cards = document.querySelectorAll('.service-card');
+
     const ultimoCard = cards[cards.length - 1];
+
     ultimoCard.querySelector('.selected-text').innerText = nome;
+
     ultimoCard.querySelector('.service-name').value = nome;
+
     ultimoCard.querySelector('.service-qty').innerText = qtd;
+
     const precoInput = ultimoCard.querySelector('.service-price');
+
     precoInput.value = valorIndividual.replace("R$", "").trim();
+
     formatarMoeda(precoInput);
+
 }
+
+
 
 function converterDataParaIso(dataBr) {
+
     if (!dataBr) return "";
+
     let limpa = dataBr.toString().split('T')[0];
+
     let partes = limpa.includes('/') ? limpa.split('/') : limpa.split('-');
+
     if (partes.length !== 3) return "";
+
     return partes[0].length === 4 ? limpa : `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
+
 }
 
-// Inicialização
+
+
 window.onload = async () => {
+
     if(localStorage.getItem('theme') === 'light') toggleTheme();
+
     const dataHoje = new Date().toISOString().split('T')[0];
+
     document.getElementById('dataInicio').value = dataHoje;
+
     document.getElementById('dataPrazoFinal').value = dataHoje;
+
     await buscarDadosPlanilha();
+
 };
 
+
+
 window.addEventListener('click', e => { if (!e.target.closest('.custom-dropdown')) fecharTodosDropdowns(); });
-    </script>
+
+</script>
+
 </body>
+
 </html>
