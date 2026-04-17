@@ -102,7 +102,15 @@
         .is-searching .selected-text { display: none; }
         .search-input { background: transparent; border: none; color: inherit; width: 100%; outline: none; display: none; }
         .is-searching .search-input { display: block; }
-        .selected-text { color: var(--text-main) !important; opacity: 1 !important; }
+        .selected-text { 
+    color: var(--text-main) !important; 
+    opacity: 1 !important; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    white-space: nowrap; 
+    display: block; 
+    width: 100%; 
+}
 
         .total-container { background: var(--total-container-bg) !important; border: 1px solid rgba(255,255,255,0.1) !important; transition: all 0.4s ease; }
         
@@ -405,13 +413,18 @@ function gerarHtmlServicos() {
     }).join('');
 }
 
+
+
+
+
+
 function adicionarServico() {
     const container = document.getElementById('services-container');
     const div = document.createElement('div');
     div.className = "service-card";
     div.innerHTML = `
         <div class="service-row-top">
-            <div class="relative flex-grow custom-dropdown">
+            <div class="relative custom-dropdown" style="width: 280px; min-width: 280px; max-width: 280px;">
                 <div class="w-full dark-input p-4 rounded-2xl text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
                      <span class="selected-text truncate">Selecionar Serviço</span>
                     <input type="text" class="search-input" placeholder="Pesquisar..." oninput="filtrarDropdown(this)" onclick="event.stopPropagation()">
@@ -437,6 +450,12 @@ function adicionarServico() {
         </div>`;
     container.appendChild(div);
 }
+
+
+
+
+
+    
 
 function alterarQtde(btn, delta) {
     const span = btn.parentElement.querySelector('.service-qty');
