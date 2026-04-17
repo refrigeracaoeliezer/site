@@ -136,25 +136,24 @@
 
 
 
-// Localize a função editarServico no seu HTML de Dashboard e substitua por esta:
 function editarServico(dadosString) {
     const os = JSON.parse(decodeURIComponent(dadosString));
     
-    // Mapeamento rigoroso para a ponte entre HTMLs
+    // Pegamos os valores brutos da planilha usando os nomes das colunas da sua imagem
+    const diasGarantia = os["GARANTIA_DIAS"] || 30;
+    const dataTermino = os["TERMINO_SERVICO"] || os["DIA"] || "";
+    const valorTotalH = os["VALOR_TOTAL"] || "0,00";
+
     const pacoteCompleto = { 
         ...os, 
-        // Coluna I da planilha
-        "GARANTIA_DIAS": os["GARANTIA_DIAS"] || 30,
-        // Coluna L da planilha (TERMINO_SERVICO) enviada como DATA_FIM_GARANTIA
-        "DATA_FIM_GARANTIA": os["TERMINO_SERVICO"] || os["DIA"] || os["DATA_FIM_GARANTIA"],
-        // Coluna H da planilha
-        "VALOR_TOTAL": os["VALOR_TOTAL"] || "0,00"
+        "GARANTIA_DIAS": diasGarantia,
+        "DATA_FIM_GARANTIA": dataTermino, // Enviamos a Coluna L para o campo Vencimento
+        "VALOR_TOTAL": valorTotalH        // Enviamos a Coluna H para os Serviços
     };
     
     localStorage.setItem('editar_os_dados', JSON.stringify(pacoteCompleto));
     window.location.href = "12os.html"; 
 }
-
 
 
 
