@@ -571,10 +571,11 @@ function verificarEdicao() {
         // Datas
         if (os.DATA_DO_SERVICO) document.getElementById('dataInicio').value = converterDataParaIso(os.DATA_DO_SERVICO);
         
-        // Aqui recebe a Coluna L vinda do Dashboard
-        if (os.DATA_FIM_GARANTIA) document.getElementById('dataPrazoFinal').value = converterDataParaIso(os.DATA_FIM_GARANTIA);
+        // Recebe a COLUNA L (TERMINO_SERVICO)
+        const dataL = os.DATA_FIM_GARANTIA || os.DIA;
+        if (dataL) document.getElementById('dataPrazoFinal').value = converterDataParaIso(dataL);
         
-        // Aqui recebe a Garantia em Dias (Coluna I)
+        // Recebe a Garantia em Dias
         if (os.GARANTIA_DIAS) document.getElementById('inputGarantia').value = os.GARANTIA_DIAS;
 
         setTimeout(() => {
@@ -582,15 +583,15 @@ function verificarEdicao() {
             autoExpandir(document.getElementById('obsGeral'));
         }, 300);
 
-        // Reconstrução dos Serviços (Correção para aparecerem na tela)
+        // Reconstrução dos Serviços e Valores (COLUNA H)
         const container = document.getElementById('services-container');
         container.innerHTML = "";
         
-        const servicosTexto = os["TIPO_DE_SERVICO"] || os["TIPO_DE_SERVIÇO"] || "";
-        const valoresTexto = os["VALOR_TOTAL"] || "0,00";
+        const servicosTexto = (os["TIPO_DE_SERVICO"] || os["TIPO_DE_SERVIÇO"] || "").toString();
+        const valoresTexto = (os["VALOR_TOTAL"] || "0,00").toString();
 
-        const listaServicos = servicosTexto.toString().split('|');
-        const listaValores = valoresTexto.toString().split('|');
+        const listaServicos = servicosTexto.split('|');
+        const listaValores = valoresTexto.split('|');
 
         listaServicos.forEach((srvTexto, index) => {
             if (srvTexto.trim() !== "") {
@@ -600,8 +601,8 @@ function verificarEdicao() {
                     qtd = parseInt(p[0]) || 1;
                     nome = p.slice(1).join('x ').trim();
                 }
-                // Pega o valor unitário correspondente
-                let valorIndiv = listaValores[index] ? listaValores[index].trim() : "0,00";
+                // Pega o valor da COLUNA H correspondente
+                let valorIndiv = listaValores[index] ? listaValores[index].trim() : listaValores[0];
                 adicionarServicoParaEdicao(nome, qtd, valorIndiv);
             }
         });
