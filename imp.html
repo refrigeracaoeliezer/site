@@ -281,19 +281,15 @@ async function baixarPDF() {
     const idNomeArquivo = document.getElementById('num-random').innerText.split(' ')[0];
     let idParaEnviar = (dados.id_os && dados.id_os !== "---" && dados.id_os !== "") ? dados.id_os : "";
 
-    // GERA O TEXTO DOS SERVIÇOS (COMO JÁ ESTAVA)
+    // MODIFICADO: Agora gera apenas "QTDx DESCRIÇÃO" sem o (R$ valor)
     const servicosTexto = dados.itens.map(i => {
-        const valorFormatado = parseFloat(i.valor.replace(/\./g, '').replace(',', '.'))
-            .toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        return `${i.qtd}x ${i.descricao} (R$ ${valorFormatado})`;
+        return `${i.qtd}x ${i.descricao}`;
     }).join(' | ');
 
     // --- NOVA LÓGICA PARA OS VALORES INDIVIDUAIS ---
-    // Mapeia apenas os valores individuais de cada item, formatando-os
     const valoresIndividuaisTexto = dados.itens.map(i => {
-        return i.valor; // Retorna o valor como está (ex: "200,00")
+        return i.valor; 
     }).join(' | ');
-    // -----------------------------------------------
 
     // --- LÓGICA DE SOMA DE DATAS ---
     const dataInicio = dados.emissao; 
@@ -306,10 +302,9 @@ async function baixarPDF() {
     formData.append('ENDERECO', dados.endereco);
     formData.append('CPF', dados.cpf);
     formData.append('DATA_DO_SERVICO', dataInicio);
-    formData.append('TIPO_DE_SERVICO', servicosTexto);
+    formData.append('TIPO_DE_SERVICO', servicosTexto); // Salva o formato solicitado
     formData.append('TECNICO_RESPONSVEL', document.getElementById('view-resp-tecnico').innerText);
     
-    // ALTERADO: Agora envia os valores individuais separados por barra em vez do total único
     formData.append('VALOR_TOTAL', valoresIndividuaisTexto);
     
     formData.append('GARANTIA_DIAS', diasGarantia);
