@@ -70,6 +70,19 @@
         .is-os .dark-input:focus { border-color: #10b981 !important; }
 
         .service-card { background: var(--card-sub); border-radius: 20px; padding: 15px; border: 1px solid var(--glass-border); display: flex; flex-direction: column; gap: 12px; }
+        .service-row-top { display: flex; align-items: center; gap: 10px; width: 100%; }
+        
+        /* AJUSTE PARA O TEXTO NÃO ESTICAR O CONTAINER */
+        .selected-text { 
+            color: var(--text-main) !important; 
+            opacity: 1 !important; 
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: block;
+            width: 100%;
+        }
+
         .qty-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: var(--input-bg); color: #3b82f6; transition: 0.2s; border: 1px solid rgba(59, 130, 246, 0.2); }
         .is-os .qty-btn { color: #10b981 !important; border-color: rgba(16, 185, 129, 0.2) !important; }
         
@@ -78,6 +91,8 @@
         .section-header span { font-size: 11px; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.5px; }
 
         .btn-primary { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); transition: transform 0.2s; box-shadow: 0 10px 20px -5px rgba(30, 104, 175, 0.5); }
+        .btn-primary:active { transform: scale(0.95); }
+
         .btn-add-item { width: 100%; padding: 1rem; border: 2px dashed rgba(59, 130, 246, 0.5); border-radius: 1.25rem; color: var(--text-main); font-weight: 700; font-size: 0.75rem; transition: all 0.3s; background: rgba(59, 130, 246, 0.05); }
         .is-os .btn-add-item { border-color: rgba(16, 185, 129, 0.5); background: rgba(16, 185, 129, 0.05); }
 
@@ -98,7 +113,6 @@
         .is-searching .selected-text { display: none; }
         .search-input { background: transparent; border: none; color: inherit; width: 100%; outline: none; display: none; }
         .is-searching .search-input { display: block; }
-        .selected-text { color: var(--text-main) !important; opacity: 1 !important; }
 
         .total-container { background: var(--total-container-bg) !important; border: 1px solid rgba(255,255,255,0.1) !important; transition: all 0.4s ease; }
         
@@ -363,7 +377,6 @@ function selecionarItemDropdown(li, nome, valorExtra, tipo) {
     const display = wrapper.querySelector('.selected-text');
     const hiddenInput = wrapper.querySelector('input[type="hidden"]');
     
-    // Ajuste adicional para seleção manual no dropdown se necessário
     let nomeLimpo = nome;
     if (nomeLimpo.startsWith("Orçamento | ")) {
         nomeLimpo = nomeLimpo.replace("Orçamento | ", "");
@@ -395,7 +408,6 @@ function fecharTodosDropdowns() {
 function renderizarDatalists() {
     const clientes = [...new Set(cacheDados.map(d => d.cli_nome))].filter(Boolean);
     document.getElementById('lista-clientes-custom').innerHTML = clientes.map(n => {
-        // Limpa o nome na listagem também se preferir, ou mantém para identificar
         return `<li class="dropdown-item" onclick="selecionarItemDropdown(this, '${n}', '', 'cliente')">${n}</li>`;
     }).join('');
     const dadosEmp = cacheDados.find(d => d.emp_nome);
@@ -587,7 +599,6 @@ function verificarEdicao() {
         
         if (id_os_atual !== "---" && !modoOS) alternarModo();
         
-        // AJUSTE SOLICITADO: Remover prefixo "Orçamento | " se existir
         let clienteLimpo = os.CLIENTE || "";
         if (clienteLimpo.startsWith("Orçamento | ")) {
             clienteLimpo = clienteLimpo.replace("Orçamento | ", "");
