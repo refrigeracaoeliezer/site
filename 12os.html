@@ -18,7 +18,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
-        /* --- INICIO VARIÁVEIS DE TEMA --- */
         :root {
             --bg-body: #0d1117;
             --text-main: white;
@@ -62,6 +61,9 @@
         .is-os .btn-primary { background: linear-gradient(135deg, #065f46 0%, #10b981 100%) !important; }
         .is-os .total-container { background: #065f46 !important; border-color: rgba(16, 185, 129, 0.3) !important; }
         body.light-mode.is-os .total-container { background: #1e40af !important; border-color: rgba(255,255,255,0.1) !important; }
+
+        /* AJUSTE COR GARANTIA PARA VERDE */
+        #label-prazo { background: #10b981 !important; }
 
         .dark-input { background: var(--input-bg) !important; border: 1px solid var(--glass-border) !important; color: var(--input-text) !important; transition: all 0.3s ease; }
         .dark-input:focus { border-color: #3b82f6 !important; background: rgba(255, 255, 255, 0.08) !important; outline: none; }
@@ -263,7 +265,6 @@
     </div>
 
 <script>
-// Links Planilha
 const URL_READ_ID = "https://script.google.com/macros/s/AKfycbzozyKIziDzmieP59KCfMEZeQETFz9H7wAa4UGntF7uHDDxTcm3Dmo14dx_V4rYfr7nzw/exec";
 const URL_DATABASE = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec"; 
 
@@ -287,7 +288,6 @@ function autoExpandir(textarea) {
 
 function calcularDataFinal() {
     if (localStorage.getItem('lock_dates') === 'true') return;
-    if (modoOS) return;
     const dataInicioVal = document.getElementById('dataInicio').value;
     const diasPrazo = parseInt(document.getElementById('inputGarantia').value) || 0;
     const campoDataFinal = document.getElementById('dataPrazoFinal');
@@ -304,26 +304,31 @@ async function buscarDadosPlanilha() {
         cacheDados = await respDB.json();
         renderizarDatalists();
         aplicarTextoPadrao();
-        verificarEdicao(); 
-        if (!id_os_atual || id_os_atual === "" || id_os_atual === "---") {
-            const respID = await fetch(URL_READ_ID);
-            const dadosID = await respID.json();
+        
+        // BUSCA ID SEQUENCIAL SEMPRE QUE CARREGAR E NÃO ESTIVER EDITANDO
+        const respID = await fetch(URL_READ_ID);
+        const dadosID = await respID.json();
+        
+        const dadosParaEditar = localStorage.getItem('editar_os_dados');
+        if (!dadosParaEditar) {
             gerarNovoID(dadosID);
         }
+        
+        verificarEdicao(); 
     } catch (e) { 
         console.error("Erro ao carregar dados:", e); 
     }
 }
 
 function gerarNovoID(dadosPlanilha) {
-    if (id_os_atual && id_os_atual !== "" && id_os_atual !== "---") {
-        document.getElementById('display-id').innerText = id_os_atual;
-        return;
-    }
     const idsExistentes = dadosPlanilha
-        .map(item => parseInt((item.ID_OS || item.id_os || "0").toString().replace(/\D/g, '')))
+        .map(item => {
+            let val = (item.ID_OS || item.id_os || "0").toString().replace(/\D/g, '');
+            return parseInt(val);
+        })
         .filter(n => !isNaN(n))
         .sort((a, b) => a - b);
+
     let proximo = 1;
     for (let i = 0; i < idsExistentes.length; i++) {
         if (idsExistentes[i] === proximo) proximo++;
@@ -473,19 +478,31 @@ function gerarDocumento() {
     const dias = document.getElementById('inputGarantia').value;
     const dataFim = document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/');
     const chavePix = (cacheDados.find(d => d.emp_pix) || {}).emp_pix || "[PIX]";
-    let servicosTexto = "";
+    
+    // COLETA SERVIÇOS E PREÇOS SEPARADOS POR | PARA ENVIO À PLANILHA
+    let servicosArrayPlanilha = [];
+    let valoresArrayPlanilha = [];
+    let servicosTextoWpp = "";
+    
     document.querySelectorAll('.service-card').forEach(card => {
-        const n = card.querySelector('.service-name').value;
+        const n = card.querySelector('.service-name').value || card.querySelector('.selected-text').innerText;
         const p = card.querySelector('.service-price').value;
         const q = card.querySelector('.service-qty').innerText;
-        if(n) servicosTexto += `• ${q}x ${n} - R$ ${p}\n`;
+        if(n && n !== "Selecionar Serviço") {
+            servicosArrayPlanilha.push(`${q}x ${n}`);
+            valoresArrayPlanilha.push(p);
+            servicosTextoWpp += `• ${q}x ${n} - R$ ${p}\n`;
+        }
     });
+
     const totalNum = parseFloat(total.replace(/\./g, "").replace(",", ".")) || 0;
     const sinal = (totalNum * 0.3).toLocaleString('pt-BR', {minimumFractionDigits: 2});
     const saldo = (totalNum * 0.7).toLocaleString('pt-BR', {minimumFractionDigits: 2});
-    document.getElementById('txt-proposta').innerText = `*ORÇAMENTO TÉCNICO - ${prestador.toUpperCase()}*\n\nOlá ${cliente}! Segue o orçamento:\n\n*SERVIÇOS:*\n${servicosTexto}\n*OBS:*\n${obs}\n\n*INVESTIMENTO TOTAL:* R$ ${total}\n(Material + Mão de Obra incluso)\n\n*${modoOS ? 'Garantia' : 'Vencimento'}:* ${dias} dias\n*Data Prevista:* ${dataFim}\n\nFicaremos no aguardo.`;
+    
+    document.getElementById('txt-proposta').innerText = `*ORÇAMENTO TÉCNICO - ${prestador.toUpperCase()}*\n\nOlá ${cliente}! Segue o orçamento:\n\n*SERVIÇOS:*\n${servicosTextoWpp}\n*OBS:*\n${obs}\n\n*INVESTIMENTO TOTAL:* R$ ${total}\n(Material + Mão de Obra incluso)\n\n*${modoOS ? 'Garantia' : 'Vencimento'}:* ${dias} dias\n*Data Prevista:* ${dataFim}\n\nFicaremos no aguardo.`;
     document.getElementById('txt-sinal').innerText = `*Confirmação de Agendamento*\n\nOlá, ${cliente}, tudo bem?\n\nPara formalizarmos o seu atendimento e garantirmos a reserva dos materiais e da sua data em nossa agenda, solicitamos o pagamento da entrada:\n\n💰 *Valor da Entrada (30%):* R$ ${sinal}\n🔑 *Chave PIX:* ${chavePix}\n\nAssim que realizar a transferência, por favor, nos envie o comprovante para validarmos o agendamento. 🗓️\n\nFicamos à disposição para qualquer dúvida!`;
     document.getElementById('txt-conclusao').innerText = `*Finalização de Serviço* ❄️\n\nOlá, ${cliente}, tudo bem?\n\nInformamos que o serviço em seu equipamento foi concluído com sucesso! ✅ Realizamos todos os testes técnicos e o sistema já está operando em perfeitas condições.\n\n💳 *Status de Pagamento:* ${saldoQuitado ? "Saldo Quitado" : `Saldo de R$ ${saldo}`}\n🛡️ *Garantia:* Você tem *${dias} dias* de garantia total sobre o serviço executado.\n\nAgradecemos a confiança em nosso trabalho! Qualquer dúvida, estamos à disposição.\n\nAtenciosamente,\n*${prestador}*`;
+    
     document.getElementById('modal-mensagens').style.display = 'block';
     document.body.style.overflow = 'hidden';
 }
@@ -536,12 +553,9 @@ function alternarModo() {
     document.getElementById('sub-title').innerText = modoOS ? "Ordem de Serviço (OS)" : "Sistema de Orçamento";
     document.getElementById('btn-acao').innerHTML = modoOS ? 'Finalizar O.S <i class="fa-solid fa-check"></i>' : 'Gerar Orçamento <i class="fa-solid fa-arrow-right"></i>';
     document.getElementById('label-prazo').innerText = modoOS ? "Garantia" : "Vencimento";
-    if (modoOS) {
-        campoDataFinal.readOnly = false;
-    } else {
-        campoDataFinal.readOnly = true;
-        calcularDataFinal();
-    }
+    
+    // VENCIMENTO INDEPENDENTE - RECALCULA SEMPRE QUE ALTERA O MODO
+    calcularDataFinal();
     aplicarTextoPadrao();
 }
 
@@ -552,13 +566,6 @@ function aplicarTextoPadrao() {
     autoExpandir(document.getElementById('obsGeral'));
 }
 
-
-
-
-
-
-
-    
 function verificarEdicao() {
     const dadosParaEditar = localStorage.getItem('editar_os_dados');
     if (dadosParaEditar) {
@@ -577,10 +584,13 @@ function verificarEdicao() {
         
         if (os.DATA_DO_SERVICO) document.getElementById('dataInicio').value = converterDataParaIso(os.DATA_DO_SERVICO);
         
-        // Preenche Vencimento com a Coluna L recebida
-        if (os.DATA_FIM_GARANTIA) document.getElementById('dataPrazoFinal').value = converterDataParaIso(os.DATA_FIM_GARANTIA);
+        // RESULTADO DA COLUNA L (TERMINO_SERVICO)
+        if (os.TERMINO_SERVICO) {
+            document.getElementById('dataPrazoFinal').value = converterDataParaIso(os.TERMINO_SERVICO);
+        } else if (os.DATA_FIM_GARANTIA) {
+            document.getElementById('dataPrazoFinal').value = converterDataParaIso(os.DATA_FIM_GARANTIA);
+        }
         
-        // Preenche Dias com a Coluna I recebida
         if (os.GARANTIA_DIAS) document.getElementById('inputGarantia').value = os.GARANTIA_DIAS;
 
         setTimeout(() => {
@@ -591,7 +601,7 @@ function verificarEdicao() {
         const container = document.getElementById('services-container');
         container.innerHTML = "";
         
-        // Reconstrói serviços usando a Coluna H (VALOR_TOTAL)
+        // SEPARAÇÃO CIRÚRGICA DE SERVIÇOS E VALORES POR |
         const servicosTexto = (os["TIPO_DE_SERVICO"] || os["TIPO_DE_SERVIÇO"] || "").toString();
         const valoresTexto = (os["VALOR_TOTAL"] || "0,00").toString();
 
@@ -606,7 +616,8 @@ function verificarEdicao() {
                     qtd = parseInt(p[0]) || 1;
                     nome = p.slice(1).join('x ').trim();
                 }
-                let valorIndiv = listaValores[index] ? listaValores[index].trim() : listaValores[0];
+                // Atribui o valor correspondente ao índice ou o primeiro se não houver múltiplos
+                let valorIndiv = listaValores[index] ? listaValores[index].trim() : listaValores[0].trim();
                 adicionarServicoParaEdicao(nome, qtd, valorIndiv);
             }
         });
@@ -618,15 +629,6 @@ function verificarEdicao() {
         if (document.getElementById('services-container').children.length === 0) adicionarServico();
     }
 }
-
-
-
-
-
-
-
-
-    
 
 function adicionarServicoParaEdicao(nome, qtd, valorIndividual) {
     adicionarServico();
