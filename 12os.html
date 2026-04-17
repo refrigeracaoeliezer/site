@@ -72,7 +72,6 @@
         .service-card { background: var(--card-sub); border-radius: 20px; padding: 15px; border: 1px solid var(--glass-border); display: flex; flex-direction: column; gap: 12px; }
         .service-row-top { display: flex; align-items: center; gap: 10px; width: 100%; }
         
-        /* AJUSTE PARA O TEXTO NÃO ESTICAR O CONTAINER */
         .selected-text { 
             color: var(--text-main) !important; 
             opacity: 1 !important; 
@@ -428,7 +427,7 @@ function adicionarServico() {
     div.className = "service-card";
     div.innerHTML = `
         <div class="service-row-top">
-            <div class="relative flex-grow custom-dropdown">
+            <div class="relative custom-dropdown" style="flex: 1; min-width: 0;">
                 <div class="w-full dark-input p-4 rounded-2xl text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
                      <span class="selected-text truncate">Selecionar Serviço</span>
                     <input type="text" class="search-input" placeholder="Pesquisar..." oninput="filtrarDropdown(this)" onclick="event.stopPropagation()">
@@ -437,7 +436,7 @@ function adicionarServico() {
                 <ul class="dropdown-list">${gerarHtmlServicos()}</ul>
                 <input type="hidden" class="service-name">
             </div>
-            <button onclick="this.closest('.service-card').remove(); atualizarSoma();" class="text-red-500 p-2">
+            <button onclick="this.closest('.service-card').remove(); atualizarSoma();" class="text-red-500 p-2 flex-shrink-0">
                 <i class="fa-solid fa-trash-can"></i>
             </button>
         </div>
