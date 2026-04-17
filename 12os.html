@@ -552,7 +552,6 @@ function aplicarTextoPadrao() {
     autoExpandir(document.getElementById('obsGeral'));
 }
 
-// INTEGRAÇÃO DA COLUNA L (DIA) APLICADA AQUI
 function verificarEdicao() {
     const dadosParaEditar = localStorage.getItem('editar_os_dados');
     if (dadosParaEditar) {
@@ -561,43 +560,52 @@ function verificarEdicao() {
         id_os_atual = (os.ID_OS || os.id_os || "---").toString().padStart(3, '0');
         document.getElementById('display-id').innerText = id_os_atual;
         if (id_os_atual !== "---" && !modoOS) alternarModo();
+        
         document.getElementById('nomeCliente').value = os.CLIENTE || "";
         const displayCli = document.querySelector('#dropdown-cliente .selected-text');
         if(displayCli) displayCli.innerText = os.CLIENTE || "Selecionar Cliente";
+        
         document.getElementById('enderecoCliente').value = os.ENDERECO || os.ENDEREÇO || "";
         document.getElementById('telCliente').value = os.CPF || os.TELEFONE || "";
         
+        // Datas
         if (os.DATA_DO_SERVICO) document.getElementById('dataInicio').value = converterDataParaIso(os.DATA_DO_SERVICO);
         
-        // RECUPERAÇÃO DA COLUNA L (mapeada como DIA pelo seu script)
-        const dataVencimento = os.DIA || os.DATA_FIM_GARANTIA;
-        if (dataVencimento) document.getElementById('dataPrazoFinal').value = converterDataParaIso(dataVencimento);
+        // Aqui recebe a Coluna L vinda do Dashboard
+        if (os.DATA_FIM_GARANTIA) document.getElementById('dataPrazoFinal').value = converterDataParaIso(os.DATA_FIM_GARANTIA);
         
-        // Se houver valor na coluna L (DIA), ele assume também a garantia em dias
-        if (os.DIA || os.GARANTIA_DIAS_CALCULADOS) {
-            document.getElementById('inputGarantia').value = os.DIA || os.GARANTIA_DIAS_CALCULADOS;
-        }
+        // Aqui recebe a Garantia em Dias (Coluna I)
+        if (os.GARANTIA_DIAS) document.getElementById('inputGarantia').value = os.GARANTIA_DIAS;
 
         setTimeout(() => {
             document.getElementById('obsGeral').value = os.OSERVACAO || os.OBSERVACAO || ""; 
             autoExpandir(document.getElementById('obsGeral'));
         }, 300);
+
+        // Reconstrução dos Serviços (Correção para aparecerem na tela)
         const container = document.getElementById('services-container');
         container.innerHTML = "";
-        const listaServicos = (os["TIPO_DE_SERVICO"] || os["TIPO_DE_SERVIÇO"] || "").split('|');
-        const listaValores = (os["VALOR_TOTAL"] || "0,00").split('|');
+        
+        const servicosTexto = os["TIPO_DE_SERVICO"] || os["TIPO_DE_SERVIÇO"] || "";
+        const valoresTexto = os["VALOR_TOTAL"] || "0,00";
+
+        const listaServicos = servicosTexto.toString().split('|');
+        const listaValores = valoresTexto.toString().split('|');
+
         listaServicos.forEach((srvTexto, index) => {
             if (srvTexto.trim() !== "") {
                 let qtd = 1, nome = srvTexto.trim();
                 if (nome.includes('x ')) {
                     const p = nome.split('x ');
                     qtd = parseInt(p[0]) || 1;
-                    nome = p[1];
+                    nome = p.slice(1).join('x ').trim();
                 }
+                // Pega o valor unitário correspondente
                 let valorIndiv = listaValores[index] ? listaValores[index].trim() : "0,00";
                 adicionarServicoParaEdicao(nome, qtd, valorIndiv);
             }
         });
+
         atualizarSoma();
         localStorage.removeItem('editar_os_dados');
     } else {
