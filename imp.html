@@ -275,88 +275,69 @@
     }
 
 async function baixarPDF() {
+    const dados = JSON.parse(localStorage.getItem('dados_impressao'));
+    if (!dados) return;
 
-const dados = JSON.parse(localStorage.getItem('dados_impressao'));
+    const idNomeArquivo = document.getElementById('num-random').innerText.split(' ')[0];
+    let idParaEnviar = (dados.id_os && dados.id_os !== "---" && dados.id_os !== "") ? dados.id_os : "";
 
-if (!dados) return;
+    // GERA O TEXTO DOS SERVIÇOS (COMO JÁ ESTAVA)
+    const servicosTexto = dados.itens.map(i => {
+        const valorFormatado = parseFloat(i.valor.replace(/\./g, '').replace(',', '.'))
+            .toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        return `${i.qtd}x ${i.descricao} (R$ ${valorFormatado})`;
+    }).join(' | ');
 
+    // --- NOVA LÓGICA PARA OS VALORES INDIVIDUAIS ---
+    // Mapeia apenas os valores individuais de cada item, formatando-os
+    const valoresIndividuaisTexto = dados.itens.map(i => {
+        return i.valor; // Retorna o valor como está (ex: "200,00")
+    }).join(' | ');
+    // -----------------------------------------------
 
+    // --- LÓGICA DE SOMA DE DATAS ---
+    const dataInicio = dados.emissao; 
+    const diasGarantia = dados.garantia || "30"; 
+    const dataVencimentoGarantia = calcularSomaData(dataInicio, diasGarantia);
 
-const servicosTexto = dados.itens.map(i => `${i.qtd}x ${i.descricao}`).join(' | ');
+    const formData = new URLSearchParams();
+    formData.append('ID_OS', idParaEnviar);
+    formData.append('CLIENTE', dados.cliente);
+    formData.append('ENDERECO', dados.endereco);
+    formData.append('CPF', dados.cpf);
+    formData.append('DATA_DO_SERVICO', dataInicio);
+    formData.append('TIPO_DE_SERVICO', servicosTexto);
+    formData.append('TECNICO_RESPONSVEL', document.getElementById('view-resp-tecnico').innerText);
+    
+    // ALTERADO: Agora envia os valores individuais separados por barra em vez do total único
+    formData.append('VALOR_TOTAL', valoresIndividuaisTexto);
+    
+    formData.append('GARANTIA_DIAS', diasGarantia);
+    formData.append('DATA_FIM_GARANTIA', dataVencimentoGarantia); 
+    formData.append('OSERVACAO', dados.obs);
+    formData.append('DIA', dados.validade); 
 
-const idNomeArquivo = document.getElementById('num-random').innerText.split(' ')[0];
-
-let idParaEnviar = (dados.id_os && dados.id_os !== "---" && dados.id_os !== "") ? dados.id_os : "";
-
-
-
-// --- CÓDIGO MODIFICADO ---
-
-const servicosTexto = dados.itens.map(i => {
-
-// Converte o valor para número e formata com 2 casas decimais e vírgula
-
-const valorFormatado = parseFloat(i.valor.replace(/\./g, '').replace(',', '.'))
-
-.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-
-return `${i.qtd}x ${i.descricao} (R$ ${valorFormatado})`;
-
-}).join(' | ');
-
-// -------------------------
-        
-        
-        
-        
-        
-        
-        // --- LÓGICA DE SOMA DE DATAS ---
-        const dataInicio = dados.emissao; // Pega a Data de Início
-        const diasGarantia = dados.garantia || "30"; // Pega os dias
-        const dataVencimentoGarantia = calcularSomaData(dataInicio, diasGarantia);
-
-        const formData = new URLSearchParams();
-        formData.append('ID_OS', idParaEnviar);
-        formData.append('CLIENTE', dados.cliente);
-        formData.append('ENDERECO', dados.endereco);
-        formData.append('CPF', dados.cpf);
-        formData.append('DATA_DO_SERVICO', dataInicio);
-        formData.append('TIPO_DE_SERVICO', servicosTexto);
-        formData.append('TECNICO_RESPONSVEL', document.getElementById('view-resp-tecnico').innerText);
-        formData.append('VALOR_TOTAL', dados.total || "0,00");
-        formData.append('GARANTIA_DIAS', diasGarantia);
-        
-        // COLUNA J: Salva a SOMA (Início + Dias)
-        formData.append('DATA_FIM_GARANTIA', dataVencimentoGarantia); 
-        
-        formData.append('OSERVACAO', dados.obs);
-        
-        // COLUNA L: Salva a DATA DE CONCLUSÃO (Término)
-        formData.append('DIA', dados.validade); 
-
-        try {
-            await fetch(URL_SALVAR, { 
-                method: 'POST', 
-                mode: 'no-cors', 
-                body: formData 
-            });
-        } catch (e) { 
-            console.error("Erro ao salvar na planilha:", e); 
-        }
-
-        const element = document.getElementById('conteudo-pdf');
-        const opt = {
-            margin: [0, 0, 0, 0],
-            filename: `${idNomeArquivo}_OS_${dados.cliente}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-        
-        html2pdf().set(opt).from(element).save();
+    try {
+        await fetch(URL_SALVAR, { 
+            method: 'POST', 
+            mode: 'no-cors', 
+            body: formData 
+        });
+    } catch (e) { 
+        console.error("Erro ao salvar na planilha:", e); 
     }
+
+    const element = document.getElementById('conteudo-pdf');
+    const opt = {
+        margin: [0, 0, 0, 0],
+        filename: `${idNomeArquivo}_OS_${dados.cliente}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    
+    html2pdf().set(opt).from(element).save();
+}
 
     window.onload = carregarPagina;
 </script>
