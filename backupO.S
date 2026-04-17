@@ -90,7 +90,7 @@
         .switch { position: relative; display: inline-block; width: 100%; height: 44px; background: var(--input-bg); border-radius: 15px; padding: 4px; border: 1px solid var(--glass-border); cursor: pointer; }
         .switch-bg { position: absolute; top: 4px; left: 4px; width: calc(50% - 4px); height: calc(100% - 8px); background: #1e40af; border-radius: 12px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1; }
         .switch-labels { position: relative; display: flex; height: 100%; z-index: 2; align-items: center; font-size: 11px; font-weight: 800; text-transform: uppercase; }
-        .switch-labels div { flex: 1; text-align: center; color: rgba(128,128,128,0.6); }
+        .switch-labels div { flex: 1; text-align: center; color: rgba(128,128,128,0.6); transition: color 0.3s; }
         .active-label { color: white !important; }
         .mode-os .switch-bg { left: 50%; background: #10b981; }
 
@@ -217,7 +217,7 @@
                         <input type="hidden" id="nomeCliente">
                     </div>
                     <input type="text" id="enderecoCliente" placeholder="Endereço Completo" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
-                    <input type="tel" id="telCliente" placeholder="WhatsApp" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
+                    <input type="tel" id="telCliente" placeholder="CNPJ / CPF" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
                     <div class="grid grid-cols-2 gap-2 pt-2">
                         <div class="space-y-1">
                             <label class="text-[9px] font-bold text-white/30 uppercase ml-2">Início</label>
@@ -288,7 +288,6 @@ function autoExpandir(textarea) {
 }
 
 function calcularDataFinal() {
-    // SE MODO ORÇAMENTO, CALCULA SEMPRE PELA SOMA INDEPENDENTE
     if (!modoOS) {
         const dataInicioVal = document.getElementById('dataInicio').value;
         const diasPrazo = parseInt(document.getElementById('inputGarantia').value) || 0;
@@ -545,17 +544,23 @@ function baixarPDF() {
 function alternarModo() {
     modoOS = !modoOS;
     const campoDataFinal = document.getElementById('dataPrazoFinal');
+    const lblOrc = document.getElementById('lbl-orc');
+    const lblOs = document.getElementById('lbl-os');
+
     document.getElementById('toggleMode').classList.toggle('mode-os');
     document.getElementById('card-principal').classList.toggle('is-os');
     document.getElementById('sub-title').innerText = modoOS ? "Ordem de Serviço (OS)" : "Sistema de Orçamento";
     document.getElementById('btn-acao').innerHTML = modoOS ? 'Finalizar O.S <i class="fa-solid fa-check"></i>' : 'Gerar Orçamento <i class="fa-solid fa-arrow-right"></i>';
     document.getElementById('label-prazo').innerText = modoOS ? "Garantia" : "Vencimento";
     
-    // RECALCULA SEMPRE QUE ALTERA O MODO
     if (modoOS) {
         campoDataFinal.readOnly = false;
+        lblOs.classList.add('active-label');
+        lblOrc.classList.remove('active-label');
     } else {
         campoDataFinal.readOnly = true;
+        lblOrc.classList.add('active-label');
+        lblOs.classList.remove('active-label');
     }
     calcularDataFinal();
     aplicarTextoPadrao();
@@ -575,7 +580,6 @@ function verificarEdicao() {
         id_os_atual = (os.ID_OS || os.id_os || "---").toString().padStart(3, '0');
         document.getElementById('display-id').innerText = id_os_atual;
         
-        // FORÇA MODO OS SE TIVER DADOS VINDO DO HISTÓRICO
         if (id_os_atual !== "---" && !modoOS) alternarModo();
         
         document.getElementById('nomeCliente').value = os.CLIENTE || "";
@@ -585,10 +589,8 @@ function verificarEdicao() {
         document.getElementById('enderecoCliente').value = os.ENDERECO || os.ENDEREÇO || "";
         document.getElementById('telCliente').value = os.CPF || os.TELEFONE || "";
         
-        // DATA INICIAL É A ÚNICA COMUM
         if (os.DATA_DO_SERVICO) document.getElementById('dataInicio').value = converterDataParaIso(os.DATA_DO_SERVICO);
         
-        // NO MODO OS: USA AS DATAS DA PLANILHA
         if (modoOS) {
             if (os.TERMINO_SERVICO) {
                 document.getElementById('dataPrazoFinal').value = converterDataParaIso(os.TERMINO_SERVICO);
@@ -597,7 +599,6 @@ function verificarEdicao() {
             }
             if (os.GARANTIA_DIAS) document.getElementById('inputGarantia').value = os.GARANTIA_DIAS;
         } else {
-            // NO MODO ORÇAMENTO: RECALCULA INDEPENDENTE
             calcularDataFinal();
         }
 
