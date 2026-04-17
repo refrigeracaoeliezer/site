@@ -227,7 +227,7 @@
                         </div>
                     </div>
                     <div class="bg-white/5 rounded-xl p-4 mb-4" style="background: var(--card-sub)">
-                        <span class="text-[9px] font-black uppercase block mb-2 tracking-widest opacity-30">Serviços Executados:</span>
+                        <span class="text-[9px] font-black uppercase block mb-2 tracking-widest opacity-30">Serviços Executados:</span> 
                         ${htmlServicos || '<div class="text-[10px] opacity-20 italic">Nenhum serviço registrado</div>'}
                     </div>
                     <div class="grid grid-cols-2 gap-4 text-[10px] font-bold uppercase">
