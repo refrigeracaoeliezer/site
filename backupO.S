@@ -62,8 +62,9 @@
         .is-os .total-container { background: #065f46 !important; border-color: rgba(16, 185, 129, 0.3) !important; }
         body.light-mode.is-os .total-container { background: #1e40af !important; border-color: rgba(255,255,255,0.1) !important; }
 
-        /* AJUSTE COR GARANTIA PARA VERDE */
-        #label-prazo { background: #10b981 !important; }
+        /* AJUSTE DINÂMICO DA COR DA BADGE */
+        #label-prazo { background: #1e40af; transition: background 0.3s; }
+        .is-os #label-prazo { background: #10b981 !important; }
 
         .dark-input { background: var(--input-bg) !important; border: 1px solid var(--glass-border) !important; color: var(--input-text) !important; transition: all 0.3s ease; }
         .dark-input:focus { border-color: #3b82f6 !important; background: rgba(255, 255, 255, 0.08) !important; outline: none; }
@@ -229,7 +230,7 @@
                     </div>
                     <div class="relative pt-4">
                         <input type="number" id="inputGarantia" value="30" class="w-full p-4 rounded-2xl dark-input text-sm font-bold text-center" oninput="calcularDataFinal()">
-                        <span id="label-prazo" class="absolute -top-1 left-1/2 -translate-x-1/2 bg-blue-600 text-[8px] px-2 py-0.5 rounded text-white font-black uppercase shadow-lg">Vencimento</span>
+                        <span id="label-prazo" class="absolute -top-1 left-1/2 -translate-x-1/2 text-[8px] px-2 py-0.5 rounded text-white font-black uppercase shadow-lg">Vencimento</span>
                         <span class="absolute right-4 top-1/2 -translate-y-1/2 mt-2 text-[10px] text-white/20 font-black">DIAS</span>
                     </div>
                 </div>
@@ -287,14 +288,16 @@ function autoExpandir(textarea) {
 }
 
 function calcularDataFinal() {
-    if (localStorage.getItem('lock_dates') === 'true') return;
-    const dataInicioVal = document.getElementById('dataInicio').value;
-    const diasPrazo = parseInt(document.getElementById('inputGarantia').value) || 0;
-    const campoDataFinal = document.getElementById('dataPrazoFinal');
-    if (dataInicioVal) {
-        let data = new Date(dataInicioVal + 'T00:00:00');
-        data.setDate(data.getDate() + diasPrazo);
-        campoDataFinal.value = data.toISOString().split('T')[0];
+    // SE MODO ORÇAMENTO, CALCULA SEMPRE PELA SOMA INDEPENDENTE
+    if (!modoOS) {
+        const dataInicioVal = document.getElementById('dataInicio').value;
+        const diasPrazo = parseInt(document.getElementById('inputGarantia').value) || 0;
+        const campoDataFinal = document.getElementById('dataPrazoFinal');
+        if (dataInicioVal) {
+            let data = new Date(dataInicioVal + 'T00:00:00');
+            data.setDate(data.getDate() + diasPrazo);
+            campoDataFinal.value = data.toISOString().split('T')[0];
+        }
     }
 }
 
@@ -305,7 +308,6 @@ async function buscarDadosPlanilha() {
         renderizarDatalists();
         aplicarTextoPadrao();
         
-        // BUSCA ID SEQUENCIAL SEMPRE QUE CARREGAR E NÃO ESTIVER EDITANDO
         const respID = await fetch(URL_READ_ID);
         const dadosID = await respID.json();
         
@@ -479,9 +481,6 @@ function gerarDocumento() {
     const dataFim = document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/');
     const chavePix = (cacheDados.find(d => d.emp_pix) || {}).emp_pix || "[PIX]";
     
-    // COLETA SERVIÇOS E PREÇOS SEPARADOS POR | PARA ENVIO À PLANILHA
-    let servicosArrayPlanilha = [];
-    let valoresArrayPlanilha = [];
     let servicosTextoWpp = "";
     
     document.querySelectorAll('.service-card').forEach(card => {
@@ -489,8 +488,6 @@ function gerarDocumento() {
         const p = card.querySelector('.service-price').value;
         const q = card.querySelector('.service-qty').innerText;
         if(n && n !== "Selecionar Serviço") {
-            servicosArrayPlanilha.push(`${q}x ${n}`);
-            valoresArrayPlanilha.push(p);
             servicosTextoWpp += `• ${q}x ${n} - R$ ${p}\n`;
         }
     });
@@ -554,7 +551,12 @@ function alternarModo() {
     document.getElementById('btn-acao').innerHTML = modoOS ? 'Finalizar O.S <i class="fa-solid fa-check"></i>' : 'Gerar Orçamento <i class="fa-solid fa-arrow-right"></i>';
     document.getElementById('label-prazo').innerText = modoOS ? "Garantia" : "Vencimento";
     
-    // VENCIMENTO INDEPENDENTE - RECALCULA SEMPRE QUE ALTERA O MODO
+    // RECALCULA SEMPRE QUE ALTERA O MODO
+    if (modoOS) {
+        campoDataFinal.readOnly = false;
+    } else {
+        campoDataFinal.readOnly = true;
+    }
     calcularDataFinal();
     aplicarTextoPadrao();
 }
@@ -570,9 +572,10 @@ function verificarEdicao() {
     const dadosParaEditar = localStorage.getItem('editar_os_dados');
     if (dadosParaEditar) {
         const os = JSON.parse(dadosParaEditar);
-        localStorage.setItem('lock_dates', 'true');
         id_os_atual = (os.ID_OS || os.id_os || "---").toString().padStart(3, '0');
         document.getElementById('display-id').innerText = id_os_atual;
+        
+        // FORÇA MODO OS SE TIVER DADOS VINDO DO HISTÓRICO
         if (id_os_atual !== "---" && !modoOS) alternarModo();
         
         document.getElementById('nomeCliente').value = os.CLIENTE || "";
@@ -582,16 +585,21 @@ function verificarEdicao() {
         document.getElementById('enderecoCliente').value = os.ENDERECO || os.ENDEREÇO || "";
         document.getElementById('telCliente').value = os.CPF || os.TELEFONE || "";
         
+        // DATA INICIAL É A ÚNICA COMUM
         if (os.DATA_DO_SERVICO) document.getElementById('dataInicio').value = converterDataParaIso(os.DATA_DO_SERVICO);
         
-        // RESULTADO DA COLUNA L (TERMINO_SERVICO)
-        if (os.TERMINO_SERVICO) {
-            document.getElementById('dataPrazoFinal').value = converterDataParaIso(os.TERMINO_SERVICO);
-        } else if (os.DATA_FIM_GARANTIA) {
-            document.getElementById('dataPrazoFinal').value = converterDataParaIso(os.DATA_FIM_GARANTIA);
+        // NO MODO OS: USA AS DATAS DA PLANILHA
+        if (modoOS) {
+            if (os.TERMINO_SERVICO) {
+                document.getElementById('dataPrazoFinal').value = converterDataParaIso(os.TERMINO_SERVICO);
+            } else if (os.DATA_FIM_GARANTIA) {
+                document.getElementById('dataPrazoFinal').value = converterDataParaIso(os.DATA_FIM_GARANTIA);
+            }
+            if (os.GARANTIA_DIAS) document.getElementById('inputGarantia').value = os.GARANTIA_DIAS;
+        } else {
+            // NO MODO ORÇAMENTO: RECALCULA INDEPENDENTE
+            calcularDataFinal();
         }
-        
-        if (os.GARANTIA_DIAS) document.getElementById('inputGarantia').value = os.GARANTIA_DIAS;
 
         setTimeout(() => {
             document.getElementById('obsGeral').value = os.OSERVACAO || os.OBSERVACAO || ""; 
@@ -601,7 +609,6 @@ function verificarEdicao() {
         const container = document.getElementById('services-container');
         container.innerHTML = "";
         
-        // SEPARAÇÃO CIRÚRGICA DE SERVIÇOS E VALORES POR |
         const servicosTexto = (os["TIPO_DE_SERVICO"] || os["TIPO_DE_SERVIÇO"] || "").toString();
         const valoresTexto = (os["VALOR_TOTAL"] || "0,00").toString();
 
@@ -616,7 +623,6 @@ function verificarEdicao() {
                     qtd = parseInt(p[0]) || 1;
                     nome = p.slice(1).join('x ').trim();
                 }
-                // Atribui o valor correspondente ao índice ou o primeiro se não houver múltiplos
                 let valorIndiv = listaValores[index] ? listaValores[index].trim() : listaValores[0].trim();
                 adicionarServicoParaEdicao(nome, qtd, valorIndiv);
             }
@@ -625,7 +631,6 @@ function verificarEdicao() {
         atualizarSoma();
         localStorage.removeItem('editar_os_dados');
     } else {
-        localStorage.removeItem('lock_dates');
         if (document.getElementById('services-container').children.length === 0) adicionarServico();
     }
 }
