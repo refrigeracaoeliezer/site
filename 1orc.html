@@ -8,6 +8,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
     <style>
+        /* Estilos originais preservados */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
         body { background-color: #525659; display: flex; justify-content: center; padding: 20px 0; } 
 
@@ -71,10 +72,33 @@
         .linha-assinatura { border-top: 1px solid #333; margin-bottom: 5px; }
         #nome-assinatura-cliente { font-size: 16px; white-space: nowrap; }
 
+        /* Estilo da Notificação de Carregamento */
+        #loader-notificacao {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 40px 60px;
+            border-radius: 20px;
+            z-index: 20000;
+            text-align: center;
+            font-size: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
         @media print { .no-print { display: none !important; } }
     </style>
 </head>
 <body>
+
+    <div id="loader-notificacao">
+        <i class="fa-solid fa-sync fa-spin" style="font-size: 50px; margin-bottom: 15px;"></i><br>
+        Gerando PDF e Salvando Dados...<br>
+        <span style="font-size: 16px; opacity: 0.8;">Aguarde um momento.</span>
+    </div>
 
     <button class="btn-assinatura no-print" onclick="toggleAssinatura()" title="Alternar Assinatura">
         <i class="fa-solid fa-pen-nib"></i>
@@ -240,10 +264,15 @@ async function baixarPDF() {
     const dados = JSON.parse(localStorage.getItem('dados_impressao'));
     if (!dados) return;
 
-    const numCompletoHTML = document.getElementById('num-random').innerText;
-    const idApenasNumero = numCompletoHTML.split('/')[0]; // Pega apenas o número (ex: 003)
+    // Mostrar Notificação
+    const loader = document.getElementById('loader-notificacao');
+    const btnPdf = document.getElementById('btn-pdf');
+    loader.style.display = "block";
+    btnPdf.disabled = true; // Desabilita o botão para evitar duplo clique
 
-    // --- LÓGICA DE SALVAMENTO NA PLANILHA ---
+    const numCompletoHTML = document.getElementById('num-random').innerText;
+    const idApenasNumero = numCompletoHTML.split('/')[0];
+
     const servicosTexto = dados.itens.map(i => `${i.qtd}x ${i.descricao}`).join(' | ');
     const valoresIndividuaisTexto = dados.itens.map(i => i.valor).join(' | ');
     const dataInicio = dados.emissao; 
@@ -251,7 +280,6 @@ async function baixarPDF() {
     const dataFimValidade = calcularSomaData(dataInicio, diasValidade);
 
     const formData = new URLSearchParams();
-    // MODIFICAÇÃO: Salvando apenas o número (ex: 003) sem o ano
     formData.append('ID_OS', idApenasNumero); 
     formData.append('CLIENTE', "Orçamento | " + dados.cliente);
     formData.append('ENDERECO', dados.endereco);
@@ -264,6 +292,8 @@ async function baixarPDF() {
     formData.append('DATA_FIM_GARANTIA', dataFimValidade); 
     formData.append('OSERVACAO', dados.obs);
     formData.append('DIA', dados.validade); 
+    // Adicionado parâmetro para forçar inserção no final
+    formData.append('METODO', 'APPEND'); 
 
     try {
         await fetch(URL_SALVAR, { 
@@ -273,7 +303,6 @@ async function baixarPDF() {
         });
     } catch (e) { console.error("Erro ao salvar:", e); }
 
-    // --- GERAÇÃO DO PDF ---
     const element = document.getElementById('conteudo-pdf');
     const opt = {
         margin: [0, 0, 0, 0],
@@ -282,7 +311,12 @@ async function baixarPDF() {
         html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
-    html2pdf().set(opt).from(element).save();
+
+    // Gera o PDF e esconde a notificação ao finalizar
+    html2pdf().set(opt).from(element).save().then(() => {
+        loader.style.display = "none";
+        btnPdf.disabled = false;
+    });
 }
 
     window.onload = carregarPagina;
