@@ -47,15 +47,8 @@
         .status-badge { background: #3b82f6; color: white; padding: 5px 10px; border-radius: 5px; font-size: 10px; font-weight: 800; display: inline-block; margin-top: 5px; }
 
         .client-box { 
-            background: #f1f5f9; 
-            padding: 15px; 
-            border-radius: 5px; 
-            font-size: 13px; 
-            margin-bottom: 20px;
-            display: flex; 
-            justify-content: space-between;
-            border-left: 5px solid #1e40af; 
-            width: 100%;
+            background: #f1f5f9; padding: 15px; border-radius: 5px; font-size: 13px; margin-bottom: 20px;
+            display: flex; justify-content: space-between; border-left: 5px solid #1e40af; width: 100%;
         }
         
         .tabela-container { width: 100%; margin-bottom: 20px; }
@@ -69,26 +62,14 @@
         .obs-section { 
             background: #eff6ff; padding: 15px; border: 1px solid #bfdbfe;
             border-radius: 5px; font-size: 13px; margin-bottom: 20px;
-            width: 100%;
-            overflow-wrap: break-word; 
+            width: 100%; overflow-wrap: break-word; 
         }
 
         footer { text-align: center; font-size: 11px; color: #777; border-top: 1px solid #eee; padding-top: 15px; width: 100%; margin-top: auto; }
 
-        .assinatura-cliente {
-            display: none; 
-            margin: 30px auto 0 auto;
-            text-align: center;
-            width: 450px; 
-        }
-        .linha-assinatura {
-            border-top: 1px solid #333;
-            margin-bottom: 5px;
-        }
-        #nome-assinatura-cliente {
-            font-size: 16px;
-            white-space: nowrap;
-        }
+        .assinatura-cliente { display: none; margin: 30px auto 0 auto; text-align: center; width: 450px; }
+        .linha-assinatura { border-top: 1px solid #333; margin-bottom: 5px; }
+        #nome-assinatura-cliente { font-size: 16px; white-space: nowrap; }
 
         @media print { .no-print { display: none !important; } }
     </style>
@@ -170,6 +151,7 @@
             <p>Após a aprovação, o prazo de execução será combinado conforme disponibilidade de peças e agenda.</p>
         </footer>
     </div>
+
 <script>
     const URL_BUSCA = "https://script.google.com/macros/s/AKfycbwsX8xUWHgb9PE9Nv6IvQbjB7VGQPfUQSbn6fZT1WQRk5IoQJMFAhleLHHpHSU9zHw49A/exec";
     const URL_SALVAR = "https://script.google.com/macros/s/AKfycbykJ7gl4J1Ez-GMhVYoeEd_ppVe6gPxg6IfdAHRDoTo7hUb-qJqOL0DOOTGgj8NMSm8Zw/exec";
@@ -186,15 +168,11 @@
             const partes = dataString.split('/');
             const data = new Date(partes[2], partes[1] - 1, partes[0]);
             data.setDate(data.getDate() + parseInt(dias));
-            
             const dd = String(data.getDate()).padStart(2, '0');
             const mm = String(data.getMonth() + 1).padStart(2, '0');
             const yyyy = data.getFullYear();
-            
             return `${dd}/${mm}/${yyyy}`;
-        } catch (e) {
-            return dataString;
-        }
+        } catch (e) { return dataString; }
     }
 
     async function carregarPagina() {
@@ -234,7 +212,7 @@
             dadosLocal.cpf = cpfFinal;
 
         } catch (e) { 
-            console.error("Erro ao buscar dados da planilha:", e);
+            console.error("Erro ao buscar dados:", e);
             if(!dadosLocal.id_os) document.getElementById('num-random').innerText = '001/' + new Date().getFullYear();
         }
 
@@ -255,7 +233,6 @@
                 corpo.innerHTML += `<tr><td>${i.descricao}</td><td style="text-align:center">${i.qtd}</td><td style="text-align:right">R$ ${vTotal}</td></tr>`;
             });
         }
-
         localStorage.setItem('dados_impressao', JSON.stringify(dadosLocal));
     }
 
@@ -263,8 +240,40 @@ async function baixarPDF() {
     const dados = JSON.parse(localStorage.getItem('dados_impressao'));
     if (!dados) return;
 
-    const idNomeArquivo = document.getElementById('num-random').innerText.split('/')[0];
-    
+    const numRandomText = document.getElementById('num-random').innerText;
+    const idNomeArquivo = numRandomText.split('/')[0];
+
+    // --- LÓGICA DE SALVAMENTO NA PLANILHA ---
+    const servicosTexto = dados.itens.map(i => `${i.qtd}x ${i.descricao}`).join(' | ');
+    const valoresIndividuaisTexto = dados.itens.map(i => i.valor).join(' | ');
+    const dataInicio = dados.emissao; 
+    const diasValidade = dados.garantia || "7"; 
+    const dataFimValidade = calcularSomaData(dataInicio, diasValidade);
+
+    const formData = new URLSearchParams();
+    formData.append('ID_OS', numRandomText);
+    // MODIFICAÇÃO SOLICITADA: Adicionando prefixo "Orçamento | " antes do nome do cliente
+    formData.append('CLIENTE', "Orçamento | " + dados.cliente);
+    formData.append('ENDERECO', dados.endereco);
+    formData.append('CPF', dados.cpf);
+    formData.append('DATA_DO_SERVICO', dataInicio);
+    formData.append('TIPO_DE_SERVICO', servicosTexto);
+    formData.append('TECNICO_RESPONSVEL', document.getElementById('view-resp-tecnico').innerText);
+    formData.append('VALOR_TOTAL', valoresIndividuaisTexto);
+    formData.append('GARANTIA_DIAS', diasValidade);
+    formData.append('DATA_FIM_GARANTIA', dataFimValidade); 
+    formData.append('OSERVACAO', dados.obs);
+    formData.append('DIA', dados.validade); 
+
+    try {
+        await fetch(URL_SALVAR, { 
+            method: 'POST', 
+            mode: 'no-cors', 
+            body: formData 
+        });
+    } catch (e) { console.error("Erro ao salvar:", e); }
+
+    // --- GERAÇÃO DO PDF ---
     const element = document.getElementById('conteudo-pdf');
     const opt = {
         margin: [0, 0, 0, 0],
@@ -273,7 +282,6 @@ async function baixarPDF() {
         html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
-    
     html2pdf().set(opt).from(element).save();
 }
 
