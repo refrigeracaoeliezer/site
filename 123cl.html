@@ -132,20 +132,32 @@
         } catch(e) { return 30; }
     }
 
-    function editarServico(dadosString) {
-        const os = JSON.parse(decodeURIComponent(dadosString));
+   
+
+
+
+function editarServico(dadosString) {
+    const os = JSON.parse(decodeURIComponent(dadosString));
+    
+    const pacoteCompleto = { 
+        ...os, 
+        // Coluna I (Garantia) enviando explicitamente
+        "GARANTIA_DIAS": os["GARANTIA_DIAS"] || os["DIA"] || 30,
+        // Coluna L (Termino) enviando como DATA_FIM_GARANTIA para o outro HTML ler
+        "DATA_FIM_GARANTIA": os["DIA"] || os["DATA_FIM_GARANTIA"],
+        // Coluna H (Valor Total)
+        "VALOR_TOTAL": os["VALOR_TOTAL"] || "0,00"
+    };
+    
+    localStorage.setItem('editar_os_dados', JSON.stringify(pacoteCompleto));
+    window.location.href = "12os.html"; 
+}
+
+
+
+
+
         
-        const pacoteCompleto = { 
-            ...os, 
-            // Garante que o número de dias da Coluna I seja enviado
-            "GARANTIA_DIAS": os["GARANTIA_DIAS"] || os["DIA"] || 30,
-            // Garante que a data da Coluna L seja enviada com o nome que o outro HTML entende
-            "DATA_FIM_GARANTIA": os["DIA"] || os["DATA_FIM_GARANTIA"]
-        };
-        
-        localStorage.setItem('editar_os_dados', JSON.stringify(pacoteCompleto));
-        window.location.href = "12os.html"; 
-    }
 
     async function excluirOS(id) {
         if (!confirm(`Tem certeza que deseja excluir a OS #${id}?`)) return;
