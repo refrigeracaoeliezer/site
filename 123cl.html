@@ -80,7 +80,7 @@
     </div>
 
     <script>
-    const URL_DATABASE = "https://script.google.com/macros/s/AKfycbykJ7gl4J1Ez-GMhVYoeEd_ppVe6gPxg6IfdAHRDoTo7hUb-qJqOL0DOOTGgj8NMSm8Zw/exec";
+    const URL_DATABASE = "https://script.google.com/macros/s/AKfycbwvLFSNOcs9s8ZFWKHJRXCFapqbBRQI3exLkD0yV74z0m98o2mXQEfRcy_w6WQ4jZYj/exec";
 
     function toggleTheme() {
         const body = document.body;
@@ -136,16 +136,18 @@
 
 
 
+// Localize a função editarServico no seu HTML de Dashboard e substitua por esta:
 function editarServico(dadosString) {
     const os = JSON.parse(decodeURIComponent(dadosString));
     
+    // Mapeamento rigoroso para a ponte entre HTMLs
     const pacoteCompleto = { 
         ...os, 
-        // Coluna I (Garantia) enviando explicitamente
-        "GARANTIA_DIAS": os["GARANTIA_DIAS"] || os["DIA"] || 30,
-        // Coluna L (Termino) enviando como DATA_FIM_GARANTIA para o outro HTML ler
-        "DATA_FIM_GARANTIA": os["DIA"] || os["DATA_FIM_GARANTIA"],
-        // Coluna H (Valor Total)
+        // Coluna I da planilha
+        "GARANTIA_DIAS": os["GARANTIA_DIAS"] || 30,
+        // Coluna L da planilha (TERMINO_SERVICO) enviada como DATA_FIM_GARANTIA
+        "DATA_FIM_GARANTIA": os["TERMINO_SERVICO"] || os["DIA"] || os["DATA_FIM_GARANTIA"],
+        // Coluna H da planilha
         "VALOR_TOTAL": os["VALOR_TOTAL"] || "0,00"
     };
     
