@@ -413,11 +413,6 @@ function gerarHtmlServicos() {
     }).join('');
 }
 
-
-
-
-
-
 function adicionarServico() {
     const container = document.getElementById('services-container');
     const div = document.createElement('div');
@@ -450,12 +445,6 @@ function adicionarServico() {
         </div>`;
     container.appendChild(div);
 }
-
-
-
-
-
-    
 
 function alterarQtde(btn, delta) {
     const span = btn.parentElement.querySelector('.service-qty');
@@ -654,8 +643,6 @@ function verificarEdicao() {
         if (document.getElementById('services-container').children.length === 0) adicionarServico();
     }
 }
-
-// Localize a função adicionarServicoParaEdicao e substitua por esta:
 
 function adicionarServicoParaEdicao(nome, qtd, valorIndividual) {
     adicionarServico();
