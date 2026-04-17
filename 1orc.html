@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8"> 
-    <meta name="viewport" content="width=1024"> 
+    <meta name="viewport" content="width=1024">
     <title>Orçamento Profissional</title> 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script> 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -240,8 +240,8 @@ async function baixarPDF() {
     const dados = JSON.parse(localStorage.getItem('dados_impressao'));
     if (!dados) return;
 
-    const numRandomText = document.getElementById('num-random').innerText;
-    const idNomeArquivo = numRandomText.split('/')[0];
+    const numCompletoHTML = document.getElementById('num-random').innerText;
+    const idApenasNumero = numCompletoHTML.split('/')[0]; // Pega apenas o número (ex: 003)
 
     // --- LÓGICA DE SALVAMENTO NA PLANILHA ---
     const servicosTexto = dados.itens.map(i => `${i.qtd}x ${i.descricao}`).join(' | ');
@@ -251,8 +251,8 @@ async function baixarPDF() {
     const dataFimValidade = calcularSomaData(dataInicio, diasValidade);
 
     const formData = new URLSearchParams();
-    formData.append('ID_OS', numRandomText);
-    // MODIFICAÇÃO SOLICITADA: Adicionando prefixo "Orçamento | " antes do nome do cliente
+    // MODIFICAÇÃO: Salvando apenas o número (ex: 003) sem o ano
+    formData.append('ID_OS', idApenasNumero); 
     formData.append('CLIENTE', "Orçamento | " + dados.cliente);
     formData.append('ENDERECO', dados.endereco);
     formData.append('CPF', dados.cpf);
@@ -277,7 +277,7 @@ async function baixarPDF() {
     const element = document.getElementById('conteudo-pdf');
     const opt = {
         margin: [0, 0, 0, 0],
-        filename: `Orcamento_${idNomeArquivo}_${dados.cliente}.pdf`,
+        filename: `Orcamento_${idApenasNumero}_${dados.cliente}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
