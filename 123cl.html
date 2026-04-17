@@ -135,13 +135,12 @@
     function editarServico(dadosString) {
         const os = JSON.parse(decodeURIComponent(dadosString));
         
-        // Em vez de calcular, pegamos o valor direto da Coluna L (DIA) da planilha
-        // Usamos o mesmo nome de variável anterior para não quebrar as outras páginas
-        const diasDaColunaL = os["DIA"] || 90; // Se estiver vazio, assume 30 por segurança
-        
         const pacoteCompleto = { 
             ...os, 
-            "GARANTIA_DIAS_CALCULADOS": diasDaColunaL 
+            // Garante que o número de dias da Coluna I seja enviado
+            "GARANTIA_DIAS": os["GARANTIA_DIAS"] || os["DIA"] || 30,
+            // Garante que a data da Coluna L seja enviada com o nome que o outro HTML entende
+            "DATA_FIM_GARANTIA": os["DIA"] || os["DATA_FIM_GARANTIA"]
         };
         
         localStorage.setItem('editar_os_dados', JSON.stringify(pacoteCompleto));
