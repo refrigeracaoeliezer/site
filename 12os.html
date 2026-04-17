@@ -62,6 +62,7 @@
         .is-os .total-container { background: #065f46 !important; border-color: rgba(16, 185, 129, 0.3) !important; }
         body.light-mode.is-os .total-container { background: #1e40af !important; border-color: rgba(255,255,255,0.1) !important; }
 
+        /* AJUSTE DINÂMICO DA COR DA BADGE */
         #label-prazo { background: #1e40af; transition: background 0.3s; }
         .is-os #label-prazo { background: #10b981 !important; }
 
@@ -70,19 +71,7 @@
         .is-os .dark-input:focus { border-color: #10b981 !important; }
 
         .service-card { background: var(--card-sub); border-radius: 20px; padding: 15px; border: 1px solid var(--glass-border); display: flex; flex-direction: column; gap: 12px; }
-        .service-row-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; }
-        
-        /* ESTILO PARA TRAVAR O TEXTO DENTRO DA CAIXA */
-        .selected-text { 
-            color: var(--text-main) !important; 
-            opacity: 1 !important; 
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            display: block;
-            width: 100%;
-        }
-
+        .service-row-top { display: flex; align-items: center; gap: 10px; width: 100%; }
         .qty-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: var(--input-bg); color: #3b82f6; transition: 0.2s; border: 1px solid rgba(59, 130, 246, 0.2); }
         .is-os .qty-btn { color: #10b981 !important; border-color: rgba(16, 185, 129, 0.2) !important; }
         
@@ -113,6 +102,17 @@
         .is-searching .selected-text { display: none; }
         .search-input { background: transparent; border: none; color: inherit; width: 100%; outline: none; display: none; }
         .is-searching .search-input { display: block; }
+        
+       /* Localize a classe .selected-text e verifique se está assim: */
+.selected-text { 
+    color: var(--text-main) !important; 
+    opacity: 1 !important; 
+    overflow: hidden;      /* Esconde o texto que sobra */
+    text-overflow: ellipsis; /* Adiciona os "..." */
+    white-space: nowrap;   /* Impede o texto de pular linha */
+    display: block;
+    width: 100%;           /* Garante que ocupe apenas o espaço da caixa */
+}
 
         .total-container { background: var(--total-container-bg) !important; border: 1px solid rgba(255,255,255,0.1) !important; transition: all 0.4s ease; }
         
@@ -376,14 +376,8 @@ function selecionarItemDropdown(li, nome, valorExtra, tipo) {
     const wrapper = li.closest('.custom-dropdown');
     const display = wrapper.querySelector('.selected-text');
     const hiddenInput = wrapper.querySelector('input[type="hidden"]');
-    
-    let nomeLimpo = nome;
-    if (nomeLimpo.startsWith("Orçamento | ")) {
-        nomeLimpo = nomeLimpo.replace("Orçamento | ", "");
-    }
-
-    display.innerText = nomeLimpo;
-    hiddenInput.value = nomeLimpo;
+    display.innerText = nome;
+    hiddenInput.value = nome;
     if (tipo === 'servico') {
         const card = li.closest('.service-card');
         const precoInput = card.querySelector('.service-price');
@@ -407,9 +401,8 @@ function fecharTodosDropdowns() {
 
 function renderizarDatalists() {
     const clientes = [...new Set(cacheDados.map(d => d.cli_nome))].filter(Boolean);
-    document.getElementById('lista-clientes-custom').innerHTML = clientes.map(n => {
-        return `<li class="dropdown-item" onclick="selecionarItemDropdown(this, '${n}', '', 'cliente')">${n}</li>`;
-    }).join('');
+    document.getElementById('lista-clientes-custom').innerHTML = clientes.map(n => 
+        `<li class="dropdown-item" onclick="selecionarItemDropdown(this, '${n}', '', 'cliente')">${n}</li>`).join('');
     const dadosEmp = cacheDados.find(d => d.emp_nome);
     if(dadosEmp) document.getElementById('nomePrestador').value = dadosEmp.emp_nome;
 }
@@ -437,7 +430,7 @@ function adicionarServico() {
                 <ul class="dropdown-list">${gerarHtmlServicos()}</ul>
                 <input type="hidden" class="service-name">
             </div>
-            <button onclick="this.closest('.service-card').remove(); atualizarSoma();" class="text-red-500 p-2 flex-shrink-0">
+            <button onclick="this.closest('.service-card').remove(); atualizarSoma();" class="text-red-500 p-2">
                 <i class="fa-solid fa-trash-can"></i>
             </button>
         </div>
@@ -599,14 +592,9 @@ function verificarEdicao() {
         
         if (id_os_atual !== "---" && !modoOS) alternarModo();
         
-        let clienteLimpo = os.CLIENTE || "";
-        if (clienteLimpo.startsWith("Orçamento | ")) {
-            clienteLimpo = clienteLimpo.replace("Orçamento | ", "");
-        }
-
-        document.getElementById('nomeCliente').value = clienteLimpo;
+        document.getElementById('nomeCliente').value = os.CLIENTE || "";
         const displayCli = document.querySelector('#dropdown-cliente .selected-text');
-        if(displayCli) displayCli.innerText = clienteLimpo || "Selecionar Cliente";
+        if(displayCli) displayCli.innerText = os.CLIENTE || "Selecionar Cliente";
         
         document.getElementById('enderecoCliente').value = os.ENDERECO || os.ENDEREÇO || "";
         document.getElementById('telCliente').value = os.CPF || os.TELEFONE || "";
@@ -658,6 +646,8 @@ function verificarEdicao() {
     }
 }
 
+// Localize a função adicionarServicoParaEdicao e substitua por esta:
+
 function adicionarServicoParaEdicao(nome, qtd, valorIndividual) {
     adicionarServico();
     const cards = document.querySelectorAll('.service-card');
@@ -667,9 +657,13 @@ function adicionarServicoParaEdicao(nome, qtd, valorIndividual) {
     ultimoCard.querySelector('.service-qty').innerText = qtd;
     const precoInput = ultimoCard.querySelector('.service-price');
     
+    // Limpa o texto vindo da planilha
     let valorLimpo = valorIndividual.replace("R$", "").trim();
 
+    // Lógica para acrescentar centavos se o valor for "inteiro" (sem separador decimal)
+    // Se não tem vírgula e não tem ponto, tratamos como valor real que precisa de centavos
     if (!valorLimpo.includes(',') && !valorLimpo.includes('.')) {
+        // Multiplicamos por 100 para que a função formatarMoeda entenda como valor inteiro com centavos .00
         valorLimpo = (parseFloat(valorLimpo) * 100).toString();
     }
 
