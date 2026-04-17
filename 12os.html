@@ -559,7 +559,6 @@ function aplicarTextoPadrao() {
 
 
     
-// Localize a função verificarEdicao no seu HTML de Orçamento Profissional e substitua por esta:
 function verificarEdicao() {
     const dadosParaEditar = localStorage.getItem('editar_os_dados');
     if (dadosParaEditar) {
@@ -576,14 +575,12 @@ function verificarEdicao() {
         document.getElementById('enderecoCliente').value = os.ENDERECO || os.ENDEREÇO || "";
         document.getElementById('telCliente').value = os.CPF || os.TELEFONE || "";
         
-        // Data de Início (Coluna E)
         if (os.DATA_DO_SERVICO) document.getElementById('dataInicio').value = converterDataParaIso(os.DATA_DO_SERVICO);
         
-        // Venc./Final - Recebe os dados da COLUNA L
-        const dataL = os.DATA_FIM_GARANTIA || os.TERMINO_SERVICO || os.DIA;
-        if (dataL) document.getElementById('dataPrazoFinal').value = converterDataParaIso(dataL);
+        // Preenche Vencimento com a Coluna L recebida
+        if (os.DATA_FIM_GARANTIA) document.getElementById('dataPrazoFinal').value = converterDataParaIso(os.DATA_FIM_GARANTIA);
         
-        // Garantia Dias - Recebe os dados da COLUNA I
+        // Preenche Dias com a Coluna I recebida
         if (os.GARANTIA_DIAS) document.getElementById('inputGarantia').value = os.GARANTIA_DIAS;
 
         setTimeout(() => {
@@ -591,10 +588,10 @@ function verificarEdicao() {
             autoExpandir(document.getElementById('obsGeral'));
         }, 300);
 
-        // Reconstrução dos Itens e Valores (COLUNA H)
         const container = document.getElementById('services-container');
         container.innerHTML = "";
         
+        // Reconstrói serviços usando a Coluna H (VALOR_TOTAL)
         const servicosTexto = (os["TIPO_DE_SERVICO"] || os["TIPO_DE_SERVIÇO"] || "").toString();
         const valoresTexto = (os["VALOR_TOTAL"] || "0,00").toString();
 
@@ -604,13 +601,11 @@ function verificarEdicao() {
         listaServicos.forEach((srvTexto, index) => {
             if (srvTexto.trim() !== "") {
                 let qtd = 1, nome = srvTexto.trim();
-                // Extrai quantidade se existir (ex: 1x Serviço)
                 if (nome.includes('x ')) {
                     const p = nome.split('x ');
                     qtd = parseInt(p[0]) || 1;
                     nome = p.slice(1).join('x ').trim();
                 }
-                // Pega o valor correspondente da Coluna H
                 let valorIndiv = listaValores[index] ? listaValores[index].trim() : listaValores[0];
                 adicionarServicoParaEdicao(nome, qtd, valorIndiv);
             }
