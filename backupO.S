@@ -3,7 +3,7 @@
 <head>
     <script>
     if (localStorage.getItem("inforos_logado") !== "true") { 
-        window.location.replace("https://refrigeracaoeliezer.github.io/site/");
+        window.location.replace("https://refrigeracaoeliezer.github.io/site/"); 
     }
     </script>
 
@@ -538,7 +538,7 @@ function baixarPDF() {
         }))
     };
     localStorage.setItem('dados_impressao', JSON.stringify(dados));
-    window.location.href = modoOS ? "imp.html" : "impressao.html";
+    window.location.href = modoOS ? "imp.html" : "1orc.html";
 }
 
 function alternarModo() {
@@ -636,6 +636,8 @@ function verificarEdicao() {
     }
 }
 
+// Localize a função adicionarServicoParaEdicao e substitua por esta:
+
 function adicionarServicoParaEdicao(nome, qtd, valorIndividual) {
     adicionarServico();
     const cards = document.querySelectorAll('.service-card');
@@ -644,7 +646,18 @@ function adicionarServicoParaEdicao(nome, qtd, valorIndividual) {
     ultimoCard.querySelector('.service-name').value = nome;
     ultimoCard.querySelector('.service-qty').innerText = qtd;
     const precoInput = ultimoCard.querySelector('.service-price');
-    precoInput.value = valorIndividual.replace("R$", "").trim();
+    
+    // Limpa o texto vindo da planilha
+    let valorLimpo = valorIndividual.replace("R$", "").trim();
+
+    // Lógica para acrescentar centavos se o valor for "inteiro" (sem separador decimal)
+    // Se não tem vírgula e não tem ponto, tratamos como valor real que precisa de centavos
+    if (!valorLimpo.includes(',') && !valorLimpo.includes('.')) {
+        // Multiplicamos por 100 para que a função formatarMoeda entenda como valor inteiro com centavos .00
+        valorLimpo = (parseFloat(valorLimpo) * 100).toString();
+    }
+
+    precoInput.value = valorLimpo;
     formatarMoeda(precoInput);
 }
 
