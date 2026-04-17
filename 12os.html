@@ -90,8 +90,17 @@
         .switch { position: relative; display: inline-block; width: 100%; height: 44px; background: var(--input-bg); border-radius: 15px; padding: 4px; border: 1px solid var(--glass-border); cursor: pointer; }
         .switch-bg { position: absolute; top: 4px; left: 4px; width: calc(50% - 4px); height: calc(100% - 8px); background: #1e40af; border-radius: 12px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1; }
         .switch-labels { position: relative; display: flex; height: 100%; z-index: 2; align-items: center; font-size: 11px; font-weight: 800; text-transform: uppercase; }
-        .switch-labels div { flex: 1; text-align: center; color: rgba(128,128,128,0.6); }
-        .active-label { color: white !important; }
+        ..switch-labels div { 
+    flex: 1; 
+    text-align: center; 
+    color: rgba(128,128,128,0.6); /* Cinza padrão */
+    transition: color 0.3s; /* Suaviza a troca */
+}
+
+/* Classe que define o texto como branco sólido */
+.active-label { 
+    color: white !important; 
+}
         .mode-os .switch-bg { left: 50%; background: #10b981; }
 
         .dropdown-list { position: absolute; left: 0; right: 0; top: 110%; background: var(--dropdown-bg); border: 1px solid var(--glass-border); border-radius: 20px; z-index: 50; max-height: 250px; overflow-y: auto; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
@@ -542,25 +551,37 @@ function baixarPDF() {
     window.location.href = modoOS ? "imp.html" : "impressao.html";
 }
 
-function alternarModo() {
-    modoOS = !modoOS;
-    const campoDataFinal = document.getElementById('dataPrazoFinal');
-    document.getElementById('toggleMode').classList.toggle('mode-os');
-    document.getElementById('card-principal').classList.toggle('is-os');
-    document.getElementById('sub-title').innerText = modoOS ? "Ordem de Serviço (OS)" : "Sistema de Orçamento";
-    document.getElementById('btn-acao').innerHTML = modoOS ? 'Finalizar O.S <i class="fa-solid fa-check"></i>' : 'Gerar Orçamento <i class="fa-solid fa-arrow-right"></i>';
-    document.getElementById('label-prazo').innerText = modoOS ? "Garantia" : "Vencimento";
+
+
+
+
+
+
+
+
+
     
-    // RECALCULA SEMPRE QUE ALTERA O MODO
+function alternarModo() {
+    modoOS = !modoOS; // Inverte o estado
+    const lblOrc = document.getElementById('lbl-orc');
+    const lblOs = document.getElementById('lbl-os');
+
     if (modoOS) {
-        campoDataFinal.readOnly = false;
+        // Se selecionou OS
+        lblOs.classList.add('active-label');    // Fica Branco
+        lblOrc.classList.remove('active-label'); // Volta a ser Cinza
     } else {
-        campoDataFinal.readOnly = true;
+        // Se selecionou Orçamento
+        lblOrc.classList.add('active-label');   // Fica Branco
+        lblOs.classList.remove('active-label');  // Volta a ser Cinza
     }
+    
     calcularDataFinal();
     aplicarTextoPadrao();
 }
 
+
+    
 function aplicarTextoPadrao() {
     if (localStorage.getItem('lock_dates') === 'true') return;
     const listaObs = cacheDados.map(d => d.txt_obs).filter(Boolean);
