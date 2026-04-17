@@ -307,7 +307,7 @@
         formData.append('DIA', dados.validade); 
 
         try {
-            await fetch(URL_SALVAR, { 
+            await fetch(URL_SALVAR, {  
                 method: 'POST', 
                 mode: 'no-cors', 
                 body: formData 
