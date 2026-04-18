@@ -11,6 +11,30 @@
     <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
     
     <style>
+
+/* Bloqueia a seleção de texto e o arraste de imagens */
+body {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Mantém os campos de texto funcionando (senão você não consegue digitar o login) */
+input, select, textarea {
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+    user-select: text !important;
+}
+
+/* Proteção extra para imagens */
+img {
+    pointer-events: none !important;
+    -webkit-user-drag: none !important;
+}
+
+        
         /* --- INICIO VARIÁVEIS DE TEMA --- */
         :root {
             --bg-body: #0d1117;
@@ -394,21 +418,7 @@ document.addEventListener('keydown', function(e) {
         alert('Cópia de conteúdo não permitida.');
     }
 });
-    /* Bloqueia a seleção de texto em todo o corpo do site */
-body {
-    -webkit-user-select: none; /* Safari */
-    -moz-user-select: none;    /* Firefox */
-    -ms-user-select: none;     /* IE10+/Edge */
-    user-select: none;         /* Padrão (Chrome, Opera, etc) */
-}
 
-/* Caso queira permitir seleção apenas em campos de input e select */
-input, select, textarea {
-    -webkit-user-select: text;
-    -moz-user-select: text;
-    -ms-user-select: text;
-    user-select: text;
-}
 </script>
     
 </body>
