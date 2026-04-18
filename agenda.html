@@ -235,7 +235,7 @@
                 return;
             }
 
-            container.innerHTML = dadosFiltrados.map((i, index) => {
+            container.innerHTML = dadosFiltrados.map((i) => {
                 const isConcluido = i.STATUS === 'concluido';
                 let obsPlanilha = i.DESCRICAO || i.OBSERVACAO || "";
                 
@@ -257,6 +257,9 @@
                     horaExibicao = horaExibicao.split('T')[1].substring(0,5);
                 }
 
+                // Criamos uma string segura para passar o objeto inteiro no onclick
+                const itemString = encodeURIComponent(JSON.stringify(i));
+
                 return `
                     <div class="glass-card p-5 relative ${isConcluido ? 'concluido' : ''}">
                         <div class="flex justify-between items-start mb-4">
@@ -268,7 +271,7 @@
                                 <p class="text-[11px] opacity-60 mt-1"><i class="fa-solid fa-location-dot mr-1"></i> ${i.ENDERECO}</p>
                             </div>
                             <div class="text-right flex flex-col items-end">
-                                <button onclick="prepararEdicao(${index})" class="mb-2 text-blue-500 opacity-60 hover:opacity-100 transition-all">
+                                <button onclick="prepararEdicao('${itemString}')" class="mb-2 text-blue-500 opacity-60 hover:opacity-100 transition-all">
                                     <i class="fa-solid fa-pen-to-square text-lg"></i>
                                 </button>
                                 <div class="bg-white/5 p-2 rounded-lg border border-white/5 min-w-[70px] text-center">
@@ -289,9 +292,10 @@
             }).join('');
         }
 
-        function prepararEdicao(idx) {
-            const item = agendaGlobal[idx];
+        function prepararEdicao(itemStringEncoded) {
+            const item = JSON.parse(decodeURIComponent(itemStringEncoded));
             document.getElementById('modalTitle').innerText = "Editar Visita";
+            
             document.getElementById('cliente').value = item.CLIENTE;
             document.getElementById('endereco').value = item.ENDERECO;
             
@@ -305,6 +309,7 @@
             }
             document.getElementById('descricao').value = obs;
 
+            // Tratamento da data para o input do tipo date (YYYY-MM-DD)
             const d = new Date(item.DATA_DO_SERVICO);
             if(!isNaN(d)) {
                 document.getElementById('data_visita').value = d.toISOString().split('T')[0];
@@ -314,6 +319,7 @@
             if(h.includes('T')) h = h.split('T')[1].substring(0,5);
             document.getElementById('hora_visita').value = h;
 
+            // O edit_id garante que o script saiba qual linha da planilha deve ser substituída
             document.getElementById('edit_id').value = item.CLIENTE; 
             document.getElementById('popupAgendar').style.display = 'block';
         }
@@ -348,14 +354,14 @@
             overlay.style.display = 'flex';
             document.getElementById('statusText').innerText = "Processando...";
 
-            // ENVIO ÀS CEGAS: Dispara e inicia feedback imediatamente
+            // ENVIO ÀS CEGAS
             fetch(URL_AGENDA, {
                 method: 'POST',
                 mode: 'no-cors',
                 body: JSON.stringify(payload)
             }).catch(err => console.log("Erro silencioso: ", err));
 
-            // Sequência de sucesso "às cegas"
+            // Sequência de sucesso imediato
             setTimeout(() => {
                 document.getElementById('statusText').innerText = "Sucesso!";
                 setTimeout(() => {
