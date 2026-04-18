@@ -36,8 +36,27 @@
         select option { background-color: #1a1f26; color: white; }
         body.light-mode select option { background-color: #ffffff; color: #1a1f26; }
 
-        #statusOverlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); border-radius: 25px; flex-direction: column; align-items: center; justify-content: center; z-index: 110; text-align: center; }
+/* Localize esta parte no seu CSS e adicione a regra abaixo */
+#statusOverlay { 
+    display: none; 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: rgba(0,0,0,0.9); 
+    border-radius: 25px; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; 
+    z-index: 110; 
+    text-align: center; 
+}
 
+/* ADICIONE ESTA REGRA LOGO ABAIXO */
+#statusText { 
+    white-space: nowrap; 
+}
         .theme-toggle, .delete-toggle { background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .delete-toggle { color: #ef4444; border-color: rgba(239, 68, 68, 0.2); }
         
@@ -345,7 +364,7 @@
                 data_servico: document.getElementById('data_visita').value.split('-').reverse().join('/'),
                 hora: document.getElementById('hora_visita').value
             };
-            enviarDados(payload, "Atualizando lista!");
+            enviarDados(payload, "Salvo com sucesso");
         };
 
         function enviarDados(payload, mensagemSucesso) {
