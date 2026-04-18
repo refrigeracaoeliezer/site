@@ -219,7 +219,18 @@
                 return true;
             });
 
-            dadosFiltrados.sort((a, b) => (a.STATUS === 'concluido') - (b.STATUS === 'concluido'));
+            // LÓGICA DE ORDENAÇÃO POR HORÁRIO (Mais cedo para mais tarde)
+            dadosFiltrados.sort((a, b) => {
+                // Se um estiver concluído e o outro não, o concluído vai para o final
+                if ((a.STATUS === 'concluido') !== (b.STATUS === 'concluido')) {
+                    return a.STATUS === 'concluido' ? 1 : -1;
+                }
+                
+                // Converte a string "HH:MM" para número para comparar
+                const horaA = (a.HORA || "00:00").split(':').join('');
+                const horaB = (b.HORA || "00:00").split(':').join('');
+                return parseInt(horaA) - parseInt(horaB);
+            });
 
             if(dadosFiltrados.length === 0) {
                 container.innerHTML = `<div class="text-center py-10 opacity-20 font-bold uppercase text-xs">Nenhum serviço encontrado</div>`;
@@ -244,10 +255,7 @@
                 const d = new Date(i.DATA_DO_SERVICO);
                 const dataFormatada = !isNaN(d) ? d.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric'}) : i.DATA_DO_SERVICO;
 
-                // Transmissão direta do valor da coluna E (HORA) sem tratamento de fuso horário
                 let horaExibicao = i.HORA || "--:--";
-                
-                // Se o Google Apps Script enviar como data ISO, pegamos apenas o horário
                 if(horaExibicao.toString().includes('T')) {
                     horaExibicao = horaExibicao.split('T')[1].substring(0,5);
                 }
