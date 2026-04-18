@@ -77,18 +77,12 @@
                 <input type="text" id="cliente" list="lista_clientes" required autocomplete="off">
                 <datalist id="lista_clientes"></datalist>
             </div>
-            <div class="flex gap-4">
-                <div class="input-group flex-1">
-                    <label>Telefone</label>
-                    <input type="text" id="telefone">
-                </div>
-                <div class="input-group flex-1">
-                    <label>Tipo</label>
-                    <select id="tipo">
-                        <option value="Serviço">Serviço</option>
-                        <option value="Orçamento">Orçamento</option>
-                    </select>
-                </div>
+            <div class="input-group">
+                <label>Tipo</label>
+                <select id="tipo">
+                    <option value="Serviço">Serviço</option>
+                    <option value="Orçamento">Orçamento</option>
+                </select>
             </div>
             <div class="input-group">
                 <label>Endereço</label>
@@ -179,7 +173,6 @@
                 document.getElementById('cliente').onchange = function() {
                     const cli = dados.find(x => x.cli_nome === this.value);
                     if(cli) {
-                        document.getElementById('telefone').value = cli.cli_doc || ""; 
                         document.getElementById('endereco').value = cli.cli_end || "";
                     }
                 };
@@ -235,11 +228,8 @@
 
             container.innerHTML = dadosFiltrados.map(i => {
                 const isConcluido = i.STATUS === 'concluido';
-                
-                // Puxa a observação da planilha
                 let obsPlanilha = i.DESCRICAO || i.OBSERVACAO || "";
                 
-                // Lógica para detectar tipo através da observação e limpar o texto para o site
                 let tipoReal = "Serviço";
                 if(obsPlanilha.startsWith("[Orçamento]")) {
                     tipoReal = "Orçamento";
@@ -254,8 +244,10 @@
                 const d = new Date(i.DATA_DO_SERVICO);
                 const dataFormatada = !isNaN(d) ? d.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric'}) : i.DATA_DO_SERVICO;
 
-                // Mostra a hora EXATA que está na coluna E (HORA) da planilha
+                // Transmissão direta do valor da coluna E (HORA) sem tratamento de fuso horário
                 let horaExibicao = i.HORA || "--:--";
+                
+                // Se o Google Apps Script enviar como data ISO, pegamos apenas o horário
                 if(horaExibicao.toString().includes('T')) {
                     horaExibicao = horaExibicao.split('T')[1].substring(0,5);
                 }
@@ -300,8 +292,6 @@
             const dataCorrigida = dataInput.split('-').reverse().join('/'); 
             const tipoSelecionado = document.getElementById('tipo').value;
             const obsOriginal = document.getElementById('descricao').value;
-
-            // Adiciona a marcação do tipo na observação para salvar na planilha
             const obsParaPlanilha = `[${tipoSelecionado}] ${obsOriginal}`;
 
             const payload = {
