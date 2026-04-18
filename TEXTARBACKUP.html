@@ -320,16 +320,16 @@
             document.getElementById('popupAgendar').style.display = 'block';
         }
 
-        async function concluirServico(cliente) {
-            var confirma = window.confirm("Deseja realmente marcar esta visita como CONCLUÍDA?");
-            if(confirma) {
+        function concluirServico(cliente) {
+            // Chamada explícita do confirm vinculada ao evento de clique
+            if (window.confirm("Deseja realmente marcar esta visita como CONCLUÍDA?")) {
                 enviarDados({ action: "concluir", cliente: cliente }, "Visita concluída com sucesso!");
             }
         }
 
-        async function limparConcluidos() {
-            var confirma = window.confirm("Deseja realmente EXCLUIR permanentemente todas as visitas concluídas?");
-            if(confirma) {
+        function limparConcluidos() {
+            // Chamada explícita do confirm vinculada ao evento de clique
+            if (window.confirm("Deseja realmente EXCLUIR permanentemente todas as visitas concluídas?")) {
                 enviarDados({ action: "limpar_concluidos" }, "Visitas concluídas excluídas com sucesso!");
             }
         }
