@@ -149,158 +149,7 @@
         });
 
         const URL_CLIENTES = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec";
-        const URL_AGENDA = "<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <link rel="icon" type="image/png" href="https://blogger.googleusercontent.com/img/a/AVvXsEjvyHVCZolj28lEOEFo6M63izh7RcOq9tc7jph7e_Or-jSWVQ5TjRb0hcc-168k9rTwL9XnC9FdUti7imfIyv6QTbWgHDZB7zroM2I3nvUK58Zf6_sARve9qfBkasedBGsBkLahFohBhq2fbLB-hPSlFVrk5haPLt0Uy2jDnTszkHq0Qn3NfzkmK8vhNLI=w104-h117">
-    <script>
-        if (localStorage.getItem("inforos_logado") !== "true") {
-            window.location.replace("https://refrigeracaoeliezer.github.io/site/");
-        }
-    </script>
-    <meta charset="UTF-8">
-    <title>Agenda de Serviços | Refrigeração</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
-    
-    <style>
-        body { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; font-family: 'Inter', sans-serif; transition: background 0.3s, color 0.3s; }
-        input, select, textarea { user-select: text !important; }
-        img { pointer-events: none !important; -webkit-user-drag: none !important; }
-
-        :root { --bg-body: #0d1117; --text-main: white; --glass-bg: rgba(255, 255, 255, 0.03); --glass-border: rgba(255, 255, 255, 0.1); }
-        body.light-mode { --bg-body: #f0f2f5; --text-main: #1a1f26; --glass-bg: rgba(255, 255, 255, 0.8); --glass-border: rgba(0, 0, 0, 0.1); }
-        body { background: var(--bg-body); color: var(--text-main); }
-
-        .glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 25px; transition: 0.3s; }
-        .glass-card.concluido { opacity: 0.4; filter: grayscale(1); }
-
-        #popupAgendar { background-color: var(--bg-body); color: var(--text-main); width: 95%; max-width: 450px; padding: 30px; border-radius: 25px; border: 1px solid var(--glass-border); box-shadow: 0 20px 50px rgba(0,0,0,0.7); display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 100; max-height: 90vh; overflow-y: auto; }
-        #popupAgendar h2 { margin-bottom: 20px; font-size: 20px; font-weight: 900; text-transform: uppercase; }
-
-        .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; font-size: 11px; opacity: 0.5; text-transform: uppercase; margin-bottom: 5px; font-weight: 700; }
-        .input-group input, .input-group select, .input-group textarea { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px; color: inherit; outline: none; }
-        
-        select option { background-color: #1a1f26; color: white; }
-        body.light-mode select option { background-color: #ffffff; color: #1a1f26; }
-
-        #statusOverlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); border-radius: 25px; flex-direction: column; align-items: center; justify-content: center; z-index: 110; text-align: center; }
-
-        .theme-toggle { background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        
-        .btn-flutuante { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: #2563eb; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(37, 99, 235, 0.4); cursor: pointer; z-index: 90; transition: 0.3s; }
-        .btn-flutuante:hover { transform: scale(1.1); }
-
-        .filter-btn { padding: 8px 16px; border-radius: 50px; font-size: 12px; font-weight: 700; text-transform: uppercase; border: 1px solid var(--glass-border); background: var(--glass-bg); opacity: 0.6; transition: 0.3s; }
-        .filter-btn.active { background: #2563eb; color: white; opacity: 1; border-color: #2563eb; }
-
-        .badge { padding: 4px 10px; border-radius: 6px; font-size: 9px; font-weight: 900; text-transform: uppercase; }
-        .badge-servico { background: rgba(37, 99, 235, 0.2); color: #3b82f6; border: 1px solid #3b82f6; }
-        .badge-orcamento { background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid #f59e0b; }
-
-        #toast-minimal { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #22c55e; color: white; padding: 12px 25px; border-radius: 50px; font-weight: 700; display: none; z-index: 10000; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
-    </style>
-</head>
-<body class="p-4 pb-24">
-
-    <div id="toast-minimal"><i class="fa-solid fa-check mr-2"></i> SALVO COM SUCESSO!</div>
-
-    <div onclick="abrirPopup()" class="btn-flutuante">
-        <i class="fa-solid fa-plus text-2xl"></i>
-    </div>
-
-    <div id="popupAgendar">
-        <span class="absolute top-6 right-6 cursor-pointer text-xl opacity-50" onclick="fecharPopup()">&times;</span>
-        <h2 id="modalTitle">Nova Visita</h2>
-        
-        <div id="statusOverlay">
-            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500 mb-4"></div>
-            <div id="statusText" class="font-black text-blue-500 uppercase tracking-widest">Salvando...</div>
-        </div>
-
-        <form id="formAgenda">
-            <input type="hidden" id="edit_id">
-            <div class="input-group">
-                <label>Cliente</label>
-                <input type="text" id="cliente" list="lista_clientes" required autocomplete="off">
-                <datalist id="lista_clientes"></datalist>
-            </div>
-            <div class="flex gap-4">
-                <div class="input-group flex-1">
-                    <label>Telefone</label>
-                    <input type="text" id="telefone">
-                </div>
-                <div class="input-group flex-1">
-                    <label>Tipo</label>
-                    <select id="tipo">
-                        <option value="Serviço">Serviço</option>
-                        <option value="Orçamento">Orçamento</option>
-                    </select>
-                </div>
-            </div>
-            <div class="input-group">
-                <label>Endereço</label>
-                <input type="text" id="endereco" required>
-            </div>
-            <div class="input-group">
-                <label>Descrição do Problema</label>
-                <textarea id="descricao" rows="3"></textarea>
-            </div>
-            <div class="flex gap-4">
-                <div class="input-group flex-1">
-                    <label>Data</label>
-                    <input type="date" id="data_visita" required>
-                </div>
-                <div class="input-group flex-1">
-                    <label>Hora</label>
-                    <input type="time" id="hora_visita" required>
-                </div>
-            </div>
-            <button type="submit" id="btnAgendar" class="w-full py-4 bg-blue-600 rounded-xl font-black uppercase text-sm">Confirmar Agendamento</button>
-        </form>
-    </div>
-
-    <div class="max-w-4xl mx-auto">
-        <header class="flex justify-between items-center mb-6">
-            <div>
-                <h1 class="text-xl font-black uppercase tracking-tighter">Agenda de <span class="text-blue-500">Serviços</span></h1>
-                <span class="text-[10px] opacity-40 font-bold uppercase tracking-widest">Refrigeração Eliezer</span>
-            </div>
-            <div class="flex gap-2">
-                <button onclick="toggleTheme()" class="theme-toggle"><i id="theme-icon" class="fa-solid fa-sun"></i></button>
-            </div>
-        </header>
-
-        <div class="flex gap-2 overflow-x-auto pb-4 no-scrollbar mb-4">
-            <button onclick="filtrar('dia')" id="f-dia" class="filter-btn active">Dia</button>
-            <button onclick="filtrar('semana')" id="f-semana" class="filter-btn">Semana</button>
-            <button onclick="filtrar('mes')" id="f-mes" class="filter-btn">Mês</button>
-            <button onclick="filtrar('todos')" id="f-todos" class="filter-btn">Todos</button>
-        </div>
-
-        <div class="relative mb-6">
-            <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 opacity-30 text-sm"></i>
-            <input type="text" id="buscaCliente" oninput="renderizarServicos()" placeholder="Buscar cliente..." class="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 outline-none focus:border-blue-500 transition-all text-sm">
-        </div>
-
-        <div id="container-historico" class="space-y-4">
-            <div class="text-center py-20 opacity-20 font-bold uppercase text-xs tracking-widest">Carregando serviços...</div>
-        </div>
-    </div>
-
-    <script>
-        document.addEventListener('contextmenu', e => e.preventDefault());
-        document.addEventListener('keydown', e => {
-            if ((e.ctrlKey && ['c', 'u', 's', 'p'].includes(e.key.toLowerCase())) || e.keyCode === 123) {
-                e.preventDefault();
-            }
-        });
-
-        const URL_CLIENTES = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec";
-        const URL_AGENDA = "https://script.google.com/macros/s/AKfycbwe8ePlBIo2872u4LVqhmCGnvXxswzPACZeggcbnrzKMiZ424qx4ygfzYS5wfN7zifs/exec";
+        const URL_AGENDA = "https://script.google.com/macros/s/AKfycbwqFX2y8ZA2_IBPFrfrjX54XHVhVIoPTpf2mK5BTNc2zS_o-xgUUuFD6_1IDwsSzLNJ/exec";
 
         let agendaGlobal = [];
         let filtroAtual = 'dia';
@@ -324,16 +173,20 @@
                 const res = await fetch(URL_CLIENTES);
                 const dados = await res.json();
                 const list = document.getElementById('lista_clientes');
-                list.innerHTML = dados.map(c => `<option value="${c.CLIENTE}">`).join('');
+                
+                // Filtra apenas registros que possuem nome de cliente
+                const clientesUnicos = [...new Set(dados.map(c => c.cli_nome))].filter(Boolean);
+                list.innerHTML = clientesUnicos.map(nome => `<option value="${nome}">`).join('');
                 
                 document.getElementById('cliente').onchange = function() {
-                    const cli = dados.find(x => x.CLIENTE === this.value);
+                    const cli = dados.find(x => x.cli_nome === this.value);
                     if(cli) {
-                        document.getElementById('telefone').value = cli.CPF || ""; 
-                        document.getElementById('endereco').value = cli.ENDERECO || "";
+                        // Mapeia os dados da planilha de configuração para os campos da agenda
+                        document.getElementById('telefone').value = cli.cli_doc || ""; 
+                        document.getElementById('endereco').value = cli.cli_end || "";
                     }
                 };
-            } catch (e) { console.error("Erro clientes"); }
+            } catch (e) { console.error("Erro ao carregar clientes da planilha de configuração"); }
         }
 
         async function carregarAgenda() {
@@ -360,7 +213,7 @@
             hoje.setHours(0,0,0,0);
 
             let dadosFiltrados = agendaGlobal.filter(i => {
-                const termoMatch = i.CLIENTE.toLowerCase().includes(busca);
+                const termoMatch = i.CLIENTE && i.CLIENTE.toLowerCase().includes(busca);
                 if(!termoMatch) return false;
                 if(filtroAtual === 'todos') return true;
 
@@ -446,173 +299,8 @@
 
             fetch(URL_AGENDA, {
                 method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(payload)
-            }).then(() => {
-                document.getElementById('statusText').innerText = "Sucesso!";
-                setTimeout(() => {
-                    overlay.style.display = 'none';
-                    fecharPopup();
-                    document.getElementById('toast-minimal').style.display = 'block';
-                    setTimeout(() => document.getElementById('toast-minimal').style.display = 'none', 3000);
-                    carregarAgenda();
-                }, 1500);
-            }).catch(() => {
-                overlay.style.display = 'none';
-                alert("Erro ao enviar dados.");
-            });
-        }
-
-        window.onload = () => { carregarAgenda(); carregarClientes(); };
-    </script>
-</body>
-</html>
-";
-
-        let agendaGlobal = [];
-        let filtroAtual = 'dia';
-
-        function toggleTheme() {
-            document.body.classList.toggle('light-mode');
-            const icon = document.getElementById('theme-icon');
-            icon.className = document.body.classList.contains('light-mode') ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
-        }
-
-        function abrirPopup() {
-            document.getElementById('modalTitle').innerText = "Nova Visita";
-            document.getElementById('popupAgendar').style.display = 'block';
-            carregarClientes();
-        }
-
-        function fecharPopup() { document.getElementById('popupAgendar').style.display = 'none'; }
-
-        async function carregarClientes() {
-            try {
-                const res = await fetch(URL_CLIENTES);
-                const dados = await res.json();
-                const list = document.getElementById('lista_clientes');
-                list.innerHTML = dados.map(c => `<option value="${c.CLIENTE}">`).join('');
-                
-                document.getElementById('cliente').onchange = function() {
-                    const cli = dados.find(x => x.CLIENTE === this.value);
-                    if(cli) {
-                        document.getElementById('telefone').value = cli.CPF || ""; 
-                        document.getElementById('endereco').value = cli.ENDERECO || "";
-                    }
-                };
-            } catch (e) { console.error("Erro clientes"); }
-        }
-
-        async function carregarAgenda() {
-            try {
-                const res = await fetch(URL_AGENDA);
-                agendaGlobal = await res.json();
-                renderizarServicos();
-            } catch (e) {
-                document.getElementById('container-historico').innerHTML = `<div class="text-center py-10 opacity-50 font-bold">ERRO AO CONECTAR</div>`;
-            }
-        }
-
-        function filtrar(tipo) {
-            filtroAtual = tipo;
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('f-' + tipo).classList.add('active');
-            renderizarServicos();
-        }
-
-        function renderizarServicos() {
-            const container = document.getElementById('container-historico');
-            const busca = document.getElementById('buscaCliente').value.toLowerCase();
-            const hoje = new Date();
-            hoje.setHours(0,0,0,0);
-
-            let dadosFiltrados = agendaGlobal.filter(i => {
-                const termoMatch = i.CLIENTE.toLowerCase().includes(busca);
-                if(!termoMatch) return false;
-                if(filtroAtual === 'todos') return true;
-
-                const dataServico = new Date(i.DATA_DO_SERVICO);
-                if(isNaN(dataServico)) return true;
-
-                if(filtroAtual === 'dia') return dataServico.toDateString() === hoje.toDateString();
-                if(filtroAtual === 'semana') {
-                    const diff = (dataServico - hoje) / (1000 * 60 * 60 * 24);
-                    return diff >= 0 && diff <= 7;
-                }
-                if(filtroAtual === 'mes') return dataServico.getMonth() === hoje.getMonth() && dataServico.getFullYear() === hoje.getFullYear();
-                return true;
-            });
-
-            dadosFiltrados.sort((a, b) => (a.STATUS === 'Concluído') - (b.STATUS === 'Concluído'));
-
-            if(dadosFiltrados.length === 0) {
-                container.innerHTML = `<div class="text-center py-10 opacity-20 font-bold uppercase text-xs">Nenhum serviço encontrado</div>`;
-                return;
-            }
-
-            container.innerHTML = dadosFiltrados.map(i => {
-                const isConcluido = i.STATUS === 'Concluído';
-                const badgeClass = i.TIPO_DE_SERVICO === 'Serviço' ? 'badge-servico' : 'badge-orcamento';
-                
-                const d = new Date(i.DATA_DO_SERVICO);
-                const dataFormatada = !isNaN(d) ? d.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric'}) : i.DATA_DO_SERVICO;
-
-                return `
-                    <div class="glass-card p-5 relative ${isConcluido ? 'concluido' : ''}">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="flex-1">
-                                <div class="flex items-center gap-2 mb-1">
-                                    <span class="badge ${badgeClass}">${i.TIPO_DE_SERVICO}</span>
-                                </div>
-                                <h2 class="text-base font-black leading-tight">${i.CLIENTE}</h2>
-                                <p class="text-[11px] opacity-60 mt-1"><i class="fa-solid fa-location-dot mr-1"></i> ${i.ENDERECO}</p>
-                            </div>
-                            <div class="text-right flex flex-col items-end">
-                                <div class="bg-white/5 p-2 rounded-lg border border-white/5 min-w-[70px] text-center">
-                                    <p class="text-[11px] font-black text-blue-500 leading-none">${dataFormatada}</p>
-                                    <p class="text-[13px] font-bold mt-1">${i.TERMINO_SERVICO || '--:--'}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bg-black/20 rounded-xl p-3 mb-4">
-                            <p class="text-xs italic opacity-80">${i.OBSERVACAO || 'Sem observações...'}</p>
-                        </div>
-                        <div class="flex gap-2">
-                            ${!isConcluido ? `
-                                <button onclick='concluirServico("${i.ID_OS}")' class="flex-1 py-3 bg-green-600/20 text-green-500 rounded-xl text-[10px] font-black uppercase hover:bg-green-600 hover:text-white transition-all">✓ Concluir</button>
-                            ` : `<div class="text-[10px] font-black text-green-500 uppercase"><i class="fa-solid fa-check-double mr-2"></i> Agendamento Finalizado</div>`}
-                        </div>
-                    </div>`;
-            }).join('');
-        }
-
-        async function concluirServico(id) {
-            if(!confirm("Deseja marcar este serviço como concluído?")) return;
-            enviarDados({ action: "concluir", id_os: id });
-        }
-
-        document.getElementById('formAgenda').onsubmit = function(e) {
-            e.preventDefault();
-            const payload = {
-                action: "cadastrar",
-                cliente: document.getElementById('cliente').value,
-                telefone: document.getElementById('telefone').value,
-                tipo: document.getElementById('tipo').value,
-                endereco: document.getElementById('endereco').value,
-                descricao: document.getElementById('descricao').value,
-                data_servico: document.getElementById('data_visita').value,
-                termino_servico: document.getElementById('hora_visita').value
-            };
-            enviarDados(payload);
-        };
-
-        function enviarDados(payload) {
-            const overlay = document.getElementById('statusOverlay');
-            overlay.style.display = 'flex';
-            document.getElementById('statusText').innerText = "Salvando...";
-
-            fetch(URL_AGENDA, {
-                method: 'POST',
+                // Removido no-cors para permitir leitura de resposta se necessário, 
+                // mantendo a compatibilidade com o seu script original.
                 mode: 'no-cors',
                 body: JSON.stringify(payload)
             }).then(() => {
