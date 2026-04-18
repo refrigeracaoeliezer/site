@@ -8,7 +8,7 @@
         }
     </script>
     <meta charset="UTF-8">
-    <title>Painel de Serviços | Refrigeração</title>
+    <title>Agenda de Serviços | Refrigeração</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -32,6 +32,10 @@
         .input-group { margin-bottom: 15px; }
         .input-group label { display: block; font-size: 11px; opacity: 0.5; text-transform: uppercase; margin-bottom: 5px; font-weight: 700; }
         .input-group input, .input-group select, .input-group textarea { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px; color: inherit; outline: none; }
+        
+        /* Ajuste cor select */
+        select option { background-color: #1a1f26; color: white; }
+        body.light-mode select option { background-color: #ffffff; color: #1a1f26; }
 
         #statusOverlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); border-radius: 25px; flex-direction: column; align-items: center; justify-content: center; z-index: 110; text-align: center; }
 
@@ -60,7 +64,7 @@
 
     <div id="popupAgendar">
         <span class="absolute top-6 right-6 cursor-pointer text-xl opacity-50" onclick="fecharPopup()">&times;</span>
-        <h2 id="modalTitle">Nova Visita</h2>
+        <h2 id="modalTitle">Agendar Visita</h2>
         
         <div id="statusOverlay">
             <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500 mb-4"></div>
@@ -105,7 +109,7 @@
                     <input type="time" id="hora_visita" required>
                 </div>
             </div>
-            <button type="submit" id="btnAgendar" class="w-full py-4 bg-blue-600 rounded-xl font-black uppercase text-sm shadow-lg shadow-blue-900/20">Confirmar Agendamento</button>
+            <button type="submit" id="btnAgendar" class="w-full py-4 bg-blue-600 rounded-xl font-black uppercase text-sm">Confirmar Agendamento</button>
         </form>
     </div>
 
@@ -138,7 +142,6 @@
     </div>
 
     <script>
-        // Bloqueios de segurança
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.addEventListener('keydown', e => {
             if ((e.ctrlKey && ['c', 'u', 's', 'p'].includes(e.key.toLowerCase())) || e.keyCode === 123) {
@@ -158,24 +161,8 @@
             icon.className = document.body.classList.contains('light-mode') ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
         }
 
-        function abrirPopup(editData = null) {
-            const form = document.getElementById('formAgenda');
-            form.reset();
-            document.getElementById('edit_id').value = "";
-            document.getElementById('modalTitle').innerText = editData ? "Editar Visita" : "Nova Visita";
-            
-            if(editData) {
-                document.getElementById('edit_id').value = editData.ID_OS;
-                document.getElementById('cliente').value = editData.CLIENTE;
-                document.getElementById('telefone').value = editData.TELEFONE || "";
-                document.getElementById('endereco').value = editData.ENDERECO;
-                document.getElementById('tipo').value = editData.TIPO_DE_SERVICO;
-                document.getElementById('descricao').value = editData.OBSERVACAO;
-                // Ajuste de data para o input date (YYYY-MM-DD)
-                if(editData.DATA_ISO) document.getElementById('data_visita').value = editData.DATA_ISO;
-                document.getElementById('hora_visita').value = editData.HORA || "";
-            }
-
+        function abrirPopup() {
+            document.getElementById('modalTitle').innerText = "Nova Visita";
             document.getElementById('popupAgendar').style.display = 'block';
             carregarClientes();
         }
@@ -196,7 +183,7 @@
                         document.getElementById('endereco').value = cli.ENDERECO || "";
                     }
                 };
-            } catch (e) { console.error("Erro ao carregar clientes"); }
+            } catch (e) { console.error("Erro clientes"); }
         }
 
         async function carregarAgenda() {
@@ -226,22 +213,17 @@
                 const termoMatch = i.CLIENTE.toLowerCase().includes(busca);
                 if(!termoMatch) return false;
                 if(filtroAtual === 'todos') return true;
-
-                // Tenta converter a data da planilha
                 const dataServico = new Date(i.DATA_DO_SERVICO);
                 if(isNaN(dataServico)) return true;
-
                 if(filtroAtual === 'dia') return dataServico.toDateString() === hoje.toDateString();
                 if(filtroAtual === 'semana') {
                     const diff = (dataServico - hoje) / (1000 * 60 * 60 * 24);
                     return diff >= 0 && diff <= 7;
                 }
                 if(filtroAtual === 'mes') return dataServico.getMonth() === hoje.getMonth() && dataServico.getFullYear() === hoje.getFullYear();
-                
                 return true;
             });
 
-            // Ordenação: Pendentes primeiro, depois por data
             dadosFiltrados.sort((a, b) => (a.STATUS === 'Concluído') - (b.STATUS === 'Concluído'));
 
             if(dadosFiltrados.length === 0) {
@@ -252,8 +234,6 @@
             container.innerHTML = dadosFiltrados.map(i => {
                 const isConcluido = i.STATUS === 'Concluído';
                 const badgeClass = i.TIPO_DE_SERVICO === 'Serviço' ? 'badge-servico' : 'badge-orcamento';
-                
-                // Formatação bonita da data
                 const d = new Date(i.DATA_DO_SERVICO);
                 const dataFormatada = !isNaN(d) ? d.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric'}) : i.DATA_DO_SERVICO;
 
@@ -263,7 +243,6 @@
                             <div class="flex-1">
                                 <div class="flex items-center gap-2 mb-1">
                                     <span class="badge ${badgeClass}">${i.TIPO_DE_SERVICO}</span>
-                                    <span class="text-[9px] font-black opacity-30">OS #${i.ID_OS}</span>
                                 </div>
                                 <h2 class="text-base font-black leading-tight">${i.CLIENTE}</h2>
                                 <p class="text-[11px] opacity-60 mt-1"><i class="fa-solid fa-location-dot mr-1"></i> ${i.ENDERECO}</p>
@@ -271,47 +250,38 @@
                             <div class="text-right flex flex-col items-end">
                                 <div class="bg-white/5 p-2 rounded-lg border border-white/5 min-w-[70px]">
                                     <p class="text-[11px] font-black text-blue-500 leading-none">${dataFormatada}</p>
-                                    <p class="text-[13px] font-bold mt-1">${i.HORA || '--:--'}</p>
+                                    <p class="text-[13px] font-bold mt-1">${i.TERMINO_SERVICO || '--:--'}</p>
                                 </div>
                             </div>
                         </div>
-
                         <div class="bg-black/20 rounded-xl p-3 mb-4">
                             <p class="text-xs italic opacity-80">${i.OBSERVACAO || 'Sem observações...'}</p>
                         </div>
-
                         <div class="flex gap-2">
                             ${!isConcluido ? `
-                                <button onclick='concluirServico("${i.ID_OS}")' class="flex-1 py-3 bg-green-600/20 text-green-500 rounded-xl text-[10px] font-black uppercase hover:bg-green-600 hover:text-white transition-all">
-                                    <i class="fa-solid fa-check mr-1"></i> Concluir
-                                </button>
-                                <button onclick='abrirPopup(${JSON.stringify(i).replace(/'/g, "&apos;")})' class="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center text-sm">
-                                    <i class="fa-solid fa-pen-to-square"></i>
-                                </button>
+                                <button onclick='concluirServico("${i.ID_OS}")' class="flex-1 py-3 bg-green-600/20 text-green-500 rounded-xl text-[10px] font-black uppercase hover:bg-green-600 hover:text-white transition-all">✓ Concluir</button>
                             ` : `<div class="text-[10px] font-black text-green-500 uppercase"><i class="fa-solid fa-check-double mr-2"></i> Serviço Finalizado</div>`}
                         </div>
-                    </div>
-                `;
+                    </div>`;
             }).join('');
         }
 
         async function concluirServico(id) {
-            if(!confirm("Deseja marcar este serviço como concluído?")) return;
+            if(!confirm("Deseja marcar como concluído?")) return;
             enviarDados({ action: "concluir", id_os: id });
         }
 
         document.getElementById('formAgenda').onsubmit = function(e) {
             e.preventDefault();
             const payload = {
-                action: document.getElementById('edit_id').value ? "editar" : "cadastrar",
-                id_os: document.getElementById('edit_id').value,
+                action: "cadastrar",
                 cliente: document.getElementById('cliente').value,
                 telefone: document.getElementById('telefone').value,
                 tipo: document.getElementById('tipo').value,
                 endereco: document.getElementById('endereco').value,
                 descricao: document.getElementById('descricao').value,
-                data: document.getElementById('data_visita').value,
-                hora: document.getElementById('hora_visita').value
+                data_servico: document.getElementById('data_visita').value,
+                termino_servico: document.getElementById('hora_visita').value
             };
             enviarDados(payload);
         };
@@ -321,33 +291,26 @@
             overlay.style.display = 'flex';
             document.getElementById('statusText').innerText = "Salvando...";
 
-            // Enviamos os dados sem esperar o retorno do JSON (para evitar erros de CORS/Response)
             fetch(URL_AGENDA, {
                 method: 'POST',
-                mode: 'no-cors', // Não espera resposta estruturada, apenas envia
+                mode: 'no-cors',
                 body: JSON.stringify(payload)
             }).then(() => {
-                // Sucesso "Cego": Como usamos no-cors, assumimos sucesso após o envio
                 document.getElementById('statusText').innerText = "Sucesso!";
-                showToast();
                 setTimeout(() => {
                     overlay.style.display = 'none';
                     fecharPopup();
-                    carregarAgenda(); // Recarrega a lista para atualizar
+                    document.getElementById('toast-minimal').style.display = 'block';
+                    setTimeout(() => document.getElementById('toast-minimal').style.display = 'none', 3000);
+                    carregarAgenda();
                 }, 1500);
             }).catch(() => {
-                alert("Erro ao enviar dados. Verifique sua conexão.");
+                alert("Erro de conexão.");
                 overlay.style.display = 'none';
             });
         }
 
-        function showToast() {
-            const t = document.getElementById('toast-minimal');
-            t.style.display = 'block';
-            setTimeout(() => t.style.display = 'none', 3000);
-        }
-
-        window.onload = () => carregarAgenda();
+        window.onload = () => { carregarAgenda(); carregarClientes(); };
     </script>
 </body>
 </html>
