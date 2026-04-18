@@ -1,379 +1,466 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="pt-br">
 <head>
-    <link rel="icon" type="image/png" href="https://blogger.googleusercontent.com/img/a/AVvXsEjvyHVCZolj28lEOEFo6M63izh7RcOq9tc7jph7e_Or-jSWVQ5TjRb0hcc-168k9rTwL9XnC9FdUti7imfIyv6QTbWgHDZB7zroM2I3nvUK58Zf6_sARve9qfBkasedBGsBkLahFohBhq2fbLB-hPSlFVrk5haPLt0Uy2jDnTszkHq0Qn3NfzkmK8vhNLI=w104-h117">
-    <script>
-        if (localStorage.getItem("inforos_logado") !== "true") {
-            window.location.replace("https://refrigeracaoeliezer.github.io/site/"); 
-        }
-    </script>
+     <link rel="icon" type="image/png" href="https://blogger.googleusercontent.com/img/a/AVvXsEjvyHVCZolj28lEOEFo6M63izh7RcOq9tc7jph7e_Or-jSWVQ5TjRb0hcc-168k9rTwL9XnC9FdUti7imfIyv6QTbWgHDZB7zroM2I3nvUK58Zf6_sARve9qfBkasedBGsBkLahFohBhq2fbLB-hPSlFVrk5haPLt0Uy2jDnTszkHq0Qn3NfzkmK8vhNLI=w104-h117">
+<link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0d1117">  
     <meta charset="UTF-8">
-    <title>Agenda de Serviços | Refrigeração</title>
+    <title>Login | Refrigeração</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
     
     <style>
-        body { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; font-family: 'Inter', sans-serif; transition: background 0.3s, color 0.3s; }
-        input, select, textarea { user-select: text !important; }
-        img { pointer-events: none !important; -webkit-user-drag: none !important; }
 
-        :root { --bg-body: #0d1117; --text-main: white; --glass-bg: rgba(255, 255, 255, 0.03); --glass-border: rgba(255, 255, 255, 0.1); --dropdown-bg: #161b22; }
-        body.light-mode { --bg-body: #f0f2f5; --text-main: #1a1f26; --glass-bg: rgba(255, 255, 255, 0.8); --glass-border: rgba(0, 0, 0, 0.1); --dropdown-bg: #ffffff; }
-        body { background: var(--bg-body); color: var(--text-main); }
+/* Bloqueia a seleção de texto e o arraste de imagens */
+body {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
 
-        .glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 25px; transition: 0.3s; }
-        .glass-card.concluido { opacity: 0.4; filter: grayscale(1); }
+/* Mantém os campos de texto funcionando (senão você não consegue digitar o login) */
+input, select, textarea {
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+    user-select: text !important;
+}
 
-        #popupAgendar { background-color: var(--bg-body); color: var(--text-main); width: 95%; max-width: 450px; padding: 30px; border-radius: 25px; border: 1px solid var(--glass-border); box-shadow: 0 20px 50px rgba(0,0,0,0.7); display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 100; max-height: 90vh; overflow-y: auto; }
-        #popupAgendar h2 { margin-bottom: 20px; font-size: 20px; font-weight: 900; text-transform: uppercase; }
+/* Proteção extra para imagens */
+img {
+    pointer-events: none !important;
+    -webkit-user-drag: none !important;
+}
 
-        .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; font-size: 11px; opacity: 0.5; text-transform: uppercase; margin-bottom: 5px; font-weight: 700; }
-        .input-group input, .input-group select, .input-group textarea { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px; color: inherit; outline: none; }
         
-        select option { background-color: #1a1f26; color: white; }
-        body.light-mode select option { background-color: #ffffff; color: #1a1f26; }
+        /* --- INICIO VARIÁVEIS DE TEMA --- */
+        :root {
+            --bg-body: #0d1117;
+            --text-main: white;
+            --glass-bg: rgba(255, 255, 255, 0.02);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --input-bg: rgba(255, 255, 255, 0.04);
+            --input-text: white;
+            --subtitle-color: rgba(255, 255, 255, 0.45);
+        }
 
-        #statusOverlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); border-radius: 25px; flex-direction: column; align-items: center; justify-content: center; z-index: 110; text-align: center; }
+        body.light-mode {
+            --bg-body: #f0f2f5;
+            --text-main: #1a1f26;
+            --glass-bg: rgba(255, 255, 255, 0.8);
+            --glass-border: rgba(0, 0, 0, 0.1);
+            --input-bg: rgba(0, 0, 0, 0.05);
+            --input-text: #1a1f26;
+            --subtitle-color: rgba(0, 0, 0, 0.6);
+        }
+        /* --- FIM VARIÁVEIS DE TEMA --- */
 
-        .theme-toggle, .delete-toggle { background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .delete-toggle { color: #ef4444; border-color: rgba(239, 68, 68, 0.2); }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-body); position: relative; overflow-x: hidden; padding: 20px; transition: background 0.3s, color 0.3s; }
         
-        .btn-flutuante { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: #2563eb; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(37, 99, 235, 0.4); cursor: pointer; z-index: 90; transition: 0.3s; }
-        .btn-flutuante:hover { transform: scale(1.1); }
+        /* Botão de Troca de Tema */
+        .theme-toggle { position: fixed; top: 20px; right: 20px; background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 100; }
 
-        .filter-btn { padding: 8px 16px; border-radius: 50px; font-size: 12px; font-weight: 700; text-transform: uppercase; border: 1px solid var(--glass-border); background: var(--glass-bg); opacity: 0.6; transition: 0.3s; }
-        .filter-btn.active { background: #2563eb; color: white; opacity: 1; border-color: #2563eb; }
+        .corner-ball { position: fixed; background: rgba(30, 64, 175, 0.05); border-radius: 50%; z-index: 1; pointer-events: none; filter: blur(80px); }
+        .ball-top-right { width: 550px; height: 550px; top: -200px; right: -150px; }
+        .ball-bottom-left { width: 450px; height: 450px; bottom: -150px; left: -150px; }
 
-        .badge { padding: 4px 10px; border-radius: 6px; font-size: 9px; font-weight: 900; text-transform: uppercase; }
-        .badge-servico { background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid #22c55e; }
-        .badge-orcamento { background: rgba(37, 99, 235, 0.2); color: #3b82f6; border: 1px solid #3b82f6; }
+        .hidden { display: none !important; }
+        
+        .login-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-top: 4px solid #1e40af; 
+            border-radius: 40px; 
+            padding: 40px 30px;
+            width: 100%;
+            max-width: 410px;
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); 
+            transition: all 0.3s ease;
+        }
 
-        #toast-minimal { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #22c55e; color: white; padding: 12px 25px; border-radius: 50px; font-weight: 700; display: none; z-index: 10000; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+        .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; border-color: #ff4b4b !important; }
 
-        .custom-dropdown { position: relative; }
-        .dropdown-list { position: absolute; left: 0; right: 0; top: 110%; background: var(--dropdown-bg); border: 1px solid var(--glass-border); border-radius: 15px; z-index: 50; max-height: 200px; overflow-y: auto; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        .dropdown-item { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--glass-border); transition: 0.2s; cursor: pointer; }
-        .dropdown-item:hover { background: #2563eb; color: white; }
+        .logo-container img { width: 100%; max-width: 220px; margin-bottom: 20px; }
+        h2 { color: var(--text-main); margin-bottom: 10px; font-size: 22px; }
+        p.subtitle { color: var(--subtitle-color); font-size: 13px; margin-bottom: 25px; }
+
+        input, select {
+            width: 100%; background: var(--input-bg) !important; border: 1px solid var(--glass-border) !important;
+            border-radius: 12px; padding: 14px; color: var(--input-text) !important; font-size: 14px; margin-bottom: 15px; outline: none; transition: 0.3s;
+        }
+        input:focus, select:focus { border-color: #1e40af !important; }
+
+        select option { background-color: var(--bg-body); color: var(--text-main); }
+
+        .btn-main {
+            width: 100%; padding: 16px; background: linear-gradient(135deg, #1e40af 0%, #27a9e3 100%);
+            border: none; border-radius: 12px; color: white; font-weight: 700; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s;
+        }
+
+        #toast-minimal {
+            position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: #27a9e3; color: white;
+            padding: 15px 30px; border-radius: 50px;
+            font-weight: 600; font-size: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: none; z-index: 10000;
+        }
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translate(-50%, -60%); }
+            20% { opacity: 1; transform: translate(-50%, -50%); }
+            80% { opacity: 1; transform: translate(-50%, -50%); }
+            100% { opacity: 0; transform: translate(-50%, -40%); }
+        }
+        .animate-toast { display: block !important; animation: fadeInOut 2s ease forwards; }
+
+        .auth-footer { margin-top: 25px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .link-auth { color: #27a9e3; cursor: pointer; font-size: 13px; text-decoration: none; }
+        .link-rec { color: #ff4b4b; }
+        .divider { width: 1px; height: 14px; background-color: var(--glass-border); display: inline-block; }
+
+        .status-msg { font-size: 12px; padding: 10px; border-radius: 10px; margin-bottom: 15px; display: none; }
+        .error-msg { background: rgba(255, 75, 75, 0.1); color: #ff4b4b; border: 1px solid rgba(255, 75, 75, 0.2); }
+        .result-box { margin-top: 15px; padding: 15px; background: rgba(39, 169, 227, 0.1); border: 1px dashed #27a9e3; color: #44ff44; font-weight: bold; border-radius: 12px; display: none; }
+
+        .footer-info {
+            width: 100%;
+            text-align: center;
+            color: var(--subtitle-color);
+            font-size: 10px;
+            z-index: 10;
+            margin-top: 25px;
+        }
+        .badge-teste {
+            display: inline-block;
+            padding: 5px 15px;
+            background: rgba(30, 64, 175, 0.1);
+            border: 1px solid #1e40af;
+            border-radius: 30px;
+            color: #27a9e3; 
+            font-weight: 700;
+            margin-bottom: 10px;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
     </style>
 </head>
-<body class="p-4 pb-24">
+<body>
 
-    <div id="toast-minimal"><i class="fa-solid fa-check mr-2"></i> SALVO COM SUCESSO!</div>
+    <button onclick="toggleTheme()" class="theme-toggle">
+        <i id="theme-icon" class="fa-solid fa-sun"></i>
+    </button>
 
-    <div onclick="abrirPopup()" class="btn-flutuante">
-        <i class="fa-solid fa-plus text-2xl"></i>
-    </div>
+    <div class="corner-ball ball-top-right"></div>
+    <div class="corner-ball ball-bottom-left"></div>
 
-    <div id="popupAgendar">
-        <span class="absolute top-6 right-6 cursor-pointer text-xl opacity-50" onclick="fecharPopup()">&times;</span>
-        <h2 id="modalTitle">Nova Visita</h2>
+    <div id="toast-minimal">Salvo com sucesso!</div>
+
+    <div class="login-card" id="card-login">
+        <div class="logo-container">
+            <img src="MINHALOGO">
+        </div>
+        <h2>Acessar Gestor</h2>
+        <p class="subtitle">Insira seus dados de acesso</p>
+        <div id="login-status" class="status-msg error-msg"></div>
+        <input type="email" id="l_email" placeholder="E-mail">
+        <input type="password" id="l_pass" placeholder="Senha">
+        <button class="btn-main" onclick="realizarLogin()" id="btn-l">Autenticar</button>
         
-        <div id="statusOverlay">
-            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500 mb-4"></div>
-            <div id="statusText" class="font-black text-blue-500 uppercase tracking-widest">Salvando...</div>
-        </div>
-
-        <form id="formAgenda">
-            <input type="hidden" id="edit_id">
-            
-            <div class="input-group">
-                <label>Cliente</label>
-                <div class="custom-dropdown" id="dropdown-cliente">
-                    <div class="w-full bg-white/5 border border-white/10 rounded-xl p-3 flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
-                        <span class="selected-text truncate">Selecionar Cliente</span>
-                        <i class="fa-solid fa-chevron-down opacity-30 text-[10px]"></i>
-                    </div>
-                    <ul id="lista_clientes_custom" class="dropdown-list"></ul>
-                    <input type="hidden" id="cliente" required>
-                </div>
-            </div>
-
-            <div class="input-group">
-                <label>Tipo</label>
-                <select id="tipo">
-                    <option value="Serviço">Serviço</option>
-                    <option value="Orçamento">Orçamento</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label>Endereço</label>
-                <input type="text" id="endereco" required>
-            </div>
-            <div class="input-group">
-                <label>Descrição do Problema</label>
-                <textarea id="descricao" rows="3"></textarea>
-            </div>
-            <div class="flex gap-4">
-                <div class="input-group flex-1">
-                    <label>Data</label>
-                    <input type="date" id="data_visita" required>
-                </div>
-                <div class="input-group flex-1">
-                    <label>Hora</label>
-                    <input type="time" id="hora_visita" required>
-                </div>
-            </div>
-            <button type="submit" id="btnAgendar" class="w-full py-4 bg-blue-600 rounded-xl font-black uppercase text-sm">Confirmar Agendamento</button>
-        </form>
-    </div>
-
-    <div class="max-w-4xl mx-auto">
-        <header class="flex justify-between items-center mb-6">
-            <div>
-                <h1 class="text-xl font-black uppercase tracking-tighter">Agenda de <span class="text-blue-500">Serviços</span></h1>
-                <span class="text-[10px] opacity-40 font-bold uppercase tracking-widest">Refrigeração Eliezer</span>
-            </div>
-            <div class="flex gap-2">
-                <button onclick="limparConcluidos()" class="delete-toggle" title="Excluir Concluídos"><i class="fa-solid fa-trash-can"></i></button>
-                <button onclick="toggleTheme()" class="theme-toggle"><i id="theme-icon" class="fa-solid fa-sun"></i></button>
-            </div>
-        </header>
-
-        <div class="flex gap-2 overflow-x-auto pb-4 no-scrollbar mb-4">
-            <button onclick="filtrar('dia')" id="f-dia" class="filter-btn active">Dia</button>
-            <button onclick="filtrar('semana')" id="f-semana" class="filter-btn">Semana</button>
-            <button onclick="filtrar('mes')" id="f-mes" class="filter-btn">Mês</button>
-            <button onclick="filtrar('todos')" id="f-todos" class="filter-btn">Todos</button>
-        </div>
-
-        <div class="relative mb-6">
-            <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 opacity-30 text-sm"></i>
-            <input type="text" id="buscaCliente" oninput="renderizarServicos()" placeholder="Buscar cliente..." class="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 outline-none focus:border-blue-500 transition-all text-sm">
-        </div>
-
-        <div id="container-historico" class="space-y-4">
-            <div id="main-loader" class="flex flex-col items-center justify-center py-20">
-                <div class="animate-spin rounded-full h-12 w-12 border-4 border-white/5 border-t-blue-500 mb-4"></div>
-                <p class="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Buscando na Planilha...</p>
-            </div>
+        <div class="auth-footer">
+            <span class="link-auth" onclick="alternar('registrar')">Criar Conta</span>
+            <span class="divider"></span>
+            <span class="link-auth link-rec" onclick="alternar('recuperar')">Esqueci meus dados</span>
         </div>
     </div>
 
-    <script>
-        document.addEventListener('contextmenu', e => e.preventDefault());
-        document.addEventListener('keydown', e => {
-            if ((e.ctrlKey && ['c', 'u', 's', 'p'].includes(e.key.toLowerCase())) || e.keyCode === 123) {
-                e.preventDefault();
-            }
-        });
+    <div class="login-card hidden" id="card-registrar">
+        <i class="fa-solid fa-user-shield" id="icon-reg" style="font-size: 40px; color: #1e40af; margin-bottom: 20px;"></i>
+        <h2 id="title-reg">Nova Conta</h2>
+        <p class="subtitle" id="sub-reg">Preencha os dados abaixo</p>
+        <div id="reg-status" class="status-msg error-msg"></div>
+        
+        <input type="email" id="r_email" placeholder="E-mail do Novo Usuário">
+        <input type="password" id="r_pass" placeholder="Senha de Acesso">
+        <input type="text" id="r_resp_nova" placeholder="Defina SUA Palavra Secreta">
+        
+        <div id="container-admin-key" class="hidden">
+            <input type="password" id="r_admin_pass" placeholder="Palavra Secreta do ADMIN">
+        </div>
+        
+        <button class="btn-main" onclick="registrar()" id="btn-r">Salvar Registro</button>
+        <span class="link-auth" onclick="alternar('login')" style="margin-top:20px; display:block;">Voltar ao Login</span>
+    </div>
 
-        const URL_CLIENTES = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec";
-        const URL_AGENDA = "https://script.google.com/macros/s/AKfycbyqmJbv8q8KoT9GuprcH-Og3dS7reSWi3KgE9K4KexscVMFLXSTNUsfAculdR0qyn_0/exec";
+    <div class="login-card hidden" id="card-recuperar">
+        <i class="fa-solid fa-shield-halved" style="font-size: 40px; color: #27a9e3; margin-bottom: 20px;"></i>
+        <h2>Recuperar Acesso</h2>
+        <p class="subtitle">Verificação de segurança dupla</p>
+        <div id="rec-status" class="status-msg error-msg"></div>
+        <select id="tipo_rec" onchange="ajustarRec()">
+            <option value="email">Quero ver meu E-mail</option>
+            <option value="senha">Quero ver minha Senha</option>
+        </select>
+        <input type="password" id="rec_dado" placeholder="Confirme sua Senha">
+        <input type="text" id="rec_resp" placeholder="Sua Resposta Secreta">
+        <div id="rec-result" class="result-box"></div>
+        <button class="btn-main" onclick="recuperar()" id="btn-rec">Verificar Dados</button>
+        <span class="link-auth" onclick="alternar('login')" style="margin-top:20px; display:block;">Voltar ao Login</span>
+    </div>
 
-        let agendaGlobal = [];
-        let clientesCache = [];
-        let filtroAtual = 'dia';
+    <div class="footer-info">
+        <div class="badge-teste">Refrigeração Eliezer</div>
+        <p>&copy; <span id="anoAtual"></span> - Sistema de Gestão</p>
+    </div>
 
-        function toggleDropdown(el) {
-            const list = el.nextElementSibling;
-            const isVisible = list.style.display === 'block';
-            document.querySelectorAll('.dropdown-list').forEach(l => l.style.display = 'none');
-            if (!isVisible) {
-                list.style.display = 'block';
-            }
-        }
+<script>
 
-        function selecionarCliente(nome, endereco) {
-            document.querySelector('#dropdown-cliente .selected-text').innerText = nome;
-            document.getElementById('cliente').value = nome;
-            document.getElementById('endereco').value = endereco || "";
-            fecharDropdowns();
-        }
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('Service Worker registrado!', reg))
+      .catch(err => console.log('Erro ao registrar Service Worker', err));
+  }
 
-        function fecharDropdowns() {
-            document.querySelectorAll('.dropdown-list').forEach(l => l.style.display = 'none');
-        }
+  // --- LOGICA DE INDICAÇÃO DE DOWNLOAD (PWA) ---
+  let deferredPrompt;
 
-        window.onclick = (e) => { if (!e.target.closest('.custom-dropdown')) fecharDropdowns(); };
-
-        function toggleTheme() {
-            document.body.classList.toggle('light-mode');
-            const icon = document.getElementById('theme-icon');
-            icon.className = document.body.classList.contains('light-mode') ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
-        }
-
-        function abrirPopup() {
-            document.getElementById('modalTitle').innerText = "Nova Visita";
-            document.getElementById('formAgenda').reset();
-            document.querySelector('#dropdown-cliente .selected-text').innerText = "Selecionar Cliente";
-            document.getElementById('edit_id').value = "";
-            document.getElementById('popupAgendar').style.display = 'block';
-        }
-
-        function fecharPopup() { document.getElementById('popupAgendar').style.display = 'none'; }
-
-        async function carregarClientes() {
-            try {
-                const res = await fetch(URL_CLIENTES);
-                clientesCache = await res.json();
-                const list = document.getElementById('lista_clientes_custom');
-                const clientesUnicos = [...new Map(clientesCache.map(item => [item.cli_nome, item])).values()];
-                list.innerHTML = clientesUnicos.map(c => 
-                    `<li class="dropdown-item" onclick="selecionarCliente('${c.cli_nome}', '${c.cli_end || ''}')">${c.cli_nome}</li>`
-                ).join('');
-            } catch (e) { console.error("Erro ao carregar clientes"); }
-        }
-
-        async function carregarAgenda() {
-            document.getElementById('container-historico').innerHTML = `
-                <div class="flex flex-col items-center justify-center py-20">
-                    <div class="animate-spin rounded-full h-12 w-12 border-4 border-white/5 border-t-blue-500 mb-4"></div>
-                    <p class="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Buscando na Planilha...</p>
-                </div>`;
-            try {
-                const res = await fetch(URL_AGENDA);
-                agendaGlobal = await res.json();
-                renderizarServicos();
-            } catch (e) {
-                document.getElementById('container-historico').innerHTML = `<div class="text-center py-10 opacity-50 font-bold">ERRO AO CONECTAR</div>`;
-            }
-        }
-
-        function filtrar(tipo) {
-            filtroAtual = tipo;
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('f-' + tipo).classList.add('active');
-            renderizarServicos();
-        }
-
-        function renderizarServicos() {
-            const container = document.getElementById('container-historico');
-            const busca = document.getElementById('buscaCliente').value.toLowerCase();
-            const hoje = new Date();
-            hoje.setHours(0,0,0,0);
-
-            let dadosFiltrados = agendaGlobal.filter(i => {
-                const termoMatch = i.CLIENTE && i.CLIENTE.toString().toLowerCase().includes(busca);
-                if(!termoMatch) return false;
-                if(filtroAtual === 'todos') return true;
-                const dataServico = new Date(i.DATA_DO_SERVICO.split('T')[0] + 'T12:00:00');
-                if(isNaN(dataServico)) return true;
-                if(filtroAtual === 'dia') return dataServico.toLocaleDateString() === hoje.toLocaleDateString();
-                if(filtroAtual === 'semana') {
-                    const diff = (dataServico - hoje) / (1000 * 60 * 60 * 24);
-                    return diff >= 0 && diff <= 7;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    // Impede que o navegador mostre a barra automática para podermos controlar
+    e.preventDefault();
+    deferredPrompt = e;
+    
+    // Mostra um aviso ao usuário que ele pode instalar
+    showToast("Instale nosso Aplicativo para melhor experiência!");
+    
+    // Tenta disparar o prompt após o primeiro clique em qualquer lugar da tela
+    document.body.addEventListener('click', () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('Usuário aceitou a instalação');
                 }
-                if(filtroAtual === 'mes') return dataServico.getMonth() === hoje.getMonth() && dataServico.getFullYear() === hoje.getFullYear();
-                return true;
+                deferredPrompt = null;
             });
+        }
+    }, { once: true });
+  });
 
-            dadosFiltrados.sort((a, b) => {
-                if ((a.STATUS === 'concluido') !== (b.STATUS === 'concluido')) return a.STATUS === 'concluido' ? 1 : -1;
-                return parseInt((a.HORA || "00:00").replace(':','')) - parseInt((b.HORA || "00:00").replace(':',''));
-            });
+  // Verifica se já está rodando como aplicativo
+  window.addEventListener('DOMContentLoaded', () => {
+    const isApp = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    if (!isApp && !/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+        console.log("Navegador: Sugestão de instalação ativa.");
+    }
+  });
 
-            if(dadosFiltrados.length === 0) {
-                container.innerHTML = `<div class="text-center py-10 opacity-20 font-bold uppercase text-xs">Nenhum serviço encontrado</div>`;
-                return;
+
+  // BLOQUEIOS DE SEGURANÇA (JavaScript)
+  
+  // Bloqueia o clique com o botão direito
+  document.addEventListener('contextmenu', event => event.preventDefault());
+
+  // Bloqueia atalhos de teclado: Ctrl+C, Ctrl+U (Código Fonte), Ctrl+S (Salvar), Ctrl+P (Imprimir) e F12
+document.addEventListener('keydown', function(e) {
+    if (
+        (e.ctrlKey && (e.key === 'c' || e.key === 'u' || e.key === 's' || e.key === 'p')) || 
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j')) || 
+        (e.keyCode === 123) // Tecla F12
+    ) {
+        e.preventDefault();
+        alert('Ação protegida pelo sistema.');
+        return false;
+    }
+  });
+    
+    const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbxB94mCzlo1-ZG00QQKJzcZtlXG3nTSEX6t8gpLEuxlndbdwW07-6_D_2mBugxkKaQC/exec";
+    let sistemaVazio = false;
+
+    // --- FUNÇÕES DE TEMA ---
+    function toggleTheme() {
+        const body = document.body;
+        const icon = document.getElementById('theme-icon');
+        body.classList.toggle('light-mode');
+        
+        if (body.classList.contains('light-mode')) {
+            icon.classList.replace('fa-sun', 'fa-moon');
+            localStorage.setItem('theme', 'light');
+        } else {
+            icon.classList.replace('fa-moon', 'fa-sun');
+            localStorage.setItem('theme', 'dark');
+        }
+    }
+
+    document.getElementById("anoAtual").textContent = new Date().getFullYear();
+
+    window.onload = () => {
+        if(localStorage.getItem('theme') === 'light') toggleTheme();
+    };
+
+    async function checarSeVazio() {
+        try {
+            const resp = await fetch(`${URL_SCRIPT}?action=checar_vazio`);
+            const texto = await resp.text();
+            if(texto.trim() === "vazio") {
+                sistemaVazio = true;
+                $('#container-admin-key').addClass('hidden');
+                $('#sub-reg').text("Primeiro acesso: Defina os dados do Dono");
+                $('#icon-reg').removeClass('fa-user-shield').addClass('fa-user-tie');
+            } else {
+                sistemaVazio = false;
+                $('#container-admin-key').removeClass('hidden');
+                $('#sub-reg').text("Preencha os dados e valide com o Admin");
+                $('#icon-reg').removeClass('fa-user-tie').addClass('fa-user-shield');
             }
+        } catch(e) { console.log("Erro ao checar status"); }
+    }
 
-            container.innerHTML = dadosFiltrados.map((i) => {
-                const isConcluido = i.STATUS === 'concluido';
-                let obs = (i.DESCRICAO || i.OBSERVACAO || "").replace("[Orçamento]","").replace("[Serviço]","").trim();
-                let tipo = (i.DESCRICAO || "").includes("[Orçamento]") ? "Orçamento" : "Serviço";
-                const d = new Date(i.DATA_DO_SERVICO.split('T')[0] + 'T12:00:00');
-                const dataF = !isNaN(d) ? d.toLocaleDateString('pt-BR') : i.DATA_DO_SERVICO;
-                const hF = i.HORA && i.HORA.includes('T') ? i.HORA.split('T')[1].substring(0,5) : (i.HORA || "--:--");
-                const itemStr = encodeURIComponent(JSON.stringify(i));
+    function aplicarShake(idCard) {
+        const card = $(`#${idCard}`);
+        card.addClass('shake');
+        setTimeout(() => card.removeClass('shake'), 500);
+    }
 
-                return `
-                    <div class="glass-card p-5 relative ${isConcluido ? 'concluido' : ''}">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="flex-1">
-                                <span class="badge ${tipo === 'Serviço' ? 'badge-servico' : 'badge-orcamento'}">${tipo}</span>
-                                <h2 class="text-base font-black mt-2 leading-tight">${i.CLIENTE}</h2>
-                                <p class="text-[11px] opacity-60 mt-1"><i class="fa-solid fa-location-dot mr-1"></i> ${i.ENDERECO}</p>
-                            </div>
-                            <div class="text-right flex flex-col items-end">
-                                <button onclick="prepararEdicao('${itemStr}')" class="mb-2 text-blue-500 opacity-60 hover:opacity-100"><i class="fa-solid fa-pen-to-square text-lg"></i></button>
-                                <div class="bg-white/5 p-2 rounded-lg border border-white/5 text-center min-w-[70px]">
-                                    <p class="text-[11px] font-black text-blue-500">${dataF}</p>
-                                    <p class="text-[13px] font-bold">${hF}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bg-black/20 rounded-xl p-3 mb-4"><p class="text-xs italic opacity-80">${obs || 'Sem observações...'}</p></div>
-                        <div class="flex gap-2">
-                            ${!isConcluido ? `<button onclick='concluirServico("${i.CLIENTE}")' class="flex-1 py-3 bg-green-600/20 text-green-500 rounded-xl text-[10px] font-black uppercase">✓ Concluir</button>` : `<div class="text-[10px] font-black text-green-500 uppercase">✓ Finalizado</div>`}
-                        </div>
-                    </div>`;
-            }).join('');
+    function showToast(msg) {
+        const toast = $('#toast-minimal');
+        if(msg) toast.text(msg);
+        toast.addClass('animate-toast');
+        setTimeout(() => toast.removeClass('animate-toast'), 2000);
+    }
+
+    function alternar(tela) {
+        $('.login-card').addClass('hidden').removeClass('shake');
+        $('#card-' + tela).removeClass('hidden');
+        $('.status-msg, .result-box').hide().text('');
+        if(tela === 'registrar') checarSeVazio();
+    }
+
+    function ajustarRec() {
+        const tipo = $('#tipo_rec').val();
+        $('#rec_dado').val('').attr('placeholder', tipo === 'email' ? "Confirme sua Senha" : "Confirme seu E-mail");
+        $('#rec_dado').attr('type', tipo === 'email' ? "password" : "text");
+    }
+
+    async function realizarLogin() {
+        const email = $('#l_email').val();
+        const senha = $('#l_pass').val();
+        const btn = $('#btn-l');
+        const status = $('#login-status');
+        
+        if(!email || !senha) {
+            status.text("Preencha todos os campos!").show();
+            aplicarShake('card-login');
+            return;
         }
-
-        function prepararEdicao(itemEncoded) {
-            const item = JSON.parse(decodeURIComponent(itemEncoded));
-            document.getElementById('modalTitle').innerText = "Editar Visita";
-            document.getElementById('cliente').value = item.CLIENTE;
-            document.querySelector('#dropdown-cliente .selected-text').innerText = item.CLIENTE;
-            document.getElementById('endereco').value = item.ENDERECO;
-            document.getElementById('tipo').value = (item.DESCRICAO || "").includes("[Orçamento]") ? "Orçamento" : "Serviço";
-            document.getElementById('descricao').value = (item.DESCRICAO || "").replace("[Orçamento]","").replace("[Serviço]","").trim();
-            const d = new Date(item.DATA_DO_SERVICO);
-            if(!isNaN(d)) document.getElementById('data_visita').value = d.toISOString().split('T')[0];
-            let h = item.HORA || "";
-            if(h.includes('T')) h = h.split('T')[1].substring(0,5);
-            document.getElementById('hora_visita').value = h;
-            document.getElementById('edit_id').value = item.CLIENTE; 
-            document.getElementById('popupAgendar').style.display = 'block';
-        }
-
-        function concluirServico(cliente) {
-            // Chamada explícita do confirm vinculada ao evento de clique
-            if (window.confirm("Deseja realmente marcar esta visita como CONCLUÍDA?")) {
-                enviarDados({ action: "concluir", cliente: cliente }, "Visita concluída com sucesso!");
+        
+        btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i> Entrando...');
+        try {
+            const resp = await fetch(`${URL_SCRIPT}?action=login&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}`);
+            const texto = await resp.text();
+            if(texto.trim() === "success") {
+                localStorage.setItem("inforos_logado", "true");
+                window.location.href = "sistemas.html";
+            } else {
+                status.show().text("Dados incorretos!");
+                aplicarShake('card-login');
             }
+        } catch(e) { 
+            status.show().text("Erro de conexão.");
+            aplicarShake('card-login');
+        }
+        btn.prop('disabled', false).text("Autenticar");
+    }
+
+    async function registrar() {
+        const email = $('#r_email').val();
+        const senha = $('#r_pass').val();
+        const resp_nova = $('#r_resp_nova').val();
+        const admin_key = $('#r_admin_pass').val();
+        const btn = $('#btn-r');
+        const status = $('#reg-status');
+
+        if(!email || !senha || !resp_nova || (!sistemaVazio && !admin_key)) {
+            status.text("Preencha todos os campos!").show();
+            aplicarShake('card-registrar');
+            return;
         }
 
-        function limparConcluidos() {
-            // Chamada explícita do confirm vinculada ao evento de clique
-            if (window.confirm("Deseja realmente EXCLUIR permanentemente todas as visitas concluídas?")) {
-                enviarDados({ action: "limpar_concluidos" }, "Visitas concluídas excluídas com sucesso!");
+        btn.prop('disabled', true).text("Salvando...");
+        try {
+            const url = `${URL_SCRIPT}?action=registrar&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}&resposta=${encodeURIComponent(resp_nova)}&admin_key=${encodeURIComponent(admin_key || '')}`;
+            const resp = await fetch(url);
+            const texto = await resp.text();
+            
+            if(texto.trim() === "sucesso") {
+                showToast("Conta criada com sucesso!");
+                setTimeout(() => alternar('login'), 2000);
+            } else if(texto.trim() === "atualizado") {
+                showToast("Dados atualizados com sucesso!");
+                setTimeout(() => alternar('login'), 2000);
+            } else if(texto.trim() === "negado") {
+                status.text("Palavra do ADMIN incorreta! Autorização negada.").show();
+                aplicarShake('card-registrar');
+            } else {
+                status.text("Erro ao processar conta.").show();
+                aplicarShake('card-registrar');
             }
+        } catch(e) { 
+            status.text("Erro de conexão.").show();
+            aplicarShake('card-registrar');
         }
+        btn.prop('disabled', false).text("Salvar Registro");
+    }
 
-        document.getElementById('formAgenda').onsubmit = function(e) {
-            e.preventDefault();
-            const payload = {
-                action: "cadastrar",
-                edit_id: document.getElementById('edit_id').value, 
-                cliente: document.getElementById('cliente').value,
-                endereco: document.getElementById('endereco').value,
-                descricao: `[${document.getElementById('tipo').value}] ${document.getElementById('descricao').value}`,
-                data_servico: document.getElementById('data_visita').value.split('-').reverse().join('/'),
-                hora: document.getElementById('hora_visita').value
-            };
-            enviarDados(payload, "Agendamento salvo com sucesso!");
-        };
-
-        function enviarDados(payload, mensagemSucesso) {
-            const overlay = document.getElementById('statusOverlay');
-            overlay.style.display = 'flex';
-            document.getElementById('statusText').innerText = "Processando...";
-
-            fetch(URL_AGENDA, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-
-            setTimeout(() => {
-                document.getElementById('statusText').innerText = "Sucesso!";
-                setTimeout(() => {
-                    overlay.style.display = 'none';
-                    fecharPopup();
-                    
-                    const toast = document.getElementById('toast-minimal');
-                    toast.innerHTML = `<i class="fa-solid fa-check mr-2"></i> ${mensagemSucesso.toUpperCase()}`;
-                    toast.style.display = 'block';
-                    
-                    setTimeout(() => {
-                        toast.style.display = 'none';
-                        carregarAgenda(); 
-                    }, 1500);
-                }, 800);
-            }, 1000);
+    async function recuperar() {
+        const tipo = $('#tipo_rec').val();
+        const dado = $('#rec_dado').val();
+        const resp_sec = $('#rec_resp').val();
+        const btn = $('#btn-rec');
+        const status = $('#rec-status');
+        
+        if(!dado || !resp_sec) {
+            status.text("Preencha todos os campos!").show();
+            aplicarShake('card-recuperar');
+            return;
         }
+        
+        btn.prop('disabled', true).text("Validando...");
+        try {
+            const url = `${URL_SCRIPT}?action=recuperar&tipo=${tipo}&dado1=${encodeURIComponent(dado)}&resposta=${encodeURIComponent(resp_sec)}`;
+            const resText = await (await fetch(url)).text();
+            if(!resText.includes("ERRO")) {
+                $('#rec-result').show().text(resText);
+                status.hide();
+                showToast("Dados localizados!");
+            } else {
+                status.show().text("Dados incorretos!");
+                aplicarShake('card-recuperar');
+            }
+        } catch(e) { 
+            status.show().text("Erro na consulta.");
+            aplicarShake('card-recuperar');
+        }
+        btn.prop('disabled', false).text("Verificar Dados");
+    }
 
-        window.onload = () => { carregarAgenda(); carregarClientes(); };
-    </script>
+</script>
+    
 </body>
 </html>
