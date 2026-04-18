@@ -49,9 +49,11 @@
         .dropdown-item:hover { background: #ef4444; color: white; }
 
         .btn-flutuante { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: #ef4444; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 90; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
-        .theme-toggle { position: fixed; top: 20px; left: 20px; background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10001; }
         
-        .delete-btn { background: var(--glass-bg); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        /* Botões de Ação no Header (Tema e Lixeira) */
+        .header-action-btn { background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
+        .delete-btn-red { color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+
         #statusOverlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); border-radius: 25px; flex-direction: column; align-items: center; justify-content: center; z-index: 110; }
 
         #toast-minimal { 
@@ -78,10 +80,6 @@
     </style>
 </head>
 <body class="p-4 pb-24">
-
-    <button onclick="toggleTheme()" class="theme-toggle">
-        <i id="theme-icon" class="fa-solid fa-sun"></i>
-    </button>
 
     <div id="toast-minimal"><i class="fa-solid fa-check mr-2"></i> SALVO COM SUCESSO!</div>
 
@@ -124,17 +122,24 @@
     </div>
 
     <div class="max-w-4xl mx-auto">
-        <header class="flex justify-between items-center mb-8">
+        <header class="flex justify-between items-start mb-8">
             <div>
                 <h1 class="text-xl font-black uppercase tracking-tighter">Contas a <span class="text-red-500">Receber</span></h1>
                 <span class="text-[10px] opacity-40 font-bold uppercase tracking-widest">Gestão de Inadimplência</span>
             </div>
-            <div class="flex items-center gap-3">
-                <div class="text-right">
-                    <p class="text-[10px] opacity-50 font-black uppercase">Total Pendente</p>
-                    <p id="total-geral" class="text-2xl font-black text-red-500">R$ 0,00</p>
+            <div class="flex flex-col items-end gap-2">
+                <div class="flex items-center gap-3">
+                    <div class="text-right">
+                        <p class="text-[10px] opacity-50 font-black uppercase">Total Pendente</p>
+                        <p id="total-geral" class="text-2xl font-black text-red-500">R$ 0,00</p>
+                    </div>
+                    <button onclick="toggleTheme()" class="header-action-btn" title="Alternar Tema">
+                        <i id="theme-icon" class="fa-solid fa-sun"></i>
+                    </button>
                 </div>
-                <button onclick="limparPagos()" class="delete-btn" title="Excluir Pagos"><i class="fa-solid fa-trash-can"></i></button>
+                <button onclick="limparPagos()" class="header-action-btn delete-btn-red" title="Excluir Pagos">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
             </div>
         </header>
 
@@ -373,7 +378,6 @@
             enviarCego(payload);
         };
 
-        // Fechar dropdown ao clicar fora
         window.addEventListener('click', e => {
             if (!e.target.closest('#dropdown-cliente')) {
                 document.getElementById('lista_clientes_financeiro').style.display = 'none';
