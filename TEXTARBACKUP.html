@@ -1,313 +1,342 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
- <script>
-   <link rel="icon" type="image/png" href="https://blogger.googleusercontent.com/img/a/AVvXsEjvyHVCZolj28lEOEFo6M63izh7RcOq9tc7jph7e_Or-jSWVQ5TjRb0hcc-168k9rTwL9XnC9FdUti7imfIyv6QTbWgHDZB7zroM2I3nvUK58Zf6_sARve9qfBkasedBGsBkLahFohBhq2fbLB-hPSlFVrk5haPLt0Uy2jDnTszkHq0Qn3NfzkmK8vhNLI=w104-h117">
-    if (localStorage.getItem("inforos_logado") !== "true") {
-        window.location.replace("https://refrigeracaoeliezer.github.io/site/");
-    }
-</script>
-
+    <link rel="icon" type="image/png" href="https://blogger.googleusercontent.com/img/a/AVvXsEjvyHVCZolj28lEOEFo6M63izh7RcOq9tc7jph7e_Or-jSWVQ5TjRb0hcc-168k9rTwL9XnC9FdUti7imfIyv6QTbWgHDZB7zroM2I3nvUK58Zf6_sARve9qfBkasedBGsBkLahFohBhq2fbLB-hPSlFVrk5haPLt0Uy2jDnTszkHq0Qn3NfzkmK8vhNLI=w104-h117">
+    <script>
+        if (localStorage.getItem("inforos_logado") !== "true") {
+            window.location.replace("https://refrigeracaoeliezer.github.io/site/"); 
+        }
+    </script>
     <meta charset="UTF-8">
-    <title>Sistemas | Refrigeração</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda de Serviços | Refrigeração</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     
     <style>
+        body { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; font-family: 'Inter', sans-serif; transition: background 0.3s, color 0.3s; }
+        input, select, textarea { user-select: text !important; }
+        img { pointer-events: none !important; -webkit-user-drag: none !important; }
 
+        :root { --bg-body: #0d1117; --text-main: white; --glass-bg: rgba(255, 255, 255, 0.03); --glass-border: rgba(255, 255, 255, 0.1); }
+        body.light-mode { --bg-body: #f0f2f5; --text-main: #1a1f26; --glass-bg: rgba(255, 255, 255, 0.8); --glass-border: rgba(0, 0, 0, 0.1); }
+        body { background: var(--bg-body); color: var(--text-main); }
 
-/* Bloqueia a seleção de texto e o arraste de imagens */
-    body {
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-    }
+        .glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 25px; transition: 0.3s; }
+        .glass-card.concluido { opacity: 0.4; filter: grayscale(1); }
 
-    /* Mantém os campos de texto funcionando */
-    input, select, textarea {
-        -webkit-user-select: text !important;
-        -moz-user-select: text !important;
-        -ms-user-select: text !important;
-        user-select: text !important;
-    }
+        #popupAgendar { background-color: var(--bg-body); color: var(--text-main); width: 95%; max-width: 450px; padding: 30px; border-radius: 25px; border: 1px solid var(--glass-border); box-shadow: 0 20px 50px rgba(0,0,0,0.7); display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 100; max-height: 90vh; overflow-y: auto; }
+        #popupAgendar h2 { margin-bottom: 20px; font-size: 20px; font-weight: 900; text-transform: uppercase; }
 
-    /* Proteção extra para imagens */
-    img {
-        pointer-events: none !important;
-        -webkit-user-drag: none !important;
-    }
-     
-        /* --- INICIO VARIÁVEIS DE TEMA --- */
-        :root {
-            --bg-body: #0d1117;
-            --text-main: white;
-            --glass-bg: rgba(255, 255, 255, 0.02);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --btn-bg: rgba(255, 255, 255, 0.04);
-            --sub-text: rgba(255, 255, 255, 0.4);
-            --title-sub: rgba(255, 255, 255, 0.5);
-        }
-
-        body.light-mode {
-            --bg-body: #f0f2f5;
-            --text-main: #1a1f26;
-            --glass-bg: rgba(255, 255, 255, 0.8);
-            --glass-border: rgba(0, 0, 0, 0.1);
-            --btn-bg: rgba(0, 0, 0, 0.03);
-            --sub-text: rgba(0, 0, 0, 0.5);
-            --title-sub: rgba(0, 0, 0, 0.6);
-        }
-        /* --- FIM VARIÁVEIS DE TEMA --- */
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 11px; opacity: 0.5; text-transform: uppercase; margin-bottom: 5px; font-weight: 700; }
+        .input-group input, .input-group select, .input-group textarea { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px; color: inherit; outline: none; }
         
-        body {
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
-            display: flex;
-            align-items: center; 
-            justify-content: center; 
-            background: var(--bg-body);
-            position: relative;
-            overflow-x: hidden;
-            padding: 20px;
-            transition: background 0.3s, color 0.3s;
-        }
+        select option { background-color: #1a1f26; color: white; }
+        body.light-mode select option { background-color: #ffffff; color: #1a1f26; }
 
-        /* Botão de Troca de Tema */
-        .theme-toggle { position: fixed; top: 20px; right: 20px; background: var(--btn-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 100; }
+        #statusOverlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); border-radius: 25px; flex-direction: column; align-items: center; justify-content: center; z-index: 110; text-align: center; }
 
-        .corner-ball {
-            position: fixed;
-            background: rgba(30, 64, 175, 0.05);
-            border-radius: 50%;
-            z-index: 1;
-            pointer-events: none;
-            filter: blur(80px);
-        }
-        .ball-top-right { width: 550px; height: 550px; top: -200px; right: -150px; }
-        .ball-bottom-left { width: 450px; height: 450px; bottom: -150px; left: -150px; }
+        .theme-toggle { background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        
+        .btn-flutuante { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: #2563eb; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(37, 99, 235, 0.4); cursor: pointer; z-index: 90; transition: 0.3s; }
+        .btn-flutuante:hover { transform: scale(1.1); }
 
-        .selection-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-top: 4px solid #1e40af;
-            border-radius: 40px;
-            padding: 40px;
-            width: 100%;
-            max-width: 500px;
-            position: relative;
-            z-index: 10;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            text-align: center;
-            animation: fadeIn 0.8s ease-out;
-        }
+        .filter-btn { padding: 8px 16px; border-radius: 50px; font-size: 12px; font-weight: 700; text-transform: uppercase; border: 1px solid var(--glass-border); background: var(--glass-bg); opacity: 0.6; transition: 0.3s; }
+        .filter-btn.active { background: #2563eb; color: white; opacity: 1; border-color: #2563eb; }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .badge { padding: 4px 10px; border-radius: 6px; font-size: 9px; font-weight: 900; text-transform: uppercase; }
+        .badge-servico { background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid #22c55e; }
+        .badge-orcamento { background: rgba(37, 99, 235, 0.2); color: #3b82f6; border: 1px solid #3b82f6; }
 
-        .header-section { margin-bottom: 25px; }
-        .header-section h1 { color: var(--text-main); font-size: 24px; font-weight: 700; margin-bottom: 8px; }
-        .header-section p { color: var(--title-sub); font-size: 14px; line-height: 1.4; }
-
-        .divider {
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(30, 64, 175, 0.3), transparent);
-            margin: 20px 0;
-        }
-
-        .system-btn {
-            width: 100%;
-            background: var(--btn-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 15px;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex;
-            align-items: center;
-            text-align: left;
-            text-decoration: none;
-            color: var(--text-main);
-        }
-
-        .system-btn:hover {
-            background: rgba(30, 64, 175, 0.15);
-            border-color: #27a9e3;
-            transform: translateY(-3px);
-        }
-
-        .btn-icon {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, #1e40af 0%, #27a9e3 100%);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            margin-right: 15px;
-            flex-shrink: 0;
-            color: white;
-        }
-
-        .btn-content strong { display: block; font-size: 16px; margin-bottom: 2px; }
-        .btn-content span { font-size: 12px; color: var(--sub-text); }
-
-        .btn-logout {
-            background: none;
-            border: 1px solid rgba(255, 75, 75, 0.3);
-            color: #ff4b4b;
-            padding: 10px 20px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 11px;
-            margin-top: 15px;
-            transition: 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        @media (max-width: 480px) {
-            body { padding: 10px; }
-            .selection-card { 
-                padding: 30px 20px; 
-                border-radius: 30px; 
-            }
-            .header-section h1 { font-size: 20px; }
-            .system-btn { padding: 15px; }
-            .btn-icon { width: 40px; height: 40px; font-size: 18px; }
-            .btn-content strong { font-size: 15px; }
-        }
+        #toast-minimal { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #22c55e; color: white; padding: 12px 25px; border-radius: 50px; font-weight: 700; display: none; z-index: 10000; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
     </style>
 </head>
-<body>
+<body class="p-4 pb-24">
 
-    <button onclick="toggleTheme()" class="theme-toggle">
-        <i id="theme-icon" class="fa-solid fa-sun"></i>
-    </button>
+    <div id="toast-minimal"><i class="fa-solid fa-check mr-2"></i> SALVO COM SUCESSO!</div>
 
-    <div class="corner-ball ball-top-right"></div>
-    <div class="corner-ball ball-bottom-left"></div>
+    <div onclick="abrirPopup()" class="btn-flutuante">
+        <i class="fa-solid fa-plus text-2xl"></i>
+    </div>
 
-    <div class="selection-card">
-        <div class="header-section">
-            <h1>Selecione o Sistema</h1>
-            <p>Escolha o ambiente que deseja acessar.</p>
+    <div id="popupAgendar">
+        <span class="absolute top-6 right-6 cursor-pointer text-xl opacity-50" onclick="fecharPopup()">&times;</span>
+        <h2 id="modalTitle">Nova Visita</h2>
+        
+        <div id="statusOverlay">
+            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500 mb-4"></div>
+            <div id="statusText" class="font-black text-blue-500 uppercase tracking-widest">Salvando...</div>
         </div>
 
-        <div class="divider"></div>
-
-        <a href="criar-orcamento.html" class="system-btn">
-            <div class="btn-icon"><i class="fa-solid fa-briefcase"></i></div>
-            <div class="btn-content">
-                <strong>Gerar Orçamento</strong>
-                <span>Administrativo e ordens de serviço.</span>
+        <form id="formAgenda">
+            <input type="hidden" id="edit_id">
+            <div class="input-group">
+                <label>Cliente</label>
+                <input type="text" id="cliente" list="lista_clientes" required autocomplete="off">
+                <datalist id="lista_clientes"></datalist>
             </div>
-        </a>
-
-        <a href="agenda.html" class="system-btn">
-            <div class="btn-icon"><i class="fa-solid fa-calendar-days"></i></div>
-            <div class="btn-content">
-                <strong>Agenda de Serviços</strong>
-                <span>Acompanhar compromissos diários e mensais.</span>
+            <div class="input-group">
+                <label>Tipo</label>
+                <select id="tipo">
+                    <option value="Serviço">Serviço</option>
+                    <option value="Orçamento">Orçamento</option>
+                </select>
             </div>
-        </a>
-
-        <a href="garantias.html" class="system-btn">
-            <div class="btn-icon"><i class="fa-solid fa-shield-halved"></i></div>
-            <div class="btn-content">
-                <strong>Consultar Garantias</strong>
-                <span>Verificar prazos e status de garantias.</span>
+            <div class="input-group">
+                <label>Endereço</label>
+                <input type="text" id="endereco" required>
             </div>
-        </a>
-
-        <a href="https://ajudaparatecnico.blogspot.com/" target="_blank" class="system-btn">
-            <div class="btn-icon"><i class="fa-solid fa-book-bookmark"></i></div>
-            <div class="btn-content">
-                <strong>Acervo Técnico</strong>
-                <span>Manuais e materiais técnicos.</span>
+            <div class="input-group">
+                <label>Descrição do Problema</label>
+                <textarea id="descricao" rows="3"></textarea>
             </div>
-        </a>
-
-        <a href="configuracoes.html" class="system-btn">
-            <div class="btn-icon"><i class="fa-solid fa-gear"></i></div>
-            <div class="btn-content">
-                <strong>Configurações</strong>
-                <span>Ajustes do sistema e perfil.</span>
+            <div class="flex gap-4">
+                <div class="input-group flex-1">
+                    <label>Data</label>
+                    <input type="date" id="data_visita" required>
+                </div>
+                <div class="input-group flex-1">
+                    <label>Hora</label>
+                    <input type="time" id="hora_visita" required>
+                </div>
             </div>
-        </a>
+            <button type="submit" id="btnAgendar" class="w-full py-4 bg-blue-600 rounded-xl font-black uppercase text-sm">Confirmar Agendamento</button>
+        </form>
+    </div>
 
-        <button class="btn-logout" onclick="logout()">
-            <i class="fa-solid fa-power-off"></i> Encerrar Sessão
-        </button>
+    <div class="max-w-4xl mx-auto">
+        <header class="flex justify-between items-center mb-6">
+            <div>
+                <h1 class="text-xl font-black uppercase tracking-tighter">Agenda de <span class="text-blue-500">Serviços</span></h1>
+                <span class="text-[10px] opacity-40 font-bold uppercase tracking-widest">Refrigeração Eliezer</span>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="toggleTheme()" class="theme-toggle"><i id="theme-icon" class="fa-solid fa-sun"></i></button>
+            </div>
+        </header>
 
-        <p style="color: var(--sub-text); font-size: 10px; margin-top: 15px; text-transform: uppercase;">
-            Acesso Restrito e Criptografado
-        </p>
+        <div class="flex gap-2 overflow-x-auto pb-4 no-scrollbar mb-4">
+            <button onclick="filtrar('dia')" id="f-dia" class="filter-btn active">Dia</button>
+            <button onclick="filtrar('semana')" id="f-semana" class="filter-btn">Semana</button>
+            <button onclick="filtrar('mes')" id="f-mes" class="filter-btn">Mês</button>
+            <button onclick="filtrar('todos')" id="f-todos" class="filter-btn">Todos</button>
+        </div>
+
+        <div class="relative mb-6">
+            <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 opacity-30 text-sm"></i>
+            <input type="text" id="buscaCliente" oninput="renderizarServicos()" placeholder="Buscar cliente..." class="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 outline-none focus:border-blue-500 transition-all text-sm">
+        </div>
+
+        <div id="container-historico" class="space-y-4">
+            <div class="text-center py-20 opacity-20 font-bold uppercase text-xs tracking-widest">Carregando serviços...</div>
+        </div>
     </div>
 
     <script>
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('keydown', e => {
+            if ((e.ctrlKey && ['c', 'u', 's', 'p'].includes(e.key.toLowerCase())) || e.keyCode === 123) {
+                e.preventDefault();
+            }
+        });
 
-        if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js')
-      .then(reg => console.log('Service Worker registrado!', reg))
-      .catch(err => console.log('Erro ao registrar Service Worker', err));
-  }
+        const URL_CLIENTES = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec";
+        const URL_AGENDA = "https://script.google.com/macros/s/AKfycbxauTBW3A5hKH7bJT-JGtSYVtoGw9BPixy9Q9Pnjsyd059KEt67KgtkxSzFxQ0JlKZX/exec";
 
-  // BLOQUEIOS DE SEGURANÇA (JavaScript)
-  
-  // Bloqueia o clique com o botão direito
-  document.addEventListener('contextmenu', event => event.preventDefault());
+        let agendaGlobal = [];
+        let filtroAtual = 'dia';
 
-  // Bloqueia atalhos de teclado: Ctrl+C, Ctrl+U (Código Fonte), Ctrl+S (Salvar), Ctrl+P (Imprimir) e F12
-document.addEventListener('keydown', function(e) {
-    if (
-        (e.ctrlKey && (e.key === 'c' || e.key === 'u' || e.key === 's' || e.key === 'p')) || 
-        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j')) || 
-        (e.keyCode === 123) // Tecla F12
-    ) {
-        e.preventDefault();
-        alert('Ação protegida pelo sistema.');
-        return false;
-    }
-  });
-     
-        // --- FUNÇÕES DE TEMA ---
         function toggleTheme() {
-            const body = document.body;
+            document.body.classList.toggle('light-mode');
             const icon = document.getElementById('theme-icon');
-            body.classList.toggle('light-mode');
-            
-            if (body.classList.contains('light-mode')) {
-                icon.classList.replace('fa-sun', 'fa-moon');
-                localStorage.setItem('theme', 'light');
-            } else {
-                icon.classList.replace('fa-moon', 'fa-sun');
-                localStorage.setItem('theme', 'dark');
+            icon.className = document.body.classList.contains('light-mode') ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+        }
+
+        function abrirPopup() {
+            document.getElementById('modalTitle').innerText = "Nova Visita";
+            document.getElementById('popupAgendar').style.display = 'block';
+            carregarClientes();
+        }
+
+        function fecharPopup() { document.getElementById('popupAgendar').style.display = 'none'; }
+
+        async function carregarClientes() {
+            try {
+                const res = await fetch(URL_CLIENTES);
+                const dados = await res.json();
+                const list = document.getElementById('lista_clientes');
+                const clientesUnicos = [...new Set(dados.map(c => c.cli_nome))].filter(Boolean);
+                list.innerHTML = clientesUnicos.map(nome => `<option value="${nome}">`).join('');
+                
+                document.getElementById('cliente').onchange = function() {
+                    const cli = dados.find(x => x.cli_nome === this.value);
+                    if(cli) {
+                        document.getElementById('endereco').value = cli.cli_end || "";
+                    }
+                };
+            } catch (e) { console.error("Erro ao carregar clientes"); }
+        }
+
+        async function carregarAgenda() {
+            try {
+                const res = await fetch(URL_AGENDA);
+                agendaGlobal = await res.json();
+                renderizarServicos();
+            } catch (e) {
+                document.getElementById('container-historico').innerHTML = `<div class="text-center py-10 opacity-50 font-bold">ERRO AO CONECTAR</div>`;
             }
         }
 
-        window.onload = () => {
-            if(localStorage.getItem('theme') === 'light') toggleTheme();
+        function filtrar(tipo) {
+            filtroAtual = tipo;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('f-' + tipo).classList.add('active');
+            renderizarServicos();
+        }
+
+        function renderizarServicos() {
+            const container = document.getElementById('container-historico');
+            const busca = document.getElementById('buscaCliente').value.toLowerCase();
+            const hoje = new Date();
+            hoje.setHours(0,0,0,0);
+
+            let dadosFiltrados = agendaGlobal.filter(i => {
+                const termoMatch = i.CLIENTE && i.CLIENTE.toString().toLowerCase().includes(busca);
+                if(!termoMatch) return false;
+                if(filtroAtual === 'todos') return true;
+
+                // CORREÇÃO DE DATA: Adicionamos T12:00 para evitar que o fuso horário mude o dia no celular
+                const dataServico = new Date(i.DATA_DO_SERVICO.split('T')[0] + 'T12:00:00');
+                if(isNaN(dataServico)) return true;
+
+                if(filtroAtual === 'dia') return dataServico.toLocaleDateString() === hoje.toLocaleDateString();
+                if(filtroAtual === 'semana') {
+                    const diff = (dataServico - hoje) / (1000 * 60 * 60 * 24);
+                    return diff >= 0 && diff <= 7;
+                }
+                if(filtroAtual === 'mes') return dataServico.getMonth() === hoje.getMonth() && dataServico.getFullYear() === hoje.getFullYear();
+                return true;
+            });
+
+            dadosFiltrados.sort((a, b) => {
+                if ((a.STATUS === 'concluido') !== (b.STATUS === 'concluido')) {
+                    return a.STATUS === 'concluido' ? 1 : -1;
+                }
+                const horaA = (a.HORA || "00:00").split(':').join('');
+                const horaB = (b.HORA || "00:00").split(':').join('');
+                return parseInt(horaA) - parseInt(horaB);
+            });
+
+            if(dadosFiltrados.length === 0) {
+                container.innerHTML = `<div class="text-center py-10 opacity-20 font-bold uppercase text-xs">Nenhum serviço encontrado</div>`;
+                return;
+            }
+
+            container.innerHTML = dadosFiltrados.map(i => {
+                const isConcluido = i.STATUS === 'concluido';
+                let obsPlanilha = i.DESCRICAO || i.OBSERVACAO || "";
+                
+                let tipoReal = "Serviço";
+                if(obsPlanilha.startsWith("[Orçamento]")) {
+                    tipoReal = "Orçamento";
+                    obsPlanilha = obsPlanilha.replace("[Orçamento]", "").trim();
+                } else if(obsPlanilha.startsWith("[Serviço]")) {
+                    tipoReal = "Serviço";
+                    obsPlanilha = obsPlanilha.replace("[Serviço]", "").trim();
+                }
+
+                const badgeClass = tipoReal === 'Serviço' ? 'badge-servico' : 'badge-orcamento';
+                
+                // CORREÇÃO DE EXIBIÇÃO: Criamos a data forçando meio-dia para neutralizar o fuso no dispositivo
+                const d = new Date(i.DATA_DO_SERVICO.split('T')[0] + 'T12:00:00');
+                const dataFormatada = !isNaN(d) ? d.toLocaleDateString('pt-BR') : i.DATA_DO_SERVICO;
+
+                let horaExibicao = i.HORA || "--:--";
+                if(horaExibicao.toString().includes('T')) {
+                    horaExibicao = horaExibicao.split('T')[1].substring(0,5);
+                }
+
+                return `
+                    <div class="glass-card p-5 relative ${isConcluido ? 'concluido' : ''}">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="badge ${badgeClass}">${tipoReal}</span>
+                                </div>
+                                <h2 class="text-base font-black leading-tight">${i.CLIENTE}</h2>
+                                <p class="text-[11px] opacity-60 mt-1"><i class="fa-solid fa-location-dot mr-1"></i> ${i.ENDERECO}</p>
+                            </div>
+                            <div class="text-right flex flex-col items-end">
+                                <div class="bg-white/5 p-2 rounded-lg border border-white/5 min-w-[70px] text-center">
+                                    <p class="text-[11px] font-black text-blue-500 leading-none">${dataFormatada}</p>
+                                    <p class="text-[13px] font-bold mt-1">${horaExibicao}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-black/20 rounded-xl p-3 mb-4">
+                            <p class="text-xs italic opacity-80">${obsPlanilha || 'Sem observações...'}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            ${!isConcluido ? `
+                                <button onclick='concluirServico("${i.CLIENTE}")' class="flex-1 py-3 bg-green-600/20 text-green-500 rounded-xl text-[10px] font-black uppercase hover:bg-green-600 hover:text-white transition-all">✓ Concluir</button>
+                            ` : `<div class="text-[10px] font-black text-green-500 uppercase"><i class="fa-solid fa-check-double mr-2"></i> Agendamento Finalizado</div>`}
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        async function concluirServico(cliente) {
+            if(!confirm("Deseja marcar este serviço como concluído?")) return;
+            enviarDados({ action: "concluir", cliente: cliente });
+        }
+
+        document.getElementById('formAgenda').onsubmit = function(e) {
+            e.preventDefault();
+            const dataInput = document.getElementById('data_visita').value;
+            const dataCorrigida = dataInput.split('-').reverse().join('/'); 
+            const tipoSelecionado = document.getElementById('tipo').value;
+            const obsOriginal = document.getElementById('descricao').value;
+            const obsParaPlanilha = `[${tipoSelecionado}] ${obsOriginal}`;
+
+            const payload = {
+                action: "cadastrar",
+                cliente: document.getElementById('cliente').value,
+                endereco: document.getElementById('endereco').value,
+                descricao: obsParaPlanilha,
+                data_servico: dataCorrigida,
+                hora: document.getElementById('hora_visita').value
+            };
+            enviarDados(payload);
         };
 
-        if (localStorage.getItem("inforos_logado") !== "true") {
-            window.location.href = "https://refrigeracaoeliezer.github.io/site/"; 
+        function enviarDados(payload) {
+            const overlay = document.getElementById('statusOverlay');
+            overlay.style.display = 'flex';
+            document.getElementById('statusText').innerText = "Salvando...";
+
+            fetch(URL_AGENDA, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            }).then(() => {
+                document.getElementById('statusText').innerText = "Sucesso!";
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    fecharPopup();
+                    document.getElementById('toast-minimal').style.display = 'block';
+                    document.getElementById('formAgenda').reset();
+                    setTimeout(() => document.getElementById('toast-minimal').style.display = 'none', 3000);
+                    carregarAgenda();
+                }, 1500);
+            }).catch((err) => {
+                console.error(err);
+                overlay.style.display = 'none';
+                alert("Erro ao enviar dados.");
+            });
         }
 
-        function logout() {
-            localStorage.removeItem("inforos_logado");
-            window.location.href = "https://refrigeracaoeliezer.github.io/site/";
-        }
+        window.onload = () => { carregarAgenda(); carregarClientes(); };
     </script>
 </body>
 </html>
