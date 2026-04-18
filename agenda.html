@@ -68,6 +68,7 @@
         .badge { padding: 4px 10px; border-radius: 6px; font-size: 9px; font-weight: 900; text-transform: uppercase; }
         .badge-servico { background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid #22c55e; }
         .badge-orcamento { background: rgba(37, 99, 235, 0.2); color: #3b82f6; border: 1px solid #3b82f6; }
+        .badge-atencao { background: rgba(234, 179, 8, 0.2); color: #eab308; border: 1px solid #eab308; }
         
         #toast-minimal { 
             position: fixed; 
@@ -93,6 +94,7 @@
    
         .border-servico { border: 2px solid #22c55e !important; }
         .border-orcamento { border: 2px solid #3b82f6 !important; }
+        .border-atencao { border: 2px solid #eab308 !important; }
     </style>
 </head>
 <body class="p-4 pb-24">
@@ -132,6 +134,7 @@
                 <select id="tipo">
                     <option value="Serviço">Serviço</option>
                     <option value="Orçamento">Orçamento</option>
+                    <option value="Atenção">Atenção</option>
                 </select>
             </div>
             <div class="input-group">
@@ -284,8 +287,16 @@
             let dadosFiltrados = agendaGlobal.filter(i => {
                 const termoMatch = i.CLIENTE && i.CLIENTE.toString().toLowerCase().includes(busca);
                 if(!termoMatch) return false;
-                if(filtroAtual === 'todos') return true;
+
+                let tipo = (i.DESCRICAO || "").includes("[Orçamento]") ? "Orçamento" : (i.DESCRICAO || "").includes("[Atenção]") ? "Atenção" : "Serviço";
                 const dataServico = new Date(i.DATA_DO_SERVICO.split('T')[0] + 'T12:00:00');
+                
+                // Se for Atenção e a data passou, trata como concluído internamente
+                if (tipo === 'Atenção' && dataServico < hoje && i.STATUS !== 'concluido') {
+                    i.STATUS = 'concluido';
+                }
+
+                if(filtroAtual === 'todos') return true;
                 if(isNaN(dataServico)) return true;
                 if(filtroAtual === 'dia') return dataServico.toLocaleDateString() === hoje.toLocaleDateString();
                 if(filtroAtual === 'semana') {
@@ -297,7 +308,17 @@
             });
 
             dadosFiltrados.sort((a, b) => {
+                const tipoA = (a.DESCRICAO || "").includes("[Atenção]") ? "Atenção" : "Normal";
+                const tipoB = (b.DESCRICAO || "").includes("[Atenção]") ? "Atenção" : "Normal";
+                
+                // Prioridade 1: Pendentes antes de Concluídos
                 if ((a.STATUS === 'concluido') !== (b.STATUS === 'concluido')) return a.STATUS === 'concluido' ? 1 : -1;
+                
+                // Prioridade 2: Atenção no topo se não estiver concluído
+                if (a.STATUS !== 'concluido' && b.STATUS !== 'concluido') {
+                    if (tipoA !== tipoB) return tipoA === 'Atenção' ? -1 : 1;
+                }
+
                 return parseInt((a.HORA || "00:00").replace(':','')) - parseInt((b.HORA || "00:00").replace(':',''));
             });
 
@@ -308,21 +329,25 @@
 
             container.innerHTML = dadosFiltrados.map((i) => {
                 const isConcluido = i.STATUS === 'concluido';
-                let obs = (i.DESCRICAO || i.OBSERVACAO || "").replace("[Orçamento]","").replace("[Serviço]","").trim();
-                let tipo = (i.DESCRICAO || "").includes("[Orçamento]") ? "Orçamento" : "Serviço";
+                let obs = (i.DESCRICAO || i.OBSERVACAO || "").replace("[Orçamento]","").replace("[Serviço]","").replace("[Atenção]","").trim();
+                let tipo = (i.DESCRICAO || "").includes("[Orçamento]") ? "Orçamento" : (i.DESCRICAO || "").includes("[Atenção]") ? "Atenção" : "Serviço";
+                
                 const d = new Date(i.DATA_DO_SERVICO.split('T')[0] + 'T12:00:00');
                 const dataF = !isNaN(d) ? d.toLocaleDateString('pt-BR') : i.DATA_DO_SERVICO;
                 const hF = i.HORA && i.HORA.includes('T') ? i.HORA.split('T')[1].substring(0,5) : (i.HORA || "--:--");
                 const itemStr = encodeURIComponent(JSON.stringify(i));
 
-                // Define a classe de borda baseada no tipo para o ajuste solicitado
-                const colorBorder = tipo === 'Serviço' ? 'border-servico' : 'border-orcamento';
+                let colorBorder = '';
+                let badgeClass = '';
+                if(tipo === 'Serviço') { colorBorder = 'border-servico'; badgeClass = 'badge-servico'; }
+                else if(tipo === 'Orçamento') { colorBorder = 'border-orcamento'; badgeClass = 'badge-orcamento'; }
+                else { colorBorder = 'border-atencao'; badgeClass = 'badge-atencao'; }
 
                 return `
                     <div class="glass-card p-5 relative ${isConcluido ? 'concluido' : colorBorder}">
                         <div class="flex justify-between items-start mb-4">
                             <div class="flex-1">
-                                <span class="badge ${tipo === 'Serviço' ? 'badge-servico' : 'badge-orcamento'}">${tipo}</span>
+                                <span class="badge ${badgeClass}">${tipo}</span>
                                 <h2 class="text-base font-black mt-2 leading-tight">${i.CLIENTE}</h2>
                                 <p class="text-[15px] opacity-60 mt-1"><i class="fa-solid fa-location-dot mr-1"></i> ${i.ENDERECO}</p>
                             </div>
@@ -334,9 +359,10 @@
                                 </div>
                             </div>
                         </div>
-<div class="bg-black/20 rounded-xl p-3 mb-4">
-    <p class="text-lg opacity-100 font-semibold">${obs || 'Sem observações...'}</p>
-</div>                        <div class="flex gap-2">
+                        <div class="bg-black/20 rounded-xl p-3 mb-4">
+                            <p class="text-lg opacity-100 font-semibold">${obs || 'Sem observações...'}</p>
+                        </div>
+                        <div class="flex gap-2">
                             ${!isConcluido ? `<button onclick='concluirServico("${i.CLIENTE}")' class="flex-1 py-3 bg-green-600/20 text-green-500 rounded-xl text-[10px] font-black uppercase">✓ Concluir</button>` : `<div class="text-[10px] font-black text-green-500 uppercase">✓ Finalizado</div>`}
                         </div>
                     </div>`;
@@ -349,8 +375,14 @@
             document.getElementById('cliente').value = item.CLIENTE;
             document.querySelector('#dropdown-cliente .selected-text').innerText = item.CLIENTE;
             document.getElementById('endereco').value = item.ENDERECO;
-            document.getElementById('tipo').value = (item.DESCRICAO || "").includes("[Orçamento]") ? "Orçamento" : "Serviço";
-            document.getElementById('descricao').value = (item.DESCRICAO || "").replace("[Orçamento]","").replace("[Serviço]","").trim();
+            
+            let tipoOriginal = "Serviço";
+            if ((item.DESCRICAO || "").includes("[Orçamento]")) tipoOriginal = "Orçamento";
+            if ((item.DESCRICAO || "").includes("[Atenção]")) tipoOriginal = "Atenção";
+            
+            document.getElementById('tipo').value = tipoOriginal;
+            document.getElementById('descricao').value = (item.DESCRICAO || "").replace("[Orçamento]","").replace("[Serviço]","").replace("[Atenção]","").trim();
+            
             const d = new Date(item.DATA_DO_SERVICO);
             if(!isNaN(d)) document.getElementById('data_visita').value = d.toISOString().split('T')[0];
             let h = item.HORA || "";
