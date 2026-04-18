@@ -143,7 +143,7 @@
         });
 
         const URL_CLIENTES = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec";
-        const URL_AGENDA = "https://script.google.com/macros/s/AKfycbzcw9K1L2AM-p6nGFAVzSd0nXAoUwjzpYqhB2kutNU24NrgPbbklwCuEdQ-Qqakwgo2/exec";
+        const URL_AGENDA = "https://script.google.com/macros/s/AKfycbxauTBW3A5hKH7bJT-JGtSYVtoGw9BPixy9Q9Pnjsyd059KEt67KgtkxSzFxQ0JlKZX/exec";
 
         let agendaGlobal = [];
         let filtroAtual = 'dia';
@@ -313,30 +313,33 @@
             enviarDados(payload);
         };
 
-        function enviarDados(payload) {
-            const overlay = document.getElementById('statusOverlay');
-            overlay.style.display = 'flex';
-            document.getElementById('statusText').innerText = "Salvando...";
+      // Localize e substitua apenas a função enviarDados no seu HTML:
 
-            fetch(URL_AGENDA, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(payload)
-            }).then(() => {
-                document.getElementById('statusText').innerText = "Sucesso!";
-                setTimeout(() => {
-                    overlay.style.display = 'none';
-                    fecharPopup();
-                    document.getElementById('toast-minimal').style.display = 'block';
-                    document.getElementById('formAgenda').reset();
-                    setTimeout(() => document.getElementById('toast-minimal').style.display = 'none', 3000);
-                    carregarAgenda();
-                }, 1500);
-            }).catch(() => {
-                overlay.style.display = 'none';
-                alert("Erro ao enviar dados.");
-            });
-        }
+function enviarDados(payload) {
+    const overlay = document.getElementById('statusOverlay');
+    overlay.style.display = 'flex';
+    document.getElementById('statusText').innerText = "Salvando...";
+
+    fetch(URL_AGENDA, {
+        method: 'POST',
+        // Removido o no-cors para permitir o envio correto do body
+        body: JSON.stringify(payload)
+    }).then(() => {
+        document.getElementById('statusText').innerText = "Sucesso!";
+        setTimeout(() => {
+            overlay.style.display = 'none';
+            fecharPopup();
+            document.getElementById('toast-minimal').style.display = 'block';
+            document.getElementById('formAgenda').reset();
+            setTimeout(() => document.getElementById('toast-minimal').style.display = 'none', 3000);
+            carregarAgenda();
+        }, 1500);
+    }).catch((err) => {
+        console.error(err);
+        overlay.style.display = 'none';
+        alert("Erro ao enviar dados.");
+    });
+}
 
         window.onload = () => { carregarAgenda(); carregarClientes(); };
     </script>
