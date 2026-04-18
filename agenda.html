@@ -143,7 +143,7 @@
         });
 
         const URL_CLIENTES = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec";
-        const URL_AGENDA = "https://script.google.com/macros/s/AKfycbxauTBW3A5hKH7bJT-JGtSYVtoGw9BPixy9Q9Pnjsyd059KEt67KgtkxSzFxQ0JlKZX/exec";
+        const URL_AGENDA = "https://script.google.com/macros/s/AKfycbwGXvZl5_XwhnurKFk7sUYSnn3dWOCIq2C0b2cj_CE-Zf2ipDBfS6ioAy5DNN48K5Y/exec";
 
         let agendaGlobal = [];
         let filtroAtual = 'dia';
@@ -314,7 +314,7 @@
             if(h.includes('T')) h = h.split('T')[1].substring(0,5);
             document.getElementById('hora_visita').value = h;
 
-            document.getElementById('edit_id').value = item.CLIENTE; // Usando cliente como ref para simplificar
+            document.getElementById('edit_id').value = item.CLIENTE; 
             document.getElementById('popupAgendar').style.display = 'block';
         }
 
@@ -333,6 +333,7 @@
 
             const payload = {
                 action: "cadastrar",
+                edit_id: document.getElementById('edit_id').value, // Envia o ID para edição
                 cliente: document.getElementById('cliente').value,
                 endereco: document.getElementById('endereco').value,
                 descricao: obsParaPlanilha,
@@ -347,14 +348,12 @@
             overlay.style.display = 'flex';
             document.getElementById('statusText').innerText = "Salvando...";
 
-            // ENVIO ÀS CEGAS: Dispara o fetch e já executa o sucesso sem esperar confirmação do servidor
             fetch(URL_AGENDA, {
                 method: 'POST',
-                mode: 'no-cors', // Ignora erros de CORS/Resposta
+                mode: 'no-cors',
                 body: JSON.stringify(payload)
             });
 
-            // Feedback visual imediato "nas cegas"
             setTimeout(() => {
                 document.getElementById('statusText').innerText = "Sucesso!";
                 setTimeout(() => {
@@ -364,7 +363,7 @@
                     document.getElementById('formAgenda').reset();
                     setTimeout(() => {
                         document.getElementById('toast-minimal').style.display = 'none';
-                        carregarAgenda(); // Recarrega para tentar ver o dado novo
+                        carregarAgenda();
                     }, 2000);
                 }, 1000);
             }, 1500);
