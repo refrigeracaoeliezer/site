@@ -29,9 +29,30 @@
         .btn-flutuante { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: #ef4444; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 90; }
         .delete-btn { background: var(--glass-bg); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         #statusOverlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); border-radius: 25px; flex-direction: column; align-items: center; justify-content: center; z-index: 110; }
+
+        /* Estilo da mensagem de sucesso */
+        #toast-minimal { 
+            position: fixed; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%); 
+            background: #22c55e; 
+            color: white; 
+            padding: 12px 25px; 
+            border-radius: 50px; 
+            font-weight: 700; 
+            display: none; 
+            z-index: 10000; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            white-space: nowrap; 
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
 <body class="p-4 pb-24">
+
+    <div id="toast-minimal"><i class="fa-solid fa-check mr-2"></i> SALVO COM SUCESSO!</div>
 
     <div onclick="abrirPopup()" class="btn-flutuante"><i class="fa-solid fa-plus text-2xl"></i></div>
 
@@ -41,7 +62,7 @@
         
         <div id="statusOverlay">
             <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-red-500 mb-4"></div>
-            <div id="statusText" class="font-black text-red-500 uppercase tracking-widest">Salvando...</div>
+            <div id="statusText" class="font-black text-red-500 uppercase tracking-widest">Processando...</div>
         </div>
 
         <form id="formFinanceiro">
@@ -103,7 +124,7 @@
         <div id="container-financeiro" class="space-y-4">
             <div class="flex flex-col items-center justify-center py-20">
                 <div class="animate-spin rounded-full h-12 w-12 border-4 border-white/5 border-t-red-500 mb-4"></div>
-                <p class="text-[10px] font-black uppercase opacity-40">Carregando...</p>
+                <p class="text-[10px] font-black uppercase opacity-40">Sincronizando...</p>
             </div>
         </div>
     </div>
@@ -121,7 +142,7 @@
                 dadosFinanceiros = await res.json();
                 renderizarFinanceiro();
             } catch (e) {
-                document.getElementById('container-financeiro').innerHTML = `<div class="text-center py-10 opacity-50 font-bold">ERRO AO CARREGAR</div>`;
+                document.getElementById('container-financeiro').innerHTML = `<div class="text-center py-10 opacity-50 font-bold">ERRO DE CONEXÃO</div>`;
             }
         }
 
@@ -131,7 +152,7 @@
                 const clientes = await res.json();
                 const list = document.getElementById('lista_clientes_financeiro');
                 list.innerHTML = clientes.map(c => `<li class="dropdown-item" onclick="selecionarCliente('${c.cli_nome}')">${c.cli_nome}</li>`).join('');
-            } catch (e) { console.error("Erro clientes"); }
+            } catch (e) {}
         }
 
         function formatarMoeda(valor) {
@@ -154,9 +175,7 @@
                 const statusReal = (faltaPagar > 0) ? 'pendente' : 'pago';
                 const matchBusca = (item.CLIENTE || "").toLowerCase().includes(busca) || (item.SERVICO || "").toLowerCase().includes(busca);
                 
-                if (filtroStatus === 'pendente') {
-                    return matchBusca && statusReal === 'pendente';
-                }
+                if (filtroStatus === 'pendente') return matchBusca && statusReal === 'pendente';
                 return matchBusca;
             });
 
@@ -174,7 +193,6 @@
             container.innerHTML = filtrados.map((item) => {
                 const isPendente = item.calcFalta > 0;
                 const itemStr = encodeURIComponent(JSON.stringify(item));
-
                 return `
                     <div class="glass-card p-5 ${isPendente ? 'devedor-border' : 'pago-border'}">
                         <div class="flex justify-between items-start">
@@ -218,22 +236,34 @@
             renderizarFinanceiro();
         }
 
+        function enviarCego(payload) {
+            const overlay = document.getElementById('statusOverlay');
+            overlay.style.display = 'flex';
+            document.getElementById('statusText').innerText = "Processando...";
+
+            fetch(URL_FINANCEIRO, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+
+            setTimeout(() => {
+                document.getElementById('statusText').innerText = "Sucesso!";
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    fecharPopup();
+                    
+                    // Mostrar mensagem de salvo com sucesso
+                    const toast = document.getElementById('toast-minimal');
+                    toast.style.display = 'flex';
+                    
+                    setTimeout(() => {
+                        toast.style.display = 'none';
+                        carregarDados();
+                    }, 1500);
+                }, 800);
+            }, 1000);
+        }
+
         function limparPagos() {
             if (confirm("Deseja realmente excluir permanentemente todos os registros quitados da planilha?")) {
-                const overlay = document.getElementById('statusOverlay');
-                document.getElementById('statusText').innerText = "Limpando...";
-                overlay.style.display = 'flex';
-
-                fetch(URL_FINANCEIRO, { 
-                    method: 'POST', 
-                    mode: 'no-cors', 
-                    body: JSON.stringify({ action: "limpar_pagos" }) 
-                }).then(() => {
-                    setTimeout(() => {
-                        overlay.style.display = 'none';
-                        carregarDados();
-                    }, 2000);
-                });
+                enviarCego({ action: "limpar_pagos" });
             }
         }
 
@@ -274,25 +304,13 @@
             e.preventDefault();
             const payload = {
                 action: "cadastrar", 
+                edit_id: document.getElementById('edit_index').value,
                 cliente: document.getElementById('cliente_nome').value,
                 servico: document.getElementById('servico_desc').value,
                 valor_total: document.getElementById('valor_total').value,
-                valor_recebido: document.getElementById('valor_recebido').value,
-                edit_id: document.getElementById('edit_index').value
+                valor_recebido: document.getElementById('valor_recebido').value
             };
-            
-            const overlay = document.getElementById('statusOverlay');
-            document.getElementById('statusText').innerText = "Salvando...";
-            overlay.style.display = 'flex';
-
-            fetch(URL_FINANCEIRO, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) })
-            .then(() => {
-                setTimeout(() => {
-                    overlay.style.display = 'none';
-                    fecharPopup();
-                    carregarDados();
-                }, 2000);
-            });
+            enviarCego(payload);
         };
 
         window.onload = () => { carregarDados(); carregarClientes(); };
