@@ -15,354 +15,173 @@
         }
     </script>
 
-    <style>
-        :root {
-            --bg-body: #0d1117;
-            --text-main: white;
-            --text-sub: rgba(255, 255, 255, 0.4);
-            --glass-bg: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --input-bg: rgba(0, 0, 0, 0.3);
-            --accent: #3b82f6;
-        }
+  <style>
+  #popupAgendar {
+    background-color: #0f0f0f;
+    color: white;
+    width: 400px;
+    padding: 25px;
+    border-radius: 20px;
+    font-family: sans-serif;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
 
-        body.light-mode {
-            --bg-body: #f0f2f5;
-            --text-main: #1a1f26;
-            --text-sub: #4b5563;
-            --glass-bg: rgba(255, 255, 255, 0.8);
-            --glass-border: rgba(0, 0, 0, 0.1);
-            --input-bg: rgba(255, 255, 255, 0.9);
-        }
+  #popupAgendar h2 { margin: 0 0 20px 0; font-size: 1.5rem; text-transform: uppercase; }
+  
+  .close-btn { position: absolute; top: 20px; right: 20px; cursor: pointer; font-size: 20px; }
 
-        body { font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); -webkit-user-select: none; user-select: none; transition: background 0.3s, color 0.3s; overflow-x: hidden; }
-        
-        .glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 25px; }
-        
-        input, select, textarea { 
-            background: var(--input-bg) !important; border: 1px solid var(--glass-border) !important; color: var(--text-main) !important; 
-            border-radius: 12px; padding: 12px; outline: none; -webkit-user-select: text !important; user-select: text !important;
-        }
+  .input-group { margin-bottom: 15px; }
+  
+  .input-group label { 
+    display: block; font-size: 10px; color: #888; 
+    text-transform: uppercase; margin-bottom: 5px; font-weight: bold;
+  }
 
-        .btn-filter { padding: 8px 16px; border-radius: 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; border: 1px solid var(--glass-border); transition: 0.3s; }
-        .btn-filter.active { background: var(--accent); color: white; border-color: var(--accent); }
+  .input-group input, .input-group select, .input-group textarea {
+    width: 100%;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 12px; /* Aqui resolve o problema de ser fininho */
+    color: white;
+    box-sizing: border-box;
+    font-size: 14px;
+  }
 
-        /* Estilos dos Cards de Visita */
-        .card-concluido { opacity: 0.4; filter: grayscale(0.8); }
-        .card-concluido .nome-cli { text-decoration: line-through; }
-        
-        .badge-visita { padding: 4px 10px; border-radius: 8px; font-size: 9px; font-weight: 900; text-transform: uppercase; }
-        .badge-servico { background: rgba(59, 130, 246, 0.2); color: #3b82f6; border: 1px solid #3b82f6; }
-        .badge-orcamento { background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid #f59e0b; }
+  .row { display: flex; gap: 10px; }
+  .flex-2 { flex: 2; }
+  .flex-1 { flex: 1; }
 
-        #toast-minimal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #27a9e3; color: white; padding: 15px 30px; border-radius: 50px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: none; z-index: 10000; animation: fadeInOut 2s ease forwards; }
-        @keyframes fadeInOut { 0% { opacity: 0; transform: translate(-50%, -60%); } 20% { opacity: 1; transform: translate(-50%, -50%); } 80% { opacity: 1; transform: translate(-50%, -50%); } 100% { opacity: 0; transform: translate(-50%, -40%); } }
+  #btnAgendar {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    background: #2563eb;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: 0.3s;
+  }
 
-        .theme-toggle { background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-    </style>
-</head>
-<body class="p-4 md:p-8">
+  #btnAgendar:disabled { background: #555; cursor: not-allowed; }
 
-    <div id="toast-minimal">Salvo com sucesso!</div>
+  /* Overlay de Status */
+  #statusOverlay {
+    display: none;
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8);
+    border-radius: 20px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+  }
+</style>
 
-    <div id="modal-agenda" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-        <div class="glass-card w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center mb-6">
-                <h3 id="modal-titulo" class="text-xl font-black uppercase tracking-tighter">Agendar Visita</h3>
-                <button onclick="fecharModal()" class="text-2xl opacity-50 hover:opacity-100">&times;</button>
-            </div>
+<div id="popupAgendar">
+  <span class="close-btn">&times;</span>
+  <h2>Agendar Visita</h2>
+  
+  <div id="statusOverlay">
+    <div id="statusText" style="font-weight: bold; font-size: 18px;">AGENDANDO...</div>
+  </div>
 
-            <div class="space-y-4">
-                <div class="relative">
-                    <label class="text-[10px] font-bold uppercase opacity-40 ml-2">Cliente</label>
-                    <input type="text" id="cli_nome" list="lista_clientes" class="w-full" placeholder="Buscar ou digitar nome...">
-                    <datalist id="lista_clientes"></datalist>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-[10px] font-bold uppercase opacity-40 ml-2">Telefone</label>
-                        <input type="tel" id="cli_tel" class="w-full" placeholder="WhatsApp">
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-bold uppercase opacity-40 ml-2">Tipo</label>
-                        <select id="tipo_visita" class="w-full">
-                            <option value="Serviço">Serviço</option>
-                            <option value="Orçamento">Orçamento</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="text-[10px] font-bold uppercase opacity-40 ml-2">Endereço</label>
-                    <input type="text" id="cli_end" class="w-full" placeholder="Endereço Completo">
-                </div>
-
-                <div>
-                    <label class="text-[10px] font-bold uppercase opacity-40 ml-2">Descrição do Problema</label>
-                    <textarea id="servico_desc" class="w-full h-20" placeholder="Ex: Geladeira não gela..."></textarea>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-[10px] font-bold uppercase opacity-40 ml-2">Data</label>
-                        <input type="date" id="visita_data" class="w-full">
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-bold uppercase opacity-40 ml-2">Hora</label>
-                        <input type="time" id="visita_hora" class="w-full">
-                    </div>
-                </div>
-
-                <input type="hidden" id="edit_row_id">
-                <button onclick="salvarAgenda()" id="btn-salvar" class="w-full py-4 bg-blue-600 rounded-2xl font-bold uppercase text-xs tracking-widest shadow-lg shadow-blue-600/20 hover:bg-blue-700 transition">Salvar na Agenda</button>
-            </div>
-        </div>
+  <form id="formAgenda">
+    <div class="input-group">
+      <label>Cliente</label>
+      <input type="text" id="cliente" required>
     </div>
 
-    <div class="max-w-4xl mx-auto">
-        <header class="flex justify-between items-center mb-8">
-            <div>
-                <h1 class="text-2xl font-black uppercase tracking-tighter">Agenda de <span class="text-blue-500">Serviços</span></h1>
-                <p class="text-[10px] font-bold opacity-40 uppercase tracking-widest">Controle de Visitas Eliezer</p>
-            </div>
-            <button onclick="toggleTheme()" class="theme-toggle">
-                <i id="theme-icon" class="fa-solid fa-sun"></i>
-            </button>
-        </header>
-
-        <div class="glass-card p-4 mb-6 flex flex-col md:flex-row gap-4 justify-between items-center">
-            <div class="flex gap-2 w-full md:w-auto overflow-x-auto">
-                <button onclick="filtrarPeriodo('dia', this)" class="btn-filter active">Hoje</button>
-                <button onclick="filtrarPeriodo('semana', this)" class="btn-filter">Semana</button>
-                <button onclick="filtrarPeriodo('mes', this)" class="btn-filter">Mês</button>
-                <button onclick="filtrarPeriodo('todos', this)" class="btn-filter">Tudo</button>
-            </div>
-            <div class="relative w-full md:w-64">
-                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 opacity-20"></i>
-                <input type="text" id="buscaAgenda" onkeyup="buscarNaLista()" class="w-full p-3 pl-10 rounded-xl text-sm" placeholder="Buscar por nome...">
-            </div>
-        </div>
-
-        <div id="container-agenda" class="space-y-4">
-            <div class="text-center py-20 opacity-20 font-bold uppercase tracking-widest text-xs">Carregando agendamentos...</div>
-        </div>
+    <div class="row">
+      <div class="input-group flex-2">
+        <label>Telefone</label>
+        <input type="text" id="telefone" placeholder="000.000.000-00">
+      </div>
+      <div class="input-group flex-1">
+        <label>Tipo</label>
+        <select id="tipo">
+          <option>Serviço</option>
+          <option>Orçamento</option>
+        </select>
+      </div>
     </div>
 
-    <button onclick="abrirModal()" class="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 rounded-full text-white shadow-2xl flex items-center justify-center text-xl hover:scale-110 transition z-40">
-        <i class="fa-solid fa-plus"></i>
-    </button>
+    <div class="input-group">
+      <label>Endereço</label>
+      <input type="text" id="endereco" required>
+    </div>
 
-    <script>
-        // --- CONFIGURAÇÃO DOS LINKS ---
-        // Link que você já usa (puxa clientes)
-        const URL_CLIENTES = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec";
-        // Link da nova planilha "Agenda" (Cole o link do novo script aqui)
-        const URL_AGENDA = "https://script.google.com/macros/s/AKfycbzXqKOtQZbJas6nuxmHeVSAzmJ0XedNCrj3vKA3wmN4d0xeoD2zK4gH1W3DC2XkZ7HD/exec"; 
+    <div class="input-group">
+      <label>Descrição do Problema</label>
+      <textarea id="descricao" rows="4"></textarea>
+    </div>
 
-        let cacheAgenda = [];
-        let cacheClientes = [];
-        let filtroData = 'dia';
+    <div class="row">
+      <div class="input-group flex-1">
+        <label>Data</label>
+        <input type="date" id="data_visita" required>
+      </div>
+      <div class="input-group flex-1">
+        <label>Hora</label>
+        <input type="time" id="hora_visita" required>
+      </div>
+    </div>
 
-        // Seguranças
-        document.addEventListener('contextmenu', event => event.preventDefault());
-        document.addEventListener('keydown', e => {
-            if ((e.ctrlKey && ['c', 'u', 's', 'p'].includes(e.key)) || e.keyCode === 123) {
-                e.preventDefault();
-            }
-        });
+    <button type="submit" id="btnAgendar">AGENDAR</button>
+  </form>
+</div>
 
-        function toggleTheme() {
-            const body = document.body;
-            body.classList.toggle('light-mode');
-            const isLight = body.classList.contains('light-mode');
-            localStorage.setItem('theme', isLight ? 'light' : 'dark');
-            document.getElementById('theme-icon').className = isLight ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
-        }
+<script>
+  const SCRIPT_URL = 'SUA_URL_DO_DEPLOY_AQUI';
 
-        async function carregarTudo() {
-            try {
-                // Carregar Clientes para o Datalist
-                const resCli = await fetch(URL_CLIENTES);
-                cacheClientes = await resCli.json();
-                popularClientes();
+  document.getElementById('formAgenda').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const btn = document.getElementById('btnAgendar');
+    const overlay = document.getElementById('statusOverlay');
+    const statusText = document.getElementById('statusText');
+    
+    // Mostrar "Agendando..."
+    overlay.style.display = 'flex';
+    statusText.innerText = 'AGENDANDO...';
+    btn.disabled = true;
 
-                // Carregar Agenda
-                const resAg = await fetch(`${URL_AGENDA}?action=listar`);
-                cacheAgenda = await resAg.json();
-                renderizarAgenda();
-            } catch (e) { console.error("Erro ao carregar", e); }
-        }
+    const payload = {
+      cliente: document.getElementById('cliente').value,
+      telefone: document.getElementById('telefone').value,
+      tipo: document.getElementById('tipo').value,
+      endereco: document.getElementById('endereco').value,
+      descricao: document.getElementById('descricao').value,
+      data_hora: document.getElementById('data_visita').value + ' ' + document.getElementById('hora_visita').value
+    };
 
-        function popularClientes() {
-            const list = document.getElementById('lista_clientes');
-            const nomes = [...new Set(cacheClientes.map(c => c.cli_nome))];
-            list.innerHTML = nomes.map(n => `<option value="${n}">`).join('');
-            
-            // Auto-preencher dados ao selecionar
-            document.getElementById('cli_nome').addEventListener('input', function(e) {
-                const encontrou = cacheClientes.find(c => c.cli_nome === this.value);
-                if(encontrou) {
-                    document.getElementById('cli_tel').value = encontrou.cli_tel || "";
-                    document.getElementById('cli_end').value = encontrou.cli_end || "";
-                }
-            });
-        }
-
-        function renderizarAgenda() {
-            const container = document.getElementById('container-agenda');
-            container.innerHTML = "";
-
-            let filtrados = filtrarPorData(cacheAgenda, filtroData);
-            
-            // Ordenação: Pendentes primeiro, depois por hora
-            filtrados.sort((a,b) => (a.status === 'concluido' ? 1 : -1));
-
-            if(filtrados.length === 0) {
-                container.innerHTML = `<div class="text-center py-20 opacity-20 font-bold uppercase text-xs">Nenhum agendamento encontrado</div>`;
-                return;
-            }
-
-            filtrados.forEach(item => {
-                const isConcluido = item.status === 'concluido';
-                const badge = item.tipo === 'Serviço' ? 'badge-servico' : 'badge-orcamento';
-                
-                container.innerHTML += `
-                    <div class="glass-card p-5 flex flex-col md:flex-row justify-between items-start gap-4 ${isConcluido ? 'card-concluido' : ''}">
-                        <div class="flex-1">
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="badge-visita ${badge}">${item.tipo}</span>
-                                <span class="text-[10px] font-bold opacity-40">${formatarData(item.data)} • ${item.hora}</span>
-                            </div>
-                            <h2 class="nome-cli text-lg font-black uppercase tracking-tighter">${item.cliente}</h2>
-                            <p class="text-xs opacity-60 mb-3">${item.descricao}</p>
-                            <p class="text-[10px] font-bold text-blue-500"><i class="fa-solid fa-location-dot mr-1"></i> ${item.endereco}</p>
-                        </div>
-                        <div class="flex md:flex-col gap-2 w-full md:w-auto">
-                            ${!isConcluido ? `
-                                <button onclick="concluirServico(${item.row})" class="flex-1 md:w-10 h-10 bg-green-500 text-white rounded-xl flex items-center justify-center transition hover:bg-green-600"><i class="fa-solid fa-check"></i></button>
-                                <button onclick="abrirEditar(${item.row})" class="flex-1 md:w-10 h-10 bg-blue-500 text-white rounded-xl flex items-center justify-center transition hover:bg-blue-600"><i class="fa-solid fa-pen"></i></button>
-                            ` : `<span class="text-[10px] font-bold text-green-500 uppercase italic p-2">✓ Concluído</span>`}
-                            <button onclick="excluirVisita(${item.row})" class="flex-1 md:w-10 h-10 bg-red-500/20 text-red-500 rounded-xl flex items-center justify-center transition hover:bg-red-500 hover:text-white"><i class="fa-solid fa-trash-can"></i></button>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        function filtrarPorData(lista, periodo) {
-            const hoje = new Date().toISOString().split('T')[0];
-            return lista.filter(i => {
-                if(periodo === 'todos') return true;
-                if(periodo === 'dia') return i.data === hoje;
-                if(periodo === 'mes') return i.data.substring(0,7) === hoje.substring(0,7);
-                // Lógica de semana simplificada
-                return true; 
-            });
-        }
-
-        function filtrarPeriodo(p, btn) {
-            filtroData = p;
-            document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            renderizarAgenda();
-        }
-
-        function abrirModal() {
-            document.getElementById('modal-titulo').innerText = "Agendar Visita";
-            limparCampos();
-            document.getElementById('modal-agenda').classList.remove('hidden');
-        }
-
-        function fecharModal() { document.getElementById('modal-agenda').classList.add('hidden'); }
-
-        function limparCampos() {
-            document.getElementById('edit_row_id').value = "";
-            document.getElementById('cli_nome').value = "";
-            document.getElementById('cli_tel').value = "";
-            document.getElementById('cli_end').value = "";
-            document.getElementById('servico_desc').value = "";
-            document.getElementById('visita_data').value = "";
-            document.getElementById('visita_hora').value = "";
-        }
-
-        async function salvarAgenda() {
-            const btn = document.getElementById('btn-salvar');
-            const original = btn.innerText;
-            
-            const payload = {
-                row: document.getElementById('edit_row_id').value,
-                cliente: document.getElementById('cli_nome').value,
-                telefone: document.getElementById('cli_tel').value,
-                endereco: document.getElementById('cli_end').value,
-                descricao: document.getElementById('servico_desc').value,
-                tipo: document.getElementById('tipo_visita').value,
-                data: document.getElementById('visita_data').value,
-                hora: document.getElementById('visita_hora').value,
-                status: 'pendente'
-            };
-
-            if(!payload.cliente || !payload.data) return alert("Preencha Nome e Data!");
-
-            btn.disabled = true; btn.innerText = "Agendando...";
-
-            try {
-                await fetch(URL_AGENDA, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-                setTimeout(() => {
-                    document.getElementById('toast-minimal').style.display = 'block';
-                    fecharModal();
-                    carregarTudo();
-                    btn.disabled = false; btn.innerText = original;
-                }, 1000);
-            } catch(e) { alert("Erro ao salvar"); btn.disabled = false; }
-        }
-
-        async function concluirServico(row) {
-            if(!confirm("Marcar como concluído?")) return;
-            await fetch(`${URL_AGENDA}?action=concluir&row=${row}`);
-            carregarTudo();
-        }
-
-        async function excluirVisita(row) {
-            if(!confirm("Excluir agendamento permanentemente?")) return;
-            await fetch(`${URL_AGENDA}?action=excluir&row=${row}`);
-            carregarTudo();
-        }
-
-        function abrirEditar(row) {
-            const item = cacheAgenda.find(i => i.row == row);
-            if(!item) return;
-            document.getElementById('edit_row_id').value = item.row;
-            document.getElementById('cli_nome').value = item.cliente;
-            document.getElementById('cli_tel').value = item.telefone;
-            document.getElementById('cli_end').value = item.endereco;
-            document.getElementById('servico_desc').value = item.descricao;
-            document.getElementById('tipo_visita').value = item.tipo;
-            document.getElementById('visita_data').value = item.data;
-            document.getElementById('visita_hora').value = item.hora;
-            document.getElementById('modal-titulo').innerText = "Editar Agendamento";
-            document.getElementById('modal-agenda').classList.remove('hidden');
-        }
-
-        function formatarData(d) {
-            if(!d) return "";
-            const p = d.split('-');
-            return `${p[2]}/${p[1]}`;
-        }
-
-        function buscarNaLista() {
-            const termo = document.getElementById('buscaAgenda').value.toLowerCase();
-            const cards = document.querySelectorAll('#container-agenda .glass-card');
-            cards.forEach(c => {
-                const nome = c.querySelector('.nome-cli').innerText.toLowerCase();
-                c.style.display = nome.includes(termo) ? 'flex' : 'none';
-            });
-        }
-
-        window.onload = () => {
-            if(localStorage.getItem('theme') === 'light') toggleTheme();
-            carregarTudo();
-        };
-    </script>
+    fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(data => {
+      if(data.status === 'success') {
+        statusText.innerText = 'AGENDADO COM SUCESSO!';
+        setTimeout(() => {
+          overlay.style.display = 'none';
+          document.getElementById('formAgenda').reset();
+          btn.disabled = false;
+          // Aqui você chama a função que carrega sua lista de clientes/agenda
+          if(typeof carregarLista === "function") carregarLista(); 
+        }, 2000);
+      }
+    })
+    .catch(err => {
+      alert('Erro ao salvar');
+      overlay.style.display = 'none';
+      btn.disabled = false;
+    });
+  });
+</script>
 </body>
 </html>
