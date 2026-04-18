@@ -421,6 +421,31 @@ document.addEventListener('keydown', function(e) {
         return false;
     }
   });
+ 
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('Service Worker registrado!', reg))
+      .catch(err => console.log('Erro ao registrar Service Worker', err));
+  }
+
+  // BLOQUEIOS DE SEGURANÇA (JavaScript)
+  
+  // Bloqueia o clique com o botão direito
+  document.addEventListener('contextmenu', event => event.preventDefault());
+
+  // Bloqueia atalhos de teclado: Ctrl+C, Ctrl+U (Código Fonte), Ctrl+S (Salvar), Ctrl+P (Imprimir) e F12
+document.addEventListener('keydown', function(e) {
+    if (
+        (e.ctrlKey && (e.key === 'c' || e.key === 'u' || e.key === 's' || e.key === 'p')) || 
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j')) || 
+        (e.keyCode === 123) // Tecla F12
+    ) {
+        e.preventDefault();
+        alert('Ação protegida pelo sistema.');
+        return false;
+    }
+  });
 
  
     const URL_LOGIN = "https://script.google.com/macros/s/AKfycbzTyd4eSh9ey8Ldk0foi7lkRvWLGxOqj40w7J9szxK4JmSduZmfadNBzEidDWNULeNHxQ/exec";
