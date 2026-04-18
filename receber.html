@@ -133,13 +133,15 @@
                         <p class="text-[10px] opacity-50 font-black uppercase">Total Pendente</p>
                         <p id="total-geral" class="text-2xl font-black text-red-500">R$ 0,00</p>
                     </div>
-                    <button onclick="toggleTheme()" class="header-action-btn" title="Alternar Tema">
-                        <i id="theme-icon" class="fa-solid fa-sun"></i>
-                    </button>
+                    <div class="flex flex-col gap-2">
+                        <button onclick="toggleTheme()" class="header-action-btn" title="Alternar Tema">
+                            <i id="theme-icon" class="fa-solid fa-sun"></i>
+                        </button>
+                        <button onclick="limparPagos()" class="header-action-btn delete-btn-red" title="Excluir Pagos">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
                 </div>
-                <button onclick="limparPagos()" class="header-action-btn delete-btn-red" title="Excluir Pagos">
-                    <i class="fa-solid fa-trash-can"></i>
-                </button>
             </div>
         </header>
 
