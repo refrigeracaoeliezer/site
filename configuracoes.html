@@ -6,6 +6,30 @@
         window.location.replace("https://refrigeracaoeliezer.github.io/site/");
     }
 </script>
+ 
+/* Bloqueia a seleção de texto e o arraste de imagens */
+body {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Mantém os campos de texto funcionando (senão você não consegue digitar o login) */
+input, select, textarea {
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+    user-select: text !important;
+}
+
+/* Proteção extra para imagens */
+img {
+    pointer-events: none !important;
+    -webkit-user-drag: none !important;
+}
+
+ 
     <meta charset="UTF-8">
     <title>Configurações | Refrigeração</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -365,6 +389,32 @@
     </div>
 
 <script>
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('Service Worker registrado!', reg))
+      .catch(err => console.log('Erro ao registrar Service Worker', err));
+  }
+
+  // BLOQUEIOS DE SEGURANÇA (JavaScript)
+  
+  // Bloqueia o clique com o botão direito
+  document.addEventListener('contextmenu', event => event.preventDefault());
+
+  // Bloqueia atalhos de teclado: Ctrl+C, Ctrl+U (Código Fonte), Ctrl+S (Salvar), Ctrl+P (Imprimir) e F12
+document.addEventListener('keydown', function(e) {
+    if (
+        (e.ctrlKey && (e.key === 'c' || e.key === 'u' || e.key === 's' || e.key === 'p')) || 
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j')) || 
+        (e.keyCode === 123) // Tecla F12
+    ) {
+        e.preventDefault();
+        alert('Ação protegida pelo sistema.');
+        return false;
+    }
+  });
+
+ 
     const URL_LOGIN = "https://script.google.com/macros/s/AKfycbzTyd4eSh9ey8Ldk0foi7lkRvWLGxOqj40w7J9szxK4JmSduZmfadNBzEidDWNULeNHxQ/exec";
     const URL_DATABASE = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec";
 
