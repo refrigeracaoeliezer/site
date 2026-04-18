@@ -297,7 +297,7 @@ async function baixarPDF() {
     const dataVencimentoGarantia = calcularSomaData(dataInicio, diasGarantia);
 
     const formData = new URLSearchParams();
-   formData.append('ID_OS', "'" + idApenasNumero);
+   formData.append('ID_OS', "'" + idParaEnviar);
     formData.append('CLIENTE', dados.cliente);
     formData.append('ENDERECO', dados.endereco);
     formData.append('CPF', dados.cpf);
