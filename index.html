@@ -206,21 +206,7 @@
     </div>
 
 <script>
-/* Bloqueia a seleção de texto em todo o corpo do site */
-body {
-    -webkit-user-select: none; /* Safari */
-    -moz-user-select: none;    /* Firefox */
-    -ms-user-select: none;     /* IE10+/Edge */
-    user-select: none;         /* Padrão (Chrome, Opera, etc) */
-}
 
-/* Caso queira permitir seleção apenas em campos de input e select */
-input, select, textarea {
-    -webkit-user-select: text;
-    -moz-user-select: text;
-    -ms-user-select: text;
-    user-select: text;
-}
     
     const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbxB94mCzlo1-ZG00QQKJzcZtlXG3nTSEX6t8gpLEuxlndbdwW07-6_D_2mBugxkKaQC/exec";
     let sistemaVazio = false;
@@ -408,7 +394,21 @@ document.addEventListener('keydown', function(e) {
         alert('Cópia de conteúdo não permitida.');
     }
 });
-    
+    /* Bloqueia a seleção de texto em todo o corpo do site */
+body {
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none;    /* Firefox */
+    -ms-user-select: none;     /* IE10+/Edge */
+    user-select: none;         /* Padrão (Chrome, Opera, etc) */
+}
+
+/* Caso queira permitir seleção apenas em campos de input e select */
+input, select, textarea {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
 </script>
     
 </body>
