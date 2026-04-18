@@ -274,59 +274,65 @@
         localStorage.setItem('dados_impressao', JSON.stringify(dadosLocal));
     }
 
-    async function baixarPDF() {
-        const dados = JSON.parse(localStorage.getItem('dados_impressao'));
-        if (!dados) return;
+async function baixarPDF() {
+    const dados = JSON.parse(localStorage.getItem('dados_impressao'));
+    if (!dados) return;
 
-        const servicosTexto = dados.itens.map(i => `${i.qtd}x ${i.descricao}`).join(' | ');
-        const idNomeArquivo = document.getElementById('num-random').innerText.split(' ')[0];
-        let idParaEnviar = (dados.id_os && dados.id_os !== "---" && dados.id_os !== "") ? dados.id_os : "";
+    const idNomeArquivo = document.getElementById('num-random').innerText.split(' ')[0];
+    let idParaEnviar = (dados.id_os && dados.id_os !== "---" && dados.id_os !== "") ? dados.id_os : "";
 
-        // --- LÓGICA DE SOMA DE DATAS ---
-        const dataInicio = dados.emissao; // Pega a Data de Início
-        const diasGarantia = dados.garantia || "30"; // Pega os dias
-        const dataVencimentoGarantia = calcularSomaData(dataInicio, diasGarantia);
+    // MODIFICADO: Agora gera apenas "QTDx DESCRIÇÃO" sem o (R$ valor)
+    const servicosTexto = dados.itens.map(i => {
+        return `${i.qtd}x ${i.descricao}`;
+    }).join(' | ');
 
-        const formData = new URLSearchParams();
-        formData.append('ID_OS', idParaEnviar);
-        formData.append('CLIENTE', dados.cliente);
-        formData.append('ENDERECO', dados.endereco);
-        formData.append('CPF', dados.cpf);
-        formData.append('DATA_DO_SERVICO', dataInicio);
-        formData.append('TIPO_DE_SERVICO', servicosTexto);
-        formData.append('TECNICO_RESPONSVEL', document.getElementById('view-resp-tecnico').innerText);
-        formData.append('VALOR_TOTAL', dados.total || "0,00");
-        formData.append('GARANTIA_DIAS', diasGarantia);
-        
-        // COLUNA J: Salva a SOMA (Início + Dias)
-        formData.append('DATA_FIM_GARANTIA', dataVencimentoGarantia); 
-        
-        formData.append('OSERVACAO', dados.obs);
-        
-        // COLUNA L: Salva a DATA DE CONCLUSÃO (Término)
-        formData.append('DIA', dados.validade); 
+    // --- NOVA LÓGICA PARA OS VALORES INDIVIDUAIS ---
+    const valoresIndividuaisTexto = dados.itens.map(i => {
+        return i.valor; 
+    }).join(' | ');
 
-        try {
-            await fetch(URL_SALVAR, {  
-                method: 'POST', 
-                mode: 'no-cors', 
-                body: formData 
-            });
-        } catch (e) { 
-            console.error("Erro ao salvar na planilha:", e); 
-        }
+    // --- LÓGICA DE SOMA DE DATAS ---
+    const dataInicio = dados.emissao; 
+    const diasGarantia = dados.garantia || "30"; 
+    const dataVencimentoGarantia = calcularSomaData(dataInicio, diasGarantia);
 
-        const element = document.getElementById('conteudo-pdf');
-        const opt = {
-            margin: [0, 0, 0, 0],
-            filename: `${idNomeArquivo}_OS_${dados.cliente}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-        
-        html2pdf().set(opt).from(element).save();
+    const formData = new URLSearchParams();
+   formData.append('ID_OS', "'" + idParaEnviar);
+    formData.append('CLIENTE', dados.cliente);
+    formData.append('ENDERECO', dados.endereco);
+    formData.append('CPF', dados.cpf);
+    formData.append('DATA_DO_SERVICO', dataInicio);
+    formData.append('TIPO_DE_SERVICO', servicosTexto); // Salva o formato solicitado
+    formData.append('TECNICO_RESPONSVEL', document.getElementById('view-resp-tecnico').innerText);
+    
+    formData.append('VALOR_TOTAL', valoresIndividuaisTexto);
+    
+    formData.append('GARANTIA_DIAS', diasGarantia);
+    formData.append('DATA_FIM_GARANTIA', dataVencimentoGarantia); 
+    formData.append('OSERVACAO', dados.obs);
+    formData.append('DIA', dados.validade); 
+
+    try {
+        await fetch(URL_SALVAR, { 
+            method: 'POST', 
+            mode: 'no-cors', 
+            body: formData 
+        });
+    } catch (e) { 
+        console.error("Erro ao salvar na planilha:", e); 
     }
+
+    const element = document.getElementById('conteudo-pdf');
+    const opt = {
+        margin: [0, 0, 0, 0],
+        filename: `${idNomeArquivo}_OS_${dados.cliente}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    
+    html2pdf().set(opt).from(element).save();
+}
 
     window.onload = carregarPagina;
 </script>
