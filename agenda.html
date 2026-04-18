@@ -156,6 +156,8 @@
 
         function abrirPopup() {
             document.getElementById('modalTitle').innerText = "Nova Visita";
+            document.getElementById('formAgenda').reset();
+            document.getElementById('edit_id').value = "";
             document.getElementById('popupAgendar').style.display = 'block';
             carregarClientes();
         }
@@ -207,7 +209,7 @@
                 if(!termoMatch) return false;
                 if(filtroAtual === 'todos') return true;
 
-                const dataServico = new Date(i.DATA_DO_SERVICO);
+                const dataServico = new Date(i.DATA_DO_SERVICO.split('T')[0] + 'T12:00:00');
                 if(isNaN(dataServico)) return true;
 
                 if(filtroAtual === 'dia') return dataServico.toLocaleDateString() === hoje.toLocaleDateString();
@@ -219,14 +221,10 @@
                 return true;
             });
 
-            // LÓGICA DE ORDENAÇÃO POR HORÁRIO (Mais cedo para mais tarde)
             dadosFiltrados.sort((a, b) => {
-                // Se um estiver concluído e o outro não, o concluído vai para o final
                 if ((a.STATUS === 'concluido') !== (b.STATUS === 'concluido')) {
                     return a.STATUS === 'concluido' ? 1 : -1;
                 }
-                
-                // Converte a string "HH:MM" para número para comparar
                 const horaA = (a.HORA || "00:00").split(':').join('');
                 const horaB = (b.HORA || "00:00").split(':').join('');
                 return parseInt(horaA) - parseInt(horaB);
@@ -237,7 +235,7 @@
                 return;
             }
 
-            container.innerHTML = dadosFiltrados.map(i => {
+            container.innerHTML = dadosFiltrados.map((i, index) => {
                 const isConcluido = i.STATUS === 'concluido';
                 let obsPlanilha = i.DESCRICAO || i.OBSERVACAO || "";
                 
@@ -251,9 +249,8 @@
                 }
 
                 const badgeClass = tipoReal === 'Serviço' ? 'badge-servico' : 'badge-orcamento';
-                
-                const d = new Date(i.DATA_DO_SERVICO);
-                const dataFormatada = !isNaN(d) ? d.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric'}) : i.DATA_DO_SERVICO;
+                const d = new Date(i.DATA_DO_SERVICO.split('T')[0] + 'T12:00:00');
+                const dataFormatada = !isNaN(d) ? d.toLocaleDateString('pt-BR') : i.DATA_DO_SERVICO;
 
                 let horaExibicao = i.HORA || "--:--";
                 if(horaExibicao.toString().includes('T')) {
@@ -271,6 +268,9 @@
                                 <p class="text-[11px] opacity-60 mt-1"><i class="fa-solid fa-location-dot mr-1"></i> ${i.ENDERECO}</p>
                             </div>
                             <div class="text-right flex flex-col items-end">
+                                <button onclick="prepararEdicao(${index})" class="mb-2 text-blue-500 opacity-60 hover:opacity-100 transition-all">
+                                    <i class="fa-solid fa-pen-to-square text-lg"></i>
+                                </button>
                                 <div class="bg-white/5 p-2 rounded-lg border border-white/5 min-w-[70px] text-center">
                                     <p class="text-[11px] font-black text-blue-500 leading-none">${dataFormatada}</p>
                                     <p class="text-[13px] font-bold mt-1">${horaExibicao}</p>
@@ -287,6 +287,35 @@
                         </div>
                     </div>`;
             }).join('');
+        }
+
+        function prepararEdicao(idx) {
+            const item = agendaGlobal[idx];
+            document.getElementById('modalTitle').innerText = "Editar Visita";
+            document.getElementById('cliente').value = item.CLIENTE;
+            document.getElementById('endereco').value = item.ENDERECO;
+            
+            let obs = item.DESCRICAO || "";
+            if(obs.startsWith("[Orçamento]")) {
+                document.getElementById('tipo').value = "Orçamento";
+                obs = obs.replace("[Orçamento]", "").trim();
+            } else {
+                document.getElementById('tipo').value = "Serviço";
+                obs = obs.replace("[Serviço]", "").trim();
+            }
+            document.getElementById('descricao').value = obs;
+
+            const d = new Date(item.DATA_DO_SERVICO);
+            if(!isNaN(d)) {
+                document.getElementById('data_visita').value = d.toISOString().split('T')[0];
+            }
+            
+            let h = item.HORA || "";
+            if(h.includes('T')) h = h.split('T')[1].substring(0,5);
+            document.getElementById('hora_visita').value = h;
+
+            document.getElementById('edit_id').value = item.CLIENTE; // Usando cliente como ref para simplificar
+            document.getElementById('popupAgendar').style.display = 'block';
         }
 
         async function concluirServico(cliente) {
@@ -313,33 +342,33 @@
             enviarDados(payload);
         };
 
-      // Localize e substitua apenas a função enviarDados no seu HTML:
+        function enviarDados(payload) {
+            const overlay = document.getElementById('statusOverlay');
+            overlay.style.display = 'flex';
+            document.getElementById('statusText').innerText = "Salvando...";
 
-function enviarDados(payload) {
-    const overlay = document.getElementById('statusOverlay');
-    overlay.style.display = 'flex';
-    document.getElementById('statusText').innerText = "Salvando...";
+            // ENVIO ÀS CEGAS: Dispara o fetch e já executa o sucesso sem esperar confirmação do servidor
+            fetch(URL_AGENDA, {
+                method: 'POST',
+                mode: 'no-cors', // Ignora erros de CORS/Resposta
+                body: JSON.stringify(payload)
+            });
 
-    fetch(URL_AGENDA, {
-        method: 'POST',
-        // Removido o no-cors para permitir o envio correto do body
-        body: JSON.stringify(payload)
-    }).then(() => {
-        document.getElementById('statusText').innerText = "Sucesso!";
-        setTimeout(() => {
-            overlay.style.display = 'none';
-            fecharPopup();
-            document.getElementById('toast-minimal').style.display = 'block';
-            document.getElementById('formAgenda').reset();
-            setTimeout(() => document.getElementById('toast-minimal').style.display = 'none', 3000);
-            carregarAgenda();
-        }, 1500);
-    }).catch((err) => {
-        console.error(err);
-        overlay.style.display = 'none';
-        alert("Erro ao enviar dados.");
-    });
-}
+            // Feedback visual imediato "nas cegas"
+            setTimeout(() => {
+                document.getElementById('statusText').innerText = "Sucesso!";
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    fecharPopup();
+                    document.getElementById('toast-minimal').style.display = 'block';
+                    document.getElementById('formAgenda').reset();
+                    setTimeout(() => {
+                        document.getElementById('toast-minimal').style.display = 'none';
+                        carregarAgenda(); // Recarrega para tentar ver o dado novo
+                    }, 2000);
+                }, 1000);
+            }, 1500);
+        }
 
         window.onload = () => { carregarAgenda(); carregarClientes(); };
     </script>
