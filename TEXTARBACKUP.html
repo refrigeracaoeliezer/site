@@ -29,22 +29,20 @@
         #popupAgendar { background-color: var(--bg-body); color: var(--text-main); width: 95%; max-width: 450px; padding: 30px; border-radius: 25px; border: 1px solid var(--glass-border); box-shadow: 0 20px 50px rgba(0,0,0,0.7); display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 100; max-height: 90vh; overflow-y: auto; }
         #popupAgendar h2 { margin-bottom: 20px; font-size: 20px; font-weight: 900; text-transform: uppercase; }
 
-        .input-group { margin-bottom: 15px; position: relative; }
+        .input-group { margin-bottom: 15px; }
         .input-group label { display: block; font-size: 11px; opacity: 0.5; text-transform: uppercase; margin-bottom: 5px; font-weight: 700; }
         .input-group input, .input-group select, .input-group textarea { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px; color: inherit; outline: none; }
         
-        .dropdown-list { position: absolute; left: 0; right: 0; top: 105%; background: var(--dropdown-bg); border: 1px solid var(--glass-border); border-radius: 15px; z-index: 200; max-height: 200px; overflow-y: auto; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        .dropdown-item { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--glass-border); transition: 0.2s; cursor: pointer; }
-        .dropdown-item:hover { background: #2563eb; color: white; }
-        .is-searching .search-input { display: block !important; }
-        .is-searching .selected-text { display: none; }
+        select option { background-color: #1a1f26; color: white; }
+        body.light-mode select option { background-color: #ffffff; color: #1a1f26; }
 
         #statusOverlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); border-radius: 25px; flex-direction: column; align-items: center; justify-content: center; z-index: 110; text-align: center; }
 
         .theme-toggle, .delete-toggle { background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .delete-toggle { color: #ef4444; }
+        .delete-toggle { color: #ef4444; border-color: rgba(239, 68, 68, 0.2); }
         
         .btn-flutuante { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: #2563eb; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(37, 99, 235, 0.4); cursor: pointer; z-index: 90; transition: 0.3s; }
+        .btn-flutuante:hover { transform: scale(1.1); }
 
         .filter-btn { padding: 8px 16px; border-radius: 50px; font-size: 12px; font-weight: 700; text-transform: uppercase; border: 1px solid var(--glass-border); background: var(--glass-bg); opacity: 0.6; transition: 0.3s; }
         .filter-btn.active { background: #2563eb; color: white; opacity: 1; border-color: #2563eb; }
@@ -54,6 +52,15 @@
         .badge-orcamento { background: rgba(37, 99, 235, 0.2); color: #3b82f6; border: 1px solid #3b82f6; }
 
         #toast-minimal { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #22c55e; color: white; padding: 12px 25px; border-radius: 50px; font-weight: 700; display: none; z-index: 10000; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+
+        /* ESTILO DROPDOWN CUSTOM */
+        .custom-dropdown { position: relative; }
+        .dropdown-list { position: absolute; left: 0; right: 0; top: 110%; background: var(--dropdown-bg); border: 1px solid var(--glass-border); border-radius: 15px; z-index: 50; max-height: 200px; overflow-y: auto; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .dropdown-item { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--glass-border); transition: 0.2s; cursor: pointer; }
+        .dropdown-item:hover { background: #2563eb; color: white; }
+        .is-searching .selected-text { display: none; }
+        .search-input { background: transparent; border: none; color: inherit; width: 100%; outline: none; display: none; padding: 0 !important; }
+        .is-searching .search-input { display: block; }
     </style>
 </head>
 <body class="p-4 pb-24">
@@ -75,16 +82,20 @@
 
         <form id="formAgenda">
             <input type="hidden" id="edit_id">
-            <div class="input-group" id="group-cliente">
+            
+            <div class="input-group">
                 <label>Cliente</label>
-                <div class="relative w-full bg-white/5 border border-white/10 rounded-xl p-3 flex justify-between items-center cursor-pointer" onclick="toggleDropdownCliente()">
-                    <span id="display-cliente" class="selected-text truncate text-sm">Selecionar Cliente</span>
-                    <input type="text" id="search-cliente" class="hidden bg-transparent border-none outline-none text-sm w-full" placeholder="Buscar cliente..." oninput="filtrarDropdownCliente(this)" onclick="event.stopPropagation()">
-                    <i class="fa-solid fa-chevron-down opacity-30 text-[10px]"></i>
+                <div class="custom-dropdown" id="dropdown-cliente">
+                    <div class="w-full bg-white/5 border border-white/10 rounded-xl p-3 flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
+                        <span class="selected-text truncate">Selecionar Cliente</span>
+                        <input type="text" class="search-input" placeholder="Pesquisar..." oninput="filtrarDropdown(this)" onclick="event.stopPropagation()">
+                        <i class="fa-solid fa-chevron-down opacity-30 text-[10px]"></i>
+                    </div>
+                    <ul id="lista_clientes_custom" class="dropdown-list"></ul>
+                    <input type="hidden" id="cliente" required>
                 </div>
-                <ul id="lista-clientes-dropdown" class="dropdown-list"></ul>
-                <input type="hidden" id="cliente" required>
             </div>
+
             <div class="input-group">
                 <label>Tipo</label>
                 <select id="tipo">
@@ -121,7 +132,7 @@
                 <span class="text-[10px] opacity-40 font-bold uppercase tracking-widest">Refrigeração Eliezer</span>
             </div>
             <div class="flex gap-2">
-                <button onclick="excluirConcluidos()" class="delete-toggle" title="Limpar Concluídos"><i class="fa-solid fa-trash-can"></i></button>
+                <button onclick="limparConcluidos()" class="delete-toggle" title="Excluir Concluídos"><i class="fa-solid fa-trash-can"></i></button>
                 <button onclick="toggleTheme()" class="theme-toggle"><i id="theme-icon" class="fa-solid fa-sun"></i></button>
             </div>
         </header>
@@ -139,9 +150,9 @@
         </div>
 
         <div id="container-historico" class="space-y-4">
-            <div class="flex flex-col items-center justify-center py-20">
-                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
-                <div class="opacity-40 font-black uppercase text-[10px] tracking-widest">Sincronizando Lista...</div>
+            <div id="main-loader" class="flex flex-col items-center justify-center py-20">
+                <div class="animate-spin rounded-full h-12 w-12 border-4 border-white/5 border-t-blue-500 mb-4"></div>
+                <p class="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Buscando na Planilha...</p>
             </div>
         </div>
     </div>
@@ -149,14 +160,52 @@
     <script>
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.addEventListener('keydown', e => {
-            if ((e.ctrlKey && ['c', 'u', 's', 'p'].includes(e.key.toLowerCase())) || e.keyCode === 123) e.preventDefault();
+            if ((e.ctrlKey && ['c', 'u', 's', 'p'].includes(e.key.toLowerCase())) || e.keyCode === 123) {
+                e.preventDefault();
+            }
         });
 
         const URL_CLIENTES = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec";
-        const URL_AGENDA = "https://script.google.com/macros/s/AKfycbzsf0mHZ6Kj6ip2vH4zNsPgZu0yRW0K0agP__8MRntcZ9AjPQzDdq2vmCWfSZICWhpu/exec"; // COLOQUE A URL DA SUA AGENDA AQUI
+        const URL_AGENDA = "https://script.google.com/macros/s/AKfycbyqmJbv8q8KoT9GuprcH-Og3dS7reSWi3KgE9K4KexscVMFLXSTNUsfAculdR0qyn_0/exec";
 
         let agendaGlobal = [];
+        let clientesCache = [];
         let filtroAtual = 'dia';
+
+        // LÓGICA DROPDOWN
+        function toggleDropdown(el) {
+            const list = el.nextElementSibling;
+            const searchInput = el.querySelector('.search-input');
+            const isVisible = list.style.display === 'block';
+            document.querySelectorAll('.dropdown-list').forEach(l => l.style.display = 'none');
+            if (!isVisible) {
+                list.style.display = 'block';
+                el.parentElement.classList.add('is-searching');
+                searchInput.focus();
+            }
+        }
+
+        function filtrarDropdown(input) {
+            const termo = input.value.toLowerCase();
+            const items = input.closest('.custom-dropdown').querySelectorAll('.dropdown-item');
+            items.forEach(item => {
+                item.style.display = item.textContent.toLowerCase().includes(termo) ? 'block' : 'none';
+            });
+        }
+
+        function selecionarCliente(nome, endereco) {
+            document.querySelector('#dropdown-cliente .selected-text').innerText = nome;
+            document.getElementById('cliente').value = nome;
+            document.getElementById('endereco').value = endereco || "";
+            fecharDropdowns();
+        }
+
+        function fecharDropdowns() {
+            document.querySelectorAll('.dropdown-list').forEach(l => l.style.display = 'none');
+            document.querySelectorAll('.custom-dropdown').forEach(d => d.classList.remove('is-searching'));
+        }
+
+        window.onclick = (e) => { if (!e.target.closest('.custom-dropdown')) fecharDropdowns(); };
 
         function toggleTheme() {
             document.body.classList.toggle('light-mode');
@@ -164,51 +213,34 @@
             icon.className = document.body.classList.contains('light-mode') ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
         }
 
-        function toggleDropdownCliente() {
-            const list = document.getElementById('lista-clientes-dropdown');
-            const group = document.getElementById('group-cliente');
-            const search = document.getElementById('search-cliente');
-            if (list.style.display !== 'block') {
-                list.style.display = 'block';
-                group.classList.add('is-searching');
-                search.classList.remove('hidden');
-                search.focus();
-                search.value = '';
-                filtrarDropdownCliente(search);
-            } else { fecharDropdowns(); }
+        function abrirPopup() {
+            document.getElementById('modalTitle').innerText = "Nova Visita";
+            document.getElementById('formAgenda').reset();
+            document.querySelector('#dropdown-cliente .selected-text').innerText = "Selecionar Cliente";
+            document.getElementById('edit_id').value = "";
+            document.getElementById('popupAgendar').style.display = 'block';
         }
 
-        function filtrarDropdownCliente(input) {
-            const termo = input.value.toLowerCase();
-            document.querySelectorAll('.dropdown-item').forEach(item => {
-                item.style.display = item.textContent.toLowerCase().includes(termo) ? 'block' : 'none';
-            });
-        }
-
-        function selecionarCliente(nome, endereco) {
-            document.getElementById('display-cliente').innerText = nome;
-            document.getElementById('cliente').value = nome;
-            document.getElementById('endereco').value = endereco || "";
-            fecharDropdowns();
-        }
-
-        function fecharDropdowns() {
-            document.getElementById('lista-clientes-dropdown').style.display = 'none';
-            document.getElementById('group-cliente').classList.remove('is-searching');
-            document.getElementById('search-cliente').classList.add('hidden');
-        }
+        function fecharPopup() { document.getElementById('popupAgendar').style.display = 'none'; }
 
         async function carregarClientes() {
             try {
                 const res = await fetch(URL_CLIENTES);
-                const dados = await res.json();
-                const list = document.getElementById('lista-clientes-dropdown');
-                const unique = Array.from(new Set(dados.map(c => c.cli_nome))).map(n => dados.find(x => x.cli_nome === n));
-                list.innerHTML = unique.map(c => `<li class="dropdown-item" onclick="selecionarCliente('${c.cli_nome}', '${c.cli_end || ""}')">${c.cli_nome}</li>`).join('');
-            } catch (e) { console.error("Erro clientes"); }
+                clientesCache = await res.json();
+                const list = document.getElementById('lista_clientes_custom');
+                const clientesUnicos = [...new Map(clientesCache.map(item => [item.cli_nome, item])).values()];
+                list.innerHTML = clientesUnicos.map(c => 
+                    `<li class="dropdown-item" onclick="selecionarCliente('${c.cli_nome}', '${c.cli_end || ''}')">${c.cli_nome}</li>`
+                ).join('');
+            } catch (e) { console.error("Erro ao carregar clientes"); }
         }
 
         async function carregarAgenda() {
+            document.getElementById('container-historico').innerHTML = `
+                <div class="flex flex-col items-center justify-center py-20">
+                    <div class="animate-spin rounded-full h-12 w-12 border-4 border-white/5 border-t-blue-500 mb-4"></div>
+                    <p class="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Buscando na Planilha...</p>
+                </div>`;
             try {
                 const res = await fetch(URL_AGENDA);
                 agendaGlobal = await res.json();
@@ -218,20 +250,37 @@
             }
         }
 
+        function filtrar(tipo) {
+            filtroAtual = tipo;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('f-' + tipo).classList.add('active');
+            renderizarServicos();
+        }
+
         function renderizarServicos() {
             const container = document.getElementById('container-historico');
             const busca = document.getElementById('buscaCliente').value.toLowerCase();
-            const hoje = new Date(); hoje.setHours(0,0,0,0);
+            const hoje = new Date();
+            hoje.setHours(0,0,0,0);
 
             let dadosFiltrados = agendaGlobal.filter(i => {
-                if(!i.CLIENTE || !i.CLIENTE.toString().toLowerCase().includes(busca)) return false;
+                const termoMatch = i.CLIENTE && i.CLIENTE.toString().toLowerCase().includes(busca);
+                if(!termoMatch) return false;
                 if(filtroAtual === 'todos') return true;
-                const ds = new Date(i.DATA_DO_SERVICO.split('T')[0] + 'T12:00:00');
-                if(isNaN(ds)) return true;
-                if(filtroAtual === 'dia') return ds.toLocaleDateString() === hoje.toLocaleDateString();
-                if(filtroAtual === 'semana') { const diff = (ds - hoje) / 86400000; return diff >= 0 && diff <= 7; }
-                if(filtroAtual === 'mes') return ds.getMonth() === hoje.getMonth() && ds.getFullYear() === hoje.getFullYear();
+                const dataServico = new Date(i.DATA_DO_SERVICO.split('T')[0] + 'T12:00:00');
+                if(isNaN(dataServico)) return true;
+                if(filtroAtual === 'dia') return dataServico.toLocaleDateString() === hoje.toLocaleDateString();
+                if(filtroAtual === 'semana') {
+                    const diff = (dataServico - hoje) / (1000 * 60 * 60 * 24);
+                    return diff >= 0 && diff <= 7;
+                }
+                if(filtroAtual === 'mes') return dataServico.getMonth() === hoje.getMonth() && dataServico.getFullYear() === hoje.getFullYear();
                 return true;
+            });
+
+            dadosFiltrados.sort((a, b) => {
+                if ((a.STATUS === 'concluido') !== (b.STATUS === 'concluido')) return a.STATUS === 'concluido' ? 1 : -1;
+                return parseInt((a.HORA || "00:00").replace(':','')) - parseInt((b.HORA || "00:00").replace(':',''));
             });
 
             if(dadosFiltrados.length === 0) {
@@ -239,84 +288,102 @@
                 return;
             }
 
-            container.innerHTML = dadosFiltrados.map(i => {
-                const isC = i.STATUS === 'concluido';
-                let obs = i.DESCRICAO || "";
-                let tipo = obs.startsWith("[Orçamento]") ? "Orçamento" : "Serviço";
-                obs = obs.replace("[Orçamento]", "").replace("[Serviço]", "").trim();
+            container.innerHTML = dadosFiltrados.map((i) => {
+                const isConcluido = i.STATUS === 'concluido';
+                let obs = (i.DESCRICAO || i.OBSERVACAO || "").replace("[Orçamento]","").replace("[Serviço]","").trim();
+                let tipo = (i.DESCRICAO || "").includes("[Orçamento]") ? "Orçamento" : "Serviço";
                 const d = new Date(i.DATA_DO_SERVICO.split('T')[0] + 'T12:00:00');
-                const df = !isNaN(d) ? d.toLocaleDateString('pt-BR') : i.DATA_DO_SERVICO;
-                let h = i.HORA || "--:--"; if(h.includes('T')) h = h.split('T')[1].substring(0,5);
+                const dataF = !isNaN(d) ? d.toLocaleDateString('pt-BR') : i.DATA_DO_SERVICO;
+                const hF = i.HORA && i.HORA.includes('T') ? i.HORA.split('T')[1].substring(0,5) : (i.HORA || "--:--");
+                const itemStr = encodeURIComponent(JSON.stringify(i));
 
-                return `<div class="glass-card p-5 relative ${isC ? 'concluido' : ''}">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="flex-1">
-                            <span class="badge ${tipo === 'Serviço' ? 'badge-servico' : 'badge-orcamento'}">${tipo}</span>
-                            <h2 class="text-base font-black leading-tight mt-1">${i.CLIENTE}</h2>
-                            <p class="text-[11px] opacity-60"><i class="fa-solid fa-location-dot"></i> ${i.ENDERECO}</p>
-                        </div>
-                        <div class="text-right">
-                            <button onclick="prepararEdicao('${encodeURIComponent(JSON.stringify(i))}')" class="text-blue-500 opacity-60 mb-2"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <div class="bg-white/5 p-2 rounded-lg text-center border border-white/5">
-                                <p class="text-[11px] font-black text-blue-500">${df}</p>
-                                <p class="text-[13px] font-bold">${h}</p>
+                return `
+                    <div class="glass-card p-5 relative ${isConcluido ? 'concluido' : ''}">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex-1">
+                                <span class="badge ${tipo === 'Serviço' ? 'badge-servico' : 'badge-orcamento'}">${tipo}</span>
+                                <h2 class="text-base font-black mt-2 leading-tight">${i.CLIENTE}</h2>
+                                <p class="text-[11px] opacity-60 mt-1"><i class="fa-solid fa-location-dot mr-1"></i> ${i.ENDERECO}</p>
+                            </div>
+                            <div class="text-right flex flex-col items-end">
+                                <button onclick="prepararEdicao('${itemStr}')" class="mb-2 text-blue-500 opacity-60 hover:opacity-100"><i class="fa-solid fa-pen-to-square text-lg"></i></button>
+                                <div class="bg-white/5 p-2 rounded-lg border border-white/5 text-center min-w-[70px]">
+                                    <p class="text-[11px] font-black text-blue-500">${dataF}</p>
+                                    <p class="text-[13px] font-bold">${hF}</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="bg-black/20 rounded-xl p-3 mb-4 text-xs italic opacity-80">${obs || 'Sem observações...'}</div>
-                    ${!isC ? `<button onclick='concluirServico("${i.CLIENTE}")' class="w-full py-3 bg-green-600/20 text-green-500 rounded-xl text-[10px] font-black uppercase hover:bg-green-600 hover:text-white transition-all">✓ Concluir</button>` : `<div class="text-[10px] font-black text-green-500 uppercase">✓ Finalizado</div>`}
-                </div>`;
+                        <div class="bg-black/20 rounded-xl p-3 mb-4"><p class="text-xs italic opacity-80">${obs || 'Sem observações...'}</p></div>
+                        <div class="flex gap-2">
+                            ${!isConcluido ? `<button onclick='concluirServico("${i.CLIENTE}")' class="flex-1 py-3 bg-green-600/20 text-green-500 rounded-xl text-[10px] font-black uppercase">✓ Concluir</button>` : `<div class="text-[10px] font-black text-green-500 uppercase">✓ Finalizado</div>`}
+                        </div>
+                    </div>`;
             }).join('');
         }
 
-        function prepararEdicao(str) {
-            const item = JSON.parse(decodeURIComponent(str));
+        function prepararEdicao(itemEncoded) {
+            const item = JSON.parse(decodeURIComponent(itemEncoded));
             document.getElementById('modalTitle').innerText = "Editar Visita";
             document.getElementById('cliente').value = item.CLIENTE;
-            document.getElementById('display-cliente').innerText = item.CLIENTE;
+            document.querySelector('#dropdown-cliente .selected-text').innerText = item.CLIENTE;
             document.getElementById('endereco').value = item.ENDERECO;
-            let obs = item.DESCRICAO || "";
-            document.getElementById('tipo').value = obs.startsWith("[Orçamento]") ? "Orçamento" : "Serviço";
-            document.getElementById('descricao').value = obs.replace("[Orçamento]", "").replace("[Serviço]", "").trim();
+            document.getElementById('tipo').value = (item.DESCRICAO || "").includes("[Orçamento]") ? "Orçamento" : "Serviço";
+            document.getElementById('descricao').value = (item.DESCRICAO || "").replace("[Orçamento]","").replace("[Serviço]","").trim();
             const d = new Date(item.DATA_DO_SERVICO);
             if(!isNaN(d)) document.getElementById('data_visita').value = d.toISOString().split('T')[0];
-            let h = item.HORA || ""; if(h.includes('T')) h = h.split('T')[1].substring(0,5);
+            let h = item.HORA || "";
+            if(h.includes('T')) h = h.split('T')[1].substring(0,5);
             document.getElementById('hora_visita').value = h;
-            document.getElementById('edit_id').value = item.CLIENTE;
+            document.getElementById('edit_id').value = item.CLIENTE; 
             document.getElementById('popupAgendar').style.display = 'block';
         }
 
-        function enviarDados(payload) {
-            const overlay = document.getElementById('statusOverlay');
-            overlay.style.display = 'flex';
-            document.getElementById('statusText').innerText = "Processando...";
-            fetch(URL_AGENDA, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-            setTimeout(() => {
-                overlay.style.display = 'none'; fecharPopup();
-                document.getElementById('toast-minimal').style.display = 'block';
-                setTimeout(() => { document.getElementById('toast-minimal').style.display = 'none'; carregarAgenda(); }, 1000);
-            }, 1500);
+        async function concluirServico(cliente) {
+            if(!confirm("Marcar como concluído?")) return;
+            enviarDados({ action: "concluir", cliente: cliente });
         }
 
-        async function excluirConcluidos() { if(confirm("Excluir serviços concluídos?")) enviarDados({ action: "delete_concluidos" }); }
-        async function concluirServico(c) { if(confirm("Concluir serviço?")) enviarDados({ action: "concluir", cliente: c }); }
-        function filtrar(t) { filtroAtual = t; document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); document.getElementById('f-'+t).classList.add('active'); renderizarServicos(); }
-        function abrirPopup() { document.getElementById('modalTitle').innerText = "Nova Visita"; document.getElementById('formAgenda').reset(); document.getElementById('display-cliente').innerText = "Selecionar Cliente"; document.getElementById('edit_id').value = ""; document.getElementById('popupAgendar').style.display = 'block'; carregarClientes(); }
-        function fecharPopup() { document.getElementById('popupAgendar').style.display = 'none'; }
-        document.getElementById('formAgenda').onsubmit = e => {
+        async function limparConcluidos() {
+            if(!confirm("Deseja EXCLUIR permanentemente todos os serviços concluídos da planilha?")) return;
+            enviarDados({ action: "limpar_concluidos" });
+        }
+
+        document.getElementById('formAgenda').onsubmit = function(e) {
             e.preventDefault();
-            enviarDados({
+            const payload = {
                 action: "cadastrar",
-                edit_id: document.getElementById('edit_id').value,
+                edit_id: document.getElementById('edit_id').value, 
                 cliente: document.getElementById('cliente').value,
                 endereco: document.getElementById('endereco').value,
                 descricao: `[${document.getElementById('tipo').value}] ${document.getElementById('descricao').value}`,
                 data_servico: document.getElementById('data_visita').value.split('-').reverse().join('/'),
                 hora: document.getElementById('hora_visita').value
-            });
+            };
+            enviarDados(payload);
         };
+
+        function enviarDados(payload) {
+            const overlay = document.getElementById('statusOverlay');
+            overlay.style.display = 'flex';
+            document.getElementById('statusText').innerText = "Processando...";
+
+            fetch(URL_AGENDA, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+
+            setTimeout(() => {
+                document.getElementById('statusText').innerText = "Sucesso!";
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    fecharPopup();
+                    document.getElementById('toast-minimal').style.display = 'block';
+                    setTimeout(() => {
+                        document.getElementById('toast-minimal').style.display = 'none';
+                        carregarAgenda(); 
+                    }, 1000);
+                }, 800);
+            }, 1000);
+        }
+
         window.onload = () => { carregarAgenda(); carregarClientes(); };
-        window.onclick = e => { if(!e.target.closest('#group-cliente')) fecharDropdowns(); };
     </script>
 </body>
 </html>
