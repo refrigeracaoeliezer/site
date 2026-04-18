@@ -53,14 +53,10 @@
 
         #toast-minimal { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #22c55e; color: white; padding: 12px 25px; border-radius: 50px; font-weight: 700; display: none; z-index: 10000; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
 
-        /* ESTILO DROPDOWN CUSTOM */
         .custom-dropdown { position: relative; }
         .dropdown-list { position: absolute; left: 0; right: 0; top: 110%; background: var(--dropdown-bg); border: 1px solid var(--glass-border); border-radius: 15px; z-index: 50; max-height: 200px; overflow-y: auto; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
         .dropdown-item { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--glass-border); transition: 0.2s; cursor: pointer; }
         .dropdown-item:hover { background: #2563eb; color: white; }
-        .is-searching .selected-text { display: none; }
-        .search-input { background: transparent; border: none; color: inherit; width: 100%; outline: none; display: none; padding: 0 !important; }
-        .is-searching .search-input { display: block; }
     </style>
 </head>
 <body class="p-4 pb-24">
@@ -88,7 +84,6 @@
                 <div class="custom-dropdown" id="dropdown-cliente">
                     <div class="w-full bg-white/5 border border-white/10 rounded-xl p-3 flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
                         <span class="selected-text truncate">Selecionar Cliente</span>
-                        <input type="text" class="search-input" placeholder="Pesquisar..." oninput="filtrarDropdown(this)" onclick="event.stopPropagation()">
                         <i class="fa-solid fa-chevron-down opacity-30 text-[10px]"></i>
                     </div>
                     <ul id="lista_clientes_custom" class="dropdown-list"></ul>
@@ -172,25 +167,13 @@
         let clientesCache = [];
         let filtroAtual = 'dia';
 
-        // LÓGICA DROPDOWN
         function toggleDropdown(el) {
             const list = el.nextElementSibling;
-            const searchInput = el.querySelector('.search-input');
             const isVisible = list.style.display === 'block';
             document.querySelectorAll('.dropdown-list').forEach(l => l.style.display = 'none');
             if (!isVisible) {
                 list.style.display = 'block';
-                el.parentElement.classList.add('is-searching');
-                searchInput.focus();
             }
-        }
-
-        function filtrarDropdown(input) {
-            const termo = input.value.toLowerCase();
-            const items = input.closest('.custom-dropdown').querySelectorAll('.dropdown-item');
-            items.forEach(item => {
-                item.style.display = item.textContent.toLowerCase().includes(termo) ? 'block' : 'none';
-            });
         }
 
         function selecionarCliente(nome, endereco) {
@@ -202,7 +185,6 @@
 
         function fecharDropdowns() {
             document.querySelectorAll('.dropdown-list').forEach(l => l.style.display = 'none');
-            document.querySelectorAll('.custom-dropdown').forEach(d => d.classList.remove('is-searching'));
         }
 
         window.onclick = (e) => { if (!e.target.closest('.custom-dropdown')) fecharDropdowns(); };
@@ -338,14 +320,18 @@
             document.getElementById('popupAgendar').style.display = 'block';
         }
 
-        async function concluirServico(cliente) {
-            if(!confirm("Marcar como concluído?")) return;
-            enviarDados({ action: "concluir", cliente: cliente });
+        function concluirServico(cliente) {
+            // Chamada explícita do confirm vinculada ao evento de clique
+            if (window.confirm("Deseja realmente marcar esta visita como CONCLUÍDA?")) {
+                enviarDados({ action: "concluir", cliente: cliente }, "Visita concluída com sucesso!");
+            }
         }
 
-        async function limparConcluidos() {
-            if(!confirm("Deseja EXCLUIR permanentemente todos os serviços concluídos da planilha?")) return;
-            enviarDados({ action: "limpar_concluidos" });
+        function limparConcluidos() {
+            // Chamada explícita do confirm vinculada ao evento de clique
+            if (window.confirm("Deseja realmente EXCLUIR permanentemente todas as visitas concluídas?")) {
+                enviarDados({ action: "limpar_concluidos" }, "Visitas concluídas excluídas com sucesso!");
+            }
         }
 
         document.getElementById('formAgenda').onsubmit = function(e) {
@@ -359,10 +345,10 @@
                 data_servico: document.getElementById('data_visita').value.split('-').reverse().join('/'),
                 hora: document.getElementById('hora_visita').value
             };
-            enviarDados(payload);
+            enviarDados(payload, "Agendamento salvo com sucesso!");
         };
 
-        function enviarDados(payload) {
+        function enviarDados(payload, mensagemSucesso) {
             const overlay = document.getElementById('statusOverlay');
             overlay.style.display = 'flex';
             document.getElementById('statusText').innerText = "Processando...";
@@ -374,11 +360,15 @@
                 setTimeout(() => {
                     overlay.style.display = 'none';
                     fecharPopup();
-                    document.getElementById('toast-minimal').style.display = 'block';
+                    
+                    const toast = document.getElementById('toast-minimal');
+                    toast.innerHTML = `<i class="fa-solid fa-check mr-2"></i> ${mensagemSucesso.toUpperCase()}`;
+                    toast.style.display = 'block';
+                    
                     setTimeout(() => {
-                        document.getElementById('toast-minimal').style.display = 'none';
+                        toast.style.display = 'none';
                         carregarAgenda(); 
-                    }, 1000);
+                    }, 1500);
                 }, 800);
             }, 1000);
         }
