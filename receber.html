@@ -127,20 +127,18 @@
                 <h1 class="text-xl font-black uppercase tracking-tighter">Contas a <span class="text-red-500">Receber</span></h1>
                 <span class="text-[10px] opacity-40 font-bold uppercase tracking-widest">Gestão de Inadimplência</span>
             </div>
-            <div class="flex flex-col items-end gap-2">
-                <div class="flex items-center gap-3">
-                    <div class="text-right">
-                        <p class="text-[10px] opacity-50 font-black uppercase">Total Pendente</p>
-                        <p id="total-geral" class="text-2xl font-black text-red-500">R$ 0,00</p>
-                    </div>
-                    <div class="flex flex-col gap-2">
-                        <button onclick="toggleTheme()" class="header-action-btn" title="Alternar Tema">
-                            <i id="theme-icon" class="fa-solid fa-sun"></i>
-                        </button>
-                        <button onclick="limparPagos()" class="header-action-btn delete-btn-red" title="Excluir Pagos">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </div>
+            <div class="flex flex-col items-end">
+                <div class="text-right mb-2">
+                    <p class="text-[10px] opacity-50 font-black uppercase">Total Pendente</p>
+                    <p id="total-geral" class="text-3xl font-black text-red-500 leading-none">R$ 0,00</p>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <button onclick="toggleTheme()" class="header-action-btn" title="Alternar Tema">
+                        <i id="theme-icon" class="fa-solid fa-sun"></i>
+                    </button>
+                    <button onclick="limparPagos()" class="header-action-btn delete-btn-red" title="Excluir Pagos">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
                 </div>
             </div>
         </header>
