@@ -238,39 +238,25 @@ img {
       .catch(err => console.log('Erro ao registrar Service Worker', err));
   }
 
-  // --- LOGICA DE INDICAÇÃO DE DOWNLOAD (PWA) ---
-  let deferredPrompt;
-
+  // --- LÓGICA DO POP-UP DE INSTALAÇÃO (PROMPT NATIVO) ---
+  let promptEvento;
   window.addEventListener('beforeinstallprompt', (e) => {
-    // Impede que o navegador mostre a barra automática para podermos controlar
     e.preventDefault();
-    deferredPrompt = e;
+    promptEvento = e;
     
-    // Mostra um aviso ao usuário que ele pode instalar
-    showToast("Instale nosso Aplicativo para melhor experiência!");
-    
-    // Tenta disparar o prompt após o primeiro clique em qualquer lugar da tela
-    document.body.addEventListener('click', () => {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') {
-                    console.log('Usuário aceitou a instalação');
-                }
-                deferredPrompt = null;
-            });
-        }
+    // Dispara o Pop-up de instalação na primeira interação do usuário com a página
+    document.addEventListener('click', () => {
+      if (promptEvento) {
+        promptEvento.prompt();
+        promptEvento.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('App instalado');
+          }
+          promptEvento = null;
+        });
+      }
     }, { once: true });
   });
-
-  // Verifica se já está rodando como aplicativo
-  window.addEventListener('DOMContentLoaded', () => {
-    const isApp = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-    if (!isApp && !/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-        console.log("Navegador: Sugestão de instalação ativa.");
-    }
-  });
-
 
   // BLOQUEIOS DE SEGURANÇA (JavaScript)
   
