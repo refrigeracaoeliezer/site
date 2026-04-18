@@ -9,24 +9,48 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     
     <style>
-        :root { --bg-body: #0d1117; --text-main: white; --glass-bg: rgba(255, 255, 255, 0.03); --glass-border: rgba(255, 255, 255, 0.1); --dropdown-bg: #161b22; }
-        body { background: var(--bg-body); color: var(--text-main); font-family: 'Inter', sans-serif; -webkit-user-select: none; user-select: none; }
-        .glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px; transition: 0.3s; }
+        /* --- VARIÁVEIS DE TEMA (MODELO) --- */
+        :root { 
+            --bg-body: #0d1117; 
+            --text-main: white; 
+            --glass-bg: rgba(255, 255, 255, 0.03); 
+            --glass-border: rgba(255, 255, 255, 0.1); 
+            --dropdown-bg: #161b22; 
+            --input-bg: rgba(255, 255, 255, 0.05);
+        }
+
+        body.light-mode {
+            --bg-body: #f0f2f5;
+            --text-main: #1a1f26;
+            --glass-bg: rgba(255, 255, 255, 0.8);
+            --glass-border: rgba(0, 0, 0, 0.1);
+            --dropdown-bg: #ffffff;
+            --input-bg: rgba(0, 0, 0, 0.05);
+        }
+
+        body { background: var(--bg-body); color: var(--text-main); font-family: 'Inter', sans-serif; -webkit-user-select: none; user-select: none; transition: background 0.3s, color 0.3s; }
+        
+        /* Proteção de Input */
+        input { -webkit-user-select: text !important; user-select: text !important; }
+
+        .glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px; transition: 0.3s; position: relative; }
         .devedor-border { border-left: 4px solid #ef4444 !important; }
         .pago-border { border-left: 4px solid #22c55e !important; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
         #popupFinanceiro { background-color: var(--bg-body); color: var(--text-main); width: 95%; max-width: 450px; padding: 30px; border-radius: 25px; border: 1px solid var(--glass-border); position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 100; display: none; max-height: 90vh; overflow-y: auto; }
         .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; font-size: 11px; opacity: 0.5; text-transform: uppercase; margin-bottom: 5px; font-weight: 700; }
-        .input-group input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px; color: inherit; outline: none; }
+        .input-group label { display: block; font-size: 11px; opacity: 0.5; text-transform: uppercase; margin-bottom: 5px; font-weight: 700; color: var(--text-main); }
+        .input-group input { width: 100%; background: var(--input-bg); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px; color: inherit; outline: none; }
         
         .custom-dropdown { position: relative; }
-        .dropdown-list { position: absolute; left: 0; right: 0; top: 110%; background: var(--dropdown-bg); border: 1px solid var(--glass-border); border-radius: 15px; z-index: 50; max-height: 200px; overflow-y: auto; display: none; }
-        .dropdown-item { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--glass-border); cursor: pointer; }
+        .dropdown-list { position: absolute; left: 0; right: 0; top: 110%; background: var(--dropdown-bg); border: 1px solid var(--glass-border); border-radius: 15px; z-index: 50; max-height: 200px; overflow-y: auto; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .dropdown-item { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--glass-border); cursor: pointer; color: var(--text-main); }
         .dropdown-item:hover { background: #ef4444; color: white; }
 
-        .btn-flutuante { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: #ef4444; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 90; }
+        .btn-flutuante { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: #ef4444; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 90; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
+        .theme-toggle { position: fixed; top: 20px; right: 20px; background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10001; }
+        
         .delete-btn { background: var(--glass-bg); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         #statusOverlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); border-radius: 25px; flex-direction: column; align-items: center; justify-content: center; z-index: 110; }
 
@@ -47,9 +71,16 @@
             align-items: center;
             justify-content: center;
         }
+
+        .edit-card-btn { position: absolute; top: 15px; right: 15px; color: #3b82f6; opacity: 0.5; transition: 0.3s; cursor: pointer; }
+        .edit-card-btn:hover { opacity: 1; }
     </style>
 </head>
 <body class="p-4 pb-24">
+
+    <button onclick="toggleTheme()" class="theme-toggle">
+        <i id="theme-icon" class="fa-solid fa-sun"></i>
+    </button>
 
     <div id="toast-minimal"><i class="fa-solid fa-check mr-2"></i> SALVO COM SUCESSO!</div>
 
@@ -69,12 +100,8 @@
             <div class="input-group">
                 <label>Cliente</label>
                 <div class="custom-dropdown" id="dropdown-cliente">
-                    <div class="w-full bg-white/5 border border-white/10 rounded-xl p-3 flex justify-between items-center cursor-pointer" onclick="toggleDropdown()">
-                        <span id="selected-cliente-text" class="truncate">Selecionar Cliente</span>
-                        <i class="fa-solid fa-chevron-down opacity-30 text-[10px]"></i>
-                    </div>
+                    <input type="text" id="cliente_nome" placeholder="Nome do cliente..." oninput="filtrarClientes(this)" onclick="toggleDropdown()" autocomplete="off" required>
                     <ul id="lista_clientes_financeiro" class="dropdown-list no-scrollbar"></ul>
-                    <input type="hidden" id="cliente_nome" required>
                 </div>
             </div>
             <div class="input-group">
@@ -133,7 +160,28 @@
         const URL_FINANCEIRO = "https://script.google.com/macros/s/AKfycbxVQv7yNVed7G6TQt6oZPdgy6A_I-cdJj71aTkiXZwfvZUoU4Qib3oTlFipw6ahVPJMXA/exec";
 
         let dadosFinanceiros = [];
+        let listaClientesCache = [];
         let filtroStatus = 'pendente';
+
+        // --- SEGURANÇA (MODELO) ---
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey && (e.key === 'c' || e.key === 'u' || e.key === 's' || e.key === 'p')) || 
+                (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i')) || (e.keyCode === 123)) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // --- TEMA (MODELO) ---
+        function toggleTheme() {
+            const body = document.body;
+            const icon = document.getElementById('theme-icon');
+            body.classList.toggle('light-mode');
+            const isLight = body.classList.contains('light-mode');
+            icon.classList.replace(isLight ? 'fa-sun' : 'fa-moon', isLight ? 'fa-moon' : 'fa-sun');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        }
 
         async function carregarDados() {
             try {
@@ -148,10 +196,21 @@
         async function carregarClientes() {
             try {
                 const res = await fetch(URL_CLIENTES);
-                const clientes = await res.json();
-                const list = document.getElementById('lista_clientes_financeiro');
-                list.innerHTML = clientes.map(c => `<li class="dropdown-item" onclick="selecionarCliente('${c.cli_nome}')">${c.cli_nome}</li>`).join('');
+                listaClientesCache = await res.json();
+                renderizarListaDropdown(listaClientesCache);
             } catch (e) {}
+        }
+
+        function renderizarListaDropdown(lista) {
+            const list = document.getElementById('lista_clientes_financeiro');
+            list.innerHTML = lista.map(c => `<li class="dropdown-item" onclick="selecionarCliente('${c.cli_nome}')">${c.cli_nome}</li>`).join('');
+        }
+
+        function filtrarClientes(input) {
+            const termo = input.value.toLowerCase();
+            const filtrados = listaClientesCache.filter(c => c.cli_nome.toLowerCase().includes(termo));
+            renderizarListaDropdown(filtrados);
+            document.getElementById('lista_clientes_financeiro').style.display = 'block';
         }
 
         function formatarMoeda(valor) {
@@ -194,11 +253,11 @@
                 const itemStr = encodeURIComponent(JSON.stringify(item));
                 return `
                     <div class="glass-card p-5 ${isPendente ? 'devedor-border' : 'pago-border'}">
+                        <button onclick="prepararEdicao('${itemStr}')" class="edit-card-btn"><i class="fa-solid fa-pen-to-square"></i></button>
                         <div class="flex justify-between items-start">
                             <div class="flex-1">
                                 <div class="flex items-center gap-2">
                                      <h2 class="text-base font-black uppercase">${item.CLIENTE}</h2>
-                                     <button onclick="prepararEdicao('${itemStr}')" class="text-blue-500 opacity-40 hover:opacity-100"><i class="fa-solid fa-pen-to-square"></i></button>
                                 </div>
                                 <p class="text-xs opacity-60 mb-3">${item.SERVICO}</p>
                                 <div class="grid grid-cols-2 gap-2 mt-2">
@@ -239,18 +298,14 @@
             const overlay = document.getElementById('statusOverlay');
             overlay.style.display = 'flex';
             document.getElementById('statusText').innerText = "Processando...";
-
             fetch(URL_FINANCEIRO, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-
             setTimeout(() => {
                 document.getElementById('statusText').innerText = "Sucesso!";
                 setTimeout(() => {
                     overlay.style.display = 'none';
                     fecharPopup();
-                    
                     const toast = document.getElementById('toast-minimal');
                     toast.style.display = 'flex';
-                    
                     setTimeout(() => {
                         toast.style.display = 'none';
                         carregarDados();
@@ -268,20 +323,21 @@
         function abrirPopup() {
             document.getElementById('modalTitle').innerText = "Lançar Débito";
             document.getElementById('formFinanceiro').reset();
-            document.getElementById('selected-cliente-text').innerText = "Selecionar Cliente";
             document.getElementById('edit_index').value = "";
             document.getElementById('popupFinanceiro').style.display = 'block';
         }
 
-        function fecharPopup() { document.getElementById('popupFinanceiro').style.display = 'none'; }
+        function fecharPopup() { 
+            document.getElementById('popupFinanceiro').style.display = 'none'; 
+            document.getElementById('lista_clientes_financeiro').style.display = 'none';
+        }
         
         function toggleDropdown() {
             const list = document.getElementById('lista_clientes_financeiro');
-            list.style.display = list.style.display === 'block' ? 'none' : 'block';
+            list.style.display = 'block';
         }
 
         function selecionarCliente(nome) {
-            document.getElementById('selected-cliente-text').innerText = nome;
             document.getElementById('cliente_nome').value = nome;
             document.getElementById('lista_clientes_financeiro').style.display = 'none';
         }
@@ -291,7 +347,6 @@
             abrirPopup();
             document.getElementById('modalTitle').innerText = "Editar Débito";
             document.getElementById('cliente_nome').value = item.CLIENTE;
-            document.getElementById('selected-cliente-text').innerText = item.CLIENTE;
             document.getElementById('servico_desc').value = item.SERVICO;
             document.getElementById('valor_total').value = item.VALOR_TOAL || item.VALOR_TOTAL;
             document.getElementById('valor_recebido').value = item.VALOR_RECEBIDO;
@@ -311,7 +366,17 @@
             enviarCego(payload);
         };
 
-        window.onload = () => { carregarDados(); carregarClientes(); };
+        window.onclick = function(event) {
+            if (!event.target.matches('#cliente_nome')) {
+                document.getElementById('lista_clientes_financeiro').style.display = 'none';
+            }
+        }
+
+        window.onload = () => { 
+            if(localStorage.getItem('theme') === 'light') toggleTheme();
+            carregarDados(); 
+            carregarClientes(); 
+        };
     </script>
 </body>
 </html>
