@@ -96,7 +96,7 @@
         .is-os .dark-input:focus { border-color: #10b981 !important; }
 
         .service-card { background: var(--card-sub); border-radius: 20px; padding: 15px; border: 1px solid var(--glass-border); display: flex; flex-direction: column; gap: 12px; }
-        .service-row-top { display: flex; align-items: center; gap: 10px; width: 100%; }
+        .service-row-top { display: flex; align-items: center; gap: 10px; width: 100%; overflow: hidden; }
         .qty-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: var(--input-bg); color: #3b82f6; transition: 0.2s; border: 1px solid rgba(59, 130, 246, 0.2); }
         .is-os .qty-btn { color: #10b981 !important; border-color: rgba(16, 185, 129, 0.2) !important; }
         
@@ -472,10 +472,10 @@ function adicionarServico() {
     const div = document.createElement('div');
     div.className = "service-card";
     div.innerHTML = `
-        <div class="service-row-top">
-            <div class="relative custom-dropdown flex-grow">
+        <div class="service-row-top" style="display: flex; align-items: center; gap: 10px; width: 100%;">
+            <div class="relative custom-dropdown" style="flex: 1; min-width: 0; overflow: hidden;">
                 <div class="w-full dark-input p-4 rounded-2xl text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
-                     <span class="selected-text truncate">Selecionar Serviço</span>
+                     <span class="selected-text truncate" style="display: block; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Selecionar Serviço</span>
                     <input type="text" class="search-input" placeholder="Pesquisar..." oninput="filtrarDropdown(this)" onclick="event.stopPropagation()">
                     <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-[10px]"></i>
                 </div>
