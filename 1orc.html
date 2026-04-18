@@ -280,7 +280,7 @@ async function baixarPDF() {
     const dataFimValidade = calcularSomaData(dataInicio, diasValidade);
 
     const formData = new URLSearchParams();
-    formData.append('ID_OS', idApenasNumero); 
+   formData.append('ID_OS', "'" + idApenasNumero); 
     formData.append('CLIENTE', "Orçamento | " + dados.cliente);
     formData.append('ENDERECO', dados.endereco);
     formData.append('CPF', dados.cpf);
