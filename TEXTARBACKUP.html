@@ -53,7 +53,6 @@
 
         #toast-minimal { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #22c55e; color: white; padding: 12px 25px; border-radius: 50px; font-weight: 700; display: none; z-index: 10000; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
 
-        /* ESTILO DROPDOWN CUSTOM */
         .custom-dropdown { position: relative; }
         .dropdown-list { position: absolute; left: 0; right: 0; top: 110%; background: var(--dropdown-bg); border: 1px solid var(--glass-border); border-radius: 15px; z-index: 50; max-height: 200px; overflow-y: auto; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
         .dropdown-item { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--glass-border); transition: 0.2s; cursor: pointer; }
@@ -168,7 +167,6 @@
         let clientesCache = [];
         let filtroAtual = 'dia';
 
-        // LÓGICA DROPDOWN
         function toggleDropdown(el) {
             const list = el.nextElementSibling;
             const isVisible = list.style.display === 'block';
@@ -323,13 +321,17 @@
         }
 
         async function concluirServico(cliente) {
-            if(!confirm("Deseja realmente marcar esta visita como CONCLUÍDA?")) return;
-            enviarDados({ action: "concluir", cliente: cliente }, "Visita concluída com sucesso!");
+            var confirma = window.confirm("Deseja realmente marcar esta visita como CONCLUÍDA?");
+            if(confirma) {
+                enviarDados({ action: "concluir", cliente: cliente }, "Visita concluída com sucesso!");
+            }
         }
 
         async function limparConcluidos() {
-            if(!confirm("Deseja realmente EXCLUIR permanentemente todas as visitas concluídas?")) return;
-            enviarDados({ action: "limpar_concluidos" }, "Visitas concluídas excluídas com sucesso!");
+            var confirma = window.confirm("Deseja realmente EXCLUIR permanentemente todas as visitas concluídas?");
+            if(confirma) {
+                enviarDados({ action: "limpar_concluidos" }, "Visitas concluídas excluídas com sucesso!");
+            }
         }
 
         document.getElementById('formAgenda').onsubmit = function(e) {
