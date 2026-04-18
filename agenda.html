@@ -19,8 +19,8 @@
         input, select, textarea { user-select: text !important; }
         img { pointer-events: none !important; -webkit-user-drag: none !important; }
 
-        :root { --bg-body: #0d1117; --text-main: white; --glass-bg: rgba(255, 255, 255, 0.03); --glass-border: rgba(255, 255, 255, 0.1); }
-        body.light-mode { --bg-body: #f0f2f5; --text-main: #1a1f26; --glass-bg: rgba(255, 255, 255, 0.8); --glass-border: rgba(0, 0, 0, 0.1); }
+        :root { --bg-body: #0d1117; --text-main: white; --glass-bg: rgba(255, 255, 255, 0.03); --glass-border: rgba(255, 255, 255, 0.1); --dropdown-bg: #161b22; }
+        body.light-mode { --bg-body: #f0f2f5; --text-main: #1a1f26; --glass-bg: rgba(255, 255, 255, 0.8); --glass-border: rgba(0, 0, 0, 0.1); --dropdown-bg: #ffffff; }
         body { background: var(--bg-body); color: var(--text-main); }
 
         .glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 25px; transition: 0.3s; }
@@ -38,7 +38,8 @@
 
         #statusOverlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); border-radius: 25px; flex-direction: column; align-items: center; justify-content: center; z-index: 110; text-align: center; }
 
-        .theme-toggle { background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .theme-toggle, .delete-toggle { background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .delete-toggle { color: #ef4444; border-color: rgba(239, 68, 68, 0.2); }
         
         .btn-flutuante { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: #2563eb; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(37, 99, 235, 0.4); cursor: pointer; z-index: 90; transition: 0.3s; }
         .btn-flutuante:hover { transform: scale(1.1); }
@@ -51,6 +52,15 @@
         .badge-orcamento { background: rgba(37, 99, 235, 0.2); color: #3b82f6; border: 1px solid #3b82f6; }
 
         #toast-minimal { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #22c55e; color: white; padding: 12px 25px; border-radius: 50px; font-weight: 700; display: none; z-index: 10000; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+
+        /* ESTILO DROPDOWN CUSTOM */
+        .custom-dropdown { position: relative; }
+        .dropdown-list { position: absolute; left: 0; right: 0; top: 110%; background: var(--dropdown-bg); border: 1px solid var(--glass-border); border-radius: 15px; z-index: 50; max-height: 200px; overflow-y: auto; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .dropdown-item { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--glass-border); transition: 0.2s; cursor: pointer; }
+        .dropdown-item:hover { background: #2563eb; color: white; }
+        .is-searching .selected-text { display: none; }
+        .search-input { background: transparent; border: none; color: inherit; width: 100%; outline: none; display: none; padding: 0 !important; }
+        .is-searching .search-input { display: block; }
     </style>
 </head>
 <body class="p-4 pb-24">
@@ -72,11 +82,20 @@
 
         <form id="formAgenda">
             <input type="hidden" id="edit_id">
+            
             <div class="input-group">
                 <label>Cliente</label>
-                <input type="text" id="cliente" list="lista_clientes" required autocomplete="off">
-                <datalist id="lista_clientes"></datalist>
+                <div class="custom-dropdown" id="dropdown-cliente">
+                    <div class="w-full bg-white/5 border border-white/10 rounded-xl p-3 flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
+                        <span class="selected-text truncate">Selecionar Cliente</span>
+                        <input type="text" class="search-input" placeholder="Pesquisar..." oninput="filtrarDropdown(this)" onclick="event.stopPropagation()">
+                        <i class="fa-solid fa-chevron-down opacity-30 text-[10px]"></i>
+                    </div>
+                    <ul id="lista_clientes_custom" class="dropdown-list"></ul>
+                    <input type="hidden" id="cliente" required>
+                </div>
             </div>
+
             <div class="input-group">
                 <label>Tipo</label>
                 <select id="tipo">
@@ -113,6 +132,7 @@
                 <span class="text-[10px] opacity-40 font-bold uppercase tracking-widest">Refrigeração Eliezer</span>
             </div>
             <div class="flex gap-2">
+                <button onclick="limparConcluidos()" class="delete-toggle" title="Excluir Concluídos"><i class="fa-solid fa-trash-can"></i></button>
                 <button onclick="toggleTheme()" class="theme-toggle"><i id="theme-icon" class="fa-solid fa-sun"></i></button>
             </div>
         </header>
@@ -130,7 +150,10 @@
         </div>
 
         <div id="container-historico" class="space-y-4">
-            <div class="text-center py-20 opacity-20 font-bold uppercase text-xs tracking-widest">Carregando serviços...</div>
+            <div id="main-loader" class="flex flex-col items-center justify-center py-20">
+                <div class="animate-spin rounded-full h-12 w-12 border-4 border-white/5 border-t-blue-500 mb-4"></div>
+                <p class="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Buscando na Planilha...</p>
+            </div>
         </div>
     </div>
 
@@ -143,10 +166,46 @@
         });
 
         const URL_CLIENTES = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec";
-        const URL_AGENDA = "https://script.google.com/macros/s/AKfycbyt-CwHh2IuMJQ62IvNFikcXOc_CEV9Tk6U8-iomWY21L42D5AIGCB_Wuxmst5zg-Rt/exec";
+        const URL_AGENDA = "https://script.google.com/macros/s/AKfycbyqmJbv8q8KoT9GuprcH-Og3dS7reSWi3KgE9K4KexscVMFLXSTNUsfAculdR0qyn_0/exec";
 
         let agendaGlobal = [];
+        let clientesCache = [];
         let filtroAtual = 'dia';
+
+        // LÓGICA DROPDOWN
+        function toggleDropdown(el) {
+            const list = el.nextElementSibling;
+            const searchInput = el.querySelector('.search-input');
+            const isVisible = list.style.display === 'block';
+            document.querySelectorAll('.dropdown-list').forEach(l => l.style.display = 'none');
+            if (!isVisible) {
+                list.style.display = 'block';
+                el.parentElement.classList.add('is-searching');
+                searchInput.focus();
+            }
+        }
+
+        function filtrarDropdown(input) {
+            const termo = input.value.toLowerCase();
+            const items = input.closest('.custom-dropdown').querySelectorAll('.dropdown-item');
+            items.forEach(item => {
+                item.style.display = item.textContent.toLowerCase().includes(termo) ? 'block' : 'none';
+            });
+        }
+
+        function selecionarCliente(nome, endereco) {
+            document.querySelector('#dropdown-cliente .selected-text').innerText = nome;
+            document.getElementById('cliente').value = nome;
+            document.getElementById('endereco').value = endereco || "";
+            fecharDropdowns();
+        }
+
+        function fecharDropdowns() {
+            document.querySelectorAll('.dropdown-list').forEach(l => l.style.display = 'none');
+            document.querySelectorAll('.custom-dropdown').forEach(d => d.classList.remove('is-searching'));
+        }
+
+        window.onclick = (e) => { if (!e.target.closest('.custom-dropdown')) fecharDropdowns(); };
 
         function toggleTheme() {
             document.body.classList.toggle('light-mode');
@@ -157,9 +216,9 @@
         function abrirPopup() {
             document.getElementById('modalTitle').innerText = "Nova Visita";
             document.getElementById('formAgenda').reset();
+            document.querySelector('#dropdown-cliente .selected-text').innerText = "Selecionar Cliente";
             document.getElementById('edit_id').value = "";
             document.getElementById('popupAgendar').style.display = 'block';
-            carregarClientes();
         }
 
         function fecharPopup() { document.getElementById('popupAgendar').style.display = 'none'; }
@@ -167,21 +226,21 @@
         async function carregarClientes() {
             try {
                 const res = await fetch(URL_CLIENTES);
-                const dados = await res.json();
-                const list = document.getElementById('lista_clientes');
-                const clientesUnicos = [...new Set(dados.map(c => c.cli_nome))].filter(Boolean);
-                list.innerHTML = clientesUnicos.map(nome => `<option value="${nome}">`).join('');
-                
-                document.getElementById('cliente').onchange = function() {
-                    const cli = dados.find(x => x.cli_nome === this.value);
-                    if(cli) {
-                        document.getElementById('endereco').value = cli.cli_end || "";
-                    }
-                };
+                clientesCache = await res.json();
+                const list = document.getElementById('lista_clientes_custom');
+                const clientesUnicos = [...new Map(clientesCache.map(item => [item.cli_nome, item])).values()];
+                list.innerHTML = clientesUnicos.map(c => 
+                    `<li class="dropdown-item" onclick="selecionarCliente('${c.cli_nome}', '${c.cli_end || ''}')">${c.cli_nome}</li>`
+                ).join('');
             } catch (e) { console.error("Erro ao carregar clientes"); }
         }
 
         async function carregarAgenda() {
+            document.getElementById('container-historico').innerHTML = `
+                <div class="flex flex-col items-center justify-center py-20">
+                    <div class="animate-spin rounded-full h-12 w-12 border-4 border-white/5 border-t-blue-500 mb-4"></div>
+                    <p class="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Buscando na Planilha...</p>
+                </div>`;
             try {
                 const res = await fetch(URL_AGENDA);
                 agendaGlobal = await res.json();
@@ -208,10 +267,8 @@
                 const termoMatch = i.CLIENTE && i.CLIENTE.toString().toLowerCase().includes(busca);
                 if(!termoMatch) return false;
                 if(filtroAtual === 'todos') return true;
-
                 const dataServico = new Date(i.DATA_DO_SERVICO.split('T')[0] + 'T12:00:00');
                 if(isNaN(dataServico)) return true;
-
                 if(filtroAtual === 'dia') return dataServico.toLocaleDateString() === hoje.toLocaleDateString();
                 if(filtroAtual === 'semana') {
                     const diff = (dataServico - hoje) / (1000 * 60 * 60 * 24);
@@ -222,12 +279,8 @@
             });
 
             dadosFiltrados.sort((a, b) => {
-                if ((a.STATUS === 'concluido') !== (b.STATUS === 'concluido')) {
-                    return a.STATUS === 'concluido' ? 1 : -1;
-                }
-                const horaA = (a.HORA || "00:00").split(':').join('');
-                const horaB = (b.HORA || "00:00").split(':').join('');
-                return parseInt(horaA) - parseInt(horaB);
+                if ((a.STATUS === 'concluido') !== (b.STATUS === 'concluido')) return a.STATUS === 'concluido' ? 1 : -1;
+                return parseInt((a.HORA || "00:00").replace(':','')) - parseInt((b.HORA || "00:00").replace(':',''));
             });
 
             if(dadosFiltrados.length === 0) {
@@ -237,113 +290,73 @@
 
             container.innerHTML = dadosFiltrados.map((i) => {
                 const isConcluido = i.STATUS === 'concluido';
-                let obsPlanilha = i.DESCRICAO || i.OBSERVACAO || "";
-                
-                let tipoReal = "Serviço";
-                if(obsPlanilha.startsWith("[Orçamento]")) {
-                    tipoReal = "Orçamento";
-                    obsPlanilha = obsPlanilha.replace("[Orçamento]", "").trim();
-                } else if(obsPlanilha.startsWith("[Serviço]")) {
-                    tipoReal = "Serviço";
-                    obsPlanilha = obsPlanilha.replace("[Serviço]", "").trim();
-                }
-
-                const badgeClass = tipoReal === 'Serviço' ? 'badge-servico' : 'badge-orcamento';
+                let obs = (i.DESCRICAO || i.OBSERVACAO || "").replace("[Orçamento]","").replace("[Serviço]","").trim();
+                let tipo = (i.DESCRICAO || "").includes("[Orçamento]") ? "Orçamento" : "Serviço";
                 const d = new Date(i.DATA_DO_SERVICO.split('T')[0] + 'T12:00:00');
-                const dataFormatada = !isNaN(d) ? d.toLocaleDateString('pt-BR') : i.DATA_DO_SERVICO;
-
-                let horaExibicao = i.HORA || "--:--";
-                if(horaExibicao.toString().includes('T')) {
-                    horaExibicao = horaExibicao.split('T')[1].substring(0,5);
-                }
-
-                // Criamos uma string segura para passar o objeto inteiro no onclick
-                const itemString = encodeURIComponent(JSON.stringify(i));
+                const dataF = !isNaN(d) ? d.toLocaleDateString('pt-BR') : i.DATA_DO_SERVICO;
+                const hF = i.HORA && i.HORA.includes('T') ? i.HORA.split('T')[1].substring(0,5) : (i.HORA || "--:--");
+                const itemStr = encodeURIComponent(JSON.stringify(i));
 
                 return `
                     <div class="glass-card p-5 relative ${isConcluido ? 'concluido' : ''}">
                         <div class="flex justify-between items-start mb-4">
                             <div class="flex-1">
-                                <div class="flex items-center gap-2 mb-1">
-                                    <span class="badge ${badgeClass}">${tipoReal}</span>
-                                </div>
-                                <h2 class="text-base font-black leading-tight">${i.CLIENTE}</h2>
+                                <span class="badge ${tipo === 'Serviço' ? 'badge-servico' : 'badge-orcamento'}">${tipo}</span>
+                                <h2 class="text-base font-black mt-2 leading-tight">${i.CLIENTE}</h2>
                                 <p class="text-[11px] opacity-60 mt-1"><i class="fa-solid fa-location-dot mr-1"></i> ${i.ENDERECO}</p>
                             </div>
                             <div class="text-right flex flex-col items-end">
-                                <button onclick="prepararEdicao('${itemString}')" class="mb-2 text-blue-500 opacity-60 hover:opacity-100 transition-all">
-                                    <i class="fa-solid fa-pen-to-square text-lg"></i>
-                                </button>
-                                <div class="bg-white/5 p-2 rounded-lg border border-white/5 min-w-[70px] text-center">
-                                    <p class="text-[11px] font-black text-blue-500 leading-none">${dataFormatada}</p>
-                                    <p class="text-[13px] font-bold mt-1">${horaExibicao}</p>
+                                <button onclick="prepararEdicao('${itemStr}')" class="mb-2 text-blue-500 opacity-60 hover:opacity-100"><i class="fa-solid fa-pen-to-square text-lg"></i></button>
+                                <div class="bg-white/5 p-2 rounded-lg border border-white/5 text-center min-w-[70px]">
+                                    <p class="text-[11px] font-black text-blue-500">${dataF}</p>
+                                    <p class="text-[13px] font-bold">${hF}</p>
                                 </div>
                             </div>
                         </div>
-                        <div class="bg-black/20 rounded-xl p-3 mb-4">
-                            <p class="text-xs italic opacity-80">${obsPlanilha || 'Sem observações...'}</p>
-                        </div>
+                        <div class="bg-black/20 rounded-xl p-3 mb-4"><p class="text-xs italic opacity-80">${obs || 'Sem observações...'}</p></div>
                         <div class="flex gap-2">
-                            ${!isConcluido ? `
-                                <button onclick='concluirServico("${i.CLIENTE}")' class="flex-1 py-3 bg-green-600/20 text-green-500 rounded-xl text-[10px] font-black uppercase hover:bg-green-600 hover:text-white transition-all">✓ Concluir</button>
-                            ` : `<div class="text-[10px] font-black text-green-500 uppercase"><i class="fa-solid fa-check-double mr-2"></i> Agendamento Finalizado</div>`}
+                            ${!isConcluido ? `<button onclick='concluirServico("${i.CLIENTE}")' class="flex-1 py-3 bg-green-600/20 text-green-500 rounded-xl text-[10px] font-black uppercase">✓ Concluir</button>` : `<div class="text-[10px] font-black text-green-500 uppercase">✓ Finalizado</div>`}
                         </div>
                     </div>`;
             }).join('');
         }
 
-        function prepararEdicao(itemStringEncoded) {
-            const item = JSON.parse(decodeURIComponent(itemStringEncoded));
+        function prepararEdicao(itemEncoded) {
+            const item = JSON.parse(decodeURIComponent(itemEncoded));
             document.getElementById('modalTitle').innerText = "Editar Visita";
-            
             document.getElementById('cliente').value = item.CLIENTE;
+            document.querySelector('#dropdown-cliente .selected-text').innerText = item.CLIENTE;
             document.getElementById('endereco').value = item.ENDERECO;
-            
-            let obs = item.DESCRICAO || "";
-            if(obs.startsWith("[Orçamento]")) {
-                document.getElementById('tipo').value = "Orçamento";
-                obs = obs.replace("[Orçamento]", "").trim();
-            } else {
-                document.getElementById('tipo').value = "Serviço";
-                obs = obs.replace("[Serviço]", "").trim();
-            }
-            document.getElementById('descricao').value = obs;
-
-            // Tratamento da data para o input do tipo date (YYYY-MM-DD)
+            document.getElementById('tipo').value = (item.DESCRICAO || "").includes("[Orçamento]") ? "Orçamento" : "Serviço";
+            document.getElementById('descricao').value = (item.DESCRICAO || "").replace("[Orçamento]","").replace("[Serviço]","").trim();
             const d = new Date(item.DATA_DO_SERVICO);
-            if(!isNaN(d)) {
-                document.getElementById('data_visita').value = d.toISOString().split('T')[0];
-            }
-            
+            if(!isNaN(d)) document.getElementById('data_visita').value = d.toISOString().split('T')[0];
             let h = item.HORA || "";
             if(h.includes('T')) h = h.split('T')[1].substring(0,5);
             document.getElementById('hora_visita').value = h;
-
-            // O edit_id garante que o script saiba qual linha da planilha deve ser substituída
             document.getElementById('edit_id').value = item.CLIENTE; 
             document.getElementById('popupAgendar').style.display = 'block';
         }
 
         async function concluirServico(cliente) {
-            if(!confirm("Deseja marcar este serviço como concluído?")) return;
+            if(!confirm("Marcar como concluído?")) return;
             enviarDados({ action: "concluir", cliente: cliente });
+        }
+
+        async function limparConcluidos() {
+            if(!confirm("Deseja EXCLUIR permanentemente todos os serviços concluídos da planilha?")) return;
+            enviarDados({ action: "limpar_concluidos" });
         }
 
         document.getElementById('formAgenda').onsubmit = function(e) {
             e.preventDefault();
-            const dataInput = document.getElementById('data_visita').value;
-            const dataCorrigida = dataInput.split('-').reverse().join('/'); 
-            const tipoSelecionado = document.getElementById('tipo').value;
-            const obsOriginal = document.getElementById('descricao').value;
-            const obsParaPlanilha = `[${tipoSelecionado}] ${obsOriginal}`;
-
             const payload = {
                 action: "cadastrar",
                 edit_id: document.getElementById('edit_id').value, 
                 cliente: document.getElementById('cliente').value,
                 endereco: document.getElementById('endereco').value,
-                descricao: obsParaPlanilha,
-                data_servico: dataCorrigida,
+                descricao: `[${document.getElementById('tipo').value}] ${document.getElementById('descricao').value}`,
+                data_servico: document.getElementById('data_visita').value.split('-').reverse().join('/'),
                 hora: document.getElementById('hora_visita').value
             };
             enviarDados(payload);
@@ -354,21 +367,14 @@
             overlay.style.display = 'flex';
             document.getElementById('statusText').innerText = "Processando...";
 
-            // ENVIO ÀS CEGAS
-            fetch(URL_AGENDA, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(payload)
-            }).catch(err => console.log("Erro silencioso: ", err));
+            fetch(URL_AGENDA, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
 
-            // Sequência de sucesso imediato
             setTimeout(() => {
                 document.getElementById('statusText').innerText = "Sucesso!";
                 setTimeout(() => {
                     overlay.style.display = 'none';
                     fecharPopup();
                     document.getElementById('toast-minimal').style.display = 'block';
-                    document.getElementById('formAgenda').reset();
                     setTimeout(() => {
                         document.getElementById('toast-minimal').style.display = 'none';
                         carregarAgenda(); 
