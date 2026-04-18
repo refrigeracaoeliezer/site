@@ -49,7 +49,7 @@
         .dropdown-item:hover { background: #ef4444; color: white; }
 
         .btn-flutuante { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: #ef4444; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 90; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
-        .theme-toggle { position: fixed; top: 20px; right: 20px; background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10001; }
+        .theme-toggle { position: fixed; top: 20px; left: 20px; background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10001; }
         
         .delete-btn { background: var(--glass-bg); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         #statusOverlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); border-radius: 25px; flex-direction: column; align-items: center; justify-content: center; z-index: 110; }
@@ -72,7 +72,8 @@
             justify-content: center;
         }
 
-        .edit-card-btn { position: absolute; top: 15px; right: 15px; color: #3b82f6; opacity: 0.5; transition: 0.3s; cursor: pointer; }
+        /* Botão editar no canto superior direito do card */
+        .edit-card-btn { position: absolute; top: 15px; right: 15px; color: #3b82f6; opacity: 0.5; transition: 0.3s; cursor: pointer; z-index: 10; }
         .edit-card-btn:hover { opacity: 1; }
     </style>
 </head>
@@ -100,7 +101,7 @@
             <div class="input-group">
                 <label>Cliente</label>
                 <div class="custom-dropdown" id="dropdown-cliente">
-                    <input type="text" id="cliente_nome" placeholder="Nome do cliente..." oninput="filtrarClientes(this)" onclick="toggleDropdown()" autocomplete="off" required>
+                    <input type="text" id="cliente_nome" placeholder="Escreva ou selecione o cliente..." oninput="filtrarClientes(this)" onclick="mostrarDropdown()" autocomplete="off" required>
                     <ul id="lista_clientes_financeiro" class="dropdown-list no-scrollbar"></ul>
                 </div>
             </div>
@@ -128,7 +129,7 @@
                 <h1 class="text-xl font-black uppercase tracking-tighter">Contas a <span class="text-red-500">Receber</span></h1>
                 <span class="text-[10px] opacity-40 font-bold uppercase tracking-widest">Gestão de Inadimplência</span>
             </div>
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-3">
                 <div class="text-right">
                     <p class="text-[10px] opacity-50 font-black uppercase">Total Pendente</p>
                     <p id="total-geral" class="text-2xl font-black text-red-500">R$ 0,00</p>
@@ -160,20 +161,21 @@
         const URL_FINANCEIRO = "https://script.google.com/macros/s/AKfycbxVQv7yNVed7G6TQt6oZPdgy6A_I-cdJj71aTkiXZwfvZUoU4Qib3oTlFipw6ahVPJMXA/exec";
 
         let dadosFinanceiros = [];
-        let listaClientesCache = [];
+        let clientesCache = [];
         let filtroStatus = 'pendente';
 
-        // --- SEGURANÇA (MODELO) ---
+        // Seguranca do Modelo
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.addEventListener('keydown', function(e) {
             if ((e.ctrlKey && (e.key === 'c' || e.key === 'u' || e.key === 's' || e.key === 'p')) || 
-                (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i')) || (e.keyCode === 123)) {
+                (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j')) || 
+                (e.keyCode === 123)) {
                 e.preventDefault();
                 return false;
             }
         });
 
-        // --- TEMA (MODELO) ---
+        // Tema do Modelo
         function toggleTheme() {
             const body = document.body;
             const icon = document.getElementById('theme-icon');
@@ -196,20 +198,24 @@
         async function carregarClientes() {
             try {
                 const res = await fetch(URL_CLIENTES);
-                listaClientesCache = await res.json();
-                renderizarListaDropdown(listaClientesCache);
+                clientesCache = await res.json();
+                renderizarDropdown(clientesCache);
             } catch (e) {}
         }
 
-        function renderizarListaDropdown(lista) {
+        function renderizarDropdown(lista) {
             const list = document.getElementById('lista_clientes_financeiro');
             list.innerHTML = lista.map(c => `<li class="dropdown-item" onclick="selecionarCliente('${c.cli_nome}')">${c.cli_nome}</li>`).join('');
         }
 
         function filtrarClientes(input) {
             const termo = input.value.toLowerCase();
-            const filtrados = listaClientesCache.filter(c => c.cli_nome.toLowerCase().includes(termo));
-            renderizarListaDropdown(filtrados);
+            const filtrados = clientesCache.filter(c => c.cli_nome.toLowerCase().includes(termo));
+            renderizarDropdown(filtrados);
+            mostrarDropdown();
+        }
+
+        function mostrarDropdown() {
             document.getElementById('lista_clientes_financeiro').style.display = 'block';
         }
 
@@ -253,7 +259,10 @@
                 const itemStr = encodeURIComponent(JSON.stringify(item));
                 return `
                     <div class="glass-card p-5 ${isPendente ? 'devedor-border' : 'pago-border'}">
-                        <button onclick="prepararEdicao('${itemStr}')" class="edit-card-btn"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button onclick="prepararEdicao('${itemStr}')" class="edit-card-btn">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        
                         <div class="flex justify-between items-start">
                             <div class="flex-1">
                                 <div class="flex items-center gap-2">
@@ -271,7 +280,8 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="text-right ml-4">
+                            
+                            <div class="text-right ml-4 mt-6">
                                 <span class="text-[9px] font-black uppercase ${isPendente ? 'text-red-500' : 'text-green-500'}">
                                     ${isPendente ? 'Falta Pagar' : 'Liquidado'}
                                 </span>
@@ -298,7 +308,9 @@
             const overlay = document.getElementById('statusOverlay');
             overlay.style.display = 'flex';
             document.getElementById('statusText').innerText = "Processando...";
+
             fetch(URL_FINANCEIRO, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+
             setTimeout(() => {
                 document.getElementById('statusText').innerText = "Sucesso!";
                 setTimeout(() => {
@@ -331,11 +343,6 @@
             document.getElementById('popupFinanceiro').style.display = 'none'; 
             document.getElementById('lista_clientes_financeiro').style.display = 'none';
         }
-        
-        function toggleDropdown() {
-            const list = document.getElementById('lista_clientes_financeiro');
-            list.style.display = 'block';
-        }
 
         function selecionarCliente(nome) {
             document.getElementById('cliente_nome').value = nome;
@@ -366,11 +373,12 @@
             enviarCego(payload);
         };
 
-        window.onclick = function(event) {
-            if (!event.target.matches('#cliente_nome')) {
+        // Fechar dropdown ao clicar fora
+        window.addEventListener('click', e => {
+            if (!e.target.closest('#dropdown-cliente')) {
                 document.getElementById('lista_clientes_financeiro').style.display = 'none';
             }
-        }
+        });
 
         window.onload = () => { 
             if(localStorage.getItem('theme') === 'light') toggleTheme();
