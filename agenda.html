@@ -291,10 +291,13 @@
                 let tipo = (i.DESCRICAO || "").includes("[Orçamento]") ? "Orçamento" : (i.DESCRICAO || "").includes("[Atenção]") ? "Atenção" : "Serviço";
                 const dataServico = new Date(i.DATA_DO_SERVICO.split('T')[0] + 'T12:00:00');
                 
-                // Se for Atenção e a data passou, trata como concluído internamente
+                // Regra de auto-conclusão: Se for Atenção e a data passou, trata como concluído internamente
                 if (tipo === 'Atenção' && dataServico < hoje && i.STATUS !== 'concluido') {
                     i.STATUS = 'concluido';
                 }
+
+                // Se for "Atenção" e estiver pendente, ele ignora os filtros de tempo para estar sempre visível (Fixo)
+                if (tipo === 'Atenção' && i.STATUS !== 'concluido') return true;
 
                 if(filtroAtual === 'todos') return true;
                 if(isNaN(dataServico)) return true;
@@ -314,7 +317,7 @@
                 // Prioridade 1: Pendentes antes de Concluídos
                 if ((a.STATUS === 'concluido') !== (b.STATUS === 'concluido')) return a.STATUS === 'concluido' ? 1 : -1;
                 
-                // Prioridade 2: Atenção no topo se não estiver concluído
+                // Prioridade 2: Atenção no topo ABSOLUTO se não estiver concluído
                 if (a.STATUS !== 'concluido' && b.STATUS !== 'concluido') {
                     if (tipoA !== tipoB) return tipoA === 'Atenção' ? -1 : 1;
                 }
