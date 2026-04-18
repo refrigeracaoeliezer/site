@@ -27,6 +27,7 @@
         .dropdown-item:hover { background: #ef4444; color: white; }
 
         .btn-flutuante { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: #ef4444; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 90; }
+        .delete-btn { background: var(--glass-bg); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         #statusOverlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); border-radius: 25px; flex-direction: column; align-items: center; justify-content: center; z-index: 110; }
     </style>
 </head>
@@ -80,9 +81,12 @@
                 <h1 class="text-xl font-black uppercase tracking-tighter">Contas a <span class="text-red-500">Receber</span></h1>
                 <span class="text-[10px] opacity-40 font-bold uppercase tracking-widest">Gestão de Inadimplência</span>
             </div>
-            <div class="text-right">
-                <p class="text-[10px] opacity-50 font-black uppercase">Total Pendente</p>
-                <p id="total-geral" class="text-2xl font-black text-red-500">R$ 0,00</p>
+            <div class="flex items-center gap-4">
+                <div class="text-right">
+                    <p class="text-[10px] opacity-50 font-black uppercase">Total Pendente</p>
+                    <p id="total-geral" class="text-2xl font-black text-red-500">R$ 0,00</p>
+                </div>
+                <button onclick="limparPagos()" class="delete-btn" title="Excluir Pagos"><i class="fa-solid fa-trash-can"></i></button>
             </div>
         </header>
 
@@ -106,7 +110,7 @@
 
     <script>
         const URL_CLIENTES = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec";
-        const URL_FINANCEIRO = "https://script.google.com/macros/s/AKfycbwwVwCbsiT4XyD5bUiWXfvo9b_5KwZ7id8aVWSFuiJBD2fKeXa9KuRROwZw23NfLPZSDg/exec";
+        const URL_FINANCEIRO = "https://script.google.com/macros/s/AKfycbyqmJbv8q8KoT9GuprcH-Og3dS7reSWi3KgE9K4KexscVMFLXSTNUsfAculdR0qyn_0/exec";
 
         let dadosFinanceiros = [];
         let filtroStatus = 'pendente';
@@ -140,7 +144,6 @@
             let somaPendente = 0;
 
             const filtrados = dadosFinanceiros.filter(item => {
-                // Ajustado para os nomes exatos das colunas da sua planilha (imagem 1)
                 const total = parseFloat(item.VALOR_TOAL || item.VALOR_TOTAL || 0);
                 const recebido = parseFloat(item.VALOR_RECEBIDO || 0);
                 const faltaPagar = total - recebido;
@@ -157,7 +160,6 @@
                 return matchBusca;
             });
 
-            // Cálculo do Total Geral
             somaPendente = dadosFinanceiros.reduce((acc, item) => {
                 const f = parseFloat(item.VALOR_TOAL || item.VALOR_TOTAL || 0) - parseFloat(item.VALOR_RECEBIDO || 0);
                 return f > 0 ? acc + f : acc;
@@ -216,6 +218,25 @@
             renderizarFinanceiro();
         }
 
+        function limparPagos() {
+            if (confirm("Deseja realmente excluir permanentemente todos os registros quitados da planilha?")) {
+                const overlay = document.getElementById('statusOverlay');
+                document.getElementById('statusText').innerText = "Limpando...";
+                overlay.style.display = 'flex';
+
+                fetch(URL_FINANCEIRO, { 
+                    method: 'POST', 
+                    mode: 'no-cors', 
+                    body: JSON.stringify({ action: "limpar_pagos" }) 
+                }).then(() => {
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                        carregarDados();
+                    }, 2000);
+                });
+            }
+        }
+
         function abrirPopup() {
             document.getElementById('modalTitle').innerText = "Lançar Débito";
             document.getElementById('formFinanceiro').reset();
@@ -261,6 +282,7 @@
             };
             
             const overlay = document.getElementById('statusOverlay');
+            document.getElementById('statusText').innerText = "Salvando...";
             overlay.style.display = 'flex';
 
             fetch(URL_FINANCEIRO, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) })
@@ -270,9 +292,6 @@
                     fecharPopup();
                     carregarDados();
                 }, 2000);
-            }).catch(err => {
-                alert("Erro ao salvar!");
-                overlay.style.display = 'none';
             });
         };
 
