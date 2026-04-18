@@ -140,14 +140,15 @@
             let somaPendente = 0;
 
             const filtrados = dadosFinanceiros.filter(item => {
-                const total = parseFloat(item.VALOR_TOTAL || 0);
+                // Ajustado para os nomes exatos das colunas da sua planilha (imagem 1)
+                const total = parseFloat(item.VALOR_TOAL || item.VALOR_TOTAL || 0);
                 const recebido = parseFloat(item.VALOR_RECEBIDO || 0);
                 const faltaPagar = total - recebido;
-                item.faltaPagar = faltaPagar;
+                item.calcFalta = faltaPagar;
+                item.calcTotal = total;
+                item.calcRec = recebido;
 
-                // Força o status baseado no cálculo real se a planilha falhar na lógica
                 const statusReal = (faltaPagar > 0) ? 'pendente' : 'pago';
-                
                 const matchBusca = (item.CLIENTE || "").toLowerCase().includes(busca) || (item.SERVICO || "").toLowerCase().includes(busca);
                 
                 if (filtroStatus === 'pendente') {
@@ -156,11 +157,11 @@
                 return matchBusca;
             });
 
-            // Cálculo do Total Geral (Soma apenas de quem deve)
-            dadosFinanceiros.forEach(item => {
-                const f = parseFloat(item.VALOR_TOTAL || 0) - parseFloat(item.VALOR_RECEBIDO || 0);
-                if (f > 0) somaPendente += f;
-            });
+            // Cálculo do Total Geral
+            somaPendente = dadosFinanceiros.reduce((acc, item) => {
+                const f = parseFloat(item.VALOR_TOAL || item.VALOR_TOTAL || 0) - parseFloat(item.VALOR_RECEBIDO || 0);
+                return f > 0 ? acc + f : acc;
+            }, 0);
             document.getElementById('total-geral').innerText = formatarMoeda(somaPendente);
 
             if (filtrados.length === 0) {
@@ -168,8 +169,8 @@
                 return;
             }
 
-            container.innerHTML = filtrados.map((item, index) => {
-                const isPendente = item.faltaPagar > 0;
+            container.innerHTML = filtrados.map((item) => {
+                const isPendente = item.calcFalta > 0;
                 const itemStr = encodeURIComponent(JSON.stringify(item));
 
                 return `
@@ -184,11 +185,11 @@
                                 <div class="grid grid-cols-2 gap-2 mt-2">
                                     <div class="bg-white/5 p-2 rounded-lg">
                                         <p class="text-[9px] opacity-40 uppercase font-bold">Total</p>
-                                        <p class="text-sm font-bold">${formatarMoeda(item.VALOR_TOTAL)}</p>
+                                        <p class="text-sm font-bold">${formatarMoeda(item.calcTotal)}</p>
                                     </div>
                                     <div class="bg-white/5 p-2 rounded-lg">
                                         <p class="text-[9px] opacity-40 uppercase font-bold">Recebido</p>
-                                        <p class="text-sm font-bold text-green-500">${formatarMoeda(item.VALOR_RECEBIDO)}</p>
+                                        <p class="text-sm font-bold text-green-500">${formatarMoeda(item.calcRec)}</p>
                                     </div>
                                 </div>
                             </div>
@@ -197,7 +198,7 @@
                                     ${isPendente ? 'Falta Pagar' : 'Liquidado'}
                                 </span>
                                 <p class="text-lg font-black ${isPendente ? 'text-red-500' : 'text-green-500'}">
-                                    ${formatarMoeda(item.faltaPagar)}
+                                    ${formatarMoeda(item.calcFalta)}
                                 </p>
                                 <button class="mt-4 text-[10px] bg-white/10 px-3 py-1 rounded-md uppercase font-bold">
                                     <i class="fa-solid fa-comment-dollar mr-1"></i> Cobrar
@@ -215,7 +216,6 @@
             renderizarFinanceiro();
         }
 
-        // Funções do Modal (Estilo idêntico ao Agenda)
         function abrirPopup() {
             document.getElementById('modalTitle').innerText = "Lançar Débito";
             document.getElementById('formFinanceiro').reset();
@@ -244,19 +244,19 @@
             document.getElementById('cliente_nome').value = item.CLIENTE;
             document.getElementById('selected-cliente-text').innerText = item.CLIENTE;
             document.getElementById('servico_desc').value = item.SERVICO;
-            document.getElementById('valor_total').value = item.VALOR_TOTAL;
+            document.getElementById('valor_total').value = item.VALOR_TOAL || item.VALOR_TOTAL;
             document.getElementById('valor_recebido').value = item.VALOR_RECEBIDO;
-            document.getElementById('edit_index').value = item.CLIENTE; // Usando nome como ID para busca no script
+            document.getElementById('edit_index').value = item.CLIENTE;
         }
 
         document.getElementById('formFinanceiro').onsubmit = function(e) {
             e.preventDefault();
             const payload = {
-                action: "cadastrar_financeiro", // Certifique-se que seu GAS tem essa action
+                action: "cadastrar", 
                 cliente: document.getElementById('cliente_nome').value,
                 servico: document.getElementById('servico_desc').value,
-                total: document.getElementById('valor_total').value,
-                recebido: document.getElementById('valor_recebido').value,
+                valor_total: document.getElementById('valor_total').value,
+                valor_recebido: document.getElementById('valor_recebido').value,
                 edit_id: document.getElementById('edit_index').value
             };
             
@@ -269,7 +269,10 @@
                     overlay.style.display = 'none';
                     fecharPopup();
                     carregarDados();
-                }, 1500);
+                }, 2000);
+            }).catch(err => {
+                alert("Erro ao salvar!");
+                overlay.style.display = 'none';
             });
         };
 
