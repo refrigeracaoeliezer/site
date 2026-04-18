@@ -149,7 +149,7 @@
         });
 
         const URL_CLIENTES = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec";
-        const URL_AGENDA = "https://script.google.com/macros/s/AKfycbwqFX2y8ZA2_IBPFrfrjX54XHVhVIoPTpf2mK5BTNc2zS_o-xgUUuFD6_1IDwsSzLNJ/exec";
+        const URL_AGENDA = "https://script.google.com/macros/s/AKfycbx3CvRy6eNQgy4KnOrszukPya0EWYuLZPA3CrT790DGDh34awBbHuzdWqQY2nZevl2R/exec";
 
         let agendaGlobal = [];
         let filtroAtual = 'dia';
@@ -173,20 +173,17 @@
                 const res = await fetch(URL_CLIENTES);
                 const dados = await res.json();
                 const list = document.getElementById('lista_clientes');
-                
-                // Filtra apenas registros que possuem nome de cliente
                 const clientesUnicos = [...new Set(dados.map(c => c.cli_nome))].filter(Boolean);
                 list.innerHTML = clientesUnicos.map(nome => `<option value="${nome}">`).join('');
                 
                 document.getElementById('cliente').onchange = function() {
                     const cli = dados.find(x => x.cli_nome === this.value);
                     if(cli) {
-                        // Mapeia os dados da planilha de configuração para os campos da agenda
                         document.getElementById('telefone').value = cli.cli_doc || ""; 
                         document.getElementById('endereco').value = cli.cli_end || "";
                     }
                 };
-            } catch (e) { console.error("Erro ao carregar clientes da planilha de configuração"); }
+            } catch (e) { console.error("Erro ao carregar clientes"); }
         }
 
         async function carregarAgenda() {
@@ -213,14 +210,14 @@
             hoje.setHours(0,0,0,0);
 
             let dadosFiltrados = agendaGlobal.filter(i => {
-                const termoMatch = i.CLIENTE && i.CLIENTE.toLowerCase().includes(busca);
+                const termoMatch = i.CLIENTE && i.CLIENTE.toString().toLowerCase().includes(busca);
                 if(!termoMatch) return false;
                 if(filtroAtual === 'todos') return true;
 
                 const dataServico = new Date(i.DATA_DO_SERVICO);
                 if(isNaN(dataServico)) return true;
 
-                if(filtroAtual === 'dia') return dataServico.toDateString() === hoje.toDateString();
+                if(filtroAtual === 'dia') return dataServico.toLocaleDateString() === hoje.toLocaleDateString();
                 if(filtroAtual === 'semana') {
                     const diff = (dataServico - hoje) / (1000 * 60 * 60 * 24);
                     return diff >= 0 && diff <= 7;
@@ -229,7 +226,7 @@
                 return true;
             });
 
-            dadosFiltrados.sort((a, b) => (a.STATUS === 'Concluído') - (b.STATUS === 'Concluído'));
+            dadosFiltrados.sort((a, b) => (a.STATUS === 'concluido') - (b.STATUS === 'concluido'));
 
             if(dadosFiltrados.length === 0) {
                 container.innerHTML = `<div class="text-center py-10 opacity-20 font-bold uppercase text-xs">Nenhum serviço encontrado</div>`;
@@ -237,18 +234,24 @@
             }
 
             container.innerHTML = dadosFiltrados.map(i => {
-                const isConcluido = i.STATUS === 'Concluído';
+                const isConcluido = i.STATUS === 'concluido';
                 const badgeClass = i.TIPO_DE_SERVICO === 'Serviço' ? 'badge-servico' : 'badge-orcamento';
                 
                 const d = new Date(i.DATA_DO_SERVICO);
                 const dataFormatada = !isNaN(d) ? d.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric'}) : i.DATA_DO_SERVICO;
+
+                // Tratamento da Hora para evitar o erro de 1899 na leitura
+                let horaExibicao = i.HORA || i.TERMINO_SERVICO || '--:--';
+                if(horaExibicao.includes('T')) {
+                    horaExibicao = horaExibicao.split('T')[1].substring(0,5);
+                }
 
                 return `
                     <div class="glass-card p-5 relative ${isConcluido ? 'concluido' : ''}">
                         <div class="flex justify-between items-start mb-4">
                             <div class="flex-1">
                                 <div class="flex items-center gap-2 mb-1">
-                                    <span class="badge ${badgeClass}">${i.TIPO_DE_SERVICO}</span>
+                                    <span class="badge ${badgeClass}">${i.TIPO_DE_SERVICO || 'Visita'}</span>
                                 </div>
                                 <h2 class="text-base font-black leading-tight">${i.CLIENTE}</h2>
                                 <p class="text-[11px] opacity-60 mt-1"><i class="fa-solid fa-location-dot mr-1"></i> ${i.ENDERECO}</p>
@@ -256,12 +259,12 @@
                             <div class="text-right flex flex-col items-end">
                                 <div class="bg-white/5 p-2 rounded-lg border border-white/5 min-w-[70px] text-center">
                                     <p class="text-[11px] font-black text-blue-500 leading-none">${dataFormatada}</p>
-                                    <p class="text-[13px] font-bold mt-1">${i.TERMINO_SERVICO || '--:--'}</p>
+                                    <p class="text-[13px] font-bold mt-1">${horaExibicao}</p>
                                 </div>
                             </div>
                         </div>
                         <div class="bg-black/20 rounded-xl p-3 mb-4">
-                            <p class="text-xs italic opacity-80">${i.OBSERVACAO || 'Sem observações...'}</p>
+                            <p class="text-xs italic opacity-80">${i.DESCRICAO || i.OBSERVACAO || 'Sem observações...'}</p>
                         </div>
                         <div class="flex gap-2">
                             ${!isConcluido ? `
@@ -279,15 +282,18 @@
 
         document.getElementById('formAgenda').onsubmit = function(e) {
             e.preventDefault();
+            // Correção do fuso horário na data para evitar salvar o dia anterior
+            const dataInput = document.getElementById('data_visita').value;
+            const dataCorrigida = dataInput.split('-').reverse().join('/'); // Converte para DD/MM/YYYY
+
             const payload = {
                 action: "cadastrar",
                 cliente: document.getElementById('cliente').value,
-                telefone: document.getElementById('telefone').value,
-                tipo: document.getElementById('tipo').value,
                 endereco: document.getElementById('endereco').value,
                 descricao: document.getElementById('descricao').value,
-                data_servico: document.getElementById('data_visita').value,
-                termino_servico: document.getElementById('hora_visita').value
+                data_servico: dataCorrigida,
+                hora: document.getElementById('hora_visita').value,
+                status: "pendente" // O script de salvamento mudará para concluído via botão
             };
             enviarDados(payload);
         };
@@ -299,8 +305,6 @@
 
             fetch(URL_AGENDA, {
                 method: 'POST',
-                // Removido no-cors para permitir leitura de resposta se necessário, 
-                // mantendo a compatibilidade com o seu script original.
                 mode: 'no-cors',
                 body: JSON.stringify(payload)
             }).then(() => {
@@ -309,6 +313,7 @@
                     overlay.style.display = 'none';
                     fecharPopup();
                     document.getElementById('toast-minimal').style.display = 'block';
+                    document.getElementById('formAgenda').reset();
                     setTimeout(() => document.getElementById('toast-minimal').style.display = 'none', 3000);
                     carregarAgenda();
                 }, 1500);
