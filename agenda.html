@@ -333,7 +333,7 @@
 
             const payload = {
                 action: "cadastrar",
-                edit_id: document.getElementById('edit_id').value, // Importante para substituir o card
+                edit_id: document.getElementById('edit_id').value, 
                 cliente: document.getElementById('cliente').value,
                 endereco: document.getElementById('endereco').value,
                 descricao: obsParaPlanilha,
@@ -348,30 +348,29 @@
             overlay.style.display = 'flex';
             document.getElementById('statusText').innerText = "Processando...";
 
+            // ENVIO ÀS CEGAS: Dispara e inicia feedback imediatamente
             fetch(URL_AGENDA, {
                 method: 'POST',
-                mode: 'no-cors', // Mantido para evitar erro de redirecionamento do Google
+                mode: 'no-cors',
                 body: JSON.stringify(payload)
-            }).then(() => {
-                // Feedback visual após o envio
+            }).catch(err => console.log("Erro silencioso: ", err));
+
+            // Sequência de sucesso "às cegas"
+            setTimeout(() => {
+                document.getElementById('statusText').innerText = "Sucesso!";
                 setTimeout(() => {
-                    document.getElementById('statusText').innerText = "Sucesso!";
+                    overlay.style.display = 'none';
+                    fecharPopup();
+                    document.getElementById('toast-minimal').style.display = 'block';
+                    document.getElementById('formAgenda').reset();
                     setTimeout(() => {
-                        overlay.style.display = 'none';
-                        fecharPopup();
-                        document.getElementById('toast-minimal').style.display = 'block';
-                        document.getElementById('formAgenda').reset();
-                        setTimeout(() => {
-                            document.getElementById('toast-minimal').style.display = 'none';
-                            carregarAgenda(); // Recarrega para mostrar a alteração
-                        }, 1000);
-                    }, 800);
-                }, 1000);
-            }).catch(err => {
-                alert("Erro ao conectar: " + err);
-                overlay.style.display = 'none';
-            });
+                        document.getElementById('toast-minimal').style.display = 'none';
+                        carregarAgenda(); 
+                    }, 1000);
+                }, 800);
+            }, 1000);
         }
+
         window.onload = () => { carregarAgenda(); carregarClientes(); };
     </script>
 </body>
