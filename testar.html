@@ -47,8 +47,8 @@
         .filter-btn.active { background: #2563eb; color: white; opacity: 1; border-color: #2563eb; }
 
         .badge { padding: 4px 10px; border-radius: 6px; font-size: 9px; font-weight: 900; text-transform: uppercase; }
-        .badge-servico { background: rgba(37, 99, 235, 0.2); color: #3b82f6; border: 1px solid #3b82f6; }
-        .badge-orcamento { background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid #f59e0b; }
+        .badge-servico { background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid #22c55e; }
+        .badge-orcamento { background: rgba(37, 99, 235, 0.2); color: #3b82f6; border: 1px solid #3b82f6; }
 
         #toast-minimal { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #22c55e; color: white; padding: 12px 25px; border-radius: 50px; font-weight: 700; display: none; z-index: 10000; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
     </style>
@@ -235,14 +235,28 @@
 
             container.innerHTML = dadosFiltrados.map(i => {
                 const isConcluido = i.STATUS === 'concluido';
-                const badgeClass = i.TIPO_DE_SERVICO === 'Serviço' ? 'badge-servico' : 'badge-orcamento';
+                
+                // Puxa a observação da planilha
+                let obsPlanilha = i.DESCRICAO || i.OBSERVACAO || "";
+                
+                // Lógica para detectar tipo através da observação e limpar o texto para o site
+                let tipoReal = "Serviço";
+                if(obsPlanilha.startsWith("[Orçamento]")) {
+                    tipoReal = "Orçamento";
+                    obsPlanilha = obsPlanilha.replace("[Orçamento]", "").trim();
+                } else if(obsPlanilha.startsWith("[Serviço]")) {
+                    tipoReal = "Serviço";
+                    obsPlanilha = obsPlanilha.replace("[Serviço]", "").trim();
+                }
+
+                const badgeClass = tipoReal === 'Serviço' ? 'badge-servico' : 'badge-orcamento';
                 
                 const d = new Date(i.DATA_DO_SERVICO);
                 const dataFormatada = !isNaN(d) ? d.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric'}) : i.DATA_DO_SERVICO;
 
-                // Tratamento da Hora para evitar o erro de 1899 na leitura
-                let horaExibicao = i.HORA || i.TERMINO_SERVICO || '--:--';
-                if(horaExibicao.includes('T')) {
+                // Mostra a hora EXATA que está na coluna E (HORA) da planilha
+                let horaExibicao = i.HORA || "--:--";
+                if(horaExibicao.toString().includes('T')) {
                     horaExibicao = horaExibicao.split('T')[1].substring(0,5);
                 }
 
@@ -251,7 +265,7 @@
                         <div class="flex justify-between items-start mb-4">
                             <div class="flex-1">
                                 <div class="flex items-center gap-2 mb-1">
-                                    <span class="badge ${badgeClass}">${i.TIPO_DE_SERVICO || 'Visita'}</span>
+                                    <span class="badge ${badgeClass}">${tipoReal}</span>
                                 </div>
                                 <h2 class="text-base font-black leading-tight">${i.CLIENTE}</h2>
                                 <p class="text-[11px] opacity-60 mt-1"><i class="fa-solid fa-location-dot mr-1"></i> ${i.ENDERECO}</p>
@@ -264,36 +278,39 @@
                             </div>
                         </div>
                         <div class="bg-black/20 rounded-xl p-3 mb-4">
-                            <p class="text-xs italic opacity-80">${i.DESCRICAO || i.OBSERVACAO || 'Sem observações...'}</p>
+                            <p class="text-xs italic opacity-80">${obsPlanilha || 'Sem observações...'}</p>
                         </div>
                         <div class="flex gap-2">
                             ${!isConcluido ? `
-                                <button onclick='concluirServico("${i.ID_OS}")' class="flex-1 py-3 bg-green-600/20 text-green-500 rounded-xl text-[10px] font-black uppercase hover:bg-green-600 hover:text-white transition-all">✓ Concluir</button>
+                                <button onclick='concluirServico("${i.CLIENTE}")' class="flex-1 py-3 bg-green-600/20 text-green-500 rounded-xl text-[10px] font-black uppercase hover:bg-green-600 hover:text-white transition-all">✓ Concluir</button>
                             ` : `<div class="text-[10px] font-black text-green-500 uppercase"><i class="fa-solid fa-check-double mr-2"></i> Agendamento Finalizado</div>`}
                         </div>
                     </div>`;
             }).join('');
         }
 
-        async function concluirServico(id) {
+        async function concluirServico(cliente) {
             if(!confirm("Deseja marcar este serviço como concluído?")) return;
-            enviarDados({ action: "concluir", id_os: id });
+            enviarDados({ action: "concluir", cliente: cliente });
         }
 
         document.getElementById('formAgenda').onsubmit = function(e) {
             e.preventDefault();
-            // Correção do fuso horário na data para evitar salvar o dia anterior
             const dataInput = document.getElementById('data_visita').value;
-            const dataCorrigida = dataInput.split('-').reverse().join('/'); // Converte para DD/MM/YYYY
+            const dataCorrigida = dataInput.split('-').reverse().join('/'); 
+            const tipoSelecionado = document.getElementById('tipo').value;
+            const obsOriginal = document.getElementById('descricao').value;
+
+            // Adiciona a marcação do tipo na observação para salvar na planilha
+            const obsParaPlanilha = `[${tipoSelecionado}] ${obsOriginal}`;
 
             const payload = {
                 action: "cadastrar",
                 cliente: document.getElementById('cliente').value,
                 endereco: document.getElementById('endereco').value,
-                descricao: document.getElementById('descricao').value,
+                descricao: obsParaPlanilha,
                 data_servico: dataCorrigida,
-                hora: document.getElementById('hora_visita').value,
-                status: "pendente" // O script de salvamento mudará para concluído via botão
+                hora: document.getElementById('hora_visita').value
             };
             enviarDados(payload);
         };
