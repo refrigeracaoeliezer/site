@@ -4,7 +4,7 @@
      <link rel="icon" type="image/png" href="https://blogger.googleusercontent.com/img/a/AVvXsEjvyHVCZolj28lEOEFo6M63izh7RcOq9tc7jph7e_Or-jSWVQ5TjRb0hcc-168k9rTwL9XnC9FdUti7imfIyv6QTbWgHDZB7zroM2I3nvUK58Zf6_sARve9qfBkasedBGsBkLahFohBhq2fbLB-hPSlFVrk5haPLt0Uy2jDnTszkHq0Qn3NfzkmK8vhNLI=w104-h117">
     <script>
     if (localStorage.getItem("inforos_logado") !== "true") { 
-        window.location.replace("https://refrigeracaoeliezer.github.io/site/");
+        window.location.replace("https://refrigeracaoeliezer.github.io/site/"); 
     }
     </script>
 
@@ -85,7 +85,6 @@
         .is-os .total-container { background: #065f46 !important; border-color: rgba(16, 185, 129, 0.3) !important; }
         body.light-mode.is-os .total-container { background: #1e40af !important; border-color: rgba(255,255,255,0.1) !important; }
 
-        /* AJUSTE DINÂMICO DA COR DA BADGE */
         #label-prazo { background: #1e40af; transition: background 0.3s; }
         .is-os #label-prazo { background: #10b981 !important; }
 
@@ -303,14 +302,13 @@
       .catch(err => console.log('Erro ao registrar Service Worker', err));
   }
 
-  // BLOQUEIOS DE SEGURANÇA (JavaScript)
   document.addEventListener('contextmenu', event => event.preventDefault());
 
-document.addEventListener('keydown', function(e) {
+  document.addEventListener('keydown', function(e) {
     if (
         (e.ctrlKey && (e.key === 'c' || e.key === 'u' || e.key === 's' || e.key === 'p')) || 
         (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j')) || 
-        (e.keyCode === 123) // Tecla F12
+        (e.keyCode === 123)
     ) {
         e.preventDefault();
         alert('Ação protegida pelo sistema.');
@@ -319,7 +317,7 @@ document.addEventListener('keydown', function(e) {
   });
     
 const URL_READ_ID = "https://script.google.com/macros/s/AKfycbzlBMg9ZmXcC00g1wquhExRJ72WuWYLpjr0ilX-a6ppwuLeXdr6QMV86Zw14p3NIQ4eVQ/exec";
-const URL_DATABASE = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec";
+const URL_DATABASE = "https://script.google.com/macros/s/AKfycby1UDm3VH-b8lztduoUQauyyuRPgIO0z4qm_x5kk6Ls9qmtqUh5Dax5COPoCnEUtzDl0w/exec";
 
 let cacheDados = [];
 let modoOS = false;
@@ -461,7 +459,6 @@ function adicionarServico() {
     const container = document.getElementById('services-container');
     const div = document.createElement('div');
     div.className = "service-card";
-    // Aplicação do min-w-0 e truncate no Dropdown de Serviços
     div.innerHTML = `
         <div class="flex items-center gap-2">
             <div class="relative custom-dropdown flex-grow min-w-0">
@@ -623,6 +620,7 @@ function alternarModo() {
 function aplicarTextoPadrao() {
     if (localStorage.getItem('lock_dates') === 'true') return;
     const listaObs = cacheDados.map(d => d.txt_obs).filter(Boolean);
+    // Linha 1 Coluna M para Orçamento (índice 0) | Linha 2 Coluna M para OS (índice 1)
     document.getElementById('obsGeral').value = modoOS ? (listaObs[1] || "") : (listaObs[0] || "");
     autoExpandir(document.getElementById('obsGeral'));
 }
