@@ -10,61 +10,41 @@
     
     <style>
         :root { 
-            --bg-body: #0d1117; 
-            --text-main: white; 
-            --glass-bg: rgba(255, 255, 255, 0.03); 
-            --glass-border: rgba(255, 255, 255, 0.1); 
-            --dropdown-bg: #161b22; 
-            --input-bg: rgba(255, 255, 255, 0.05);
+            --bg-body: #0d1117; --text-main: white; --glass-bg: rgba(255, 255, 255, 0.03); 
+            --glass-border: rgba(255, 255, 255, 0.1); --dropdown-bg: #161b22; --input-bg: rgba(255, 255, 255, 0.05);
         }
-
         body.light-mode {
-            --bg-body: #f0f2f5;
-            --text-main: #1a1f26;
-            --glass-bg: rgba(255, 255, 255, 0.8);
-            --glass-border: rgba(0, 0, 0, 0.1);
-            --dropdown-bg: #ffffff;
-            --input-bg: rgba(0, 0, 0, 0.05);
+            --bg-body: #f0f2f5; --text-main: #1a1f26; --glass-bg: rgba(255, 255, 255, 0.8);
+            --glass-border: rgba(0, 0, 0, 0.1); --dropdown-bg: #ffffff; --input-bg: rgba(0, 0, 0, 0.05);
         }
-
-        body { background: var(--bg-body); color: var(--text-main); font-family: 'Inter', sans-serif; -webkit-user-select: none; user-select: none; transition: background 0.3s, color 0.3s; }
-        input { -webkit-user-select: text !important; user-select: text !important; }
-
-        .glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px; transition: 0.3s; position: relative; }
+        body { background: var(--bg-body); color: var(--text-main); font-family: 'Inter', sans-serif; transition: 0.3s; overflow-x: hidden; }
+        .glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px; position: relative; }
         .devedor-border { border-left: 4px solid #ef4444 !important; }
         .pago-border { border-left: 4px solid #22c55e !important; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        
         #popupFinanceiro { background-color: var(--bg-body); color: var(--text-main); width: 95%; max-width: 450px; padding: 30px; border-radius: 25px; border: 1px solid var(--glass-border); position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 100; display: none; max-height: 90vh; overflow-y: auto; }
         .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; font-size: 11px; opacity: 0.5; text-transform: uppercase; margin-bottom: 5px; font-weight: 700; color: var(--text-main); }
+        .input-group label { display: block; font-size: 11px; opacity: 0.5; text-transform: uppercase; margin-bottom: 5px; font-weight: 700; }
         .input-group input { width: 100%; background: var(--input-bg); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px; color: inherit; outline: none; }
-        
-        .custom-dropdown { position: relative; }
-        .dropdown-list { position: absolute; left: 0; right: 0; top: 110%; background: var(--dropdown-bg); border: 1px solid var(--glass-border); border-radius: 15px; z-index: 50; max-height: 200px; overflow-y: auto; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-        .dropdown-item { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--glass-border); cursor: pointer; color: var(--text-main); }
+        .dropdown-list { position: absolute; left: 0; right: 0; top: 110%; background: var(--dropdown-bg); border: 1px solid var(--glass-border); border-radius: 15px; z-index: 50; max-height: 200px; overflow-y: auto; display: none; }
+        .dropdown-item { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid var(--glass-border); }
         .dropdown-item:hover { background: #ef4444; color: white; }
-
-        .btn-flutuante { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: #ef4444; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 90; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
-        
-        .header-action-btn { background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
-        .delete-btn-red { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
-
-        #statusOverlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); border-radius: 25px; flex-direction: column; align-items: center; justify-content: center; z-index: 110; }
-
-        #toast-minimal { 
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #22c55e; color: white; padding: 12px 25px; border-radius: 50px; font-weight: 700; display: none; z-index: 10000; box-shadow: 0 10px 20px rgba(0,0,0,0.2); white-space: nowrap; align-items: center; justify-content: center;
-        }
-
-        .edit-card-btn { position: absolute; top: 15px; right: 15px; color: #3b82f6; opacity: 0.5; transition: 0.3s; cursor: pointer; z-index: 10; }
-        .edit-card-btn:hover { opacity: 1; }
+        .btn-flutuante { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: #ef4444; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 90; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
+        .header-action-btn { background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+        #statusOverlay, #loadingGeral { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 200; flex-direction: column; align-items: center; justify-content: center; }
+        #toast-minimal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #22c55e; color: white; padding: 12px 25px; border-radius: 50px; font-weight: 700; display: none; z-index: 10000; }
     </style>
 </head>
 <body class="p-4 pb-24">
 
-    <div id="toast-minimal"><i class="fa-solid fa-check mr-2"></i> SALVO COM SUCESSO!</div>
+    <div id="loadingGeral" style="display: flex;">
+        <div class="animate-spin rounded-full h-12 w-12 border-4 border-white/10 border-t-red-500 mb-4"></div>
+        <p class="text-[10px] font-black uppercase tracking-widest opacity-60">Sincronizando Banco de Dados...</p>
+    </div>
 
-    <div onclick="abrirPopup()" class="btn-flutuante"><i class="fa-solid fa-plus text-2xl"></i></div>
+    <div id="toast-minimal">SALVO COM SUCESSO!</div>
+
+    <div onclick="abrirPopup()" class="btn-flutuante cursor-pointer"><i class="fa-solid fa-plus text-2xl"></i></div>
 
     <div id="popupFinanceiro">
         <span class="absolute top-6 right-6 cursor-pointer text-xl opacity-50" onclick="fecharPopup()">&times;</span>
@@ -72,44 +52,30 @@
         
         <div id="statusOverlay">
             <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-red-500 mb-4"></div>
-            <div id="statusText" class="font-black text-red-500 uppercase tracking-widest">Processando...</div>
+            <div id="statusText" class="font-black text-red-500 uppercase tracking-widest text-xs">Processando...</div>
         </div>
 
         <form id="formFinanceiro">
             <input type="hidden" id="edit_index">
-            
             <div class="input-group">
                 <label>Cliente</label>
-                <div class="custom-dropdown" id="dropdown-cliente">
-                    <input type="text" id="cliente_nome" placeholder="Escreva ou selecione o cliente..." oninput="filtrarDropdown(this, 'lista_clientes')" onclick="mostrarDropdown('lista_clientes')" autocomplete="off" required>
+                <div class="relative" id="dropdown-cliente">
+                    <input type="text" id="cliente_nome" placeholder="Escreva ou selecione..." oninput="filtrarDropdown(this, 'lista_clientes')" onclick="mostrarDropdown('lista_clientes')" autocomplete="off" required>
                     <ul id="lista_clientes" class="dropdown-list no-scrollbar"></ul>
                 </div>
             </div>
-
             <div class="input-group">
                 <label>Serviço</label>
-                <div class="custom-dropdown" id="dropdown-servico">
-                    <input type="text" id="servico_desc" placeholder="Escreva ou selecione o serviço..." oninput="filtrarDropdown(this, 'lista_servicos')" onclick="mostrarDropdown('lista_servicos')" autocomplete="off" required>
+                <div class="relative" id="dropdown-servico">
+                    <input type="text" id="servico_desc" placeholder="Escreva ou selecione..." oninput="filtrarDropdown(this, 'lista_servicos')" onclick="mostrarDropdown('lista_servicos')" autocomplete="off" required>
                     <ul id="lista_servicos" class="dropdown-list no-scrollbar"></ul>
                 </div>
             </div>
-            
             <div class="grid grid-cols-2 gap-4">
-                <div class="input-group">
-                    <label>Valor Total</label>
-                    <input type="number" step="0.01" id="valor_total" required>
-                </div>
-                <div class="input-group">
-                    <label>Valor Recebido</label>
-                    <input type="number" step="0.01" id="valor_recebido" value="0">
-                </div>
+                <div class="input-group"><label>Valor Total</label><input type="number" step="0.01" id="valor_total" required></div>
+                <div class="input-group"><label>Valor Recebido</label><input type="number" step="0.01" id="valor_recebido" value="0"></div>
             </div>
-
-            <div class="input-group">
-                <label>Custo de Material (Opcional)</label>
-                <input type="number" step="0.01" id="valor_material" placeholder="0.00">
-            </div>
-
+            <div class="input-group"><label>Custo Material</label><input type="number" step="0.01" id="valor_material" placeholder="0.00"></div>
             <button type="submit" class="w-full py-4 bg-red-600 rounded-xl font-black uppercase text-sm mt-2">Salvar Registro</button>
         </form>
     </div>
@@ -120,25 +86,16 @@
                 <h1 class="text-xl font-black uppercase tracking-tighter">Contas a <span class="text-red-500">Receber</span></h1>
                 <span class="text-[10px] opacity-40 font-bold uppercase tracking-widest">Gestão de Inadimplência</span>
             </div>
-            
             <div class="flex flex-col items-end gap-3">
-                <div class="flex flex-row gap-2">
-                    <button onclick="toggleTheme()" class="header-action-btn" title="Alternar Tema">
-                        <i id="theme-icon" class="fa-solid fa-sun"></i>
-                    </button>
-                    <button onclick="limparPagos()" class="header-action-btn delete-btn-red" title="Excluir Pagos">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
+                <div class="flex gap-2">
+                    <button onclick="toggleTheme()" class="header-action-btn"><i id="theme-icon" class="fa-solid fa-sun"></i></button>
+                    <button onclick="limparPagos()" class="header-action-btn delete-btn-red text-red-500"><i class="fa-solid fa-trash-can"></i></button>
                 </div>
                 <div class="text-right">
-                    <div class="mb-1">
-                        <p class="text-[9px] opacity-50 font-black uppercase leading-none">Total Líquido</p>
-                        <p id="total-liquido-geral" class="text-2xl font-black text-green-500 leading-none">R$ 0,00</p>
-                    </div>
-                    <div>
-                        <p class="text-[9px] opacity-50 font-black uppercase leading-none">Total Pendente</p>
-                        <p id="total-geral" class="text-2xl font-black text-red-500 leading-none">R$ 0,00</p>
-                    </div>
+                    <p class="text-[9px] opacity-50 font-black uppercase">Lucro Líquido (Mês)</p>
+                    <p id="total-liquido-geral" class="text-2xl font-black text-green-500 leading-none">R$ 0,00</p>
+                    <p class="text-[9px] opacity-50 font-black uppercase mt-2">Pendente Geral</p>
+                    <p id="total-geral" class="text-2xl font-black text-red-500 leading-none">R$ 0,00</p>
                 </div>
             </div>
         </header>
@@ -150,42 +107,31 @@
 
         <div class="relative mb-6">
             <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 opacity-30 text-sm"></i>
-            <input type="text" id="buscaDevedor" oninput="renderizarFinanceiro()" placeholder="Buscar cliente ou serviço..." class="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 outline-none focus:border-red-500 text-sm">
+            <input type="text" id="buscaDevedor" oninput="renderizarFinanceiro()" placeholder="Buscar cliente ou serviço..." class="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 outline-none text-sm">
         </div>
 
         <div id="container-financeiro" class="space-y-4"></div>
     </div>
 
     <script>
-        const URL_CLIENTES = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec";
-        const URL_FINANCEIRO = "https://script.google.com/macros/s/AKfycbzD4NqwRFf_RVRVw2dHoZOfyzitR3R39jZGnq2K66YdNZULP1IoB81GxZjbNve0qp8p-w/exec";
+        const URL_FINANCEIRO = "https://script.google.com/macros/s/AKfycbwh6222n3JHM-BNLm7hIQKXWKAz3dILOa1TXmIG8bBdJd8q3j7lzO6fbwoReOfSR6haAA/exec"; // COLOQUE SUA URL AQUI
+        const URL_CLIENTES = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec"; // COLOQUE SUA URL AQUI
 
         let dadosFinanceiros = [];
         let clientesCache = [];
         let servicosCache = [];
         let filtroStatus = 'pendente';
 
-        function toggleTheme() {
-            const body = document.body;
-            const icon = document.getElementById('theme-icon');
-            body.classList.toggle('light-mode');
-            const isLight = body.classList.contains('light-mode');
-            icon.classList.replace(isLight ? 'fa-sun' : 'fa-moon', isLight ? 'fa-moon' : 'fa-sun');
-            localStorage.setItem('theme', isLight ? 'light' : 'dark');
-        }
-
         async function carregarDados() {
             try {
                 const res = await fetch(URL_FINANCEIRO);
                 dadosFinanceiros = await res.json();
-                
-                // Extrair serviços únicos para o cache
                 servicosCache = [...new Set(dadosFinanceiros.map(item => item.SERVICO))].map(s => ({ nome: s }));
                 renderizarLista('lista_servicos', servicosCache, 'servico_desc');
-                
                 renderizarFinanceiro();
+                document.getElementById('loadingGeral').style.display = 'none';
             } catch (e) {
-                document.getElementById('container-financeiro').innerHTML = `<div class="text-center py-10 opacity-50 font-bold">ERRO DE CONEXÃO</div>`;
+                console.error(e);
             }
         }
 
@@ -210,178 +156,90 @@
             mostrarDropdown(idLista);
         }
 
-        function mostrarDropdown(id) {
-            document.getElementById(id).style.display = 'block';
-        }
-
-        function selecionarItem(idInput, valor, idLista) {
-            document.getElementById(idInput).value = valor;
-            document.getElementById(idLista).style.display = 'none';
-        }
-
-        function formatarMoeda(valor) {
-            return parseFloat(valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        }
+        function mostrarDropdown(id) { document.getElementById(id).style.display = 'block'; }
+        function selecionarItem(idInput, valor, idLista) { document.getElementById(idInput).value = valor; document.getElementById(idLista).style.display = 'none'; }
 
         function renderizarFinanceiro() {
             const container = document.getElementById('container-financeiro');
             const busca = document.getElementById('buscaDevedor').value.toLowerCase();
-            let somaPendente = 0;
-            let somaLiquida = 0;
+            let totalPendente = 0;
+            let lucroMensal = 0;
+            const agora = new Date();
 
             const filtrados = dadosFinanceiros.filter(item => {
                 const total = parseFloat(item.VALOR_TOAL || item.VALOR_TOTAL || 0);
-                const recebido = parseFloat(item.VALOR_RECEBIDO || 0);
-                const material = parseFloat(item.MATERIAL || 0);
-                const faltaPagar = total - recebido;
-                const liquido = total - material;
-
-                item.calcFalta = faltaPagar;
-                item.calcTotal = total;
-                item.calcRec = recebido;
-                item.calcLiq = liquido;
-
-                const statusReal = (faltaPagar > 0) ? 'pendente' : 'pago';
-                const matchBusca = (item.CLIENTE || "").toLowerCase().includes(busca) || (item.SERVICO || "").toLowerCase().includes(busca);
-                
-                if (filtroStatus === 'pendente') return matchBusca && statusReal === 'pendente';
-                return matchBusca;
-            });
-
-            dadosFinanceiros.forEach(item => {
-                const total = parseFloat(item.VALOR_TOAL || item.VALOR_TOTAL || 0);
                 const rec = parseFloat(item.VALOR_RECEBIDO || 0);
                 const mat = parseFloat(item.MATERIAL || 0);
-                if (total - rec > 0) somaPendente += (total - rec);
-                somaLiquida += (total - mat);
+                const falta = total - rec;
+                const liq = total - mat;
+                const dataItem = item.DATA ? new Date(item.DATA) : null;
+
+                // Soma Pendente Geral
+                if (falta > 0) totalPendente += falta;
+
+                // Soma Lucro Líquido apenas do Mês Atual
+                if (dataItem && dataItem.getMonth() === agora.getMonth() && dataItem.getFullYear() === agora.getFullYear()) {
+                    lucroMensal += liq;
+                }
+
+                item.calcFalta = falta; item.calcTotal = total; item.calcRec = rec; item.calcLiq = liq;
+                const isMatch = (item.CLIENTE || "").toLowerCase().includes(busca) || (item.SERVICO || "").toLowerCase().includes(busca);
+                return filtroStatus === 'pendente' ? (isMatch && falta > 0) : isMatch;
             });
 
-            document.getElementById('total-geral').innerText = formatarMoeda(somaPendente);
-            document.getElementById('total-liquido-geral').innerText = formatarMoeda(somaLiquida);
+            document.getElementById('total-geral').innerText = totalPendente.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+            document.getElementById('total-liquido-geral').innerText = lucroMensal.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
 
-            if (filtrados.length === 0) {
-                container.innerHTML = `<div class="text-center py-10 opacity-20 font-bold uppercase text-xs">Nenhum registro</div>`;
-                return;
-            }
-
-            container.innerHTML = filtrados.map((item) => {
+            container.innerHTML = filtrados.map(item => {
                 const isPendente = item.calcFalta > 0;
                 const itemStr = encodeURIComponent(JSON.stringify(item));
                 return `
-                    <div class="glass-card p-5 ${isPendente ? 'devedor-border' : 'pago-border'}">
-                        <button onclick="prepararEdicao('${itemStr}')" class="edit-card-btn">
-                            <i class="fa-solid fa-pen-to-square"></i>
-                        </button>
-                        <div class="flex justify-between items-start">
-                            <div class="flex-1">
-                                <h2 class="text-base font-black uppercase">${item.CLIENTE}</h2>
-                                <p class="text-xs opacity-60 mb-3">${item.SERVICO}</p>
-                                <div class="grid grid-cols-2 gap-2 mt-2">
-                                    <div class="bg-white/5 p-2 rounded-lg">
-                                        <p class="text-[9px] opacity-40 uppercase font-bold">Total</p>
-                                        <p class="text-sm font-bold">${formatarMoeda(item.calcTotal)}</p>
-                                    </div>
-                                    <div class="bg-white/5 p-2 rounded-lg">
-                                        <p class="text-[9px] opacity-40 uppercase font-bold">Líquido</p>
-                                        <p class="text-sm font-bold text-green-500">${formatarMoeda(item.calcLiq)}</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="text-right ml-4 mt-6">
-                                <span class="text-[9px] font-black uppercase ${isPendente ? 'text-red-500' : 'text-green-500'}">
-                                    ${isPendente ? 'Falta Pagar' : 'Liquidado'}
-                                </span>
-                                <p class="text-lg font-black ${isPendente ? 'text-red-500' : 'text-green-500'}">
-                                    ${formatarMoeda(item.calcFalta)}
-                                </p>
-                                <button class="mt-4 text-[10px] bg-white/10 px-3 py-1 rounded-md uppercase font-bold">
-                                    <i class="fa-solid fa-comment-dollar mr-1"></i> Cobrar
-                                </button>
-                            </div>
+                <div class="glass-card p-5 ${isPendente ? 'devedor-border' : 'pago-border'}">
+                    <div class="absolute top-4 right-4 flex gap-3">
+                        ${!isPendente ? `<button onclick="excluirIndividual('${item.CLIENTE}', '${item.SERVICO}')" class="text-red-500 opacity-50 hover:opacity-100"><i class="fa-solid fa-trash"></i></button>` : ''}
+                        <button onclick="prepararEdicao('${itemStr}')" class="text-blue-500 opacity-50 hover:opacity-100"><i class="fa-solid fa-pen"></i></button>
+                    </div>
+                    <h2 class="text-base font-black uppercase pr-16">${item.CLIENTE}</h2>
+                    <p class="text-xs opacity-60 mb-3">${item.SERVICO}</p>
+                    <div class="flex justify-between items-end">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="bg-white/5 p-2 rounded-lg"><p class="text-[8px] opacity-40 uppercase">Total</p><p class="text-xs font-bold">${item.calcTotal.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}</p></div>
+                            <div class="bg-white/5 p-2 rounded-lg"><p class="text-[8px] opacity-40 uppercase">Líquido</p><p class="text-xs font-bold text-green-500">${item.calcLiq.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}</p></div>
                         </div>
-                    </div>`;
+                        <div class="text-right">
+                            <p class="text-[8px] font-black uppercase ${isPendente ? 'text-red-500' : 'text-green-500'}">${isPendente ? 'Falta Pagar' : 'Liquidado'}</p>
+                            <p class="text-lg font-black ${isPendente ? 'text-red-500' : 'text-green-500'}">${item.calcFalta.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}</p>
+                        </div>
+                    </div>
+                </div>`;
             }).join('');
         }
 
-        function filtrarStatus(s) {
-            filtroStatus = s;
-            document.getElementById('btn-pendente').className = s === 'pendente' ? 'filter-btn bg-red-500 text-white px-4 py-2 rounded-full text-xs font-bold uppercase' : 'filter-btn bg-white/5 text-white/50 px-4 py-2 rounded-full text-xs font-bold uppercase';
-            document.getElementById('btn-todos').className = s === 'todos' ? 'filter-btn bg-red-500 text-white px-4 py-2 rounded-full text-xs font-bold uppercase' : 'filter-btn bg-white/5 text-white/50 px-4 py-2 rounded-full text-xs font-bold uppercase';
-            renderizarFinanceiro();
-        }
-
-        function abrirPopup() {
-            document.getElementById('modalTitle').innerText = "Lançar Débito";
-            document.getElementById('formFinanceiro').reset();
-            document.getElementById('edit_index').value = "";
-            document.getElementById('popupFinanceiro').style.display = 'block';
-        }
-
-        function fecharPopup() { 
-            document.getElementById('popupFinanceiro').style.display = 'none'; 
-            fecharDropdowns();
-        }
-
-        function fecharDropdowns() {
-            document.getElementById('lista_clientes').style.display = 'none';
-            document.getElementById('lista_servicos').style.display = 'none';
-        }
-
-        // FECHAR AO CLICAR FORA
-        window.addEventListener('click', e => {
-            if (!e.target.closest('#dropdown-cliente') && !e.target.closest('#dropdown-servico')) {
-                fecharDropdowns();
+        async function excluirIndividual(cliente, servico) {
+            if (confirm(`Excluir registro de ${cliente}?`)) {
+                enviarCego({ action: "excluir_unid", cliente, servico });
             }
-            if (e.target.id === 'popupFinanceiro') fecharPopup();
-        });
+        }
 
         function enviarCego(payload) {
-            const overlay = document.getElementById('statusOverlay');
-            overlay.style.display = 'flex';
+            document.getElementById('statusOverlay').style.display = 'flex';
             fetch(URL_FINANCEIRO, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
             setTimeout(() => {
-                overlay.style.display = 'none';
                 fecharPopup();
-                const toast = document.getElementById('toast-minimal');
-                toast.style.display = 'flex';
-                setTimeout(() => {
-                    toast.style.display = 'none';
-                    carregarDados();
-                }, 1500);
-            }, 1200);
+                document.getElementById('statusOverlay').style.display = 'none';
+                document.getElementById('toast-minimal').style.display = 'flex';
+                setTimeout(() => { document.getElementById('toast-minimal').style.display = 'none'; carregarDados(); }, 1000);
+            }, 1500);
         }
 
-        document.getElementById('formFinanceiro').onsubmit = function(e) {
-            e.preventDefault();
-            const payload = {
-                action: "cadastrar", 
-                edit_id: document.getElementById('edit_index').value,
-                cliente: document.getElementById('cliente_nome').value,
-                servico: document.getElementById('servico_desc').value,
-                valor_total: document.getElementById('valor_total').value,
-                valor_recebido: document.getElementById('valor_recebido').value,
-                valor_material: document.getElementById('valor_material').value
-            };
-            enviarCego(payload);
-        };
+        // Funções padrão
+        function toggleTheme() { document.body.classList.toggle('light-mode'); }
+        function abrirPopup() { document.getElementById('popupFinanceiro').style.display = 'block'; }
+        function fecharPopup() { document.getElementById('popupFinanceiro').style.display = 'none'; }
+        function filtrarStatus(s) { filtroStatus = s; renderizarFinanceiro(); }
+        window.addEventListener('click', e => { if (!e.target.closest('#dropdown-cliente') && !e.target.closest('#dropdown-servico')) { document.getElementById('lista_clientes').style.display = 'none'; document.getElementById('lista_servicos').style.display = 'none'; } });
 
-        function prepararEdicao(encoded) {
-            const item = JSON.parse(decodeURIComponent(encoded));
-            abrirPopup();
-            document.getElementById('modalTitle').innerText = "Editar Débito";
-            document.getElementById('cliente_nome').value = item.CLIENTE;
-            document.getElementById('servico_desc').value = item.SERVICO;
-            document.getElementById('valor_total').value = item.VALOR_TOAL || item.VALOR_TOTAL;
-            document.getElementById('valor_recebido').value = item.VALOR_RECEBIDO;
-            document.getElementById('valor_material').value = item.MATERIAL || 0;
-            document.getElementById('edit_index').value = item.CLIENTE;
-        }
-
-        window.onload = () => { 
-            if(localStorage.getItem('theme') === 'light') toggleTheme();
-            carregarDados(); 
-            carregarClientes(); 
-        };
+        window.onload = () => { carregarDados(); carregarClientes(); };
     </script>
 </body>
 </html>
