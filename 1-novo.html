@@ -164,7 +164,7 @@
 
     <script>
         const URL_CLIENTES = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec";
-        const URL_FINANCEIRO = "https://script.google.com/macros/s/AKfycbyRkS3eNQ7fdvUxLH6WZ9tooBSCLni2Ie3M0mA-esZc5D1nWairm63--isEuL2sK82YsQ/exec";
+        const URL_FINANCEIRO = "https://script.google.com/macros/s/AKfycbz9h_RiCWlrLqCiFobuJdo43h8M6fSGh4vTe-j_tu2-W7LW7HNjrdSXY38DAPhBYKv-xQ/exec";
 
         let dadosFinanceiros = [];
         let clientesCache = [];
@@ -251,7 +251,6 @@
 
                 const statusReal = (faltaPagar > 0) ? 'pendente' : 'pago';
                 
-                // Extração de data do nome para somar líquido mensal
                 var regExp = /\[(\d{2})\/(\d{2})\/(\d{4})\]/;
                 var match = item.CLIENTE.match(regExp);
                 if (match) {
@@ -264,7 +263,6 @@
 
                 if (faltaPagar > 0) somaPendente += faltaPagar;
 
-                // Remove a data do nome para exibição na busca
                 const nomeLimpo = item.CLIENTE.replace(/\[.*?\]\s?/, "");
                 const matchBusca = nomeLimpo.toLowerCase().includes(busca) || (item.SERVICO || "").toLowerCase().includes(busca);
                 
@@ -377,7 +375,12 @@
         }
 
         function limparPagos() {
-            if (confirm("Deseja excluir todos os registros quitados do mês anterior?")) {
+            const meses = ["JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"];
+            const hoje = new Date();
+            const mesAnteriorIdx = hoje.getMonth() === 0 ? 11 : hoje.getMonth() - 1;
+            const nomeMesAnterior = meses[mesAnteriorIdx];
+
+            if (confirm("Deseja realmente excluir todos os registros concluídos do mês de " + nomeMesAnterior + "?")) {
                 enviarCego({ action: "limpar_pagos" });
             }
         }
@@ -400,7 +403,6 @@
             const item = JSON.parse(decodeURIComponent(encoded));
             abrirPopup();
             document.getElementById('modalTitle').innerText = "Editar Débito";
-            // Remove a data para editar apenas o nome
             document.getElementById('cliente_nome').value = item.CLIENTE.replace(/\[.*?\]\s?/, "");
             document.getElementById('servico_desc').value = item.SERVICO;
             document.getElementById('valor_total').value = item.VALOR_TOAL || item.VALOR_TOTAL;
