@@ -2,7 +2,7 @@
 <html lang="pt-br"> 
 <head>
     <meta charset="UTF-8">
-    <title>Sistema Simplificado</title>
+    <title>Sistema Simplificado | Refrigeração</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -20,73 +20,28 @@
             --dropdown-bg: #161b22;
         }
 
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background: var(--bg-body); 
-            color: var(--text-main); 
-            -webkit-font-smoothing: antialiased; 
-        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); -webkit-font-smoothing: antialiased; }
 
-        .glass-card { 
-            background: var(--glass-bg); 
-            backdrop-filter: blur(20px); 
-            border: 1px solid var(--glass-border); 
-            border-top: 4px solid #1e40af; 
-            border-radius: 30px; 
-        }
+        .glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-top: 4px solid #1e40af; border-radius: 30px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
 
-        .dark-input { 
-            background: var(--input-bg) !important; 
-            border: 1px solid var(--glass-border) !important; 
-            color: var(--input-text) !important; 
-        }
+        .dark-input { background: var(--input-bg) !important; border: 1px solid var(--glass-border) !important; color: var(--input-text) !important; transition: all 0.3s ease; }
+        .dark-input:focus { border-color: #3b82f6 !important; background: rgba(255, 255, 255, 0.08) !important; outline: none; }
 
-        .service-card { 
-            background: var(--card-sub); 
-            border-radius: 20px; 
-            padding: 15px; 
-            border: 1px solid var(--glass-border); 
-        }
-
-        .qty-btn { 
-            width: 32px; height: 32px; 
-            display: flex; align-items: center; justify-content: center; 
-            border-radius: 8px; background: var(--input-bg); 
-            color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); 
-        }
-
-        .section-header { 
-            display: flex; align-items: center; gap: 8px; margin-bottom: 12px; 
-        }
+        .service-card { background: var(--card-sub); border-radius: 20px; padding: 15px; border: 1px solid var(--glass-border); display: flex; flex-direction: column; gap: 12px; }
+        .qty-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: var(--input-bg); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); }
         
-        .section-header span { 
-            font-size: 11px; font-weight: 800; color: #3b82f6; 
-            text-transform: uppercase; letter-spacing: 0.5px; 
-        }
+        .section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+        .section-header span { font-size: 11px; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        .dropdown-list { 
-            position: absolute; left: 0; right: 0; top: 110%; 
-            background: var(--dropdown-bg); border: 1px solid var(--glass-border); 
-            border-radius: 20px; z-index: 50; max-height: 250px; 
-            overflow-y: auto; display: none; 
-        }
+        .btn-add-item { width: 100%; padding: 1rem; border: 2px dashed rgba(59, 130, 246, 0.5); border-radius: 1.25rem; color: var(--text-main); font-weight: 700; font-size: 0.75rem; transition: all 0.3s; background: rgba(59, 130, 246, 0.05); }
 
-        .dropdown-item { 
-            padding: 12px 16px; font-size: 13px; 
-            border-bottom: 1px solid var(--glass-border); cursor: pointer; 
-        }
-
-        .dropdown-item:hover { background: #1e40af; }
+        .dropdown-list { position: absolute; left: 0; right: 0; top: 110%; background: var(--dropdown-bg); border: 1px solid var(--glass-border); border-radius: 20px; z-index: 50; max-height: 250px; overflow-y: auto; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .dropdown-item { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--glass-border); transition: 0.2s; cursor: pointer; }
+        .dropdown-item:hover { background: #1e40af; color: white; }
 
         .is-searching .selected-text { display: none; }
         .search-input { background: transparent; border: none; color: inherit; width: 100%; outline: none; display: none; }
         .is-searching .search-input { display: block; }
-        
-        .btn-add-item { 
-            width: 100%; padding: 1rem; border: 2px dashed rgba(59, 130, 246, 0.5); 
-            border-radius: 1.25rem; font-weight: 700; font-size: 0.75rem; 
-            background: rgba(59, 130, 246, 0.05); 
-        }
     </style>
 </head>
 <body class="p-4">
@@ -97,12 +52,12 @@
             <div class="space-y-4">
                 <div class="section-header">
                     <i class="fa-solid fa-user-tag text-blue-500"></i>
-                    <span>Cliente</span>
+                    <span>Selecionar Cliente</span>
                 </div>
                 <div class="relative custom-dropdown min-w-0" id="dropdown-cliente">
                     <div class="w-full p-4 rounded-2xl dark-input text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
-                        <span class="selected-text truncate block w-full">Selecionar Cliente</span>
-                        <input type="text" class="search-input w-full" placeholder="Pesquisar cliente..." oninput="filtrarDropdown(this)">
+                        <span class="selected-text truncate block w-full">Pesquisar Cliente...</span>
+                        <input type="text" class="search-input w-full" placeholder="Digite o nome..." oninput="filtrarDropdown(this)">
                         <i class="fa-solid fa-chevron-down text-white/20 text-xs ml-2"></i>
                     </div>
                     <ul id="lista-clientes-custom" class="dropdown-list"></ul>
@@ -116,8 +71,7 @@
                     <span>Serviços Realizados</span>
                 </div>
                 
-                <div id="services-container" class="space-y-4">
-                </div>
+                <div id="services-container" class="space-y-4"></div>
 
                 <button onclick="adicionarServico()" class="btn-add-item">
                     <i class="fa-solid fa-circle-plus mr-2 text-blue-500"></i> ADICIONAR ITEM
@@ -135,15 +89,24 @@ async function buscarDadosPlanilha() {
     try {
         const respDB = await fetch(URL_DATABASE);
         cacheDados = await respDB.json();
-        renderizarClientes();
-        if (document.getElementById('services-container').children.length === 0) adicionarServico();
-    } catch (e) { console.error("Erro:", e); }
+        renderizarDatalists();
+        if (document.getElementById('services-container').children.length === 0) {
+            adicionarServico();
+        }
+    } catch (e) { console.error("Erro ao carregar dados:", e); }
 }
 
-function renderizarClientes() {
+function renderizarDatalists() {
     const clientes = [...new Set(cacheDados.map(d => d.cli_nome))].filter(Boolean);
     document.getElementById('lista-clientes-custom').innerHTML = clientes.map(n => 
         `<li class="dropdown-item" onclick="selecionarCliente('${n}')">${n}</li>`).join('');
+}
+
+function selecionarCliente(nome) {
+    const wrapper = document.getElementById('dropdown-cliente');
+    wrapper.querySelector('.selected-text').innerText = nome;
+    document.getElementById('nomeCliente').value = nome;
+    fecharTodosDropdowns();
 }
 
 function toggleDropdown(el) {
@@ -151,9 +114,7 @@ function toggleDropdown(el) {
     const list = el.nextElementSibling;
     const searchInput = el.querySelector('.search-input');
     const isVisible = list.style.display === 'block';
-    
-    document.querySelectorAll('.dropdown-list').forEach(l => l.style.display = 'none');
-    
+    fecharTodosDropdowns();
     if (!isVisible) {
         list.style.display = 'block';
         wrapper.classList.add('is-searching');
@@ -169,12 +130,9 @@ function filtrarDropdown(input) {
     });
 }
 
-function selecionarCliente(nome) {
-    const wrapper = document.getElementById('dropdown-cliente');
-    wrapper.querySelector('.selected-text').innerText = nome;
-    document.getElementById('nomeCliente').value = nome;
-    wrapper.classList.remove('is-searching');
-    wrapper.querySelector('.dropdown-list').style.display = 'none';
+function fecharTodosDropdowns() {
+    document.querySelectorAll('.dropdown-list').forEach(l => l.style.display = 'none');
+    document.querySelectorAll('.custom-dropdown').forEach(d => d.classList.remove('is-searching'));
 }
 
 function selecionarServico(li, nome, valor) {
@@ -186,8 +144,7 @@ function selecionarServico(li, nome, valor) {
     const precoInput = card.querySelector('.service-price');
     precoInput.value = (parseFloat(v) || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2});
     
-    li.closest('.dropdown-list').style.display = 'none';
-    li.closest('.custom-dropdown').classList.remove('is-searching');
+    fecharTodosDropdowns();
 }
 
 function adicionarServico() {
@@ -198,14 +155,14 @@ function adicionarServico() {
     }).join('');
 
     const div = document.createElement('div');
-    div.className = "service-card space-y-3";
-    // O segredo está no "min-w-0" no container do dropdown e "truncate" no span
+    div.className = "service-card";
+    // Aplicação do min-w-0 e truncate para manter a integridade visual
     div.innerHTML = `
         <div class="flex items-center gap-2">
             <div class="relative custom-dropdown flex-grow min-w-0">
                 <div class="w-full p-4 rounded-2xl dark-input text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
                     <span class="selected-text truncate block w-full">Selecionar Serviço</span>
-                    <input type="text" class="search-input w-full" placeholder="Pesquisar..." oninput="filtrarDropdown(this)">
+                    <input type="text" class="search-input w-full" placeholder="Pesquisar serviço..." oninput="filtrarDropdown(this)">
                     <i class="fa-solid fa-chevron-down text-white/10 text-xs ml-2"></i>
                 </div>
                 <ul class="dropdown-list">${servicosHtml}</ul>
@@ -231,7 +188,8 @@ function adicionarServico() {
 
 function alterarQtde(btn, delta) {
     const span = btn.parentElement.querySelector('.service-qty');
-    span.innerText = Math.max(1, parseInt(span.innerText) + delta);
+    let val = Math.max(1, parseInt(span.innerText) + delta);
+    span.innerText = val;
 }
 
 function formatarMoeda(i) {
@@ -242,7 +200,7 @@ function formatarMoeda(i) {
 }
 
 window.onload = buscarDadosPlanilha;
-window.onclick = e => { if (!e.target.closest('.custom-dropdown')) document.querySelectorAll('.dropdown-list').forEach(l => l.style.display = 'none'); };
+window.onclick = e => { if (!e.target.closest('.custom-dropdown')) fecharTodosDropdowns(); };
 </script>
 </body>
 </html>
