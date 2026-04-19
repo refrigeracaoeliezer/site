@@ -95,7 +95,7 @@
         .is-os .dark-input:focus { border-color: #10b981 !important; }
 
         .service-card { background: var(--card-sub); border-radius: 20px; padding: 15px; border: 1px solid var(--glass-border); display: flex; flex-direction: column; gap: 12px; }
-        .service-row-top { display: flex; align-items: center; gap: 10px; width: 100%; }
+        .service-row-top { display: flex; align-items: center; gap: 10px; width: 100%; overflow: hidden; }
         .qty-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: var(--input-bg); color: #3b82f6; transition: 0.2s; border: 1px solid rgba(59, 130, 246, 0.2); }
         .is-os .qty-btn { color: #10b981 !important; border-color: rgba(16, 185, 129, 0.2) !important; }
         
@@ -471,17 +471,17 @@ function adicionarServico() {
     const div = document.createElement('div');
     div.className = "service-card";
     div.innerHTML = `
-        <div class="service-row-top">
-            <div class="relative custom-dropdown" style="width: 335px; min-width: 335px; max-width: 335px;">
-                <div class="w-full dark-input p-4 rounded-2xl text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
-                     <span class="selected-text truncate">Selecionar Serviço</span>
-                    <input type="text" class="search-input" placeholder="Pesquisar..." oninput="filtrarDropdown(this)" onclick="event.stopPropagation()">
-                    <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-[10px]"></i>
+        <div class="service-row-top" style="display: flex; align-items: center; gap: 10px; width: 100%;">
+            <div class="relative custom-dropdown" style="flex: 1; min-width: 0; position: relative;">
+                <div class="w-full dark-input p-4 rounded-2xl text-sm font-semibold flex items-center cursor-pointer" onclick="toggleDropdown(this)" style="width: 100%;">
+                    <span class="selected-text truncate" style="flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Selecionar Serviço</span>
+                    <input type="text" class="search-input" placeholder="Pesquisar..." oninput="filtrarDropdown(this)" onclick="event.stopPropagation()" style="position: absolute; left: 16px; width: calc(100% - 60px); background: transparent; border: none; outline: none; color: inherit; height: 20px; display: none; z-index: 10;">
+                    <i class="fa-solid fa-chevron-down text-white/10 text-[10px] ml-2 flex-shrink-0"></i>
                 </div>
                 <ul class="dropdown-list">${gerarHtmlServicos()}</ul>
                 <input type="hidden" class="service-name">
             </div>
-            <button onclick="this.closest('.service-card').remove(); atualizarSoma();" class="text-red-500 p-2">
+            <button onclick="this.closest('.service-card').remove(); atualizarSoma();" class="text-red-500 p-2 flex-shrink-0" style="flex-shrink: 0;">
                 <i class="fa-solid fa-trash-can"></i>
             </button>
         </div>
