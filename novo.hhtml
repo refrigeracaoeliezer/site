@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-br"> 
+<head>
+    <meta charset="UTF-8">
+    <title>Sistema Simplificado</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-body: #0d1117;
+            --text-main: white;
+            --glass-bg: rgba(255, 255, 255, 0.03); 
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --input-bg: rgba(255, 255, 255, 0.05);
+            --input-text: white;
+            --card-sub: rgba(255, 255, 255, 0.02);
+            --dropdown-bg: #161b22;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg-body); 
+            color: var(--text-main); 
+            -webkit-font-smoothing: antialiased; 
+        }
+
+        .glass-card { 
+            background: var(--glass-bg); 
+            backdrop-filter: blur(20px); 
+            border: 1px solid var(--glass-border); 
+            border-top: 4px solid #1e40af; 
+            border-radius: 30px; 
+        }
+
+        .dark-input { 
+            background: var(--input-bg) !important; 
+            border: 1px solid var(--glass-border) !important; 
+            color: var(--input-text) !important; 
+        }
+
+        .service-card { 
+            background: var(--card-sub); 
+            border-radius: 20px; 
+            padding: 15px; 
+            border: 1px solid var(--glass-border); 
+        }
+
+        .qty-btn { 
+            width: 32px; height: 32px; 
+            display: flex; align-items: center; justify-content: center; 
+            border-radius: 8px; background: var(--input-bg); 
+            color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); 
+        }
+
+        .section-header { 
+            display: flex; align-items: center; gap: 8px; margin-bottom: 12px; 
+        }
+        
+        .section-header span { 
+            font-size: 11px; font-weight: 800; color: #3b82f6; 
+            text-transform: uppercase; letter-spacing: 0.5px; 
+        }
+
+        .dropdown-list { 
+            position: absolute; left: 0; right: 0; top: 110%; 
+            background: var(--dropdown-bg); border: 1px solid var(--glass-border); 
+            border-radius: 20px; z-index: 50; max-height: 250px; 
+            overflow-y: auto; display: none; 
+        }
+
+        .dropdown-item { 
+            padding: 12px 16px; font-size: 13px; 
+            border-bottom: 1px solid var(--glass-border); cursor: pointer; 
+        }
+
+        .dropdown-item:hover { background: #1e40af; }
+
+        .is-searching .selected-text { display: none; }
+        .search-input { background: transparent; border: none; color: inherit; width: 100%; outline: none; display: none; }
+        .is-searching .search-input { display: block; }
+        
+        .btn-add-item { 
+            width: 100%; padding: 1rem; border: 2px dashed rgba(59, 130, 246, 0.5); 
+            border-radius: 1.25rem; font-weight: 700; font-size: 0.75rem; 
+            background: rgba(59, 130, 246, 0.05); 
+        }
+    </style>
+</head>
+<body class="p-4">
+
+    <div class="max-w-md mx-auto relative z-10">
+        <main class="glass-card p-6 space-y-7">
+            
+            <div class="space-y-4">
+                <div class="section-header">
+                    <i class="fa-solid fa-user-tag text-blue-500"></i>
+                    <span>Cliente</span>
+                </div>
+                <div class="relative custom-dropdown" id="dropdown-cliente">
+                    <div class="w-full p-4 rounded-2xl dark-input text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
+                        <span class="selected-text truncate">Selecionar Cliente</span>
+                        <input type="text" class="search-input" placeholder="Pesquisar cliente..." oninput="filtrarDropdown(this)">
+                        <i class="fa-solid fa-chevron-down text-white/20 text-xs"></i>
+                    </div>
+                    <ul id="lista-clientes-custom" class="dropdown-list"></ul>
+                    <input type="hidden" id="nomeCliente">
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div class="section-header">
+                    <i class="fa-solid fa-screwdriver-wrench text-blue-500"></i>
+                    <span>Serviços Realizados</span>
+                </div>
+                
+                <div id="services-container" class="space-y-4">
+                    </div>
+
+                <button onclick="adicionarServico()" class="btn-add-item">
+                    <i class="fa-solid fa-circle-plus mr-2 text-blue-500"></i> ADICIONAR ITEM
+                </button>
+            </div>
+
+        </main>
+    </div>
+
+<script>
+const URL_DATABASE = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec";
+let cacheDados = [];
+
+async function buscarDadosPlanilha() {
+    try {
+        const respDB = await fetch(URL_DATABASE);
+        cacheDados = await respDB.json();
+        renderizarClientes();
+        if (document.getElementById('services-container').children.length === 0) adicionarServico();
+    } catch (e) { console.error("Erro:", e); }
+}
+
+function renderizarClientes() {
+    const clientes = [...new Set(cacheDados.map(d => d.cli_nome))].filter(Boolean);
+    document.getElementById('lista-clientes-custom').innerHTML = clientes.map(n => 
+        `<li class="dropdown-item" onclick="selecionarCliente('${n}')">${n}</li>`).join('');
+}
+
+function toggleDropdown(el) {
+    const wrapper = el.parentElement;
+    const list = el.nextElementSibling;
+    const searchInput = el.querySelector('.search-input');
+    const isVisible = list.style.display === 'block';
+    
+    document.querySelectorAll('.dropdown-list').forEach(l => l.style.display = 'none');
+    
+    if (!isVisible) {
+        list.style.display = 'block';
+        wrapper.classList.add('is-searching');
+        searchInput.focus();
+    }
+}
+
+function filtrarDropdown(input) {
+    const termo = input.value.toLowerCase();
+    const list = input.closest('.custom-dropdown').querySelector('.dropdown-list');
+    list.querySelectorAll('.dropdown-item').forEach(item => {
+        item.style.display = item.textContent.toLowerCase().includes(termo) ? 'block' : 'none';
+    });
+}
+
+function selecionarCliente(nome) {
+    const wrapper = document.getElementById('dropdown-cliente');
+    wrapper.querySelector('.selected-text').innerText = nome;
+    document.getElementById('nomeCliente').value = nome;
+    wrapper.classList.remove('is-searching');
+    wrapper.querySelector('.dropdown-list').style.display = 'none';
+}
+
+function selecionarServico(li, nome, valor) {
+    const card = li.closest('.service-card');
+    card.querySelector('.selected-text').innerText = nome;
+    card.querySelector('.service-name').value = nome;
+    
+    let v = valor.replace("R$", "").replace(/\./g, "").replace(",", ".").trim();
+    const precoInput = card.querySelector('.service-price');
+    precoInput.value = (parseFloat(v) || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+    
+    li.closest('.dropdown-list').style.display = 'none';
+    li.closest('.custom-dropdown').classList.remove('is-searching');
+}
+
+function adicionarServico() {
+    const container = document.getElementById('services-container');
+    const servicosHtml = [...new Set(cacheDados.map(d => d.srv_nome))].filter(Boolean).map(n => {
+        const item = cacheDados.find(d => d.srv_nome === n);
+        return `<li class="dropdown-item" onclick="selecionarServico(this, '${n}', '${item.srv_valor}')">${n}</li>`;
+    }).join('');
+
+    const div = document.createElement('div');
+    div.className = "service-card space-y-3";
+    div.innerHTML = `
+        <div class="flex items-center gap-2">
+            <div class="relative custom-dropdown flex-grow">
+                <div class="w-full p-4 rounded-2xl dark-input text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
+                    <span class="selected-text truncate">Selecionar Serviço</span>
+                    <input type="text" class="search-input" placeholder="Pesquisar..." oninput="filtrarDropdown(this)">
+                    <i class="fa-solid fa-chevron-down text-white/10 text-xs"></i>
+                </div>
+                <ul class="dropdown-list">${servicosHtml}</ul>
+                <input type="hidden" class="service-name">
+            </div>
+            <button onclick="this.closest('.service-card').remove();" class="text-red-500/50 hover:text-red-500 px-2">
+                <i class="fa-solid fa-trash-can"></i>
+            </button>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="flex-grow relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 font-bold text-xs">R$</span>
+                <input type="text" placeholder="0,00" class="w-full dark-input pl-9 p-4 rounded-2xl text-sm font-bold service-price" onkeyup="formatarMoeda(this)">
+            </div>
+            <div class="flex items-center bg-white/5 border border-white/10 rounded-2xl p-2 gap-4">
+                <button onclick="alterarQtde(this, -1)" class="qty-btn"><i class="fa-solid fa-minus"></i></button>
+                <span class="font-bold service-qty w-4 text-center">1</span>
+                <button onclick="alterarQtde(this, 1)" class="qty-btn"><i class="fa-solid fa-plus"></i></button>
+            </div>
+        </div>`;
+    container.appendChild(div);
+}
+
+function alterarQtde(btn, delta) {
+    const span = btn.parentElement.querySelector('.service-qty');
+    span.innerText = Math.max(1, parseInt(span.innerText) + delta);
+}
+
+function formatarMoeda(i) {
+    let v = i.value.replace(/\D/g, "");
+    v = (v / 100).toFixed(2).replace(".", ",");
+    v = v.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
+    i.value = v;
+}
+
+window.onload = buscarDadosPlanilha;
+window.onclick = e => { if (!e.target.closest('.custom-dropdown')) document.querySelectorAll('.dropdown-list').forEach(l => l.style.display = 'none'); };
+</script>
+</body>
+</html>
