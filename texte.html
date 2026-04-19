@@ -134,7 +134,8 @@
     text-overflow: ellipsis; 
     white-space: nowrap; 
     display: block; 
-    width: 100%; 
+    width: 100%;
+    padding-right: 15px;
 }
 
         .total-container { background: var(--total-container-bg) !important; border: 1px solid rgba(255,255,255,0.1) !important; transition: all 0.4s ease; }
@@ -473,7 +474,7 @@ function adicionarServico() {
     div.className = "service-card";
     div.innerHTML = `
         <div class="service-row-top">
-            <div class="relative custom-dropdown flex-grow">
+            <div class="relative custom-dropdown flex-grow overflow-hidden">
                 <div class="w-full p-4 rounded-2xl dark-input text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
                     <span class="selected-text truncate">Selecionar Serviço</span>
                     <input type="text" class="search-input" placeholder="Selecionar Serviço" oninput="filtrarDropdown(this, 'servico')" onclick="event.stopPropagation()">
