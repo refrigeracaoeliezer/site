@@ -442,7 +442,11 @@ function fecharTodosDropdowns() {
 }
 
 function renderizarDatalists() {
-    const clientes = [...new Set(cacheDados.map(d => d.cli_nome))].filter(Boolean);
+    // Filtro adicionado para ignorar nomes que contenham "ATENÇÃO"
+    const clientes = [...new Set(cacheDados.map(d => d.cli_nome))]
+        .filter(Boolean)
+        .filter(n => !n.includes("ATENÇÃO"));
+
     document.getElementById('lista-clientes-custom').innerHTML = clientes.map(n => 
         `<li class="dropdown-item" onclick="selecionarItemDropdown(this, '${n}', '', 'cliente')">${n}</li>`).join('');
     const dadosEmp = cacheDados.find(d => d.emp_nome);
