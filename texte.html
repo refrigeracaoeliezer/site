@@ -414,7 +414,7 @@ function toggleDropdown(el) {
         wrapper.classList.add('is-searching');
         searchInput.focus();
         searchInput.value = ''; 
-        // Resetar filtro para mostrar todos ao abrir
+        // Força a exibição de todos os itens ao abrir
         const items = list.querySelectorAll('.dropdown-item');
         items.forEach(item => item.style.display = 'block');
     }
