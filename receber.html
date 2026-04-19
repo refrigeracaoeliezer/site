@@ -238,7 +238,6 @@
             let somaLiquidaMes = 0;
 
             const filtrados = dadosFinanceiros.filter(item => {
-                // Sincronizado com os novos nomes da planilha
                 const total = parseFloat(item.VALOR_TOTAL || 0);
                 const recebido = parseFloat(item.VALOR_RECEBIDO || 0);
                 const material = parseFloat(item.MATERIAL || 0);
@@ -311,7 +310,7 @@
                                     ${isPendente ? 'Falta Pagar' : 'Liquidado'}
                                 </span>
                                 <p class="text-lg font-black ${isPendente ? 'text-red-500' : 'text-green-500'}">
-                                    ${formatarMoeda(item.calcFalta)}
+                                    ${isPendente ? formatarMoeda(item.calcFalta) : formatarMoeda(item.calcTotal)}
                                 </p>
                                 <button class="mt-4 text-[10px] bg-white/10 px-3 py-1 rounded-md uppercase font-bold">
                                     <i class="fa-solid fa-comment-dollar mr-1"></i> Cobrar
