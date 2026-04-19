@@ -99,11 +99,11 @@
                     <i class="fa-solid fa-user-tag text-blue-500"></i>
                     <span>Cliente</span>
                 </div>
-                <div class="relative custom-dropdown" id="dropdown-cliente">
+                <div class="relative custom-dropdown min-w-0" id="dropdown-cliente">
                     <div class="w-full p-4 rounded-2xl dark-input text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
-                        <span class="selected-text truncate">Selecionar Cliente</span>
-                        <input type="text" class="search-input" placeholder="Pesquisar cliente..." oninput="filtrarDropdown(this)">
-                        <i class="fa-solid fa-chevron-down text-white/20 text-xs"></i>
+                        <span class="selected-text truncate block w-full">Selecionar Cliente</span>
+                        <input type="text" class="search-input w-full" placeholder="Pesquisar cliente..." oninput="filtrarDropdown(this)">
+                        <i class="fa-solid fa-chevron-down text-white/20 text-xs ml-2"></i>
                     </div>
                     <ul id="lista-clientes-custom" class="dropdown-list"></ul>
                     <input type="hidden" id="nomeCliente">
@@ -117,7 +117,7 @@
                 </div>
                 
                 <div id="services-container" class="space-y-4">
-                    </div>
+                </div>
 
                 <button onclick="adicionarServico()" class="btn-add-item">
                     <i class="fa-solid fa-circle-plus mr-2 text-blue-500"></i> ADICIONAR ITEM
@@ -199,18 +199,19 @@ function adicionarServico() {
 
     const div = document.createElement('div');
     div.className = "service-card space-y-3";
+    // O segredo está no "min-w-0" no container do dropdown e "truncate" no span
     div.innerHTML = `
         <div class="flex items-center gap-2">
-            <div class="relative custom-dropdown flex-grow">
+            <div class="relative custom-dropdown flex-grow min-w-0">
                 <div class="w-full p-4 rounded-2xl dark-input text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
-                    <span class="selected-text truncate">Selecionar Serviço</span>
-                    <input type="text" class="search-input" placeholder="Pesquisar..." oninput="filtrarDropdown(this)">
-                    <i class="fa-solid fa-chevron-down text-white/10 text-xs"></i>
+                    <span class="selected-text truncate block w-full">Selecionar Serviço</span>
+                    <input type="text" class="search-input w-full" placeholder="Pesquisar..." oninput="filtrarDropdown(this)">
+                    <i class="fa-solid fa-chevron-down text-white/10 text-xs ml-2"></i>
                 </div>
                 <ul class="dropdown-list">${servicosHtml}</ul>
                 <input type="hidden" class="service-name">
             </div>
-            <button onclick="this.closest('.service-card').remove();" class="text-red-500/50 hover:text-red-500 px-2">
+            <button onclick="this.closest('.service-card').remove();" class="text-red-500/50 hover:text-red-500 px-2 flex-shrink-0">
                 <i class="fa-solid fa-trash-can"></i>
             </button>
         </div>
@@ -219,7 +220,7 @@ function adicionarServico() {
                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 font-bold text-xs">R$</span>
                 <input type="text" placeholder="0,00" class="w-full dark-input pl-9 p-4 rounded-2xl text-sm font-bold service-price" onkeyup="formatarMoeda(this)">
             </div>
-            <div class="flex items-center bg-white/5 border border-white/10 rounded-2xl p-2 gap-4">
+            <div class="flex items-center bg-white/5 border border-white/10 rounded-2xl p-2 gap-4 flex-shrink-0">
                 <button onclick="alterarQtde(this, -1)" class="qty-btn"><i class="fa-solid fa-minus"></i></button>
                 <span class="font-bold service-qty w-4 text-center">1</span>
                 <button onclick="alterarQtde(this, 1)" class="qty-btn"><i class="fa-solid fa-plus"></i></button>
