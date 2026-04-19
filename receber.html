@@ -164,7 +164,7 @@
 
     <script>
         const URL_CLIENTES = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec";
-        const URL_FINANCEIRO = "https://script.google.com/macros/s/AKfycbzUJYxByYuB9idDoD76oJ8ThTNFBSADMyUhheWpkGtsbZo3S3zPDVTkLFcjT0LZHspk0A/exec";
+        const URL_FINANCEIRO = "https://script.google.com/macros/s/AKfycbx_x61MtJ2JPazlTA0PXcGdiS5kk5ZbxMpkZMC0L-t2UuQJ56-Wy-wICsyBs8HYez_fKw/exec";
 
         let dadosFinanceiros = [];
         let clientesCache = [];
@@ -238,7 +238,8 @@
             let somaLiquidaMes = 0;
 
             const filtrados = dadosFinanceiros.filter(item => {
-                const total = parseFloat(item.VALOR_TOAL || item.VALOR_TOTAL || 0);
+                // Sincronizado com os novos nomes da planilha
+                const total = parseFloat(item.VALOR_TOTAL || 0);
                 const recebido = parseFloat(item.VALOR_RECEBIDO || 0);
                 const material = parseFloat(item.MATERIAL || 0);
                 const faltaPagar = total - recebido;
@@ -400,7 +401,7 @@
             document.getElementById('modalTitle').innerText = "Editar Débito";
             document.getElementById('cliente_nome').value = item.CLIENTE.replace(/\[.*?\]\s?/, "");
             document.getElementById('servico_desc').value = item.SERVICO;
-            document.getElementById('valor_total').value = item.VALOR_TOAL || item.VALOR_TOTAL;
+            document.getElementById('valor_total').value = item.VALOR_TOTAL;
             document.getElementById('valor_recebido').value = item.VALOR_RECEBIDO;
             document.getElementById('valor_material').value = item.MATERIAL || 0;
             document.getElementById('edit_index').value = item.CLIENTE;
