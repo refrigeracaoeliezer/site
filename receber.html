@@ -195,7 +195,9 @@
         async function carregarClientes() {
             try {
                 const res = await fetch(URL_CLIENTES);
-                clientesCache = await res.json();
+                const rawClientes = await res.json();
+                // Filtra para ignorar nomes que contenham "ATENÇÃO"
+                clientesCache = rawClientes.filter(c => !c.cli_nome.includes("ATENÇÃO"));
                 renderizarLista('lista_clientes', clientesCache.map(c => ({ nome: c.cli_nome })), 'cliente_nome');
             } catch (e) {}
         }
