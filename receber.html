@@ -9,7 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     
     <style>
-        /* --- VARIÁVEIS DE TEMA (MODELO) --- */
         :root { 
             --bg-body: #0d1117; 
             --text-main: white; 
@@ -29,8 +28,6 @@
         }
 
         body { background: var(--bg-body); color: var(--text-main); font-family: 'Inter', sans-serif; -webkit-user-select: none; user-select: none; transition: background 0.3s, color 0.3s; }
-        
-        /* Proteção de Input */
         input { -webkit-user-select: text !important; user-select: text !important; }
 
         .glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px; transition: 0.3s; position: relative; }
@@ -50,33 +47,18 @@
 
         .btn-flutuante { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: #ef4444; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 90; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
         
-        /* Botões de Ação no Header (Tema e Lixeira) */
         .header-action-btn { background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
-        .delete-btn-red { color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+        .delete-btn-red { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
 
         #statusOverlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); border-radius: 25px; flex-direction: column; align-items: center; justify-content: center; z-index: 110; }
 
         #toast-minimal { 
-            position: fixed; 
-            top: 50%; 
-            left: 50%; 
-            transform: translate(-50%, -50%); 
-            background: #22c55e; 
-            color: white; 
-            padding: 12px 25px; 
-            border-radius: 50px; 
-            font-weight: 700; 
-            display: none; 
-            z-index: 10000; 
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-            white-space: nowrap; 
-            align-items: center;
-            justify-content: center;
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #22c55e; color: white; padding: 12px 25px; border-radius: 50px; font-weight: 700; display: none; z-index: 10000; box-shadow: 0 10px 20px rgba(0,0,0,0.2); white-space: nowrap; align-items: center; justify-content: center;
         }
 
-        /* Botão editar no canto superior direito do card */
         .edit-card-btn { position: absolute; top: 15px; right: 15px; color: #3b82f6; opacity: 0.5; transition: 0.3s; cursor: pointer; z-index: 10; }
-        .edit-card-btn:hover { opacity: 1; }
+        .trash-card-btn { position: absolute; top: 15px; right: 45px; color: #ef4444; opacity: 0.5; transition: 0.3s; cursor: pointer; z-index: 10; }
+        .edit-card-btn:hover, .trash-card-btn:hover { opacity: 1; }
     </style>
 </head>
 <body class="p-4 pb-24">
@@ -96,17 +78,23 @@
 
         <form id="formFinanceiro">
             <input type="hidden" id="edit_index">
+            
             <div class="input-group">
                 <label>Cliente</label>
                 <div class="custom-dropdown" id="dropdown-cliente">
-                    <input type="text" id="cliente_nome" placeholder="Escreva ou selecione o cliente..." oninput="filtrarClientes(this)" onclick="mostrarDropdown()" autocomplete="off" required>
-                    <ul id="lista_clientes_financeiro" class="dropdown-list no-scrollbar"></ul>
+                    <input type="text" id="cliente_nome" placeholder="Escreva ou selecione o cliente..." oninput="filtrarDropdown(this, 'lista_clientes')" onclick="mostrarDropdown('lista_clientes')" autocomplete="off" required>
+                    <ul id="lista_clientes" class="dropdown-list no-scrollbar"></ul>
                 </div>
             </div>
+
             <div class="input-group">
                 <label>Serviço</label>
-                <input type="text" id="servico_desc" required>
+                <div class="custom-dropdown" id="dropdown-servico">
+                    <input type="text" id="servico_desc" placeholder="Escreva ou selecione o serviço..." oninput="filtrarDropdown(this, 'lista_servicos')" onclick="mostrarDropdown('lista_servicos')" autocomplete="off" required>
+                    <ul id="lista_servicos" class="dropdown-list no-scrollbar"></ul>
+                </div>
             </div>
+            
             <div class="grid grid-cols-2 gap-4">
                 <div class="input-group">
                     <label>Valor Total</label>
@@ -117,6 +105,12 @@
                     <input type="number" step="0.01" id="valor_recebido" value="0">
                 </div>
             </div>
+
+            <div class="input-group">
+                <label>Custo de Material (Opcional)</label>
+                <input type="number" step="0.01" id="valor_material" placeholder="0.00">
+            </div>
+
             <button type="submit" class="w-full py-4 bg-red-600 rounded-xl font-black uppercase text-sm mt-2">Salvar Registro</button>
         </form>
     </div>
@@ -127,18 +121,25 @@
                 <h1 class="text-xl font-black uppercase tracking-tighter">Contas a <span class="text-red-500">Receber</span></h1>
                 <span class="text-[10px] opacity-40 font-bold uppercase tracking-widest">Gestão de Inadimplência</span>
             </div>
-            <div class="flex flex-col items-end">
-                <div class="text-right mb-2">
-                    <p class="text-[10px] opacity-50 font-black uppercase">Total Pendente</p>
-                    <p id="total-geral" class="text-3xl font-black text-red-500 leading-none">R$ 0,00</p>
-                </div>
-                <div class="flex flex-col gap-2">
+            
+            <div class="flex flex-col items-end gap-3">
+                <div class="flex flex-row gap-2">
                     <button onclick="toggleTheme()" class="header-action-btn" title="Alternar Tema">
                         <i id="theme-icon" class="fa-solid fa-sun"></i>
                     </button>
-                    <button onclick="limparPagos()" class="header-action-btn delete-btn-red" title="Excluir Pagos">
+                    <button onclick="limparPagos()" class="header-action-btn delete-btn-red" title="Excluir Registros Recebidos">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>
+                </div>
+                <div class="text-right">
+                    <div class="mb-1">
+                        <p class="text-[9px] opacity-50 font-black uppercase leading-none">Total Líquido (Mês)</p>
+                        <p id="total-liquido-geral" class="text-2xl font-black text-green-500 leading-none">R$ 0,00</p>
+                    </div>
+                    <div>
+                        <p class="text-[9px] opacity-50 font-black uppercase leading-none">Total Pendente</p>
+                        <p id="total-geral" class="text-2xl font-black text-red-500 leading-none">R$ 0,00</p>
+                    </div>
                 </div>
             </div>
         </header>
@@ -156,31 +157,20 @@
         <div id="container-financeiro" class="space-y-4">
             <div class="flex flex-col items-center justify-center py-20">
                 <div class="animate-spin rounded-full h-12 w-12 border-4 border-white/5 border-t-red-500 mb-4"></div>
-                <p class="text-[10px] font-black uppercase opacity-40">Sincronizando...</p>
+                <p class="text-[10px] font-black uppercase opacity-40 tracking-widest">Sincronizando...</p>
             </div>
         </div>
     </div>
 
     <script>
         const URL_CLIENTES = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec";
-        const URL_FINANCEIRO = "https://script.google.com/macros/s/AKfycbxVQv7yNVed7G6TQt6oZPdgy6A_I-cdJj71aTkiXZwfvZUoU4Qib3oTlFipw6ahVPJMXA/exec";
+        const URL_FINANCEIRO = "https://script.google.com/macros/s/AKfycbzUJYxByYuB9idDoD76oJ8ThTNFBSADMyUhheWpkGtsbZo3S3zPDVTkLFcjT0LZHspk0A/exec";
 
         let dadosFinanceiros = [];
         let clientesCache = [];
+        let servicosCache = [];
         let filtroStatus = 'pendente';
 
-        // Seguranca do Modelo
-        document.addEventListener('contextmenu', event => event.preventDefault());
-        document.addEventListener('keydown', function(e) {
-            if ((e.ctrlKey && (e.key === 'c' || e.key === 'u' || e.key === 's' || e.key === 'p')) || 
-                (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j')) || 
-                (e.keyCode === 123)) {
-                e.preventDefault();
-                return false;
-            }
-        });
-
-        // Tema do Modelo
         function toggleTheme() {
             const body = document.body;
             const icon = document.getElementById('theme-icon');
@@ -194,6 +184,8 @@
             try {
                 const res = await fetch(URL_FINANCEIRO);
                 dadosFinanceiros = await res.json();
+                servicosCache = [...new Set(dadosFinanceiros.map(item => item.SERVICO))].map(s => ({ nome: s }));
+                renderizarLista('lista_servicos', servicosCache, 'servico_desc');
                 renderizarFinanceiro();
             } catch (e) {
                 document.getElementById('container-financeiro').innerHTML = `<div class="text-center py-10 opacity-50 font-bold">ERRO DE CONEXÃO</div>`;
@@ -204,24 +196,30 @@
             try {
                 const res = await fetch(URL_CLIENTES);
                 clientesCache = await res.json();
-                renderizarDropdown(clientesCache);
+                renderizarLista('lista_clientes', clientesCache.map(c => ({ nome: c.cli_nome })), 'cliente_nome');
             } catch (e) {}
         }
 
-        function renderizarDropdown(lista) {
-            const list = document.getElementById('lista_clientes_financeiro');
-            list.innerHTML = lista.map(c => `<li class="dropdown-item" onclick="selecionarCliente('${c.cli_nome}')">${c.cli_nome}</li>`).join('');
+        function renderizarLista(idLista, dados, idInput) {
+            const list = document.getElementById(idLista);
+            list.innerHTML = dados.map(item => `<li class="dropdown-item" onclick="selecionarItem('${idInput}', '${item.nome}', '${idLista}')">${item.nome}</li>`).join('');
         }
 
-        function filtrarClientes(input) {
+        function filtrarDropdown(input, idLista) {
             const termo = input.value.toLowerCase();
-            const filtrados = clientesCache.filter(c => c.cli_nome.toLowerCase().includes(termo));
-            renderizarDropdown(filtrados);
-            mostrarDropdown();
+            const dados = idLista === 'lista_clientes' ? clientesCache.map(c => ({ nome: c.cli_nome })) : servicosCache;
+            const filtrados = dados.filter(d => d.nome.toLowerCase().includes(termo));
+            renderizarLista(idLista, filtrados, input.id);
+            mostrarDropdown(idLista);
         }
 
-        function mostrarDropdown() {
-            document.getElementById('lista_clientes_financeiro').style.display = 'block';
+        function mostrarDropdown(id) {
+            document.getElementById(id).style.display = 'block';
+        }
+
+        function selecionarItem(idInput, valor, idLista) {
+            document.getElementById(idInput).value = valor;
+            document.getElementById(idLista).style.display = 'none';
         }
 
         function formatarMoeda(valor) {
@@ -231,28 +229,49 @@
         function renderizarFinanceiro() {
             const container = document.getElementById('container-financeiro');
             const busca = document.getElementById('buscaDevedor').value.toLowerCase();
+            
+            const hoje = new Date();
+            const mesAtual = hoje.getMonth();
+            const anoAtual = hoje.getFullYear();
+
             let somaPendente = 0;
+            let somaLiquidaMes = 0;
 
             const filtrados = dadosFinanceiros.filter(item => {
                 const total = parseFloat(item.VALOR_TOAL || item.VALOR_TOTAL || 0);
                 const recebido = parseFloat(item.VALOR_RECEBIDO || 0);
+                const material = parseFloat(item.MATERIAL || 0);
                 const faltaPagar = total - recebido;
+                const liquido = total - material;
+
                 item.calcFalta = faltaPagar;
                 item.calcTotal = total;
                 item.calcRec = recebido;
+                item.calcLiq = liquido;
 
                 const statusReal = (faltaPagar > 0) ? 'pendente' : 'pago';
-                const matchBusca = (item.CLIENTE || "").toLowerCase().includes(busca) || (item.SERVICO || "").toLowerCase().includes(busca);
+                
+                var regExp = /\[(\d{2})\/(\d{2})\/(\d{4})\]/;
+                var match = item.CLIENTE.match(regExp);
+                if (match) {
+                    var mesRow = parseInt(match[2]) - 1;
+                    var anoRow = parseInt(match[3]);
+                    if (mesRow === mesAtual && anoRow === anoAtual) {
+                        somaLiquidaMes += liquido;
+                    }
+                }
+
+                if (faltaPagar > 0) somaPendente += faltaPagar;
+
+                const nomeLimpo = item.CLIENTE.replace(/\[.*?\]\s?/, "");
+                const matchBusca = nomeLimpo.toLowerCase().includes(busca) || (item.SERVICO || "").toLowerCase().includes(busca);
                 
                 if (filtroStatus === 'pendente') return matchBusca && statusReal === 'pendente';
                 return matchBusca;
             });
 
-            somaPendente = dadosFinanceiros.reduce((acc, item) => {
-                const f = parseFloat(item.VALOR_TOAL || item.VALOR_TOTAL || 0) - parseFloat(item.VALOR_RECEBIDO || 0);
-                return f > 0 ? acc + f : acc;
-            }, 0);
             document.getElementById('total-geral').innerText = formatarMoeda(somaPendente);
+            document.getElementById('total-liquido-geral').innerText = formatarMoeda(somaLiquidaMes);
 
             if (filtrados.length === 0) {
                 container.innerHTML = `<div class="text-center py-10 opacity-20 font-bold uppercase text-xs">Nenhum registro</div>`;
@@ -262,17 +281,18 @@
             container.innerHTML = filtrados.map((item) => {
                 const isPendente = item.calcFalta > 0;
                 const itemStr = encodeURIComponent(JSON.stringify(item));
+                const nomeExibicao = item.CLIENTE.replace(/\[.*?\]\s?/, "");
+
                 return `
                     <div class="glass-card p-5 ${isPendente ? 'devedor-border' : 'pago-border'}">
                         <button onclick="prepararEdicao('${itemStr}')" class="edit-card-btn">
                             <i class="fa-solid fa-pen-to-square"></i>
                         </button>
+                        ${!isPendente ? `<button onclick="excluirItem('${item.CLIENTE}', '${item.SERVICO}')" class="trash-card-btn"><i class="fa-solid fa-trash"></i></button>` : ''}
                         
                         <div class="flex justify-between items-start">
                             <div class="flex-1">
-                                <div class="flex items-center gap-2">
-                                     <h2 class="text-base font-black uppercase">${item.CLIENTE}</h2>
-                                </div>
+                                <h2 class="text-base font-black uppercase">${nomeExibicao}</h2>
                                 <p class="text-xs opacity-60 mb-3">${item.SERVICO}</p>
                                 <div class="grid grid-cols-2 gap-2 mt-2">
                                     <div class="bg-white/5 p-2 rounded-lg">
@@ -280,12 +300,11 @@
                                         <p class="text-sm font-bold">${formatarMoeda(item.calcTotal)}</p>
                                     </div>
                                     <div class="bg-white/5 p-2 rounded-lg">
-                                        <p class="text-[9px] opacity-40 uppercase font-bold">Recebido</p>
-                                        <p class="text-sm font-bold text-green-500">${formatarMoeda(item.calcRec)}</p>
+                                        <p class="text-[9px] opacity-40 uppercase font-bold">Líquido</p>
+                                        <p class="text-sm font-bold text-green-500">${formatarMoeda(item.calcLiq)}</p>
                                     </div>
                                 </div>
                             </div>
-                            
                             <div class="text-right ml-4 mt-6">
                                 <span class="text-[9px] font-black uppercase ${isPendente ? 'text-red-500' : 'text-green-500'}">
                                     ${isPendente ? 'Falta Pagar' : 'Liquidado'}
@@ -309,34 +328,6 @@
             renderizarFinanceiro();
         }
 
-        function enviarCego(payload) {
-            const overlay = document.getElementById('statusOverlay');
-            overlay.style.display = 'flex';
-            document.getElementById('statusText').innerText = "Processando...";
-
-            fetch(URL_FINANCEIRO, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-
-            setTimeout(() => {
-                document.getElementById('statusText').innerText = "Sucesso!";
-                setTimeout(() => {
-                    overlay.style.display = 'none';
-                    fecharPopup();
-                    const toast = document.getElementById('toast-minimal');
-                    toast.style.display = 'flex';
-                    setTimeout(() => {
-                        toast.style.display = 'none';
-                        carregarDados();
-                    }, 1500);
-                }, 800);
-            }, 1000);
-        }
-
-        function limparPagos() {
-            if (confirm("Deseja realmente excluir permanentemente todos os registros quitados da planilha?")) {
-                enviarCego({ action: "limpar_pagos" });
-            }
-        }
-
         function abrirPopup() {
             document.getElementById('modalTitle').innerText = "Lançar Débito";
             document.getElementById('formFinanceiro').reset();
@@ -346,23 +337,47 @@
 
         function fecharPopup() { 
             document.getElementById('popupFinanceiro').style.display = 'none'; 
-            document.getElementById('lista_clientes_financeiro').style.display = 'none';
+            fecharDropdowns();
         }
 
-        function selecionarCliente(nome) {
-            document.getElementById('cliente_nome').value = nome;
-            document.getElementById('lista_clientes_financeiro').style.display = 'none';
+        function fecharDropdowns() {
+            document.getElementById('lista_clientes').style.display = 'none';
+            document.getElementById('lista_servicos').style.display = 'none';
         }
 
-        function prepararEdicao(encoded) {
-            const item = JSON.parse(decodeURIComponent(encoded));
-            abrirPopup();
-            document.getElementById('modalTitle').innerText = "Editar Débito";
-            document.getElementById('cliente_nome').value = item.CLIENTE;
-            document.getElementById('servico_desc').value = item.SERVICO;
-            document.getElementById('valor_total').value = item.VALOR_TOAL || item.VALOR_TOTAL;
-            document.getElementById('valor_recebido').value = item.VALOR_RECEBIDO;
-            document.getElementById('edit_index').value = item.CLIENTE;
+        window.addEventListener('click', e => {
+            if (!e.target.closest('#dropdown-cliente') && !e.target.closest('#dropdown-servico')) {
+                fecharDropdowns();
+            }
+            if (e.target.id === 'popupFinanceiro') fecharPopup();
+        });
+
+        function enviarCego(payload) {
+            const overlay = document.getElementById('statusOverlay');
+            overlay.style.display = 'flex';
+            fetch(URL_FINANCEIRO, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                fecharPopup();
+                const toast = document.getElementById('toast-minimal');
+                toast.style.display = 'flex';
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                    carregarDados();
+                }, 1500);
+            }, 1200);
+        }
+
+        function excluirItem(cliente, servico) {
+            if (confirm("Deseja excluir este registro permanentemente?")) {
+                enviarCego({ action: "deletar_item", cliente: cliente, servico: servico });
+            }
+        }
+
+        function limparPagos() {
+            if (confirm("Deseja excluir permanentemente TODOS os registros que já foram quitados da lista?")) {
+                enviarCego({ action: "limpar_pagos" });
+            }
         }
 
         document.getElementById('formFinanceiro').onsubmit = function(e) {
@@ -373,16 +388,23 @@
                 cliente: document.getElementById('cliente_nome').value,
                 servico: document.getElementById('servico_desc').value,
                 valor_total: document.getElementById('valor_total').value,
-                valor_recebido: document.getElementById('valor_recebido').value
+                valor_recebido: document.getElementById('valor_recebido').value,
+                valor_material: document.getElementById('valor_material').value
             };
             enviarCego(payload);
         };
 
-        window.addEventListener('click', e => {
-            if (!e.target.closest('#dropdown-cliente')) {
-                document.getElementById('lista_clientes_financeiro').style.display = 'none';
-            }
-        });
+        function prepararEdicao(encoded) {
+            const item = JSON.parse(decodeURIComponent(encoded));
+            abrirPopup();
+            document.getElementById('modalTitle').innerText = "Editar Débito";
+            document.getElementById('cliente_nome').value = item.CLIENTE.replace(/\[.*?\]\s?/, "");
+            document.getElementById('servico_desc').value = item.SERVICO;
+            document.getElementById('valor_total').value = item.VALOR_TOAL || item.VALOR_TOTAL;
+            document.getElementById('valor_recebido').value = item.VALOR_RECEBIDO;
+            document.getElementById('valor_material').value = item.MATERIAL || 0;
+            document.getElementById('edit_index').value = item.CLIENTE;
+        }
 
         window.onload = () => { 
             if(localStorage.getItem('theme') === 'light') toggleTheme();
