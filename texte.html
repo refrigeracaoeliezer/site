@@ -473,7 +473,7 @@ function adicionarServico() {
     div.className = "service-card";
     div.innerHTML = `
         <div class="service-row-top">
-            <div class="relative custom-dropdown" style="width: 335px; min-width: 335px; max-width: 335px;">
+            <div class="relative custom-dropdown flex-grow">
                 <div class="w-full p-4 rounded-2xl dark-input text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
                     <span class="selected-text truncate">Selecionar Serviço</span>
                     <input type="text" class="search-input" placeholder="Selecionar Serviço" oninput="filtrarDropdown(this, 'servico')" onclick="event.stopPropagation()">
@@ -482,7 +482,7 @@ function adicionarServico() {
                 <ul class="dropdown-list">${gerarHtmlServicos()}</ul>
                 <input type="hidden" class="service-name">
             </div>
-            <button onclick="this.closest('.service-card').remove(); atualizarSoma();" class="text-red-500 p-2">
+            <button onclick="this.closest('.service-card').remove(); atualizarSoma();" class="text-red-500 p-2 flex-shrink-0">
                 <i class="fa-solid fa-trash-can"></i>
             </button>
         </div>
@@ -537,6 +537,7 @@ function gerarDocumento() {
     const prestador = document.getElementById('nomePrestador').value || "ELIEZER";
     const cliente = document.getElementById('nomeCliente').value || "Cliente";
     const total = document.getElementById('totalFinal').value;
+    const os = document.getElementById('display-id').innerText;
     const obs = document.getElementById('obsGeral').value;
     const dias = document.getElementById('inputGarantia').value;
     const dataFim = document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/');
