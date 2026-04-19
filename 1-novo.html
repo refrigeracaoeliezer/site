@@ -1,454 +1,416 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-br" class="light">
 <head>
-    <link rel="icon" type="image/png" href="https://blogger.googleusercontent.com/img/a/AVvXsEjvyHVCZolj28lEOEFo6M63izh7RcOq9tc7jph7e_Or-jSWVQ5TjRb0hcc-168k9rTwL9XnC9FdUti7imfIyv6QTbWgHDZB7zroM2I3nvUK58Zf6_sARve9qfBkasedBGsBkLahFohBhq2fbLB-hPSlFVrk5haPLt0Uy2jDnTszkHq0Qn3NfzkmK8vhNLI=w104-h117">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dra. Nome da Advogada | Gestão Processual</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    
     <script>
-        if (localStorage.getItem("inforos_logado") !== "true") {
-            window.location.replace("https://refrigeracaoeliezer.github.io/site/"); 
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        pearl: '#FDFCF8',
+                        softBlack: '#1A1A1A',
+                        satinGold: '#C5A059',
+                        darkGold: '#A37E3B'
+                    },
+                    fontFamily: {
+                        serif: ['Cinzel', 'serif'],
+                        sans: ['Montserrat', 'sans-serif'],
+                    }
+                }
+            }
         }
     </script>
-    <meta charset="UTF-8">
-    <title>Agenda de Serviços | Refrigeração</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
-    
+
     <style>
-        body { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; font-family: 'Inter', sans-serif; transition: background 0.3s, color 0.3s; }
-        input, select, textarea { user-select: text !important; }
-        img { pointer-events: none !important; -webkit-user-drag: none !important; }
-
-        :root { --bg-body: #0d1117; --text-main: white; --glass-bg: rgba(255, 255, 255, 0.03); --glass-border: rgba(255, 255, 255, 0.1); --dropdown-bg: #161b22; }
-        body.light-mode { --bg-body: #f0f2f5; --text-main: #1a1f26; --glass-bg: rgba(255, 255, 255, 0.8); --glass-border: rgba(0, 0, 0, 0.1); --dropdown-bg: #ffffff; }
-        body { background: var(--bg-body); color: var(--text-main); }
-
-        .glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 25px; transition: 0.3s; }
-        .glass-card.concluido { opacity: 0.4; filter: grayscale(1); border-color: var(--glass-border) !important; }
-
-        #popupAgendar { background-color: var(--bg-body); color: var(--text-main); width: 95%; max-width: 450px; padding: 30px; border-radius: 25px; border: 1px solid var(--glass-border); box-shadow: 0 20px 50px rgba(0,0,0,0.7); display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 100; max-height: 90vh; overflow-y: auto; }
-        #popupAgendar h2 { margin-bottom: 20px; font-size: 20px; font-weight: 900; text-transform: uppercase; }
-
-        .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; font-size: 11px; opacity: 0.5; text-transform: uppercase; margin-bottom: 5px; font-weight: 700; }
-        .input-group input, .input-group select, .input-group textarea { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px; color: inherit; outline: none; }
-        
-        select option { background-color: #1a1f26; color: white; }
-        body.light-mode select option { background-color: #ffffff; color: #1a1f26; }
-
-        #statusOverlay { 
-            display: none; 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: rgba(0,0,0,0.9); 
-            border-radius: 25px; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            z-index: 110; 
-            text-align: center; 
+        .timeline-line::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #C5A059;
+            opacity: 0.3;
         }
-
-        #statusText { 
-            white-space: nowrap; 
-        }
-
-        .theme-toggle, .delete-toggle { background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .delete-toggle { color: #ef4444; border-color: rgba(239, 68, 68, 0.2); }
-        
-        .btn-flutuante { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: #2563eb; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(37, 99, 235, 0.4); cursor: pointer; z-index: 90; transition: 0.3s; }
-        .btn-flutuante:hover { transform: scale(1.1); }
-
-        .filter-btn { padding: 8px 16px; border-radius: 50px; font-size: 12px; font-weight: 700; text-transform: uppercase; border: 1px solid var(--glass-border); background: var(--glass-bg); opacity: 0.6; transition: 0.3s; }
-        .filter-btn.active { background: #2563eb; color: white; opacity: 1; border-color: #2563eb; }
-
-        .badge { padding: 4px 10px; border-radius: 6px; font-size: 9px; font-weight: 900; text-transform: uppercase; }
-        .badge-servico { background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid #22c55e; }
-        .badge-orcamento { background: rgba(37, 99, 235, 0.2); color: #3b82f6; border: 1px solid #3b82f6; }
-        .badge-atencao { background: rgba(234, 179, 8, 0.2); color: #eab308; border: 1px solid #eab308; }
-        
-        #toast-minimal { 
-            position: fixed; 
-            top: 50%; 
-            left: 50%; 
-            transform: translate(-50%, -50%); 
-            background: #22c55e; 
-            color: white; 
-            padding: 12px 25px; 
-            border-radius: 50px; 
-            font-weight: 700; 
-            display: none; 
-            z-index: 10000; 
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-            white-space: nowrap; 
-            align-items: center;
-            justify-content: center;
-        }
-        .custom-dropdown { position: relative; }
-        .dropdown-list { position: absolute; left: 0; right: 0; top: 110%; background: var(--dropdown-bg); border: 1px solid var(--glass-border); border-radius: 15px; z-index: 50; max-height: 200px; overflow-y: auto; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        .dropdown-item { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--glass-border); transition: 0.2s; cursor: pointer; }
-        .dropdown-item:hover { background: #2563eb; color: white; }
-   
-        .border-servico { border: 2px solid #22c55e !important; }
-        .border-orcamento { border: 2px solid #3b82f6 !important; }
-        .border-atencao { border: 2px solid #eab308 !important; }
+        .modal-blur { backdrop-filter: blur(8px); }
+        .gold-gradient { background: linear-gradient(135deg, #C5A059 0%, #A37E3B 100%); }
     </style>
 </head>
-<body class="p-4 pb-24">
+<body class="bg-pearl dark:bg-softBlack text-softBlack dark:text-pearl min-h-screen font-sans transition-colors duration-300">
 
-    <div id="toast-minimal"><i class="fa-solid fa-check mr-2"></i> SALVO COM SUCESSO!</div>
-
-    <div onclick="abrirPopup()" class="btn-flutuante">
-        <i class="fa-solid fa-plus text-2xl"></i>
-    </div>
-
-    <div id="popupAgendar">
-        <span class="absolute top-6 right-6 cursor-pointer text-xl opacity-50" onclick="fecharPopup()">&times;</span>
-        <h2 id="modalTitle">Nova Visita</h2>
+    <header class="fixed top-0 w-full z-50 p-4 flex justify-between items-center bg-pearl/80 dark:bg-softBlack/80 backdrop-blur-md border-b border-satinGold/20">
+        <button id="installApp" class="hidden bg-satinGold hover:bg-darkGold text-white px-4 py-2 rounded-full text-xs font-bold transition-all shadow-lg animate-bounce">
+            <i class="fas fa-download mr-2"></i>INSTALAR APP
+        </button>
         
-        <div id="statusOverlay">
-            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500 mb-4"></div>
-            <div id="statusText" class="font-black text-blue-500 uppercase tracking-widest">Salvando...</div>
+        <div class="flex gap-4 items-center ml-auto">
+            <button onclick="toggleDarkMode()" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-all">
+                <i id="themeIcon" class="fas fa-moon text-satinGold text-xl"></i>
+            </button>
+            <button onclick="openAdminLogin()" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-all">
+                <i class="fas fa-cog text-satinGold text-xl"></i>
+            </button>
         </div>
+    </header>
 
-        <form id="formAgenda">
-            <input type="hidden" id="edit_id">
+    <main class="pt-24 pb-12 px-4 max-w-lg mx-auto">
+        
+        <section id="view-bio" class="text-center mb-12">
+            <div class="relative w-32 h-32 mx-auto mb-4">
+                <img id="bio-img" src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=256" alt="Advogada" class="rounded-full object-cover border-4 border-satinGold shadow-2xl">
+            </div>
+            <h1 id="bio-name" class="font-serif text-2xl font-bold tracking-widest text-darkGold mb-1 uppercase">Dra. Amanda Silva</h1>
+            <p id="bio-oab" class="text-sm font-semibold opacity-70 mb-2">OAB/SP 000.000</p>
+            <p id="bio-desc" class="text-sm italic px-6 mb-4">Especialista em Direito do Trabalho, defendendo os direitos do trabalhador com excelência e transparência.</p>
+            <div class="flex justify-center gap-6 text-satinGold">
+                <a id="bio-phone" href="#"><i class="fas fa-phone"></i></a>
+                <a id="bio-email" href="#"><i class="fas fa-envelope"></i></a>
+            </div>
+        </section>
+
+        <section id="view-client-search" class="bg-white dark:bg-zinc-900 p-8 rounded-3xl shadow-xl border border-satinGold/10">
+            <h3 class="font-serif text-xl mb-6 text-center">Consultar meu Processo</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs uppercase font-bold text-satinGold">CPF do Reclamante</label>
+                    <input type="text" id="searchCpf" placeholder="000.000.000-00" class="w-full bg-transparent border-b-2 border-gray-300 dark:border-zinc-700 py-2 outline-none focus:border-satinGold transition-all">
+                </div>
+                <button onclick="handleClientSearch()" class="w-full gold-gradient text-white font-bold py-3 rounded-xl shadow-lg hover:scale-105 transition-transform">
+                    ACESSAR LINHA DO TEMPO
+                </button>
+            </div>
+        </section>
+
+        <section id="view-timeline" class="hidden space-y-6">
+            <button onclick="showView('view-client-search')" class="text-satinGold font-bold text-sm mb-4"><i class="fas fa-arrow-left mr-2"></i>Voltar</button>
+            <div class="border-l-4 border-satinGold pl-6 ml-2 space-y-8" id="timeline-content">
+                </div>
+        </section>
+
+        <section id="view-admin-dash" class="hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="font-serif text-xl">Painel de Gestão</h2>
+                <button onclick="openBioSettings()" class="text-satinGold"><i class="fas fa-user-edit text-xl"></i></button>
+            </div>
+            <input type="text" id="adminSearch" onkeyup="filterAdminList()" placeholder="Buscar Nome ou CPF..." class="w-full mb-6 p-3 rounded-xl bg-white dark:bg-zinc-900 border border-satinGold/20 outline-none">
             
-            <div class="input-group">
-                <label>Cliente</label>
-                <div class="custom-dropdown" id="dropdown-cliente">
-                    <div class="w-full bg-white/5 border border-white/10 rounded-xl p-[11px_12px] flex justify-between items-center cursor-pointer">
-                        <input type="text" id="cliente" placeholder="Nome do Cliente" class="bg-transparent border-none outline-none w-full p-0 text-inherit focus:ring-0" autocomplete="off" onfocus="toggleDropdown(this.parentElement)" oninput="filtrarClientesDropdown(this.value)" style="border:none !important; background:none !important; box-shadow:none !important; height: 24px;" required>
-                        <i class="fa-solid fa-chevron-down opacity-30 text-[10px] ml-2" onclick="toggleDropdown(this.parentElement)"></i>
-                    </div>
-                    <ul id="lista_clientes_custom" class="dropdown-list"></ul>
+            <div id="admin-client-list" class="space-y-4">
                 </div>
-            </div>
+        </section>
 
-            <div class="input-group">
-                <label>Tipo</label>
-                <select id="tipo">
-                    <option value="Serviço">Serviço</option>
-                    <option value="Orçamento">Orçamento</option>
-                    <option value="Atenção">Atenção</option>
-                </select>
+    </main>
+
+    <button id="fab-add" onclick="openClientModal()" class="hidden fixed bottom-8 right-8 w-14 h-14 rounded-full gold-gradient text-white shadow-2xl flex items-center justify-center text-2xl">
+        <i class="fas fa-plus"></i>
+    </button>
+
+    <div id="modal-login" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 modal-blur bg-black/50">
+        <div class="bg-pearl dark:bg-zinc-900 w-full max-w-sm p-8 rounded-3xl border border-satinGold/30">
+            <h3 class="font-serif text-2xl mb-6 text-center">Acesso Restrito</h3>
+            <input type="text" id="userLogin" placeholder="Usuário" class="w-full mb-4 p-3 rounded-lg border dark:bg-zinc-800 outline-none focus:border-satinGold">
+            <input type="password" id="passLogin" placeholder="Senha" class="w-full mb-6 p-3 rounded-lg border dark:bg-zinc-800 outline-none focus:border-satinGold">
+            <div class="flex gap-2">
+                <button onclick="closeModal('modal-login')" class="flex-1 py-3 font-bold opacity-50">Cancelar</button>
+                <button onclick="handleLogin()" class="flex-1 gold-gradient text-white py-3 rounded-xl font-bold">Entrar</button>
             </div>
-            <div class="input-group">
-                <label>Endereço</label>
-                <input type="text" id="endereco" required>
-            </div>
-            <div class="input-group">
-                <label>Descrição do Problema</label>
-                <textarea id="descricao" rows="3"></textarea>
-            </div>
-            <div class="flex gap-4">
-                <div class="input-group flex-1">
-                    <label>Data</label>
-                    <input type="date" id="data_visita" required>
-                </div>
-                <div class="input-group flex-1">
-                    <label>Hora</label>
-                    <input type="time" id="hora_visita" required>
-                </div>
-            </div>
-            <button type="submit" id="btnAgendar" class="w-full py-4 bg-blue-600 rounded-xl font-black uppercase text-sm">Confirmar Agendamento</button>
-        </form>
+        </div>
     </div>
 
-    <div class="max-w-4xl mx-auto">
-        <header class="flex justify-between items-center mb-6">
-            <div>
-                <h1 class="text-xl font-black uppercase tracking-tighter">Agenda de <span class="text-blue-500">Serviços</span></h1>
-                <span class="text-[10px] opacity-40 font-bold uppercase tracking-widest">Refrigeração Eliezer</span>
-            </div>
-            <div class="flex gap-2">
-                <button onclick="limparConcluidos()" class="delete-toggle" title="Excluir Concluídos"><i class="fa-solid fa-trash-can"></i></button>
-                <button onclick="toggleTheme()" class="theme-toggle"><i id="theme-icon" class="fa-solid fa-sun"></i></button>
-            </div>
-        </header>
+    <div id="modal-client" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 modal-blur bg-black/50 overflow-y-auto">
+        <div class="bg-pearl dark:bg-zinc-900 w-full max-w-md p-8 my-auto rounded-3xl border border-satinGold/30">
+            <h3 id="modal-title" class="font-serif text-xl mb-6">Novo Cliente</h3>
+            <div class="space-y-4 text-sm">
+                <input type="hidden" id="edit-client-id">
+                <input type="text" id="c-nome" placeholder="Nome Completo" class="w-full p-3 rounded-lg border dark:bg-zinc-800">
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="text" id="c-cpf" placeholder="CPF" class="w-full p-3 rounded-lg border dark:bg-zinc-800">
+                    <input type="text" id="c-senha" placeholder="Senha de Acesso" class="w-full p-3 rounded-lg border dark:bg-zinc-800">
+                </div>
+                <input type="email" id="c-email" placeholder="E-mail" class="w-full p-3 rounded-lg border dark:bg-zinc-800">
+                <input type="text" id="c-tel" placeholder="WhatsApp" class="w-full p-3 rounded-lg border dark:bg-zinc-800">
+                
+                <div class="flex items-center gap-2 p-2 bg-gray-100 dark:bg-zinc-800 rounded-lg">
+                    <input type="checkbox" id="c-notif" class="accent-satinGold w-4 h-4">
+                    <label for="c-notif" class="text-[10px] uppercase font-bold">Autorizar notificações por e-mail</label>
+                </div>
 
-        <div class="flex gap-2 overflow-x-auto pb-4 no-scrollbar mb-4">
-            <button onclick="filtrar('dia')" id="f-dia" class="filter-btn active">Dia</button>
-            <button onclick="filtrar('semana')" id="f-semana" class="filter-btn">Semana</button>
-            <button onclick="filtrar('mes')" id="f-mes" class="filter-btn">Mês</button>
-            <button onclick="filtrar('todos')" id="f-todos" class="filter-btn">Todos</button>
+                <div id="area-atualizacao" class="hidden pt-4 border-t border-satinGold/20">
+                    <label class="text-xs font-bold text-satinGold uppercase">Adicionar Nova Atualização</label>
+                    <select id="a-status" class="w-full p-3 mt-2 rounded-lg border dark:bg-zinc-800">
+                        <option value="Petição Inicial">Petição Inicial</option>
+                        <option value="Citação da Reclamada">Citação</option>
+                        <option value="Audiência de Conciliação">Audiência de Conciliação</option>
+                        <option value="Audiência de Instrução">Instrução</option>
+                        <option value="Alegações Finais">Alegações Finais</option>
+                        <option value="Sentença">Sentença</option>
+                        <option value="Recurso Ordinário">Recurso Ordinário</option>
+                    </select>
+                    <textarea id="a-desc" placeholder="Descrição dos detalhes..." class="w-full p-3 mt-2 rounded-lg border dark:bg-zinc-800 h-20"></textarea>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-6">
+                <button onclick="closeModal('modal-client')" class="flex-1 py-3 font-bold opacity-50">Sair</button>
+                <button onclick="saveClient()" class="flex-1 gold-gradient text-white py-3 rounded-xl font-bold shadow-lg">Salvar Dados</button>
+            </div>
         </div>
+    </div>
 
-        <div class="relative mb-6">
-            <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 opacity-30 text-sm"></i>
-            <input type="text" id="buscaCliente" oninput="renderizarServicos()" placeholder="Buscar cliente..." class="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 outline-none focus:border-blue-500 transition-all text-sm">
-        </div>
-
-        <div id="container-historico" class="space-y-4">
-            <div id="main-loader" class="flex flex-col items-center justify-center py-20">
-                <div class="animate-spin rounded-full h-12 w-12 border-4 border-white/5 border-t-blue-500 mb-4"></div>
-                <p class="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Sincroniczando lista</p>
+    <div id="modal-bio" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 modal-blur bg-black/50">
+        <div class="bg-pearl dark:bg-zinc-900 w-full max-w-sm p-8 rounded-3xl border border-satinGold/30">
+            <h3 class="font-serif text-xl mb-6">Configurar Bio</h3>
+            <div class="space-y-4">
+                <input type="text" id="config-name" placeholder="Nome" class="w-full p-3 rounded-lg border dark:bg-zinc-800">
+                <input type="text" id="config-oab" placeholder="OAB" class="w-full p-3 rounded-lg border dark:bg-zinc-800">
+                <textarea id="config-desc" placeholder="Bio Curta" class="w-full p-3 rounded-lg border dark:bg-zinc-800"></textarea>
+                <input type="text" id="config-img" placeholder="URL da Foto" class="w-full p-3 rounded-lg border dark:bg-zinc-800">
             </div>
+            <button onclick="saveBio()" class="w-full gold-gradient text-white py-3 rounded-xl font-bold mt-6">Salvar Alterações</button>
         </div>
     </div>
 
     <script>
-        document.addEventListener('contextmenu', e => e.preventDefault());
-        document.addEventListener('keydown', e => {
-            if ((e.ctrlKey && ['c', 'u', 's', 'p'].includes(e.key.toLowerCase())) || e.keyCode === 123) {
+        // --- DATA STATE (Simulando Banco de Dados) ---
+        let dbClients = JSON.parse(localStorage.getItem('db_adv_clients')) || [];
+        let bioData = JSON.parse(localStorage.getItem('db_adv_bio')) || {
+            name: "Dra. Amanda Silva",
+            oab: "OAB/SP 452.123",
+            desc: "Especialista em Direito do Trabalho, defendendo os direitos do trabalhador com excelência e transparência.",
+            img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=256",
+            phone: "(11) 98888-7777",
+            email: "contato@advocacia.com"
+        };
+
+        // --- CORE FUNCTIONS ---
+        window.onload = () => {
+            renderBio();
+            checkPWA();
+        };
+
+        function showView(viewId) {
+            ['view-client-search', 'view-timeline', 'view-admin-dash'].forEach(v => {
+                document.getElementById(v).classList.add('hidden');
+            });
+            document.getElementById(viewId).classList.remove('hidden');
+            document.getElementById('fab-add').classList.toggle('hidden', viewId !== 'view-admin-dash');
+        }
+
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            document.getElementById('themeIcon').className = isDark ? 'fas fa-sun text-satinGold text-xl' : 'fas fa-moon text-satinGold text-xl';
+        }
+
+        // --- PWA LOGIC ---
+        let deferredPrompt;
+        function checkPWA() {
+            window.addEventListener('beforeinstallprompt', (e) => {
                 e.preventDefault();
+                deferredPrompt = e;
+                document.getElementById('installApp').classList.remove('hidden');
+            });
+        }
+        document.getElementById('installApp').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') document.getElementById('installApp').classList.add('hidden');
             }
         });
 
-        const URL_CLIENTES = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec";
-        const URL_AGENDA = "https://script.google.com/macros/s/AKfycbyqmJbv8q8KoT9GuprcH-Og3dS7reSWi3KgE9K4KexscVMFLXSTNUsfAculdR0qyn_0/exec";
-
-        let agendaGlobal = [];
-        let clientesCache = [];
-        let filtroAtual = 'dia';
-
-        function toggleDropdown(el) {
-            const list = el.nextElementSibling || el.parentElement.querySelector('.dropdown-list');
-            const isVisible = list.style.display === 'block';
-            document.querySelectorAll('.dropdown-list').forEach(l => l.style.display = 'none');
-            if (!isVisible) {
-                list.style.display = 'block';
-                filtrarClientesDropdown(document.getElementById('cliente').value);
-            }
+        // --- BIO LOGIC ---
+        function renderBio() {
+            document.getElementById('bio-name').innerText = bioData.name;
+            document.getElementById('bio-oab').innerText = bioData.oab;
+            document.getElementById('bio-desc').innerText = bioData.desc;
+            document.getElementById('bio-img').src = bioData.img;
+            document.getElementById('bio-phone').href = `tel:${bioData.phone}`;
+            document.getElementById('bio-email').href = `mailto:${bioData.email}`;
         }
 
-        function selecionarCliente(nome, endereco) {
-            document.getElementById('cliente').value = nome;
-            document.getElementById('endereco').value = endereco || "";
-            fecharDropdowns();
+        function openBioSettings() {
+            document.getElementById('config-name').value = bioData.name;
+            document.getElementById('config-oab').value = bioData.oab;
+            document.getElementById('config-desc').value = bioData.desc;
+            document.getElementById('config-img').value = bioData.img;
+            document.getElementById('modal-bio').classList.remove('hidden');
         }
 
-        function filtrarClientesDropdown(valor) {
-            const list = document.getElementById('lista_clientes_custom');
-            const busca = valor.toLowerCase();
-            const clientesUnicos = [...new Map(clientesCache.map(item => [item.cli_nome, item])).values()];
-            
-            const filtrados = clientesUnicos.filter(c => c.cli_nome.toLowerCase().includes(busca));
-            
-            if (filtrados.length > 0) {
-                list.innerHTML = filtrados.map(c => 
-                    `<li class="dropdown-item" onclick="selecionarCliente('${c.cli_nome}', '${c.cli_end || ''}')">${c.cli_nome}</li>`
-                ).join('');
-                list.style.display = 'block';
-            } else {
-                list.style.display = 'none';
-            }
-        }
-
-        function fecharDropdowns() {
-            document.querySelectorAll('.dropdown-list').forEach(l => l.style.display = 'none');
-        }
-
-        window.onclick = (e) => { if (!e.target.closest('.custom-dropdown')) fecharDropdowns(); };
-
-        function toggleTheme() {
-            document.body.classList.toggle('light-mode');
-            const icon = document.getElementById('theme-icon');
-            icon.className = document.body.classList.contains('light-mode') ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
-        }
-
-        function abrirPopup() {
-            document.getElementById('modalTitle').innerText = "Nova Visita";
-            document.getElementById('formAgenda').reset();
-            document.getElementById('edit_id').value = "";
-            document.getElementById('popupAgendar').style.display = 'block';
-        }
-
-        function fecharPopup() { document.getElementById('popupAgendar').style.display = 'none'; }
-
-        async function carregarClientes() {
-            try {
-                const res = await fetch(URL_CLIENTES);
-                clientesCache = await res.json();
-            } catch (e) { console.error("Erro ao carregar clientes"); }
-        }
-
-        async function carregarAgenda() {
-            document.getElementById('container-historico').innerHTML = `
-                <div class="flex flex-col items-center justify-center py-20">
-                    <div class="animate-spin rounded-full h-12 w-12 border-4 border-white/5 border-t-blue-500 mb-4"></div>
-                    <p class="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Sincronizando agenda</p>
-                </div>`;
-            try {
-                const res = await fetch(URL_AGENDA);
-                agendaGlobal = await res.json();
-                renderizarServicos();
-            } catch (e) {
-                document.getElementById('container-historico').innerHTML = `<div class="text-center py-10 opacity-50 font-bold">ERRO AO CONECTAR</div>`;
-            }
-        }
-
-        function filtrar(tipo) {
-            filtroAtual = tipo;
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('f-' + tipo).classList.add('active');
-            renderizarServicos();
-        }
-
-        function renderizarServicos() {
-            const container = document.getElementById('container-historico');
-            const busca = document.getElementById('buscaCliente').value.toLowerCase();
-            const hoje = new Date();
-            hoje.setHours(0,0,0,0);
-
-            let dadosFiltrados = agendaGlobal.filter(i => {
-                const termoMatch = i.CLIENTE && i.CLIENTE.toString().toLowerCase().includes(busca);
-                if(!termoMatch) return false;
-
-                let tipo = (i.DESCRICAO || "").includes("[Orçamento]") ? "Orçamento" : (i.DESCRICAO || "").includes("[Atenção]") ? "Atenção" : "Serviço";
-                const dataServico = new Date(i.DATA_DO_SERVICO.split('T')[0] + 'T12:00:00');
-                
-                if (tipo === 'Atenção' && dataServico < hoje && i.STATUS !== 'concluido') {
-                    i.STATUS = 'concluido';
-                }
-
-                if (tipo === 'Atenção' && i.STATUS !== 'concluido') return true;
-
-                if(filtroAtual === 'todos') return true;
-                if(isNaN(dataServico)) return true;
-                if(filtroAtual === 'dia') return dataServico.toLocaleDateString() === hoje.toLocaleDateString();
-                if(filtroAtual === 'semana') {
-                    const diff = (dataServico - hoje) / (1000 * 60 * 60 * 24);
-                    return diff >= 0 && diff <= 7;
-                }
-                if(filtroAtual === 'mes') return dataServico.getMonth() === hoje.getMonth() && dataServico.getFullYear() === hoje.getFullYear();
-                return true;
-            });
-
-            dadosFiltrados.sort((a, b) => {
-                const tipoA = (a.DESCRICAO || "").includes("[Atenção]") ? "Atenção" : "Normal";
-                const tipoB = (b.DESCRICAO || "").includes("[Atenção]") ? "Atenção" : "Normal";
-                if ((a.STATUS === 'concluido') !== (b.STATUS === 'concluido')) return a.STATUS === 'concluido' ? 1 : -1;
-                if (a.STATUS !== 'concluido' && b.STATUS !== 'concluido') {
-                    if (tipoA !== tipoB) return tipoA === 'Atenção' ? -1 : 1;
-                }
-                return parseInt((a.HORA || "00:00").replace(':','')) - parseInt((b.HORA || "00:00").replace(':',''));
-            });
-
-            if(dadosFiltrados.length === 0) {
-                container.innerHTML = `<div class="text-center py-10 opacity-20 font-bold uppercase text-xs">Nenhum serviço encontrado</div>`;
-                return;
-            }
-
-            container.innerHTML = dadosFiltrados.map((i) => {
-                const isConcluido = i.STATUS === 'concluido';
-                let obs = (i.DESCRICAO || i.OBSERVACAO || "").replace("[Orçamento]","").replace("[Serviço]","").replace("[Atenção]","").trim();
-                let tipo = (i.DESCRICAO || "").includes("[Orçamento]") ? "Orçamento" : (i.DESCRICAO || "").includes("[Atenção]") ? "Atenção" : "Serviço";
-                
-                const d = new Date(i.DATA_DO_SERVICO.split('T')[0] + 'T12:00:00');
-                const dataF = !isNaN(d) ? d.toLocaleDateString('pt-BR') : i.DATA_DO_SERVICO;
-                const hF = i.HORA && i.HORA.includes('T') ? i.HORA.split('T')[1].substring(0,5) : (i.HORA || "--:--");
-                const itemStr = encodeURIComponent(JSON.stringify(i));
-
-                let colorBorder = '';
-                let badgeClass = '';
-                if(tipo === 'Serviço') { colorBorder = 'border-servico'; badgeClass = 'badge-servico'; }
-                else if(tipo === 'Orçamento') { colorBorder = 'border-orcamento'; badgeClass = 'badge-orcamento'; }
-                else { colorBorder = 'border-atencao'; badgeClass = 'badge-atencao'; }
-
-                return `
-                    <div class="glass-card p-5 relative ${isConcluido ? 'concluido' : colorBorder}">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="flex-1">
-                                <span class="badge ${badgeClass}">${tipo}</span>
-                                <h2 class="text-base font-black mt-2 leading-tight">${i.CLIENTE}</h2>
-                                <p class="text-[15px] opacity-60 mt-1"><i class="fa-solid fa-location-dot mr-1"></i> ${i.ENDERECO}</p>
-                            </div>
-                            <div class="text-right flex flex-col items-end">
-                                <button onclick="prepararEdicao('${itemStr}')" class="mb-2 text-blue-500 opacity-60 hover:opacity-100"><i class="fa-solid fa-pen-to-square text-lg"></i></button>
-                                <div class="bg-white/5 p-2 rounded-lg border border-white/5 text-center min-w-[70px]">
-                                    <p class="text-[11px] font-black text-blue-500">${dataF}</p>
-                                    <p class="text-[13px] font-bold">${hF}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bg-black/20 rounded-xl p-3 mb-4">
-                            <p class="text-lg opacity-100 font-semibold">${obs || 'Sem observações...'}</p>
-                        </div>
-                        <div class="flex gap-2">
-                            ${!isConcluido ? `<button onclick='concluirServico("${i.CLIENTE}")' class="flex-1 py-3 bg-green-600/20 text-green-500 rounded-xl text-[10px] font-black uppercase">✓ Concluir</button>` : `<div class="text-[10px] font-black text-green-500 uppercase">✓ Finalizado</div>`}
-                        </div>
-                    </div>`;
-            }).join('');
-        }
-
-        function prepararEdicao(itemEncoded) {
-            const item = JSON.parse(decodeURIComponent(itemEncoded));
-            document.getElementById('modalTitle').innerText = "Editar Visita";
-            document.getElementById('cliente').value = item.CLIENTE;
-            document.getElementById('endereco').value = item.ENDERECO;
-            
-            let tipoOriginal = "Serviço";
-            if ((item.DESCRICAO || "").includes("[Orçamento]")) tipoOriginal = "Orçamento";
-            if ((item.DESCRICAO || "").includes("[Atenção]")) tipoOriginal = "Atenção";
-            
-            document.getElementById('tipo').value = tipoOriginal;
-            document.getElementById('descricao').value = (item.DESCRICAO || "").replace("[Orçamento]","").replace("[Serviço]","").replace("[Atenção]","").trim();
-            
-            const d = new Date(item.DATA_DO_SERVICO);
-            if(!isNaN(d)) document.getElementById('data_visita').value = d.toISOString().split('T')[0];
-            let h = item.HORA || "";
-            if(h.includes('T')) h = h.split('T')[1].substring(0,5);
-            document.getElementById('hora_visita').value = h;
-            document.getElementById('edit_id').value = item.CLIENTE; 
-            document.getElementById('popupAgendar').style.display = 'block';
-        }
-
-        function concluirServico(cliente) {
-            if (window.confirm("Deseja realmente marcar esta visita como CONCLUÍDA?")) {
-                enviarDados({ action: "concluir", cliente: cliente }, "Visita concluída com sucesso!");
-            }
-        }
-
-        function limparConcluidos() {
-            if (window.confirm("Deseja realmente EXCLUIR permanentemente todas as visitas concluídas?")) {
-                enviarDados({ action: "limpar_concluidos" }, "Excluído com sucesso");
-            }
-        }
-
-        document.getElementById('formAgenda').onsubmit = function(e) {
-            e.preventDefault();
-            const payload = {
-                action: "cadastrar",
-                edit_id: document.getElementById('edit_id').value, 
-                cliente: document.getElementById('cliente').value,
-                endereco: document.getElementById('endereco').value,
-                descricao: `[${document.getElementById('tipo').value}] ${document.getElementById('descricao').value}`,
-                data_servico: document.getElementById('data_visita').value.split('-').reverse().join('/'),
-                hora: document.getElementById('hora_visita').value
+        function saveBio() {
+            bioData = {
+                ...bioData,
+                name: document.getElementById('config-name').value,
+                oab: document.getElementById('config-oab').value,
+                desc: document.getElementById('config-desc').value,
+                img: document.getElementById('config-img').value
             };
-            enviarDados(payload, "Salvo com sucesso!");
-        };
-
-        function enviarDados(payload, mensagemSucesso) {
-            const overlay = document.getElementById('statusOverlay');
-            overlay.style.display = 'flex';
-            document.getElementById('statusText').innerText = "Processando...";
-
-            fetch(URL_AGENDA, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-
-            setTimeout(() => {
-                document.getElementById('statusText').innerText = "Sucesso!";
-                setTimeout(() => {
-                    overlay.style.display = 'none';
-                    fecharPopup();
-                    
-                    const toast = document.getElementById('toast-minimal');
-                    toast.innerHTML = `<i class="fa-solid fa-check mr-2"></i> ${mensagemSucesso.toUpperCase()}`;
-                    toast.style.display = 'block';
-                    
-                    setTimeout(() => {
-                        toast.style.display = 'none';
-                        carregarAgenda(); 
-                    }, 1500);
-                }, 800);
-            }, 1000);
+            localStorage.setItem('db_adv_bio', JSON.stringify(bioData));
+            renderBio();
+            closeModal('modal-bio');
+            notify("Perfil atualizado com sucesso!");
         }
 
-        window.onload = () => { carregarAgenda(); carregarClientes(); };
+        // --- CLIENT SIDE LOGIC ---
+        function handleClientSearch() {
+            const cpf = document.getElementById('searchCpf').value;
+            const client = dbClients.find(c => c.cpf === cpf);
+            
+            if (client) {
+                const pass = prompt("Digite sua senha de acesso:");
+                if (pass === client.senha) {
+                    renderTimeline(client);
+                    showView('view-timeline');
+                } else {
+                    alert("Senha incorreta!");
+                }
+            } else {
+                alert("CPF não localizado na base de dados.");
+            }
+        }
+
+        function renderTimeline(client) {
+            const container = document.getElementById('timeline-content');
+            container.innerHTML = '';
+            
+            // Ordem Reversa: Última atualização no TOPO
+            const sortedEvents = [...client.eventos].reverse();
+
+            sortedEvents.forEach(ev => {
+                container.innerHTML += `
+                    <div class="relative bg-white dark:bg-zinc-800 p-5 rounded-2xl shadow-md border-l-4 border-satinGold">
+                        <div class="absolute -left-[31px] top-6 w-4 h-4 rounded-full bg-satinGold"></div>
+                        <p class="text-[10px] font-bold text-satinGold uppercase mb-1">${ev.data}</p>
+                        <h4 class="font-serif font-bold text-lg">${ev.status}</h4>
+                        <p class="text-sm opacity-80 mt-2">${ev.descricao}</p>
+                    </div>
+                `;
+            });
+        }
+
+        // --- ADMIN SIDE LOGIC ---
+        function openAdminLogin() { 
+            document.getElementById('modal-login').classList.remove('hidden'); 
+        }
+
+        function handleLogin() {
+            if(document.getElementById('userLogin').value === 'admin' && document.getElementById('passLogin').value === 'admin') {
+                closeModal('modal-login');
+                showView('view-admin-dash');
+                renderAdminList();
+            } else {
+                alert("Acesso Negado");
+            }
+        }
+
+        function renderAdminList() {
+            const list = document.getElementById('admin-client-list');
+            list.innerHTML = '';
+            dbClients.forEach((c, idx) => {
+                list.innerHTML += `
+                    <div class="bg-white dark:bg-zinc-800 p-4 rounded-2xl flex justify-between items-center shadow-sm border border-gray-100 dark:border-zinc-700">
+                        <div>
+                            <p class="font-bold">${c.nome}</p>
+                            <p class="text-xs opacity-50">CPF: ${c.cpf} | ${c.eventos.length} atualizações</p>
+                        </div>
+                        <button onclick="editClient(${idx})" class="p-2 text-satinGold"><i class="fas fa-edit"></i></button>
+                    </div>
+                `;
+            });
+        }
+
+        function openClientModal() {
+            document.getElementById('modal-title').innerText = "Novo Cadastro";
+            document.getElementById('area-atualizacao').classList.add('hidden');
+            document.getElementById('edit-client-id').value = "";
+            document.getElementById('modal-client').classList.remove('hidden');
+        }
+
+        function editClient(idx) {
+            const c = dbClients[idx];
+            document.getElementById('modal-title').innerText = "Editar/Atualizar Processo";
+            document.getElementById('edit-client-id').value = idx;
+            document.getElementById('c-nome').value = c.nome;
+            document.getElementById('c-cpf').value = c.cpf;
+            document.getElementById('c-senha').value = c.senha;
+            document.getElementById('c-email').value = c.email;
+            document.getElementById('c-tel').value = c.tel;
+            document.getElementById('c-notif').checked = c.notificar;
+            
+            document.getElementById('area-atualizacao').classList.remove('hidden');
+            document.getElementById('modal-client').classList.remove('hidden');
+        }
+
+        function saveClient() {
+            const idx = document.getElementById('edit-client-id').value;
+            const status = document.getElementById('a-status').value;
+            const desc = document.getElementById('a-desc').value;
+
+            const clientObj = {
+                nome: document.getElementById('c-nome').value,
+                cpf: document.getElementById('c-cpf').value,
+                senha: document.getElementById('c-senha').value,
+                email: document.getElementById('c-email').value,
+                tel: document.getElementById('c-tel').value,
+                notificar: document.getElementById('c-notif').checked,
+                eventos: idx !== "" ? dbClients[idx].eventos : [{
+                    data: new Date().toLocaleDateString('pt-BR'),
+                    status: "Abertura de Cadastro",
+                    descricao: "Cliente cadastrado no sistema."
+                }]
+            };
+
+            // Se for uma atualização de processo
+            if (idx !== "" && desc.trim() !== "") {
+                clientObj.eventos.push({
+                    data: new Date().toLocaleDateString('pt-BR'),
+                    status: status,
+                    descricao: desc
+                });
+                
+                // TRIGGER: Google Apps Script Notification
+                if (clientObj.notificar) {
+                    console.log("Notificando via Apps Script...");
+                    try {
+                        google.script.run.enviarEmailNotificacao(clientObj);
+                    } catch(e) {
+                        console.warn("Ambiente local: Google Script não detectado.");
+                    }
+                }
+                notify(`Atualização lançada para ${clientObj.nome}`);
+            }
+
+            if (idx !== "") dbClients[idx] = clientObj;
+            else dbClients.push(clientObj);
+
+            localStorage.setItem('db_adv_clients', JSON.stringify(dbClients));
+            renderAdminList();
+            closeModal('modal-client');
+        }
+
+        function filterAdminList() {
+            const q = document.getElementById('adminSearch').value.toLowerCase();
+            const cards = document.getElementById('admin-client-list').children;
+            Array.from(cards).forEach(card => {
+                const text = card.innerText.toLowerCase();
+                card.style.display = text.includes(q) ? 'flex' : 'none';
+            });
+        }
+
+        // UTILS
+        function notify(msg) {
+            if (!("Notification" in window)) return;
+            Notification.requestPermission().then(perm => {
+                if (perm === "granted") new Notification("Sistema Jurídico", { body: msg, icon: 'https://cdn-icons-png.flaticon.com/512/1051/1051395.png' });
+            });
+        }
     </script>
 </body>
 </html>
