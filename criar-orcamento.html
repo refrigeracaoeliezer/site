@@ -247,7 +247,9 @@
                         <input type="hidden" id="nomeCliente">
                     </div>
                     <input type="text" id="enderecoCliente" placeholder="Endereço Completo" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
-                    <input type="tel" id="telCliente" placeholder="CNPJ / CPF" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
+                  <input type="tel" id="telCliente" placeholder="CPF ou CNPJ" maxlength="18" 
+       class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none" 
+       oninput="mascaraMutuario(this)">
                     <div class="grid grid-cols-2 gap-2 pt-2">
                         <div class="space-y-1">
                             <label class="text-[9px] font-bold text-white/30 uppercase ml-2">Início</label>
@@ -720,6 +722,24 @@ window.onload = async () => {
     document.getElementById('dataPrazoFinal').value = dataHoje;
     await buscarDadosPlanilha();
 };
+     // Função que decide qual máscara aplicar
+function mascaraMutuario(i) {
+    let v = i.value.replace(/\D/g, ""); // Remove tudo que não é dígito
+
+    if (v.length <= 11) {
+        // Aplica máscara de CPF: 000.000.000-00
+        v = v.replace(/(\d{3})(\d)/, "$1.$2");
+        v = v.replace(/(\d{3})(\d)/, "$1.$2");
+        v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+    } else {
+        // Aplica máscara de CNPJ: 00.000.000/0001-00
+        v = v.replace(/^(\d{2})(\d)/, "$1.$2");
+        v = v.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
+        v = v.replace(/\.(\d{3})(\d)/, ".$1/$2");
+        v = v.replace(/(\d{4})(\d)/, "$1-$2");
+    }
+    i.value = v;
+}
 
 window.addEventListener('click', e => { if (!e.target.closest('.custom-dropdown')) fecharTodosDropdowns(); });
 </script>
