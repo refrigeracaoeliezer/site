@@ -19,9 +19,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
-
-
-/* Bloqueia a seleção de texto e o arraste de imagens */
+    /* Bloqueia a seleção de texto e o arraste de imagens */
     body {
         -webkit-user-select: none;
         -moz-user-select: none;
@@ -96,7 +94,6 @@
         .is-os .dark-input:focus { border-color: #10b981 !important; }
 
         .service-card { background: var(--card-sub); border-radius: 20px; padding: 15px; border: 1px solid var(--glass-border); display: flex; flex-direction: column; gap: 12px; }
-        .service-row-top { display: flex; align-items: center; gap: 10px; width: 100%; overflow: hidden; }
         .qty-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: var(--input-bg); color: #3b82f6; transition: 0.2s; border: 1px solid rgba(59, 130, 246, 0.2); }
         .is-os .qty-btn { color: #10b981 !important; border-color: rgba(16, 185, 129, 0.2) !important; }
         
@@ -127,15 +124,16 @@
         .is-searching .selected-text { display: none; }
         .search-input { background: transparent; border: none; color: inherit; width: 100%; outline: none; display: none; }
         .is-searching .search-input { display: block; }
+        
         .selected-text { 
-    color: var(--text-main) !important; 
-    opacity: 1 !important; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-    white-space: nowrap; 
-    display: block; 
-    width: 100%; 
-}
+            color: var(--text-main) !important; 
+            opacity: 1 !important; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            white-space: nowrap; 
+            display: block; 
+            width: 100%; 
+        }
 
         .total-container { background: var(--total-container-bg) !important; border: 1px solid rgba(255,255,255,0.1) !important; transition: all 0.4s ease; }
         
@@ -147,11 +145,6 @@
         .btn-copy-success { background-color: #3b82f6 !important; color: white !important; }
         .theme-toggle { background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
     </style>
-
-
-
-
-    
 </head>
 <body class="p-4 pb-10">
 
@@ -245,11 +238,11 @@
 
                 <div class="space-y-3">
                     <input type="text" id="nomePrestador" placeholder="Sua Empresa" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
-                    <div class="relative custom-dropdown" id="dropdown-cliente">
+                    <div class="relative custom-dropdown min-w-0" id="dropdown-cliente">
                         <div class="w-full p-4 rounded-2xl dark-input text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
-                            <span class="selected-text truncate">Selecionar Cliente</span>
-                            <input type="text" class="search-input" placeholder="Selecionar Cliente" oninput="filtrarDropdown(this, 'cliente')" onclick="event.stopPropagation()">
-                            <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-xs transition-transform duration-300"></i>
+                            <span class="selected-text truncate block w-full">Selecionar Cliente</span>
+                            <input type="text" class="search-input w-full" placeholder="Selecionar Cliente" oninput="filtrarDropdown(this, 'cliente')" onclick="event.stopPropagation()">
+                            <i class="fa-solid fa-chevron-down text-white/10 text-xs ml-2"></i>
                         </div>
                         <ul id="lista-clientes-custom" class="dropdown-list"></ul>
                         <input type="hidden" id="nomeCliente">
@@ -311,11 +304,8 @@
   }
 
   // BLOQUEIOS DE SEGURANÇA (JavaScript)
-  
-  // Bloqueia o clique com o botão direito
   document.addEventListener('contextmenu', event => event.preventDefault());
 
-  // Bloqueia atalhos de teclado: Ctrl+C, Ctrl+U (Código Fonte), Ctrl+S (Salvar), Ctrl+P (Imprimir) e F12
 document.addEventListener('keydown', function(e) {
     if (
         (e.ctrlKey && (e.key === 'c' || e.key === 'u' || e.key === 's' || e.key === 'p')) || 
@@ -328,8 +318,8 @@ document.addEventListener('keydown', function(e) {
     }
   });
     
-const URL_READ_ID = "https://script.google.com/macros/s/AKfycbzlBMg9ZmXcC00g1wquhExRJ72WuWYLpjr0ilX-a6ppwuLeXdr6QMV86Zw14p3NIQ4eVQ/exec";      // NUMERO 001, 002, 003)
-const URL_DATABASE = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec";     // SERVIÇOS)
+const URL_READ_ID = "https://script.google.com/macros/s/AKfycbzlBMg9ZmXcC00g1wquhExRJ72WuWYLpjr0ilX-a6ppwuLeXdr6QMV86Zw14p3NIQ4eVQ/exec";
+const URL_DATABASE = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec";
 
 let cacheDados = [];
 let modoOS = false;
@@ -471,18 +461,19 @@ function adicionarServico() {
     const container = document.getElementById('services-container');
     const div = document.createElement('div');
     div.className = "service-card";
+    // Aplicação do min-w-0 e truncate no Dropdown de Serviços
     div.innerHTML = `
-        <div class="service-row-top" style="display: flex; align-items: center; gap: 10px; width: 100%;">
-            <div class="relative custom-dropdown" style="flex: 1; min-width: 0; position: relative;">
-                <div class="w-full dark-input p-4 rounded-2xl text-sm font-semibold flex items-center cursor-pointer" onclick="toggleDropdown(this)">
-                    <span class="selected-text truncate" style="flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Selecionar Serviço</span>
-                    <input type="text" class="search-input" placeholder="Pesquisar..." oninput="filtrarDropdown(this)" onclick="event.stopPropagation()" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: calc(100% - 60px); background: transparent; border: none; outline: none; color: inherit; height: 20px; display: none; z-index: 10;">
-                    <i class="fa-solid fa-chevron-down text-white/10 text-[10px] ml-2"></i>
+        <div class="flex items-center gap-2">
+            <div class="relative custom-dropdown flex-grow min-w-0">
+                <div class="w-full p-4 rounded-2xl dark-input text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
+                    <span class="selected-text truncate block w-full">Selecionar Serviço</span>
+                    <input type="text" class="search-input w-full" placeholder="Pesquisar..." oninput="filtrarDropdown(this)" onclick="event.stopPropagation()">
+                    <i class="fa-solid fa-chevron-down text-white/10 text-xs ml-2"></i>
                 </div>
                 <ul class="dropdown-list">${gerarHtmlServicos()}</ul>
                 <input type="hidden" class="service-name">
             </div>
-            <button onclick="this.closest('.service-card').remove(); atualizarSoma();" class="text-red-500 p-2 flex-shrink-0" style="flex-shrink: 0;">
+            <button onclick="this.closest('.service-card').remove(); atualizarSoma();" class="text-red-500 p-2 flex-shrink-0">
                 <i class="fa-solid fa-trash-can"></i>
             </button>
         </div>
@@ -491,7 +482,7 @@ function adicionarServico() {
                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 font-bold text-xs">R$</span>
                 <input type="text" placeholder="0,00" class="w-full dark-input pl-9 p-4 rounded-2xl text-sm font-bold service-price" onkeyup="formatarMoeda(this)">
             </div>
-            <div class="flex items-center bg-white/5 border border-white/10 rounded-2xl p-2 gap-4">
+            <div class="flex items-center bg-white/5 border border-white/10 rounded-2xl p-2 gap-4 flex-shrink-0">
                 <button onclick="alterarQtde(this, -1)" class="qty-btn"><i class="fa-solid fa-minus"></i></button>
                 <span class="font-bold service-qty w-4 text-center">1</span>
                 <button onclick="alterarQtde(this, 1)" class="qty-btn"><i class="fa-solid fa-plus"></i></button>
@@ -537,6 +528,7 @@ function gerarDocumento() {
     const prestador = document.getElementById('nomePrestador').value || "ELIEZER";
     const cliente = document.getElementById('nomeCliente').value || "Cliente";
     const total = document.getElementById('totalFinal').value;
+    const os = document.getElementById('display-id').innerText;
     const obs = document.getElementById('obsGeral').value;
     const dias = document.getElementById('inputGarantia').value;
     const dataFim = document.getElementById('dataPrazoFinal').value.split('-').reverse().join('/');
@@ -707,16 +699,10 @@ function adicionarServicoParaEdicao(nome, qtd, valorIndividual) {
     ultimoCard.querySelector('.service-qty').innerText = qtd;
     const precoInput = ultimoCard.querySelector('.service-price');
     
-    // Limpa o texto vindo da planilha
     let valorLimpo = valorIndividual.replace("R$", "").trim();
-
-    // Lógica para acrescentar centavos se o valor for "inteiro" (sem separador decimal)
-    // Se não tem vírgula e não tem ponto, tratamos como valor real que precisa de centavos
     if (!valorLimpo.includes(',') && !valorLimpo.includes('.')) {
-        // Multiplicamos por 100 para que a função formatarMoeda entenda como valor inteiro com centavos .00
         valorLimpo = (parseFloat(valorLimpo) * 100).toString();
     }
-
     precoInput.value = valorLimpo;
     formatarMoeda(precoInput);
 }
