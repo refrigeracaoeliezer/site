@@ -48,7 +48,7 @@
         .btn-flutuante { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: #ef4444; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 90; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
         
         .header-action-btn { background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
-        .delete-btn-red { color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+        .delete-btn-red { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
 
         #statusOverlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); border-radius: 25px; flex-direction: column; align-items: center; justify-content: center; z-index: 110; }
 
@@ -115,12 +115,20 @@
                 <h1 class="text-xl font-black uppercase tracking-tighter">Contas a <span class="text-red-500">Receber</span></h1>
                 <span class="text-[10px] opacity-40 font-bold uppercase tracking-widest">Gestão de Inadimplência</span>
             </div>
-            <div class="flex flex-col items-end">
-                <div class="text-right mb-2">
-                    <p class="text-[10px] opacity-50 font-black uppercase">Total Pendente</p>
-                    <p id="total-geral" class="text-3xl font-black text-red-500 leading-none">R$ 0,00</p>
+            
+            <div class="flex items-start gap-4">
+                <div class="text-right">
+                    <div class="mb-2">
+                        <p class="text-[9px] opacity-50 font-black uppercase leading-none">Total Líquido</p>
+                        <p id="total-liquido-geral" class="text-2xl font-black text-green-500 leading-none">R$ 0,00</p>
+                    </div>
+                    <div>
+                        <p class="text-[9px] opacity-50 font-black uppercase leading-none">Total Pendente</p>
+                        <p id="total-geral" class="text-2xl font-black text-red-500 leading-none">R$ 0,00</p>
+                    </div>
                 </div>
-                <div class="flex flex-col gap-2">
+
+                <div class="flex flex-row gap-2">
                     <button onclick="toggleTheme()" class="header-action-btn" title="Alternar Tema">
                         <i id="theme-icon" class="fa-solid fa-sun"></i>
                     </button>
@@ -141,8 +149,7 @@
             <input type="text" id="buscaDevedor" oninput="renderizarFinanceiro()" placeholder="Buscar cliente ou serviço..." class="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 outline-none focus:border-red-500 text-sm">
         </div>
 
-        <div id="container-financeiro" class="space-y-4">
-            </div>
+        <div id="container-financeiro" class="space-y-4"></div>
     </div>
 
     <script>
@@ -209,6 +216,7 @@
             const container = document.getElementById('container-financeiro');
             const busca = document.getElementById('buscaDevedor').value.toLowerCase();
             let somaPendente = 0;
+            let somaLiquida = 0;
 
             const filtrados = dadosFinanceiros.filter(item => {
                 const total = parseFloat(item.VALOR_TOAL || item.VALOR_TOTAL || 0);
@@ -229,11 +237,18 @@
                 return matchBusca;
             });
 
-            somaPendente = dadosFinanceiros.reduce((acc, item) => {
-                const f = parseFloat(item.VALOR_TOAL || item.VALOR_TOTAL || 0) - parseFloat(item.VALOR_RECEBIDO || 0);
-                return f > 0 ? acc + f : acc;
-            }, 0);
+            // Cálculos dos Totais do Topo
+            dadosFinanceiros.forEach(item => {
+                const total = parseFloat(item.VALOR_TOAL || item.VALOR_TOTAL || 0);
+                const rec = parseFloat(item.VALOR_RECEBIDO || 0);
+                const mat = parseFloat(item.MATERIAL || 0);
+                
+                if (total - rec > 0) somaPendente += (total - rec);
+                somaLiquida += (total - mat);
+            });
+
             document.getElementById('total-geral').innerText = formatarMoeda(somaPendente);
+            document.getElementById('total-liquido-geral').innerText = formatarMoeda(somaLiquida);
 
             if (filtrados.length === 0) {
                 container.innerHTML = `<div class="text-center py-10 opacity-20 font-bold uppercase text-xs">Nenhum registro</div>`;
@@ -260,7 +275,7 @@
                                     </div>
                                     <div class="bg-white/5 p-2 rounded-lg">
                                         <p class="text-[9px] opacity-40 uppercase font-bold">Líquido</p>
-                                        <p class="text-sm font-bold text-blue-400">${formatarMoeda(item.calcLiq)}</p>
+                                        <p class="text-sm font-bold text-green-500">${formatarMoeda(item.calcLiq)}</p>
                                     </div>
                                 </div>
                             </div>
