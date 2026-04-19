@@ -96,7 +96,7 @@
         .is-os .dark-input:focus { border-color: #10b981 !important; }
 
         .service-card { background: var(--card-sub); border-radius: 20px; padding: 15px; border: 1px solid var(--glass-border); display: flex; flex-direction: column; gap: 12px; }
-        .service-row-top { display: flex; align-items: center; gap: 10px; width: 100%; }
+        .service-row-top { display: flex; align-items: center; gap: 10px; width: 100%; overflow: hidden; }
         .qty-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: var(--input-bg); color: #3b82f6; transition: 0.2s; border: 1px solid rgba(59, 130, 246, 0.2); }
         .is-os .qty-btn { color: #10b981 !important; border-color: rgba(16, 185, 129, 0.2) !important; }
         
@@ -128,15 +128,14 @@
         .search-input { background: transparent; border: none; color: inherit; width: 100%; outline: none; display: none; }
         .is-searching .search-input { display: block; }
         .selected-text { 
-    color: var(--text-main) !important; 
-    opacity: 1 !important; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-    white-space: nowrap; 
-    display: block; 
-    width: 100%;
-    padding-right: 15px;
-}
+            color: var(--text-main) !important; 
+            opacity: 1 !important; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            white-space: nowrap; 
+            display: block; 
+            width: 100%; 
+        }
 
         .total-container { background: var(--total-container-bg) !important; border: 1px solid rgba(255,255,255,0.1) !important; transition: all 0.4s ease; }
         
@@ -248,8 +247,8 @@
                     <input type="text" id="nomePrestador" placeholder="Sua Empresa" class="w-full p-4 rounded-2xl dark-input text-sm font-semibold outline-none">
                     <div class="relative custom-dropdown" id="dropdown-cliente">
                         <div class="w-full p-4 rounded-2xl dark-input text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
-                            <span class="selected-text truncate">Selecionar Cliente</span>
-                            <input type="text" class="search-input" placeholder="Selecionar Cliente" oninput="filtrarDropdown(this)" onclick="event.stopPropagation()">
+                            <span class="selected-text truncate block w-full">Selecionar Cliente</span>
+                            <input type="text" class="search-input w-full" placeholder="Selecionar Cliente" oninput="filtrarDropdown(this, 'cliente')" onclick="event.stopPropagation()">
                             <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-xs transition-transform duration-300"></i>
                         </div>
                         <ul id="lista-clientes-custom" class="dropdown-list"></ul>
@@ -406,17 +405,13 @@ function toggleDropdown(el) {
     const list = el.nextElementSibling;
     const searchInput = el.querySelector('.search-input');
     const isVisible = list.style.display === 'block';
-    
     fecharTodosDropdowns();
-    
     if (!isVisible) {
         list.style.display = 'block';
         wrapper.classList.add('is-searching');
         searchInput.focus();
         searchInput.value = ''; 
-        // Força a exibição de todos os itens ao abrir
-        const items = list.querySelectorAll('.dropdown-item');
-        items.forEach(item => item.style.display = 'block');
+        filtrarDropdown(searchInput);
     }
 }
 
@@ -460,13 +455,6 @@ function renderizarDatalists() {
     const clientes = [...new Set(cacheDados.map(d => d.cli_nome))].filter(Boolean);
     document.getElementById('lista-clientes-custom').innerHTML = clientes.map(n => 
         `<li class="dropdown-item" onclick="selecionarItemDropdown(this, '${n}', '', 'cliente')">${n}</li>`).join('');
-    
-    // ATUALIZAÇÃO DOS SERVIÇOS EM CARDS JÁ CRIADOS
-    const htmlServicos = gerarHtmlServicos();
-    document.querySelectorAll('#services-container .dropdown-list').forEach(ul => {
-        ul.innerHTML = htmlServicos;
-    });
-
     const dadosEmp = cacheDados.find(d => d.emp_nome);
     if(dadosEmp) document.getElementById('nomePrestador').value = dadosEmp.emp_nome;
 }
@@ -483,13 +471,14 @@ function adicionarServico() {
     const container = document.getElementById('services-container');
     const div = document.createElement('div');
     div.className = "service-card";
+    // Ajuste exato replicado: flex-grow min-w-0 no pai e block truncate no span do filho
     div.innerHTML = `
-        <div class="service-row-top">
-            <div class="relative custom-dropdown flex-grow min-w-0 overflow-hidden">
-                <div class="w-full p-4 rounded-2xl dark-input text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
-                    <span class="selected-text truncate">Selecionar Serviço</span>
-                    <input type="text" class="search-input" placeholder="Selecionar Serviço" oninput="filtrarDropdown(this)" onclick="event.stopPropagation()">
-                    <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-xs transition-transform duration-300"></i>
+        <div class="service-row-top" style="display: flex; align-items: center; gap: 10px; width: 100%;">
+            <div class="relative custom-dropdown flex-grow min-w-0" style="position: relative;">
+                <div class="w-full dark-input p-4 rounded-2xl text-sm font-semibold flex items-center cursor-pointer" onclick="toggleDropdown(this)">
+                    <span class="selected-text truncate block w-full">Selecionar Serviço</span>
+                    <input type="text" class="search-input w-full" placeholder="Pesquisar..." oninput="filtrarDropdown(this)" onclick="event.stopPropagation()" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: calc(100% - 60px); background: transparent; border: none; outline: none; color: inherit; height: 20px; display: none; z-index: 10;">
+                    <i class="fa-solid fa-chevron-down text-white/10 text-[10px] ml-2"></i>
                 </div>
                 <ul class="dropdown-list">${gerarHtmlServicos()}</ul>
                 <input type="hidden" class="service-name">
@@ -503,7 +492,7 @@ function adicionarServico() {
                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 font-bold text-xs">R$</span>
                 <input type="text" placeholder="0,00" class="w-full dark-input pl-9 p-4 rounded-2xl text-sm font-bold service-price" onkeyup="formatarMoeda(this)">
             </div>
-            <div class="flex items-center bg-white/5 border border-white/10 rounded-2xl p-2 gap-4">
+            <div class="flex items-center bg-white/5 border border-white/10 rounded-2xl p-2 gap-4 flex-shrink-0">
                 <button onclick="alterarQtde(this, -1)" class="qty-btn"><i class="fa-solid fa-minus"></i></button>
                 <span class="font-bold service-qty w-4 text-center">1</span>
                 <button onclick="alterarQtde(this, 1)" class="qty-btn"><i class="fa-solid fa-plus"></i></button>
