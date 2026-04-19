@@ -406,13 +406,17 @@ function toggleDropdown(el) {
     const list = el.nextElementSibling;
     const searchInput = el.querySelector('.search-input');
     const isVisible = list.style.display === 'block';
+    
     fecharTodosDropdowns();
+    
     if (!isVisible) {
         list.style.display = 'block';
         wrapper.classList.add('is-searching');
         searchInput.focus();
         searchInput.value = ''; 
-        filtrarDropdown(searchInput);
+        // Resetar filtro para mostrar todos ao abrir
+        const items = list.querySelectorAll('.dropdown-item');
+        items.forEach(item => item.style.display = 'block');
     }
 }
 
