@@ -249,7 +249,7 @@
                     <div class="relative custom-dropdown" id="dropdown-cliente">
                         <div class="w-full p-4 rounded-2xl dark-input text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
                             <span class="selected-text truncate">Selecionar Cliente</span>
-                            <input type="text" class="search-input" placeholder="Selecionar Cliente" oninput="filtrarDropdown(this, 'cliente')" onclick="event.stopPropagation()">
+                            <input type="text" class="search-input" placeholder="Selecionar Cliente" oninput="filtrarDropdown(this)" onclick="event.stopPropagation()">
                             <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-xs transition-transform duration-300"></i>
                         </div>
                         <ul id="lista-clientes-custom" class="dropdown-list"></ul>
@@ -477,7 +477,7 @@ function adicionarServico() {
             <div class="relative custom-dropdown flex-grow overflow-hidden">
                 <div class="w-full p-4 rounded-2xl dark-input text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
                     <span class="selected-text truncate">Selecionar Serviço</span>
-                    <input type="text" class="search-input" placeholder="Selecionar Serviço" oninput="filtrarDropdown(this, 'servico')" onclick="event.stopPropagation()">
+                    <input type="text" class="search-input" placeholder="Selecionar Serviço" oninput="filtrarDropdown(this)" onclick="event.stopPropagation()">
                     <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-xs transition-transform duration-300"></i>
                 </div>
                 <ul class="dropdown-list">${gerarHtmlServicos()}</ul>
