@@ -460,6 +460,13 @@ function renderizarDatalists() {
     const clientes = [...new Set(cacheDados.map(d => d.cli_nome))].filter(Boolean);
     document.getElementById('lista-clientes-custom').innerHTML = clientes.map(n => 
         `<li class="dropdown-item" onclick="selecionarItemDropdown(this, '${n}', '', 'cliente')">${n}</li>`).join('');
+    
+    // ATUALIZAÇÃO DOS SERVIÇOS EM CARDS JÁ CRIADOS
+    const htmlServicos = gerarHtmlServicos();
+    document.querySelectorAll('#services-container .dropdown-list').forEach(ul => {
+        ul.innerHTML = htmlServicos;
+    });
+
     const dadosEmp = cacheDados.find(d => d.emp_nome);
     if(dadosEmp) document.getElementById('nomePrestador').value = dadosEmp.emp_nome;
 }
@@ -478,7 +485,7 @@ function adicionarServico() {
     div.className = "service-card";
     div.innerHTML = `
         <div class="service-row-top">
-            <div class="relative custom-dropdown flex-grow overflow-hidden">
+            <div class="relative custom-dropdown flex-grow min-w-0 overflow-hidden">
                 <div class="w-full p-4 rounded-2xl dark-input text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
                     <span class="selected-text truncate">Selecionar Serviço</span>
                     <input type="text" class="search-input" placeholder="Selecionar Serviço" oninput="filtrarDropdown(this)" onclick="event.stopPropagation()">
