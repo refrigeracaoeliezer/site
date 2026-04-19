@@ -473,10 +473,10 @@ function adicionarServico() {
     div.className = "service-card";
     div.innerHTML = `
         <div class="service-row-top">
-            <div class="relative custom-dropdown" style="width: 280px; min-width: 280px; max-width: 280px; position: relative;">
+            <div class="relative custom-dropdown" style="width: 275px; min-width: 275px; max-width: 275px;">
                 <div class="w-full dark-input p-4 rounded-2xl text-sm font-semibold flex justify-between items-center cursor-pointer" onclick="toggleDropdown(this)">
-                     <span class="selected-text truncate" style="flex: 1;">Selecionar Serviço</span>
-                    <input type="text" class="search-input" placeholder="Pesquisar..." oninput="filtrarDropdown(this)" onclick="event.stopPropagation()" style="position: absolute; left: 16px; width: calc(100% - 60px); background: transparent; border: none; outline: none; color: inherit; height: 20px; display: none; z-index: 10;">
+                     <span class="selected-text truncate">Selecionar Serviço</span>
+                    <input type="text" class="search-input" placeholder="Pesquisar..." oninput="filtrarDropdown(this)" onclick="event.stopPropagation()">
                     <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-white/10 pointer-events-none text-[10px]"></i>
                 </div>
                 <ul class="dropdown-list">${gerarHtmlServicos()}</ul>
