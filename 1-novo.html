@@ -127,7 +127,7 @@
                     <button onclick="toggleTheme()" class="header-action-btn" title="Alternar Tema">
                         <i id="theme-icon" class="fa-solid fa-sun"></i>
                     </button>
-                    <button onclick="limparPagos()" class="header-action-btn delete-btn-red" title="Excluir Concluídos do Mês Anterior">
+                    <button onclick="limparPagos()" class="header-action-btn delete-btn-red" title="Excluir Registros Recebidos">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>
                 </div>
@@ -164,7 +164,7 @@
 
     <script>
         const URL_CLIENTES = "https://script.google.com/macros/s/AKfycbyx6kGtlzS0q1s3chrRhdNG0YGJ4VwRIDLjmttJN_vE4UVa2CPmVRFqQlU9nQ1DPkmjnA/exec";
-        const URL_FINANCEIRO = "https://script.google.com/macros/s/AKfycbz9h_RiCWlrLqCiFobuJdo43h8M6fSGh4vTe-j_tu2-W7LW7HNjrdSXY38DAPhBYKv-xQ/exec";
+        const URL_FINANCEIRO = "https://script.google.com/macros/s/AKfycbzUJYxByYuB9idDoD76oJ8ThTNFBSADMyUhheWpkGtsbZo3S3zPDVTkLFcjT0LZHspk0A/exec";
 
         let dadosFinanceiros = [];
         let clientesCache = [];
@@ -375,12 +375,7 @@
         }
 
         function limparPagos() {
-            const meses = ["JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"];
-            const hoje = new Date();
-            const mesAnteriorIdx = hoje.getMonth() === 0 ? 11 : hoje.getMonth() - 1;
-            const nomeMesAnterior = meses[mesAnteriorIdx];
-
-            if (confirm("Deseja realmente excluir todos os registros concluídos do mês de " + nomeMesAnterior + "?")) {
+            if (confirm("Deseja excluir permanentemente TODOS os registros que já foram quitados da lista?")) {
                 enviarCego({ action: "limpar_pagos" });
             }
         }
